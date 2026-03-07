@@ -68,15 +68,31 @@ export default function ExpensesPage() {
 
       if (cancelled || !doc) { setLoadingFile(false); return; }
 
-      const url = await getDocumentSignedUrl(doc.file_path);
-      if (!cancelled) {
-        setFileUrl(url);
-        setFileType(doc.file_type);
-        setLoadingFile(false);
+      const signedUrl = await getDocumentSignedUrl(doc.file_path);
+      if (cancelled || !signedUrl) { setLoadingFile(false); return; }
+
+      try {
+        // Fetch as blob to avoid cross-origin issues in preview
+        const response = await fetch(signedUrl);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        if (!cancelled) {
+          setFileUrl(blobUrl);
+          setFileType(doc.file_type);
+          setLoadingFile(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setFileUrl(signedUrl);
+          setFileType(doc.file_type);
+          setLoadingFile(false);
+        }
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedExpense?.document_id]);
 
   const openEdit = (expense: typeof expenses[0]) => {
@@ -95,6 +111,7 @@ export default function ExpensesPage() {
   };
 
   const closeEdit = () => {
+    if (fileUrl?.startsWith("blob:")) URL.revokeObjectURL(fileUrl);
     setSelectedId(null);
     setEditData(null);
     setFileUrl(null);
@@ -107,13 +124,25 @@ export default function ExpensesPage() {
     closeEdit();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!fileUrl) return;
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = selectedExpense?.supplier_name ? `${selectedExpense.supplier_name}-invoice` : "document";
-    a.target = "_blank";
-    a.click();
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = selectedExpense?.supplier_name
+        ? `${selectedExpense.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
+        : "document";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open in new tab
+      window.open(fileUrl, "_blank");
+    }
   };
 
   // Date range logic
