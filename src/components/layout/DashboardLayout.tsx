@@ -160,8 +160,9 @@ export default function DashboardLayout() {
 
 function getPageTitle(path: string): string {
   const map: Record<string, string> = {
-    '/app': 'Dashboard',
-    '/app/upload': 'Upload',
+    '/app': 'Capture',
+    '/app/upload': 'Capture',
+    '/app/dashboard': 'Dashboard',
     '/app/documents': 'Documents',
     '/app/expenses': 'Expenses',
     '/app/income': 'Income',
@@ -170,5 +171,5 @@ function getPageTitle(path: string): string {
     '/app/team': 'Team',
     '/app/settings': 'Settings',
   };
-  return map[path] || 'Dashboard';
+  return map[path] || 'Capture';
 }
