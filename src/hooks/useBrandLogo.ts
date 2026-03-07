@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+function normalizeLogoValue(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  if (value.startsWith("data:image")) return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return typeof parsed === "string" && parsed.startsWith("data:image") ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function useBrandLogo() {
   const [logo, setLogo] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchLogo = async () => {
       const isDark = document.documentElement.classList.contains("dark");
       const key = isDark ? "brand-logo-dark" : "brand-logo-light";
@@ -15,27 +29,33 @@ export function useBrandLogo() {
         .eq("key", key)
         .maybeSingle();
 
-      if (data?.value) {
-        setLogo(data.value as string);
-      } else if (isDark) {
-        // fallback to light logo
+      const current = normalizeLogoValue(data?.value);
+      if (current) {
+        if (mounted) setLogo(current);
+        return;
+      }
+
+      if (isDark) {
         const { data: fallback } = await supabase
           .from("demo_settings")
           .select("value")
           .eq("key", "brand-logo-light")
           .maybeSingle();
-        setLogo(fallback?.value as string | null);
-      } else {
+
+        if (mounted) setLogo(normalizeLogoValue(fallback?.value));
+      } else if (mounted) {
         setLogo(null);
       }
     };
 
     fetchLogo();
 
-    const observer = new MutationObserver(() => fetchLogo());
+    const observer = new MutationObserver(fetchLogo);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     window.addEventListener("brand-logo-changed", fetchLogo);
+
     return () => {
+      mounted = false;
       observer.disconnect();
       window.removeEventListener("brand-logo-changed", fetchLogo);
     };
