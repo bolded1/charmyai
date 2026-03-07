@@ -219,7 +219,7 @@ export default function HomePage() {
                 className="flex items-center gap-3 p-4 surface-elevated rounded-xl"
               >
                 <div className="h-9 w-9 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
-                  <b.icon className="h-4.5 w-4.5 text-primary" />
+                  <b.icon className="h-4.5 w-4.5 text-primary-icon" />
                 </div>
                 <span className="text-sm font-medium">{b.text}</span>
               </motion.div>
