@@ -9,12 +9,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
-import { useExpenseRecords, useUpdateExpense, getDocumentSignedUrl } from "@/hooks/useDocuments";
+import { useExpenseRecords, useUpdateExpense } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
