@@ -592,9 +592,6 @@ export default function SettingsPage() {
             </Card>
 
 
-            <div className="flex justify-end">
-              <Button onClick={handleSave}>Save Appearance</Button>
-            </div>
           </div>
         </TabsContent>
 
