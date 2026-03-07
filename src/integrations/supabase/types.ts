@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      demo_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      demo_uploads: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          expires_at: string
+          extracted_data: Json | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          ip_address: string | null
+          ocr_text: string | null
+          session_id: string
+          status: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          expires_at?: string
+          extracted_data?: Json | null
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type: string
+          id?: string
+          ip_address?: string | null
+          ocr_text?: string | null
+          session_id: string
+          status?: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          expires_at?: string
+          extracted_data?: Json | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          ip_address?: string | null
+          ocr_text?: string | null
+          session_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           category: string | null
