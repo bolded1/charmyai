@@ -14,7 +14,6 @@ const steps = [
   { title: "Your Profile", icon: UserCircle },
   { title: "Create Organization", icon: Building2 },
   { title: "Company Information", icon: FileText },
-  { title: "Upload First Document", icon: Upload },
   { title: "Invite Team", icon: Users },
 ];
 
