@@ -14,7 +14,6 @@ const steps = [
   { title: "Your Profile", icon: UserCircle },
   { title: "Create Organization", icon: Building2 },
   { title: "Company Information", icon: FileText },
-  { title: "Invite Team", icon: Users },
 ];
 
 const companyRoles = ["Owner", "Founder", "Accountant", "Finance Manager", "Admin", "Staff"];
