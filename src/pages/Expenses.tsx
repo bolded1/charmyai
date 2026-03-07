@@ -324,10 +324,7 @@ export default function ExpensesPage() {
                   {filtered.map((doc) => (
                     <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <Receipt className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{doc.supplier_name}</span>
-                        </div>
+                        <span className="text-sm font-medium">{doc.supplier_name}</span>
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                       <td className="p-3 text-sm text-muted-foreground">{doc.invoice_date}</td>
