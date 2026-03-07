@@ -16,7 +16,7 @@ export default function MarketingLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="marketing min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 glass-effect">
         <div className="container flex h-16 items-center justify-between">
