@@ -296,11 +296,6 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end">
-                <Button onClick={handleProfileSave} disabled={updateProfile.isPending}>
-                  {updateProfile.isPending ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> Saving...</> : "Save Changes"}
-                </Button>
-              </div>
             </div>
           )}
         </TabsContent>
