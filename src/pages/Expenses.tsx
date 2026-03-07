@@ -397,7 +397,7 @@ export default function ExpensesPage() {
                           <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleDownload}>
                             <Download className="h-3 w-3 mr-1" /> Download
                           </Button>
-                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => window.open(signedFileUrl || fileUrl, "_blank")}>
+                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleOpenFile}>
                             <ExternalLink className="h-3 w-3 mr-1" /> Open
                           </Button>
                         </>
