@@ -147,41 +147,22 @@ export function useApproveDocument() {
 
       if (updateErr) throw updateErr;
 
-      // Create structured record
-      const docType = doc.document_type || "expense_invoice";
-      if (docType === "sales_invoice") {
-        const { error } = await supabase.from("income_records").insert({
-          user_id: user.id,
-          document_id: doc.id,
-          customer_name: doc.customer_name || "Unknown",
-          invoice_number: doc.invoice_number,
-          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-          due_date: doc.due_date,
-          currency: doc.currency || "EUR",
-          net_amount: doc.net_amount || 0,
-          vat_amount: doc.vat_amount || 0,
-          total_amount: doc.total_amount || 0,
-          vat_number: doc.vat_number,
-          category: doc.category,
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("expense_records").insert({
-          user_id: user.id,
-          document_id: doc.id,
-          supplier_name: doc.supplier_name || "Unknown",
-          invoice_number: doc.invoice_number,
-          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-          due_date: doc.due_date,
-          currency: doc.currency || "EUR",
-          net_amount: doc.net_amount || 0,
-          vat_amount: doc.vat_amount || 0,
-          total_amount: doc.total_amount || 0,
-          vat_number: doc.vat_number,
-          category: doc.category,
-        });
-        if (error) throw error;
-      }
+      // Create expense record for all approved documents
+      const { error } = await supabase.from("expense_records").insert({
+        user_id: user.id,
+        document_id: doc.id,
+        supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
+        invoice_number: doc.invoice_number,
+        invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+        due_date: doc.due_date,
+        currency: doc.currency || "EUR",
+        net_amount: doc.net_amount || 0,
+        vat_amount: doc.vat_amount || 0,
+        total_amount: doc.total_amount || 0,
+        vat_number: doc.vat_number,
+        category: doc.category,
+      });
+      if (error) throw error;
 
       return doc;
     },
