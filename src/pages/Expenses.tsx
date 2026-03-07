@@ -39,6 +39,7 @@ export default function ExpensesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editData, setEditData] = useState<ExpenseEdit | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [signedFileUrl, setSignedFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
@@ -74,16 +75,20 @@ export default function ExpensesPage() {
       try {
         // Fetch as blob to avoid cross-origin issues in preview
         const response = await fetch(signedUrl);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
+        const rawBlob = await response.blob();
+        // Ensure blob has correct MIME type for proper rendering
+        const typedBlob = new Blob([rawBlob], { type: doc.file_type || rawBlob.type });
+        const blobUrl = URL.createObjectURL(typedBlob);
         if (!cancelled) {
           setFileUrl(blobUrl);
+          setSignedFileUrl(signedUrl);
           setFileType(doc.file_type);
           setLoadingFile(false);
         }
       } catch {
         if (!cancelled) {
           setFileUrl(signedUrl);
+          setSignedFileUrl(signedUrl);
           setFileType(doc.file_type);
           setLoadingFile(false);
         }
@@ -115,6 +120,7 @@ export default function ExpensesPage() {
     setSelectedId(null);
     setEditData(null);
     setFileUrl(null);
+    setSignedFileUrl(null);
     setFileType(null);
   };
 
@@ -362,7 +368,7 @@ export default function ExpensesPage() {
                           <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleDownload}>
                             <Download className="h-3 w-3 mr-1" /> Download
                           </Button>
-                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => window.open(fileUrl, "_blank")}>
+                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => window.open(signedFileUrl || fileUrl, "_blank")}>
                             <ExternalLink className="h-3 w-3 mr-1" /> Open
                           </Button>
                         </>
