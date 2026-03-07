@@ -159,6 +159,11 @@ export default function DocumentsPage() {
                         {doc.total_amount && Number(doc.total_amount) > 0
                           ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
                           : "—"}
+                        {(doc as any).extracted_data?.discount_amount != null && (doc as any).extracted_data.discount_amount !== 0 && (
+                          <span className="block text-xs text-green-600 font-normal">
+                            Discount: -{(doc.currency || "EUR")} {Math.abs((doc as any).extracted_data.discount_amount).toFixed(2)}
+                          </span>
+                        )}
                       </td>
                       <td className="p-3">
                         <Badge variant="secondary" className={statusColors[doc.status] || ""}>
@@ -334,6 +339,17 @@ export default function DocumentsPage() {
                     step="0.01"
                     value={editData.total_amount ?? ""}
                     onChange={(e) => setEditData((p) => ({ ...p, total_amount: parseFloat(e.target.value) || 0 }))}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Discount</Label>
+                  <Input
+                    className="h-8 text-sm"
+                    type="number"
+                    step="0.01"
+                    value={(editData as any).discount_amount ?? ""}
+                    onChange={(e) => setEditData((p) => ({ ...p, discount_amount: parseFloat(e.target.value) || 0 }))}
                   />
                 </div>
 

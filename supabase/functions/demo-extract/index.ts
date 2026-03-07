@@ -133,6 +133,7 @@ serve(async (req) => {
                   vat_amount: { type: "number" },
                   total_amount: { type: "number" },
                   vat_number: { type: "string" },
+                  discount_amount: { type: "number", description: "Discount amount if any" },
                   category: { type: "string" },
                   confidence: { type: "number", description: "0-100" },
                 },
