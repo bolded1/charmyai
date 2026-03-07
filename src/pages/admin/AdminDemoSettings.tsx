@@ -67,7 +67,7 @@ export default function AdminDemoSettingsPage() {
     try {
       const entries = Object.entries(settings);
       for (const [key, value] of entries) {
-        await supabase
+        await (supabase as any)
           .from("demo_settings")
           .update({ value: JSON.parse(JSON.stringify(value)), updated_at: new Date().toISOString() })
           .eq("key", key);
