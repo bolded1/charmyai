@@ -113,8 +113,10 @@ export default function SettingsPage() {
     const color = ACCENT_COLORS[accentColor];
     root.style.setProperty("--primary", color.hue);
     root.style.setProperty("--ring", color.hue);
+    root.style.setProperty("--sidebar-primary", color.hue);
     const textHsl = buttonTextColor === "white" ? "0 0% 100%" : "0 0% 0%";
     root.style.setProperty("--primary-foreground", textHsl);
+    root.style.setProperty("--sidebar-primary-foreground", textHsl);
     localStorage.setItem("accent-color", String(accentColor));
     localStorage.setItem("button-text-color", buttonTextColor);
   }, [accentColor, buttonTextColor]);
