@@ -104,12 +104,12 @@
     --muted-foreground:   215 8% 54%;
     --text-on-primary:    0 0% 100%;
 
-    --primary:            160 60% 46%;
-    --primary-foreground: 160 100% 6%;
-    --primary-hover:      160 60% 38%;
-    --brand-soft:         160 30% 14%;
-    --brand-border:       160 35% 26%;
-    --ring:               160 60% 46%;
+    --primary:            224 55% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover:      224 55% 48%;
+    --brand-soft:         224 30% 14%;
+    --brand-border:       224 35% 26%;
+    --ring:               224 55% 55%;
 
     --secondary:            222 15% 17%;
     --secondary-foreground: 210 25% 95%;
