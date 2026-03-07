@@ -278,3 +278,12 @@
   .shadow-theme-md { box-shadow: var(--shadow-md); }
   .shadow-theme-lg { box-shadow: var(--shadow-lg); }
 }
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
