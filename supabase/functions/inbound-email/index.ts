@@ -129,7 +129,7 @@ serve(async (req) => {
         organization_id: org.id,
         sender_email: senderEmail,
         sender_name: senderName,
-        recipient_address: to,
+        recipient_address: recipient,
         subject,
         message_id: messageId,
         attachment_count: attachments.length,
