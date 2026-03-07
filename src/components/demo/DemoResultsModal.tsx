@@ -301,12 +301,20 @@ export function DemoResultsModal({
                           {formatCurrency(extractedData.net_amount, currency)}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
+                       <div className="flex justify-between items-center">
                         <span className="text-[13px] text-muted-foreground">VAT</span>
                         <span className="text-[13px] font-medium tabular-nums">
                           {formatCurrency(extractedData.vat_amount, currency)}
                         </span>
                       </div>
+                      {extractedData.discount_amount != null && extractedData.discount_amount !== 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[13px] text-muted-foreground">Discount</span>
+                          <span className="text-[13px] font-medium tabular-nums text-green-600">
+                            -{formatCurrency(Math.abs(extractedData.discount_amount), currency)}
+                          </span>
+                        </div>
+                      )}
                       <Separator className="!my-2" />
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-semibold">Total</span>

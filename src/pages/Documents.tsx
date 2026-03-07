@@ -338,6 +338,17 @@ export default function DocumentsPage() {
                 </div>
 
                 <div>
+                  <Label className="text-xs text-muted-foreground">Discount</Label>
+                  <Input
+                    className="h-8 text-sm"
+                    type="number"
+                    step="0.01"
+                    value={(editData as any).discount_amount ?? ""}
+                    onChange={(e) => setEditData((p) => ({ ...p, discount_amount: parseFloat(e.target.value) || 0 }))}
+                  />
+                </div>
+
+                <div>
                   <Label className="text-xs text-muted-foreground">Category</Label>
                   <CategorySelect
                     value={editData.category || ""}
