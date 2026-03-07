@@ -46,7 +46,7 @@ export default function AdminDemoSettingsPage() {
 
   const loadSettings = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("demo_settings")
       .select("key, value");
 
