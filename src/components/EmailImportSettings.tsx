@@ -8,6 +8,10 @@ import { Mail, Copy, Check, Loader2, Inbox, AlertTriangle, CheckCircle2, XCircle
 import { useState } from "react";
 import { toast } from "sonner";
 import { useOrganization, useCreateOrganization, useEmailImports, getImportEmailAddress } from "@/hooks/useOrganization";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileRecordCard } from "@/components/ui/responsive-table";
+import { toast } from "sonner";
+import { useOrganization, useCreateOrganization, useEmailImports, getImportEmailAddress } from "@/hooks/useOrganization";
 
 function SectionHeader({ title, description }: { title: string; description: string }) {
   return (
