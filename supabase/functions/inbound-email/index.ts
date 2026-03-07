@@ -20,15 +20,13 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // SendGrid Inbound Parse sends multipart/form-data
+    // Mailgun Inbound Routes sends multipart/form-data
     const formData = await req.formData();
 
-    const to = formData.get("to") as string || "";
+    const recipient = formData.get("recipient") as string || "";
     const from = formData.get("from") as string || "";
     const subject = formData.get("subject") as string || "";
-    const senderIp = formData.get("sender_ip") as string || "";
-    const envelope = formData.get("envelope") as string || "";
-    const headers = formData.get("headers") as string || "";
+    const messageHeaders = formData.get("message-headers") as string || "";
 
     // Extract email and name from "from" field: "John Doe <john@example.com>"
     const fromMatch = from.match(/^(?:"?(.+?)"?\s)?<?([^\s>]+@[^\s>]+)>?$/);
@@ -37,11 +35,11 @@ serve(async (req) => {
 
     // Extract import token from recipient address
     // Format: {token}@imports.appdomain.com or prefix+{token}@imports.appdomain.com
-    const toMatch = to.match(/(?:\+)?([a-f0-9]{32})@/i);
+    const toMatch = recipient.match(/(?:\+)?([a-f0-9]{32})@/i);
     const importToken = toMatch?.[1];
 
     if (!importToken) {
-      console.error("Could not extract import token from:", to);
+      console.error("Could not extract import token from:", recipient);
       return new Response(JSON.stringify({ error: "Invalid import address" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -63,9 +61,17 @@ serve(async (req) => {
       });
     }
 
-    // Extract message ID for dedup
-    const messageIdMatch = headers.match(/Message-I[dD]:\s*<?([^>\s\r\n]+)/);
-    const messageId = messageIdMatch?.[1] || null;
+    // Extract message ID from Mailgun's message-headers (JSON array of [name, value] pairs)
+    let messageId: string | null = null;
+    try {
+      const headersArray = JSON.parse(messageHeaders) as [string, string][];
+      const msgIdHeader = headersArray.find(([name]) => name.toLowerCase() === "message-id");
+      if (msgIdHeader) {
+        messageId = msgIdHeader[1].replace(/^<|>$/g, "");
+      }
+    } catch {
+      // fallback: no message ID
+    }
 
     // Check for duplicate
     if (messageId) {
@@ -84,20 +90,17 @@ serve(async (req) => {
     }
 
     // Collect attachments from form data
+    // Mailgun sends attachments as "attachment-1", "attachment-2", etc.
     const attachments: { file: File; name: string }[] = [];
-    const attachmentInfo = formData.get("attachment-info");
-    
-    // SendGrid sends attachments as numbered fields
-    for (let i = 1; i <= 30; i++) {
-      const file = formData.get(`attachment${i}`) as File | null;
-      if (!file) break;
-      attachments.push({ file, name: file.name || `attachment${i}` });
-    }
+    const attachmentCount = parseInt(formData.get("attachment-count") as string || "0", 10);
 
-    // Also check for unnamed attachment fields
-    const attachment = formData.get("attachment") as File | null;
-    if (attachment) {
-      attachments.push({ file: attachment, name: attachment.name || "attachment" });
+    for (let i = 1; i <= Math.max(attachmentCount, 30); i++) {
+      const file = formData.get(`attachment-${i}`) as File | null;
+      if (!file) {
+        if (i > attachmentCount) break;
+        continue;
+      }
+      attachments.push({ file, name: file.name || `attachment-${i}` });
     }
 
     // Filter supported attachments
@@ -126,7 +129,7 @@ serve(async (req) => {
         organization_id: org.id,
         sender_email: senderEmail,
         sender_name: senderName,
-        recipient_address: to,
+        recipient_address: recipient,
         subject,
         message_id: messageId,
         attachment_count: attachments.length,
