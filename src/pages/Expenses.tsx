@@ -111,6 +111,7 @@ export default function ExpensesPage() {
   };
 
   const closeEdit = () => {
+    if (fileUrl?.startsWith("blob:")) URL.revokeObjectURL(fileUrl);
     setSelectedId(null);
     setEditData(null);
     setFileUrl(null);
