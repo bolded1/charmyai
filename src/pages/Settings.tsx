@@ -74,6 +74,10 @@ export default function SettingsPage() {
   const [logoDark, setLogoDark] = useState<string | null>(null);
   const [iconLight, setIconLight] = useState<string | null>(null);
   const [iconDark, setIconDark] = useState<string | null>(null);
+  const [favicon, setFavicon] = useState<string | null>(null);
+  const [emailHeader, setEmailHeader] = useState<string | null>(null);
+  const [brandColors, setBrandColors] = useState(["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"]);
+  const [brandPreviewMode, setBrandPreviewMode] = useState<"light" | "dark">("light");
 
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
 
