@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
-import { useExpenseRecords, useUpdateExpense } from "@/hooks/useDocuments";
+import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,8 +47,10 @@ export default function ExpensesPage() {
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
+  const deleteExpense = useDeleteExpense();
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
@@ -486,16 +489,44 @@ export default function ExpensesPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1" onClick={closeEdit}>Cancel</Button>
-                <Button size="sm" className="flex-1" onClick={handleSave} disabled={updateExpense.isPending}>
+                <Button size="sm" variant="destructive" onClick={() => setDeleteConfirmId(selectedId)} disabled={deleteExpense.isPending}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                </Button>
+                <div className="flex-1" />
+                <Button size="sm" variant="outline" onClick={closeEdit}>Cancel</Button>
+                <Button size="sm" onClick={handleSave} disabled={updateExpense.isPending}>
                   {updateExpense.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                  Save Changes
+                  Save
                 </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete expense?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently remove this expense record. This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (deleteConfirmId) {
+                  await deleteExpense.mutateAsync(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                  closeEdit();
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
