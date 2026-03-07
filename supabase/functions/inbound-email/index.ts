@@ -458,7 +458,7 @@ serve(async (req) => {
             const url = (item.url || item["attachment-url"]) as string | undefined;
             if (!url) continue;
 
-            const response = await downloadFromMailgun(url, mailgunApiKey);
+            const response = await downloadFromMailgun(url, mailgunApiKey, signedFields);
             if (!response?.ok) {
               console.error("Strategy 4: Failed downloading attachment:", url);
               continue;
