@@ -37,6 +37,35 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const ACCENT_COLORS = [
+  { name: "Emerald", hue: "160 84% 36%" },
+  { name: "Blue", hue: "217 85% 50%" },
+  { name: "Violet", hue: "262 70% 50%" },
+  { name: "Rose", hue: "350 70% 50%" },
+  { name: "Amber", hue: "38 90% 50%" },
+  { name: "Teal", hue: "174 70% 36%" },
+  { name: "Indigo", hue: "234 70% 52%" },
+  { name: "Slate", hue: "220 14% 40%" },
+];
+
+// Apply persisted theme & accent on startup
+function applyPersistedSettings() {
+  const root = document.documentElement;
+  const theme = localStorage.getItem("theme-mode") || "system";
+  if (theme === "dark") root.classList.add("dark");
+  else if (theme === "light") root.classList.remove("dark");
+  else root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const accentIdx = parseInt(localStorage.getItem("accent-color") || "0", 10);
+  const color = ACCENT_COLORS[accentIdx] || ACCENT_COLORS[0];
+  root.style.setProperty("--primary", color.hue);
+  root.style.setProperty("--ring", color.hue);
+
+  const btnText = localStorage.getItem("button-text-color") || "white";
+  root.style.setProperty("--primary-foreground", btnText === "white" ? "0 0% 100%" : "0 0% 0%");
+}
+applyPersistedSettings();
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
