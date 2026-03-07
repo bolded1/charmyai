@@ -132,7 +132,7 @@ export default function ExportsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `doculedger-expenses${suffix}-export.${ext}`;
+      a.download = `charmy-expenses${suffix}-export.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
 
