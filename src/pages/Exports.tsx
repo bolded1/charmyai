@@ -28,11 +28,15 @@ export default function ExportsPage() {
   // Derive available years from income records
   const incomeYears = useMemo(() => {
     const years = new Set<string>();
-    income.forEach((r) => {
-      if (r.invoice_date) years.add(r.invoice_date.slice(0, 4));
-    });
+    income.forEach((r) => { if (r.invoice_date) years.add(r.invoice_date.slice(0, 4)); });
     return Array.from(years).sort().reverse();
   }, [income]);
+
+  const expenseYears = useMemo(() => {
+    const years = new Set<string>();
+    expenses.forEach((r) => { if (r.invoice_date) years.add(r.invoice_date.slice(0, 4)); });
+    return Array.from(years).sort().reverse();
+  }, [expenses]);
 
   const months = [
     { value: "01", label: "January" },
