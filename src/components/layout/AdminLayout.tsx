@@ -22,7 +22,7 @@ export default function AdminLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="marketing min-h-screen flex w-full">
         {/* Desktop sidebar */}
         <div className="hidden md:block">
           <AdminSidebar />
