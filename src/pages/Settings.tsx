@@ -97,6 +97,8 @@ export default function SettingsPage() {
   const [iconLight, setIconLight] = useState<string | null>(null);
   const [iconDark, setIconDark] = useState<string | null>(null);
   const [favicon, setFavicon] = useState<string | null>(null);
+  const [saasLogoLight, setSaasLogoLight] = useState<string | null>(() => localStorage.getItem("saas-logo-light"));
+  const [saasLogoDark, setSaasLogoDark] = useState<string | null>(() => localStorage.getItem("saas-logo-dark"));
   const [emailHeader, setEmailHeader] = useState<string | null>(null);
   const [brandColors, setBrandColors] = useState(["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"]);
   const [brandPreviewMode, setBrandPreviewMode] = useState<"light" | "dark">("light");
