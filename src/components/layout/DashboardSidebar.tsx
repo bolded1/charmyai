@@ -37,6 +37,31 @@ export function DashboardSidebar() {
   const { settings } = useLayoutSettings();
   const showLabels = settings.showSidebarLabels && !collapsed;
 
+  const [brandLogo, setBrandLogo] = useState<string | null>(null);
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    const logo = localStorage.getItem(isDark ? "brand-logo-dark" : "brand-logo-light")
+      || localStorage.getItem("brand-logo-light");
+    setBrandLogo(logo);
+
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.classList.contains("dark");
+      const l = localStorage.getItem(dark ? "brand-logo-dark" : "brand-logo-light")
+        || localStorage.getItem("brand-logo-light");
+      setBrandLogo(l);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    const onStorage = () => {
+      const dark = document.documentElement.classList.contains("dark");
+      const l = localStorage.getItem(dark ? "brand-logo-dark" : "brand-logo-light")
+        || localStorage.getItem("brand-logo-light");
+      setBrandLogo(l);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => { observer.disconnect(); window.removeEventListener("storage", onStorage); };
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
