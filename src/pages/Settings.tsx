@@ -660,10 +660,10 @@ export default function SettingsPage() {
                 <SectionHeader title="Layout" description="Control density and spacing preferences." />
                 <div className="divide-y divide-border">
                   <SettingRow title="Compact View" description="Reduce spacing in tables and lists for denser data display.">
-                    <Switch />
+                    <Switch checked={layoutSettings.compactView} onCheckedChange={(v) => updateLayout({ compactView: v })} />
                   </SettingRow>
                   <SettingRow title="Show Sidebar Labels" description="Display text labels alongside navigation icons.">
-                    <Switch defaultChecked />
+                    <Switch checked={layoutSettings.showSidebarLabels} onCheckedChange={(v) => updateLayout({ showSidebarLabels: v })} />
                   </SettingRow>
                 </div>
               </CardContent>
