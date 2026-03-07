@@ -109,7 +109,7 @@ export default function AdminSettingsPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>From Name</Label>
-                  <Input defaultValue="DocuLedger" />
+                  <Input defaultValue="Charmy" />
                 </div>
                 <div className="space-y-2">
                   <Label>From Email</Label>
