@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 export default function ExportsPage() {
   const [format, setFormat] = useState("csv");
   const [currency, setCurrency] = useState("all");
+  const [expMonth, setExpMonth] = useState("all");
+  const [expYear, setExpYear] = useState("all");
   const [exporting, setExporting] = useState(false);
 
   const [incomeFormat, setIncomeFormat] = useState("csv");
@@ -26,11 +28,15 @@ export default function ExportsPage() {
   // Derive available years from income records
   const incomeYears = useMemo(() => {
     const years = new Set<string>();
-    income.forEach((r) => {
-      if (r.invoice_date) years.add(r.invoice_date.slice(0, 4));
-    });
+    income.forEach((r) => { if (r.invoice_date) years.add(r.invoice_date.slice(0, 4)); });
     return Array.from(years).sort().reverse();
   }, [income]);
+
+  const expenseYears = useMemo(() => {
+    const years = new Set<string>();
+    expenses.forEach((r) => { if (r.invoice_date) years.add(r.invoice_date.slice(0, 4)); });
+    return Array.from(years).sort().reverse();
+  }, [expenses]);
 
   const months = [
     { value: "01", label: "January" },
@@ -52,7 +58,9 @@ export default function ExportsPage() {
     setExporting(true);
 
     try {
-      const records = currency === "all" ? expenses : expenses.filter((e) => e.currency === currency);
+      let records = currency === "all" ? expenses : expenses.filter((e) => e.currency === currency);
+      if (expYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(expYear));
+      if (expMonth !== "all") records = records.filter((r) => r.invoice_date?.slice(5, 7) === expMonth);
 
       const headers = [
         "Date", "Due Date", "Supplier", "Invoice #", "VAT Number",
@@ -74,7 +82,11 @@ export default function ExportsPage() {
       const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
       const ext = format === "csv" ? "csv" : "xls";
       const mime = format === "csv" ? "text/csv" : "application/vnd.ms-excel";
-      const suffix = currency !== "all" ? `-${currency}` : "";
+      const parts: string[] = [];
+      if (currency !== "all") parts.push(currency);
+      if (expYear !== "all") parts.push(expYear);
+      if (expMonth !== "all") parts.push(months.find((m) => m.value === expMonth)?.label || expMonth);
+      const suffix = parts.length > 0 ? `-${parts.join("-")}` : "";
 
       const blob = new Blob([csv], { type: mime });
       const url = URL.createObjectURL(blob);
@@ -187,6 +199,30 @@ export default function ExportsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Year</label>
+              <Select value={expYear} onValueChange={setExpYear}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Years</SelectItem>
+                  {expenseYears.map((y) => (
+                    <SelectItem key={y} value={y}>{y}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Month</label>
+              <Select value={expMonth} onValueChange={setExpMonth}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Months</SelectItem>
+                  {months.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Currency</label>
               <Select value={currency} onValueChange={setCurrency}>
