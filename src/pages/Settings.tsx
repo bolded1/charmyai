@@ -732,7 +732,7 @@ function BrandUploadBox({
       <div
         className={`relative rounded-lg border border-dashed flex items-center justify-center overflow-hidden transition-all cursor-pointer group hover:border-primary/40 ${
           tall ? "h-28" : "h-20"
-        } ${dark ? "bg-[hsl(222,20%,10%)] border-[hsl(222,12%,20%)]" : "bg-muted/20 border-border"}`}
+        } ${dark ? "bg-[hsl(224,18%,10%)] border-[hsl(224,12%,21%)]" : "bg-muted/20 border-border"}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
         onDrop={(e) => {
