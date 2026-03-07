@@ -13,6 +13,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, Upload, X, ImageIcon } from "lucide-react";
+import { ALL_TIMEZONES } from "@/lib/timezones";
 
 const ACCENT_COLORS = [
   { name: "Emerald", hue: "160 84% 36%", darkHue: "160 60% 46%" },
