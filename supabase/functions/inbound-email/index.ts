@@ -386,7 +386,12 @@ serve(async (req) => {
     }
 
     // Strategy 3: Parse "attachments" JSON field → download from URLs
-    const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
+    const mailgunApiKey = normalizeMailgunApiKey(Deno.env.get("MAILGUN_API_KEY"));
+    if (!mailgunApiKey) {
+      console.error("MAILGUN_API_KEY is missing or invalid after normalization");
+    } else {
+      console.log("DIAG: MAILGUN_API_KEY detected", { length: mailgunApiKey.length });
+    }
 
     if (attachments.length === 0 && attachmentsRaw) {
       try {
@@ -412,7 +417,7 @@ serve(async (req) => {
         // Download refs that have URLs
         if (mailgunApiKey) {
           for (const ref of refs.filter((r) => r.url)) {
-            const response = await downloadFromMailgun(ref.url, mailgunApiKey);
+            const response = await downloadFromMailgun(ref.url, mailgunApiKey, signedFields);
             if (!response || !response.ok) {
               console.error("Strategy 3: All download attempts failed for:", ref.url);
               continue;
@@ -437,7 +442,7 @@ serve(async (req) => {
     if (attachments.length === 0 && messageUrl && mailgunApiKey) {
       console.log("Strategy 4: Trying message-url fetch...");
 
-      const messageRes = await downloadFromMailgun(messageUrl, mailgunApiKey);
+      const messageRes = await downloadFromMailgun(messageUrl, mailgunApiKey, signedFields);
 
       if (messageRes?.ok) {
         try {
