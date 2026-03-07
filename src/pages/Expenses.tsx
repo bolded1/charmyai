@@ -9,12 +9,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
-import { useExpenseRecords, useUpdateExpense, getDocumentSignedUrl } from "@/hooks/useDocuments";
+import { useExpenseRecords, useUpdateExpense } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
@@ -39,7 +38,6 @@ export default function ExpensesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editData, setEditData] = useState<ExpenseEdit | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const [signedFileUrl, setSignedFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
@@ -55,59 +53,56 @@ export default function ExpensesPage() {
         if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
         return null;
       });
-      setSignedFileUrl(null);
       setFileType(null);
       return;
     }
 
-    setFileUrl((prev) => {
-      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-      return null;
-    });
-    setSignedFileUrl(null);
+    let cancelled = false;
+    let localBlobUrl: string | null = null;
+    setLoadingFile(true);
     setFileType(null);
 
-    let cancelled = false;
-    setLoadingFile(true);
-
     (async () => {
-      // Get the document record to find file_path and file_type
       const { data: doc } = await supabase
         .from("documents")
         .select("file_path, file_type")
         .eq("id", selectedExpense.document_id)
         .single();
 
-      if (cancelled || !doc) { setLoadingFile(false); return; }
-
-      const signedUrl = await getDocumentSignedUrl(doc.file_path);
-      if (cancelled || !signedUrl) { setLoadingFile(false); return; }
-
-      try {
-        // Fetch as blob to avoid cross-origin issues in preview
-        const response = await fetch(signedUrl);
-        const rawBlob = await response.blob();
-        // Ensure blob has correct MIME type for proper rendering
-        const typedBlob = new Blob([rawBlob], { type: doc.file_type || rawBlob.type });
-        const blobUrl = URL.createObjectURL(typedBlob);
-        if (!cancelled) {
-          setFileUrl(blobUrl);
-          setSignedFileUrl(signedUrl);
-          setFileType(doc.file_type);
-          setLoadingFile(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setFileUrl(signedUrl);
-          setSignedFileUrl(signedUrl);
-          setFileType(doc.file_type);
-          setLoadingFile(false);
-        }
+      if (cancelled || !doc) {
+        setLoadingFile(false);
+        return;
       }
+
+      const { data: fileBlob, error: fileError } = await supabase.storage
+        .from("documents")
+        .download(doc.file_path);
+
+      if (cancelled) return;
+
+      if (fileError || !fileBlob) {
+        setFileUrl(null);
+        setFileType(doc.file_type || null);
+        setLoadingFile(false);
+        return;
+      }
+
+      const typedBlob = new Blob([fileBlob], {
+        type: doc.file_type || fileBlob.type || "application/octet-stream",
+      });
+
+      localBlobUrl = URL.createObjectURL(typedBlob);
+      setFileUrl((prev) => {
+        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return localBlobUrl;
+      });
+      setFileType(doc.file_type || typedBlob.type || null);
+      setLoadingFile(false);
     })();
 
     return () => {
       cancelled = true;
+      if (localBlobUrl) URL.revokeObjectURL(localBlobUrl);
     };
   }, [selectedExpense?.document_id]);
 
@@ -131,7 +126,6 @@ export default function ExpensesPage() {
     setSelectedId(null);
     setEditData(null);
     setFileUrl(null);
-    setSignedFileUrl(null);
     setFileType(null);
   };
 
@@ -141,43 +135,21 @@ export default function ExpensesPage() {
     closeEdit();
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (!fileUrl) return;
-    try {
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = selectedExpense?.supplier_name
-        ? `${selectedExpense.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
-        : "document";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      // Fallback: open in new tab
-      window.open(fileUrl, "_blank");
-    }
+    const a = document.createElement("a");
+    a.href = fileUrl;
+    a.download = selectedExpense?.supplier_name
+      ? `${selectedExpense.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
+      : "document";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
-  const handleOpenFile = async () => {
-    const sourceUrl = signedFileUrl || fileUrl;
-    if (!sourceUrl) return;
-
-    try {
-      const response = await fetch(sourceUrl);
-      const rawBlob = await response.blob();
-      const typedBlob = new Blob([rawBlob], {
-        type: fileType || rawBlob.type || "application/octet-stream",
-      });
-      const blobUrl = URL.createObjectURL(typedBlob);
-      window.open(blobUrl, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-    } catch {
-      window.open(sourceUrl, "_blank", "noopener,noreferrer");
-    }
+  const handleOpenFile = () => {
+    if (!fileUrl) return;
+    window.open(fileUrl, "_blank", "noopener,noreferrer");
   };
 
   // Date range logic
