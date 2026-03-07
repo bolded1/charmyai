@@ -98,91 +98,99 @@
 
   .dark {
     /* ═══════════════════════════════════════════
-       PREMIUM DARK THEME — Refined Structure
+       PREMIUM DARK THEME — Refined & Layered
     ═══════════════════════════════════════════ */
 
-    /* ── Background Layers (stronger separation) ── */
-    --background:    224 32% 6%;     /* Layer 0: Deep base */
-    --background-page: 224 28% 7%;   /* Layer 1: Page canvas */
-    --card:          224 24% 12%;    /* Layer 2: Cards — clearly lifted */
-    --popover:       224 22% 14%;    /* Layer 3: Popovers */
+    /* ── Background Layers ──
+       Key: each layer needs 3-4% lightness jump for visible separation */
+    --background:    222 25% 7%;      /* Layer 0: Deep app shell */
+    --background-page: 222 22% 8.5%;  /* Layer 1: Page canvas */
+    --card:          222 20% 13%;     /* Layer 2: Cards — real lift from background */
+    --popover:       222 18% 16%;     /* Layer 3: Dropdowns/modals — top layer */
 
-    --surface-sunken: 224 32% 6%;
-    --surface-elevated: 224 24% 12%;
-    --surface-hover: 224 22% 15%;
-    --overlay: 224 40% 3%;
+    --surface-sunken: 222 25% 7%;
+    --surface-elevated: 222 20% 13%;
+    --surface-hover: 222 18% 16%;
+    --overlay: 222 30% 4%;
 
-    /* ── Foreground / Text (stronger readability) ── */
-    --foreground:         210 25% 95%;    /* Brighter primary */
-    --card-foreground:    210 25% 95%;
-    --popover-foreground: 210 25% 95%;
-    --text-secondary:     220 12% 62%;
-    --muted-foreground:   220 10% 50%;
+    /* ── Foreground / Text ──
+       Primary: bright enough for crisp readability
+       Secondary: clearly lighter than muted, not washed out
+       Muted: visible but receded — never below 55% lightness */
+    --foreground:         210 30% 96%;
+    --card-foreground:    210 30% 96%;
+    --popover-foreground: 210 30% 96%;
+    --text-secondary:     215 15% 65%;
+    --muted-foreground:   215 10% 55%;
     --text-on-primary:    0 0% 100%;
 
-    /* ── Brand ── */
-    --primary:              160 70% 42%;
-    --primary-foreground:   0 0% 100%;
-    --primary-hover:        160 70% 36%;
-    --brand-soft:           160 40% 12%;
-    --brand-border:         160 40% 25%;
-    --ring:                 160 70% 42%;
+    /* ── Brand / Accent ──
+       Bumped lightness for visibility on dark surfaces */
+    --primary:              160 65% 48%;
+    --primary-foreground:   160 100% 6%;
+    --primary-hover:        160 65% 40%;
+    --brand-soft:           160 35% 14%;
+    --brand-border:         160 40% 28%;
+    --ring:                 160 65% 48%;
 
     /* ── Secondary ── */
-    --secondary:            224 22% 16%;
-    --secondary-foreground: 210 25% 95%;
+    --secondary:            222 18% 17%;
+    --secondary-foreground: 210 30% 96%;
 
     /* ── Muted ── */
-    --muted:             224 22% 16%;
+    --muted:             222 18% 17%;
 
-    /* ── Accent ── */
-    --accent:            224 22% 15%;
-    --accent-foreground: 210 25% 95%;
+    /* ── Accent (hover surfaces) ── */
+    --accent:            222 18% 16%;
+    --accent-foreground: 210 30% 96%;
 
     /* ── Destructive ── */
-    --destructive:            0 62% 45%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive:            0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* ── Borders (more visible in dark) ── */
-    --border:         224 18% 20%;     /* Stronger default */
-    --border-subtle:  224 18% 16%;
-    --border-strong:  224 18% 26%;
-    --input:          224 18% 20%;
+    /* ── Borders ──
+       Visible enough to define sections without being harsh */
+    --border:         222 15% 22%;
+    --border-subtle:  222 15% 18%;
+    --border-strong:  222 15% 28%;
+    --input:          222 15% 22%;
 
-    /* ── Semantic ── */
-    --success:      152 55% 40%;
-    --success-soft:  152 40% 12%;
-    --warning:       38 80% 52%;
-    --warning-soft:  38 60% 12%;
-    --danger:        0 62% 45%;
-    --danger-soft:   0 50% 12%;
-    --info:          217 80% 55%;
-    --info-soft:     217 60% 12%;
+    /* ── Semantic (brighter on dark for readability) ── */
+    --success:      152 55% 45%;
+    --success-soft:  152 35% 14%;
+    --warning:       38 80% 56%;
+    --warning-soft:  38 55% 14%;
+    --danger:        0 60% 50%;
+    --danger-soft:   0 45% 14%;
+    --info:          217 80% 60%;
+    --info-soft:     217 55% 14%;
 
     /* ── Component tokens ── */
-    --input-bg: 224 25% 10%;
-    --input-focus: 160 70% 42%;
-    --table-row-hover: 224 22% 14%;
-    --link-color: 160 70% 50%;
+    --input-bg: 222 22% 11%;
+    --input-focus: 160 65% 48%;
+    --table-row-hover: 222 18% 15%;
+    --link-color: 160 60% 52%;
 
-    /* ── Sidebar ── */
-    --sidebar-background:         224 35% 4%;
-    --sidebar-foreground:         220 12% 55%;
-    --sidebar-primary:            160 70% 42%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             224 28% 10%;
-    --sidebar-accent-foreground:  220 14% 88%;
-    --sidebar-border:             224 25% 12%;
-    --sidebar-ring:               160 70% 42%;
-    --sidebar-active-bg:          224 28% 10%;
-    --sidebar-active-text:        210 20% 95%;
-    --sidebar-muted:              220 12% 42%;
+    /* ── Sidebar ──
+       Darker than main background for depth;
+       Active state clearly contrasts inactive */
+    --sidebar-background:         222 30% 5%;
+    --sidebar-foreground:         215 12% 58%;
+    --sidebar-primary:            160 65% 48%;
+    --sidebar-primary-foreground: 160 100% 6%;
+    --sidebar-accent:             222 22% 11%;
+    --sidebar-accent-foreground:  210 20% 92%;
+    --sidebar-border:             222 20% 13%;
+    --sidebar-ring:               160 65% 48%;
+    --sidebar-active-bg:          160 35% 12%;
+    --sidebar-active-text:        160 60% 70%;
+    --sidebar-muted:              215 10% 45%;
 
-    /* ── Shadows ── */
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.2), 0 1px 2px -1px rgb(0 0 0 / 0.15);
-    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
-    --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.35), 0 4px 8px -4px rgb(0 0 0 / 0.25);
-    --shadow-overlay: 0 12px 40px -8px rgb(0 0 0 / 0.45), 0 4px 12px -4px rgb(0 0 0 / 0.3);
+    /* ── Shadows (subtle glow effect in dark) ── */
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.03);
+    --shadow-overlay: 0 16px 48px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
   }
 }
 
