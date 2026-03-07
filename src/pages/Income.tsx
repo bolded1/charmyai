@@ -61,9 +61,11 @@ export default function IncomePage() {
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { data: income = [], isLoading } = useIncomeRecords();
   const uploadMutation = useUploadIncomeDocument();
   const updateIncome = useUpdateIncome();
+  const deleteIncome = useDeleteIncome();
 
   const selectedRecord = income.find((e) => e.id === selectedId);
 
