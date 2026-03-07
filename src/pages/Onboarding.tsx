@@ -174,21 +174,6 @@ export default function OnboardingPage() {
               </div>
             </div>
           )}
-          {step === 3 && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Invite team members to collaborate on document processing.</p>
-              {[1, 2].map((i) => (
-                <div key={i} className="grid grid-cols-3 gap-3">
-                  <Input placeholder="First name" />
-                  <Input placeholder="Last name" />
-                  <Input placeholder="Email address" />
-                </div>
-              ))}
-              <Button variant="ghost" size="sm" className="w-full" onClick={next}>
-                Skip for now
-              </Button>
-            </div>
-          )}
 
           <div className="flex items-center justify-between mt-6 pt-4 border-t">
             <Button variant="ghost" size="sm" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}>
