@@ -446,8 +446,6 @@ export default function IncomePage() {
                       </td>
                       <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                       <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{doc.due_date || "—"}</td>
-                      <td className="p-4"><Badge variant="secondary" className="text-xs font-normal">{doc.category || "—"}</Badge></td>
                       <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
                       <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
                       <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
