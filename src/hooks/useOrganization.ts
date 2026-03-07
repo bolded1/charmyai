@@ -57,10 +57,11 @@ export function useUpdateOrganization() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+    mutationFn: async (updates: { id: string; name?: string; logo_light?: string | null; logo_dark?: string | null }) => {
+      const { id, ...fields } = updates;
       const { data, error } = await supabase
         .from("organizations")
-        .update({ name })
+        .update(fields)
         .eq("id", id)
         .select()
         .single();
@@ -70,6 +71,7 @@ export function useUpdateOrganization() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization"] });
+      window.dispatchEvent(new Event("brand-logo-changed"));
     },
     onError: (err: Error) => toast.error(err.message),
   });
