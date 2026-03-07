@@ -142,7 +142,7 @@ export default function DashboardLayout() {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-8 overflow-auto surface-sunken">
+          <main className={`flex-1 overflow-auto surface-sunken ${layoutSettings.compactView ? "p-4" : "p-8"}`}>
             <Outlet />
           </main>
         </div>
