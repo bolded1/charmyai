@@ -58,20 +58,6 @@ export default function DashboardPage() {
 
   const isLoading = docsLoading || expLoading;
 
-  const expensesByCurrency: Record<string, number> = {};
-  expenses.forEach((e) => {
-    const cur = e.currency || "EUR";
-    expensesByCurrency[cur] = (expensesByCurrency[cur] || 0) + Number(e.total_amount || 0);
-  });
-
-  const stats = [
-    ...Object.entries(expensesByCurrency).map(([cur, total]) => ({
-      label: `Expenses (${cur})`,
-      value: `${cur === "EUR" ? "€" : "$"}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      icon: Receipt,
-      sub: `${expenses.filter(e => e.currency === cur).length} records`,
-    })),
-  ];
 
   if (isLoading) {
     return (
