@@ -21,12 +21,45 @@ export default function ExpensesPage() {
     return matchesSearch && matchesCurrency;
   });
 
+  // Totals by currency
+  const totalEur = expenses
+    .filter((e) => e.currency === "EUR")
+    .reduce((sum, e) => sum + Number(e.total_amount || 0), 0);
+  const totalUsd = expenses
+    .filter((e) => e.currency === "USD")
+    .reduce((sum, e) => sum + Number(e.total_amount || 0), 0);
+
   if (!user) {
     return <div className="text-center py-12 text-muted-foreground">Please log in to view expenses.</div>;
   }
 
   return (
     <div className="space-y-4">
+      {/* Currency summary cards */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-muted-foreground">Expenses EUR</span>
+              <Badge variant="outline" className="text-xs">EUR</Badge>
+            </div>
+            <div className="text-2xl font-bold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-xs text-muted-foreground mt-1">{expenses.filter(e => e.currency === "EUR").length} records</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-muted-foreground">Expenses USD</span>
+              <Badge variant="outline" className="text-xs">USD</Badge>
+            </div>
+            <div className="text-2xl font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-xs text-muted-foreground mt-1">{expenses.filter(e => e.currency === "USD").length} records</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search & filter */}
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
