@@ -23,6 +23,7 @@ export type Database = {
           customer_name: string | null
           document_type: string | null
           due_date: string | null
+          email_import_id: string | null
           extracted_data: Json | null
           file_name: string
           file_path: string
@@ -33,6 +34,7 @@ export type Database = {
           invoice_number: string | null
           net_amount: number | null
           ocr_text: string | null
+          source: string
           status: string
           supplier_name: string | null
           total_amount: number | null
@@ -51,6 +53,7 @@ export type Database = {
           customer_name?: string | null
           document_type?: string | null
           due_date?: string | null
+          email_import_id?: string | null
           extracted_data?: Json | null
           file_name: string
           file_path: string
@@ -61,6 +64,7 @@ export type Database = {
           invoice_number?: string | null
           net_amount?: number | null
           ocr_text?: string | null
+          source?: string
           status?: string
           supplier_name?: string | null
           total_amount?: number | null
@@ -79,6 +83,7 @@ export type Database = {
           customer_name?: string | null
           document_type?: string | null
           due_date?: string | null
+          email_import_id?: string | null
           extracted_data?: Json | null
           file_name?: string
           file_path?: string
@@ -89,6 +94,7 @@ export type Database = {
           invoice_number?: string | null
           net_amount?: number | null
           ocr_text?: string | null
+          source?: string
           status?: string
           supplier_name?: string | null
           total_amount?: number | null
@@ -99,7 +105,71 @@ export type Database = {
           vat_amount?: number | null
           vat_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "documents_email_import_id_fkey"
+            columns: ["email_import_id"]
+            isOneToOne: false
+            referencedRelation: "email_imports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_imports: {
+        Row: {
+          attachment_count: number
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          organization_id: string
+          processed_count: number
+          received_at: string
+          recipient_address: string | null
+          sender_email: string | null
+          sender_name: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          attachment_count?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          organization_id: string
+          processed_count?: number
+          received_at?: string
+          recipient_address?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          attachment_count?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          organization_id?: string
+          processed_count?: number
+          received_at?: string
+          recipient_address?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_imports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       expense_categories: {
         Row: {
@@ -300,6 +370,33 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          import_email_token: string
+          name: string
+          owner_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          import_email_token?: string
+          name: string
+          owner_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          import_email_token?: string
+          name?: string
+          owner_user_id?: string
+          updated_at?: string
         }
         Relationships: []
       }

@@ -15,6 +15,7 @@ import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
+import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 
 const ACCENT_COLORS = [
@@ -207,6 +208,7 @@ export default function SettingsPage() {
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="organization">Organization</TabsTrigger>
+          <TabsTrigger value="email-import">Email Import</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
@@ -384,6 +386,11 @@ export default function SettingsPage() {
             </Card>
 
           </div>
+        </TabsContent>
+
+        {/* ════════════════ EMAIL IMPORT ════════════════ */}
+        <TabsContent value="email-import">
+          <EmailImportSettings />
         </TabsContent>
 
         {/* ════════════════ APPEARANCE ════════════════ */}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2, Mail } from "lucide-react";
 import { useState } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -120,17 +120,18 @@ export default function DocumentsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead>
-                  <tr className="border-b text-left">
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Document</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Supplier/Customer</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Amount</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground"></th>
-                  </tr>
-                </thead>
+                 <thead>
+                   <tr className="border-b text-left">
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Document</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Source</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Supplier/Customer</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Amount</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground"></th>
+                   </tr>
+                 </thead>
                 <tbody>
                   {filtered.map((doc) => (
                     <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
@@ -139,6 +140,15 @@ export default function DocumentsPage() {
                           <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                           <span className="text-sm font-medium truncate max-w-[200px]">{doc.file_name}</span>
                         </div>
+                      </td>
+                      <td className="p-3">
+                        {(doc as any).source === "email_import" ? (
+                          <Badge variant="secondary" className="text-[10px] gap-1">
+                            <Mail className="h-3 w-3" /> Email
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Upload</span>
+                        )}
                       </td>
                       <td className="p-3 text-sm text-muted-foreground capitalize">
                         {(doc.document_type || "—").replace("_", " ")}
