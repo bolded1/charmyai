@@ -91,7 +91,7 @@ export default function TeamPage() {
       <Card>
         <CardContent className="p-0">
           {/* Header */}
-          <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-4 py-3 border-b bg-muted/30 text-xs font-medium text-muted-foreground">
+          <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-border bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             <span>Member</span>
             <span>Job Title</span>
             <span className="w-24 text-center">Role</span>
@@ -99,7 +99,7 @@ export default function TeamPage() {
             <span className="w-24 text-right">Last Active</span>
           </div>
           {teamMembers.map((member, i) => (
-            <div key={member.id} className={`grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 items-center px-4 py-3 ${i < teamMembers.length - 1 ? 'border-b' : ''}`}>
+            <div key={member.id} className={`grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 items-center px-4 py-3 transition-colors hover:bg-accent/50 ${i < teamMembers.length - 1 ? 'border-b border-border-subtle' : ''}`}>
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-9 w-9 shrink-0">
                   {member.avatar && <AvatarImage src={member.avatar} />}
@@ -118,7 +118,7 @@ export default function TeamPage() {
                 {member.status === 'pending' ? (
                   <Badge variant="outline" className="text-xs">Pending</Badge>
                 ) : (
-                  <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">Active</Badge>
+                  <Badge variant="success" className="text-xs">Active</Badge>
                 )}
               </div>
               <p className="w-24 text-xs text-muted-foreground text-right">

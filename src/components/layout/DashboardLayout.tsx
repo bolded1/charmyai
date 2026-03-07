@@ -42,10 +42,10 @@ export default function DashboardLayout() {
       <div className="min-h-screen flex w-full bg-background">
         <DashboardSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-13 border-b border-border bg-card flex items-center justify-between px-5 shrink-0">
+          <header className="h-13 border-b border-border bg-card flex items-center justify-between px-5 shrink-0 shadow-theme-sm">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-sm font-semibold text-foreground">{pageTitle}</h1>
+              <h1 className="text-[13px] font-semibold text-foreground tracking-tight">{pageTitle}</h1>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="relative h-8 w-8 text-muted-foreground hover:text-foreground">
