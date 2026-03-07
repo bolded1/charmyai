@@ -68,6 +68,8 @@ serve(async (req) => {
     }
     const base64 = btoa(binary);
     const mimeType = doc.file_type === "application/pdf" ? "application/pdf" : doc.file_type;
+    const isPdf = doc.file_type === "application/pdf";
+    const model = isPdf ? "google/gemini-2.5-flash" : "openai/gpt-5";
 
     // Call AI to extract data
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -77,7 +79,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           {
             role: "system",
