@@ -148,22 +148,19 @@ export default function IncomePage() {
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            className={`relative p-8 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg ${
+            className={`relative p-4 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg ${
               dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-accent/50"
             }`}
             onClick={() => document.getElementById("income-file-input")?.click()}
           >
-            <div className={`mx-auto mb-3 h-12 w-12 rounded-xl flex items-center justify-center transition-colors ${dragOver ? "bg-primary/10" : "bg-muted"}`}>
-              <Upload className={`h-5 w-5 transition-colors ${dragOver ? "text-primary" : "text-muted-foreground"}`} />
-            </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">{dragOver ? "Drop to upload" : "Upload Sales Invoices"}</h3>
-            <p className="text-sm text-muted-foreground mb-3 max-w-sm mx-auto">
-              Upload your company's invoices here. AI will extract the data and add it to your income records automatically.
-            </p>
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-xs px-2.5 py-0.5">PDF</Badge>
-              <Badge variant="secondary" className="text-xs px-2.5 py-0.5">PNG</Badge>
-              <Badge variant="secondary" className="text-xs px-2.5 py-0.5">JPG</Badge>
+            <div className="flex items-center justify-center gap-3">
+              <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-colors ${dragOver ? "bg-primary/10" : "bg-muted"}`}>
+                <Upload className={`h-4 w-4 transition-colors ${dragOver ? "text-primary" : "text-muted-foreground"}`} />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-semibold text-foreground">{dragOver ? "Drop to upload" : "Upload Sales Invoices"}</h3>
+                <p className="text-xs text-muted-foreground">Drop invoices here or click to browse · PDF, PNG, JPG</p>
+              </div>
             </div>
             <input id="income-file-input" type="file" className="hidden" multiple accept=".pdf,.png,.jpg,.jpeg" onChange={handleFileSelect} />
           </div>
