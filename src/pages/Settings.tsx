@@ -499,7 +499,54 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Theme */}
+            {/* SaaS Logo - Public Pages */}
+            <Card>
+              <CardContent className="p-6">
+                <SectionHeader title="SaaS Logo" description="Used on the homepage, login, signup, and footer. Upload separate versions for light and dark themes." />
+                
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setBrandPreviewMode("light")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                        brandPreviewMode === "light" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
+                      }`}
+                    >
+                      <Sun className="h-3 w-3" /> Light
+                    </button>
+                    <button
+                      onClick={() => setBrandPreviewMode("dark")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                        brandPreviewMode === "dark" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
+                      }`}
+                    >
+                      <Moon className="h-3 w-3" /> Dark
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`rounded-xl border p-5 transition-colors ${
+                  brandPreviewMode === "dark" ? "bg-[hsl(222,20%,8%)] border-[hsl(222,12%,18%)]" : "bg-muted/20 border-border"
+                }`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <ImageIcon className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
+                    <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,25%,90%)]" : "text-foreground"}`}>Public Logo</span>
+                    <span className={`text-[10px] ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/60"}`}>Recommended: 240 × 60 px, PNG or SVG with transparent background</span>
+                  </div>
+                  <BrandUploadBox
+                    label="SaaS Logo"
+                    hint="Shown on homepage, login, signup pages"
+                    image={brandPreviewMode === "light" ? saasLogoLight : saasLogoDark}
+                    onUpload={handleImageUpload(brandPreviewMode === "light" ? setSaasLogoLight : setSaasLogoDark)}
+                    onRemove={() => (brandPreviewMode === "light" ? setSaasLogoLight : setSaasLogoDark)(null)}
+                    tall
+                    dark={brandPreviewMode === "dark"}
+                    wide
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="p-6">
                 <SectionHeader title="Theme" description="Choose how the interface looks." />
