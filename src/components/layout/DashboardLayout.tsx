@@ -2,17 +2,19 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Bell, User, Building2, Palette, UsersRound, CreditCard, HelpCircle, Keyboard, LogOut } from "lucide-react";
+import { Loader2, Bell, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
-  DropdownMenuGroup,
+  DropdownMenuGroup, DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useKeyboardShortcuts, MOD_LABEL, SHIFT_LABEL } from "@/hooks/useKeyboardShortcuts";
+import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -21,6 +23,9 @@ export default function DashboardLayout() {
   const { user, loading } = useAuth();
   const { profile, displayName, initials } = useProfile();
   const [hasNotifications] = useState(true);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
   if (loading) {
     return (
@@ -108,6 +113,7 @@ export default function DashboardLayout() {
                     <DropdownMenuItem onClick={() => navigate("/app/settings")} className="px-3">
                       <User className="h-3.5 w-3.5 mr-2" />
                       <span className="text-[13px]">My Profile</span>
+                      <DropdownMenuShortcut>{MOD_LABEL},</DropdownMenuShortcut>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/app/settings?tab=organization")} className="px-3">
                       <Building2 className="h-3.5 w-3.5 mr-2" />
@@ -130,9 +136,10 @@ export default function DashboardLayout() {
                       <HelpCircle className="h-3.5 w-3.5 mr-2" />
                       <span className="text-[13px]">Help & Documentation</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="px-3">
+                    <DropdownMenuItem className="px-3" onClick={() => setShortcutsOpen(true)}>
                       <Keyboard className="h-3.5 w-3.5 mr-2" />
                       <span className="text-[13px]">Keyboard Shortcuts</span>
+                      <DropdownMenuShortcut>{MOD_LABEL}/</DropdownMenuShortcut>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
@@ -151,6 +158,8 @@ export default function DashboardLayout() {
           </main>
         </div>
       </div>
+
+      <KeyboardShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} shortcuts={shortcuts} />
     </SidebarProvider>
   );
 }
