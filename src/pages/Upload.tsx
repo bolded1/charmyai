@@ -26,10 +26,21 @@ interface UploadingFile {
 export default function UploadPage() {
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [copied, setCopied] = useState(false);
   const uploadMutation = useUploadDocument();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: documents = [] } = useDocuments();
+  const { importEmailAddress } = useOrganization();
+
+  const copyEmail = () => {
+    if (importEmailAddress) {
+      navigator.clipboard.writeText(importEmailAddress);
+      setCopied(true);
+      toast.success("Email address copied!");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const processing = documents.filter((d) => d.status === "processing");
   const needsReview = documents.filter((d) => d.status === "processed" || d.status === "needs_review");
