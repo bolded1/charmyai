@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 const SUPPORTED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
+const SUPPORTED_EXTS = ["pdf", "png", "jpg", "jpeg"];
 const MAX_ATTACHMENT_SIZE = 20 * 1024 * 1024; // 20MB
 
 type AttachmentRef = {
@@ -16,129 +17,139 @@ type AttachmentRef = {
   contentType?: string;
 };
 
-function getAttachmentUrlCandidates(url: string): string[] {
-  const candidates = [url];
-
-  try {
-    const parsed = new URL(url);
-    const idxMatch = parsed.pathname.match(/\/attachments\/(\d+)$/);
-
-    // Some providers announce /attachments/0 but file exists at /attachments/1
-    if (idxMatch) {
-      const idx = Number(idxMatch[1]);
-      if (Number.isFinite(idx)) {
-        const plusOne = new URL(url);
-        plusOne.pathname = parsed.pathname.replace(/\/attachments\/\d+$/, `/attachments/${idx + 1}`);
-        candidates.push(plusOne.toString());
-      }
-    }
-
-    // Regional fallback hosts observed in Mailgun routes
-    if (parsed.hostname === "storage-europe-west1.api.mailgun.net") {
-      const euHost = new URL(url);
-      euHost.hostname = "api.eu.mailgun.net";
-      candidates.push(euHost.toString());
-
-      const usHost = new URL(url);
-      usHost.hostname = "api.mailgun.net";
-      candidates.push(usHost.toString());
-    }
-  } catch {
-    // keep original URL only
-  }
-
-  return [...new Set(candidates)];
-}
-
-function getMessageUrlCandidates(url: string): string[] {
-  const candidates = [url];
-
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === "storage-europe-west1.api.mailgun.net") {
-      const euHost = new URL(url);
-      euHost.hostname = "api.eu.mailgun.net";
-      candidates.push(euHost.toString());
-
-      const usHost = new URL(url);
-      usHost.hostname = "api.mailgun.net";
-      candidates.push(usHost.toString());
-    }
-  } catch {
-    // keep original URL only
-  }
-
-  return [...new Set(candidates)];
-}
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function fetchWithRetry(url: string, init: RequestInit, attempts = 4): Promise<Response | null> {
+async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Promise<Response | null> {
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
       const response = await fetch(url, init);
+      if (response.ok) return response;
 
-      // Message/attachment can be briefly unavailable right after webhook fires
-      const shouldRetry = [404, 408, 425, 429, 500, 502, 503, 504].includes(response.status);
-      if (!response.ok && shouldRetry && attempt < attempts) {
-        await sleep(250 * attempt);
+      // Retry on transient errors
+      if ([404, 408, 429, 500, 502, 503, 504].includes(response.status) && attempt < attempts) {
+        // Consume body to avoid resource leak
+        await response.text();
+        await sleep(500 * attempt);
         continue;
       }
-
       return response;
     } catch {
       if (attempt < attempts) {
-        await sleep(250 * attempt);
+        await sleep(500 * attempt);
         continue;
       }
     }
+  }
+  return null;
+}
+
+function getApiHosts(originalUrl: string): string[] {
+  const hosts: string[] = [];
+  try {
+    const parsed = new URL(originalUrl);
+    hosts.push(parsed.hostname);
+
+    // Add regional variants
+    const variants = [
+      "api.eu.mailgun.net",
+      "storage-europe-west1.api.mailgun.net",
+      "api.mailgun.net",
+    ];
+    for (const v of variants) {
+      if (!hosts.includes(v)) hosts.push(v);
+    }
+  } catch {
+    // keep empty
+  }
+  return hosts;
+}
+
+async function downloadFromMailgun(
+  url: string,
+  mailgunApiKey: string,
+): Promise<Response | null> {
+  const headers = { Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}` };
+
+  // Try original URL first
+  let response = await fetchWithRetry(url, { headers });
+  if (response?.ok) return response;
+  if (response) await response.text().catch(() => {}); // consume body
+
+  // Try alternate hosts
+  const altHosts = getApiHosts(url);
+  try {
+    const parsed = new URL(url);
+    for (const host of altHosts) {
+      if (host === parsed.hostname) continue;
+      const altUrl = new URL(url);
+      altUrl.hostname = host;
+      response = await fetchWithRetry(altUrl.toString(), { headers });
+      if (response?.ok) return response;
+      if (response) await response.text().catch(() => {}); // consume body
+    }
+  } catch {
+    // URL parsing error
   }
 
   return null;
 }
 
-async function downloadAttachmentFromRef(ref: AttachmentRef, mailgunApiKey?: string | null): Promise<{ file: File; name: string } | null> {
-  const headers: Record<string, string> = {};
-  if (mailgunApiKey) {
-    headers.Authorization = `Basic ${btoa(`api:${mailgunApiKey}`)}`;
-  }
+// Parse MIME boundary and extract attachment parts from raw MIME body
+function parseMimeAttachments(mimeBody: string): { name: string; contentType: string; data: Uint8Array }[] {
+  const results: { name: string; contentType: string; data: Uint8Array }[] = [];
 
-  const candidates = getAttachmentUrlCandidates(ref.url);
+  // Find boundary from Content-Type header in MIME
+  const boundaryMatch = mimeBody.match(/boundary="?([^"\r\n;]+)"?/i);
+  if (!boundaryMatch) return results;
 
-  for (const candidate of candidates) {
-    try {
-      const response = await fetchWithRetry(candidate, { headers });
-      if (!response || !response.ok) {
-        const status = response?.status ?? "no-response";
-        console.error(`Failed downloading attachment URL (${status}):`, candidate);
+  const boundary = boundaryMatch[1];
+  const parts = mimeBody.split(`--${boundary}`);
+
+  for (const part of parts) {
+    if (part.trim() === "--" || part.trim() === "") continue;
+
+    // Check if this part is an attachment
+    const contentDisp = part.match(/Content-Disposition:\s*attachment[^;\r\n]*(?:;\s*filename="?([^"\r\n]+)"?)?/i);
+    if (!contentDisp) continue;
+
+    const filename = contentDisp[1]?.trim() || "attachment";
+    const ext = filename.toLowerCase().split(".").pop() || "";
+    if (!SUPPORTED_EXTS.includes(ext)) continue;
+
+    const contentTypeMatch = part.match(/Content-Type:\s*([^\r\n;]+)/i);
+    const contentType = contentTypeMatch?.[1]?.trim() || "application/octet-stream";
+
+    const encodingMatch = part.match(/Content-Transfer-Encoding:\s*([^\r\n]+)/i);
+    const encoding = encodingMatch?.[1]?.trim().toLowerCase() || "";
+
+    // Split headers from body (double newline)
+    const headerEnd = part.indexOf("\r\n\r\n");
+    if (headerEnd === -1) continue;
+
+    const bodyStr = part.substring(headerEnd + 4).trim();
+
+    let data: Uint8Array;
+    if (encoding === "base64") {
+      try {
+        const binary = atob(bodyStr.replace(/[\r\n\s]/g, ""));
+        data = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          data[i] = binary.charCodeAt(i);
+        }
+      } catch {
         continue;
       }
+    } else {
+      // 7bit, 8bit, or quoted-printable — treat as raw text
+      data = new TextEncoder().encode(bodyStr);
+    }
 
-      const blob = await response.blob();
-      if (!blob || blob.size === 0) continue;
-
-      let filename = ref.name || "attachment";
-      if (!ref.name) {
-        try {
-          const pathname = new URL(candidate).pathname;
-          const lastSegment = pathname.split("/").pop();
-          if (lastSegment) filename = decodeURIComponent(lastSegment);
-        } catch {
-          // keep fallback filename
-        }
-      }
-
-      const file = new File([blob], filename, {
-        type: ref.contentType || blob.type || "application/octet-stream",
-      });
-
-      return { file, name: file.name };
-    } catch (downloadErr) {
-      console.error("Attachment URL download error:", downloadErr);
+    if (data.length > 0 && data.length <= MAX_ATTACHMENT_SIZE) {
+      results.push({ name: filename, contentType, data });
     }
   }
 
-  return null;
+  return results;
 }
 
 serve(async (req) => {
@@ -159,14 +170,38 @@ serve(async (req) => {
     const subject = formData.get("subject") as string || "";
     const messageHeaders = formData.get("message-headers") as string || "";
     const messageUrl = formData.get("message-url") as string || "";
+    const bodyMime = formData.get("body-mime") as string || "";
 
-    // Extract email and name from "from" field: "John Doe <john@example.com>"
+    // === DIAGNOSTIC LOGGING ===
+    const fieldDiag: string[] = [];
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        fieldDiag.push(`${key}=[File: ${value.name}, type=${value.type}, size=${value.size}]`);
+      } else {
+        const str = String(value);
+        fieldDiag.push(`${key}=[${str.length > 80 ? str.substring(0, 80) + "..." : str}]`);
+      }
+    }
+    console.log("DIAG: All form fields:", fieldDiag.join(" | "));
+
+    const attachmentsRaw = formData.get("attachments") as string || "";
+    if (attachmentsRaw) {
+      console.log("DIAG: attachments field value:", attachmentsRaw.substring(0, 500));
+    }
+    if (messageUrl) {
+      console.log("DIAG: message-url:", messageUrl);
+    }
+    if (bodyMime) {
+      console.log("DIAG: body-mime present, length:", bodyMime.length);
+    }
+    // === END DIAGNOSTIC ===
+
+    // Extract email and name from "from" field
     const fromMatch = from.match(/^(?:"?(.+?)"?\s)?<?([^\s>]+@[^\s>]+)>?$/);
     const senderName = fromMatch?.[1] || "";
     const senderEmail = fromMatch?.[2] || from;
 
     // Extract import token from recipient address
-    // Format: {token}@imports.appdomain.com or prefix+{token}@imports.appdomain.com
     const toMatch = recipient.match(/(?:\+)?([a-f0-9]{32})@/i);
     const importToken = toMatch?.[1];
 
@@ -193,7 +228,7 @@ serve(async (req) => {
       });
     }
 
-    // Extract message ID from Mailgun's message-headers (JSON array of [name, value] pairs)
+    // Extract message ID
     let messageId: string | null = null;
     try {
       const headersArray = JSON.parse(messageHeaders) as [string, string][];
@@ -202,7 +237,7 @@ serve(async (req) => {
         messageId = msgIdHeader[1].replace(/^<|>$/g, "");
       }
     } catch {
-      // fallback: no message ID
+      // fallback
     }
 
     // Check for duplicate
@@ -221,13 +256,18 @@ serve(async (req) => {
       }
     }
 
-    // Collect attachments from form data
-    // Mailgun can send files directly OR send an "attachments" JSON with downloadable URLs (store+notify)
+    // ═══════════════════════════════════════════
+    //  ATTACHMENT COLLECTION (multiple strategies)
+    // ═══════════════════════════════════════════
     const attachments: { file: File; name: string }[] = [];
     let announcedAttachmentCount = 0;
 
-    // Method 1: Try "attachment-N" format (Mailgun legacy)
+    // Strategy 1: Direct file parts ("attachment-N" or "attachment" entries)
     const attachmentCount = parseInt(formData.get("attachment-count") as string || "0", 10);
+    if (attachmentCount > 0) {
+      announcedAttachmentCount = attachmentCount;
+    }
+
     for (let i = 1; i <= Math.max(attachmentCount, 30); i++) {
       const file = formData.get(`attachment-${i}`) as File | null;
       if (!file) {
@@ -237,7 +277,6 @@ serve(async (req) => {
       attachments.push({ file, name: file.name || `attachment-${i}` });
     }
 
-    // Method 2: Try "attachment" entries (Mailgun direct multipart)
     if (attachments.length === 0) {
       const allEntries = formData.getAll("attachment");
       for (const entry of allEntries) {
@@ -247,144 +286,127 @@ serve(async (req) => {
       }
     }
 
-    // Method 3: Scan all form fields for File objects (catch-all)
+    // Strategy 2: Scan ALL form fields for File objects
     if (attachments.length === 0) {
       for (const [key, value] of formData.entries()) {
         if (value instanceof File && value.size > 0 && !["inline", "content-id-map"].includes(key)) {
-          const type = value.type?.toLowerCase() || "";
-          const ext = value.name?.toLowerCase().split(".").pop() || "";
-          if (SUPPORTED_TYPES.includes(type) || ["pdf", "png", "jpg", "jpeg"].includes(ext)) {
-            attachments.push({ file: value, name: value.name || key });
-          }
+          attachments.push({ file: value, name: value.name || key });
         }
       }
     }
 
-    // Method 4: Mailgun store+notify format - "attachments" can be JSON refs or a count
-    if (attachments.length === 0) {
-      const attachmentsField = formData.get("attachments");
-      if (typeof attachmentsField === "string" && attachmentsField.trim()) {
-        try {
-          const parsed = JSON.parse(attachmentsField) as unknown;
+    // Strategy 3: Parse "attachments" JSON field → download from URLs
+    const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
 
-          const refs: AttachmentRef[] = [];
-          if (Array.isArray(parsed)) {
-            for (const item of parsed) {
-              if (item && typeof item === "object") {
-                const obj = item as Record<string, unknown>;
-                const url = (obj.url || obj["attachment-url"] || obj.download_url) as string | undefined;
-                if (url) {
-                  refs.push({
-                    url,
-                    name: (obj.name || obj.filename) as string | undefined,
-                    contentType: (obj["content-type"] || obj.contentType || obj.mimetype) as string | undefined,
-                  });
-                }
-              }
+    if (attachments.length === 0 && attachmentsRaw) {
+      try {
+        const parsed = JSON.parse(attachmentsRaw) as unknown;
+        const refs: AttachmentRef[] = [];
+
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            if (item && typeof item === "object") {
+              const obj = item as Record<string, unknown>;
+              const url = (obj.url || obj["attachment-url"] || obj.download_url) as string | undefined;
+              refs.push({
+                url: url || "",
+                name: (obj.name || obj.filename) as string | undefined,
+                contentType: (obj["content-type"] || obj.contentType || obj.mimetype) as string | undefined,
+              });
             }
-          } else if (parsed && typeof parsed === "object") {
-            for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
-              if (typeof value === "string") {
-                refs.push({ url: value, name: key });
-              } else if (value && typeof value === "object") {
-                const obj = value as Record<string, unknown>;
-                const url = (obj.url || obj["attachment-url"] || obj.download_url) as string | undefined;
-                if (url) {
-                  refs.push({
-                    url,
-                    name: (obj.name || obj.filename || key) as string | undefined,
-                    contentType: (obj["content-type"] || obj.contentType || obj.mimetype) as string | undefined,
-                  });
-                }
-              }
-            }
-          } else if (typeof parsed === "number") {
-            announcedAttachmentCount = parsed;
           }
-
-          announcedAttachmentCount = Math.max(announcedAttachmentCount, refs.length);
-          const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
-
-          for (const ref of refs) {
-            const downloaded = await downloadAttachmentFromRef(ref, mailgunApiKey);
-            if (downloaded) attachments.push(downloaded);
-          }
-        } catch (parseErr) {
-          console.error("Could not parse Mailgun attachments field:", parseErr);
         }
-      }
-    }
 
-    // Method 5: Fetch metadata from Mailgun message-url, then download attachments
-    if (attachments.length === 0 && messageUrl) {
-      const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
+        announcedAttachmentCount = Math.max(announcedAttachmentCount, refs.length);
 
-      if (!mailgunApiKey) {
-        console.error("MAILGUN_API_KEY is missing; cannot fetch message-url attachments");
-      } else {
-        try {
-          const headers = {
-            Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}`,
-          };
-
-          const messageUrlCandidates = getMessageUrlCandidates(messageUrl);
-          let messagePayload: Record<string, unknown> | null = null;
-          let resolvedMessageUrl: string | null = null;
-
-          for (const candidate of messageUrlCandidates) {
-            const messageRes = await fetchWithRetry(candidate, { headers });
-            if (!messageRes || !messageRes.ok) {
-              const status = messageRes?.status ?? "no-response";
-              console.error(`Failed fetching message-url (${status}):`, candidate);
+        // Download refs that have URLs
+        if (mailgunApiKey) {
+          for (const ref of refs.filter((r) => r.url)) {
+            const response = await downloadFromMailgun(ref.url, mailgunApiKey);
+            if (!response || !response.ok) {
+              console.error("Strategy 3: All download attempts failed for:", ref.url);
               continue;
             }
 
-            messagePayload = await messageRes.json() as Record<string, unknown>;
-            resolvedMessageUrl = candidate;
-            break;
+            const blob = await response.blob();
+            if (!blob || blob.size === 0) continue;
+
+            const filename = ref.name || "attachment";
+            const file = new File([blob], filename, {
+              type: ref.contentType || blob.type || "application/octet-stream",
+            });
+            attachments.push({ file, name: file.name });
           }
-
-          if (messagePayload && resolvedMessageUrl) {
-            const payloadAttachments = Array.isArray(messagePayload.attachments)
-              ? messagePayload.attachments as Record<string, unknown>[]
-              : [];
-
-            announcedAttachmentCount = Math.max(announcedAttachmentCount, payloadAttachments.length);
-
-            let refs: AttachmentRef[] = payloadAttachments
-              .map((item) => ({
-                url: (item.url || item["attachment-url"] || item.download_url) as string | undefined,
-                name: (item.name || item.filename) as string | undefined,
-                contentType: (item["content-type"] || item.contentType || item.mimetype) as string | undefined,
-              }))
-              .filter((item): item is AttachmentRef => Boolean(item.url));
-
-            // Fallback: construct attachment URLs if payload omits attachment url list
-            if (refs.length === 0 && announcedAttachmentCount > 0) {
-              refs = Array.from({ length: announcedAttachmentCount }).map((_, idx) => ({
-                url: `${resolvedMessageUrl}/attachments/${idx}`,
-                name: `attachment-${idx + 1}`,
-              }));
-            }
-
-            for (const ref of refs) {
-              const downloaded = await downloadAttachmentFromRef(ref, mailgunApiKey);
-              if (downloaded) attachments.push(downloaded);
-            }
-          }
-        } catch (err) {
-          console.error("Failed processing message-url attachments:", err);
         }
+      } catch (parseErr) {
+        console.error("Could not parse attachments field:", parseErr);
       }
     }
 
-    console.log(`Found ${attachments.length} attachments. Announced: ${announcedAttachmentCount}. Form fields: ${[...formData.keys()].join(", ")}`);
+    // Strategy 4: Fetch full message from message-url, then download attachments from it
+    if (attachments.length === 0 && messageUrl && mailgunApiKey) {
+      console.log("Strategy 4: Trying message-url fetch...");
+
+      const messageRes = await downloadFromMailgun(messageUrl, mailgunApiKey);
+
+      if (messageRes?.ok) {
+        try {
+          const payload = await messageRes.json() as Record<string, unknown>;
+          const payloadAttachments = Array.isArray(payload.attachments)
+            ? payload.attachments as Record<string, unknown>[]
+            : [];
+
+          announcedAttachmentCount = Math.max(announcedAttachmentCount, payloadAttachments.length);
+          console.log("Strategy 4: Message payload has", payloadAttachments.length, "attachments");
+
+          for (const item of payloadAttachments) {
+            const url = (item.url || item["attachment-url"]) as string | undefined;
+            if (!url) continue;
+
+            const response = await downloadFromMailgun(url, mailgunApiKey);
+            if (!response?.ok) {
+              console.error("Strategy 4: Failed downloading attachment:", url);
+              continue;
+            }
+
+            const blob = await response.blob();
+            if (!blob || blob.size === 0) continue;
+
+            const filename = (item.name || item.filename || "attachment") as string;
+            const file = new File([blob], filename, {
+              type: (item["content-type"] || blob.type || "application/octet-stream") as string,
+            });
+            attachments.push({ file, name: file.name });
+          }
+        } catch (err) {
+          console.error("Strategy 4: Failed parsing message payload:", err);
+        }
+      } else {
+        const status = messageRes?.status ?? "no-response";
+        console.error(`Strategy 4: message-url fetch failed (${status})`);
+        if (messageRes) await messageRes.text().catch(() => {});
+      }
+    }
+
+    // Strategy 5: Parse raw MIME body if present (body-mime field)
+    if (attachments.length === 0 && bodyMime) {
+      console.log("Strategy 5: Parsing raw MIME body...");
+      const mimeAttachments = parseMimeAttachments(bodyMime);
+      console.log("Strategy 5: Found", mimeAttachments.length, "MIME attachments");
+
+      for (const att of mimeAttachments) {
+        const file = new File([att.data], att.name, { type: att.contentType });
+        attachments.push({ file, name: att.name });
+      }
+    }
+
+    console.log(`RESULT: Found ${attachments.length} attachments. Announced: ${announcedAttachmentCount}.`);
 
     // Filter supported attachments
     const supportedAttachments = attachments.filter((a) => {
       const type = a.file.type.toLowerCase();
       const ext = a.name.toLowerCase().split(".").pop();
-      const isSupported = SUPPORTED_TYPES.includes(type) || ["pdf", "png", "jpg", "jpeg"].includes(ext || "");
+      const isSupported = SUPPORTED_TYPES.includes(type) || SUPPORTED_EXTS.includes(ext || "");
       const isWithinSize = a.file.size <= MAX_ATTACHMENT_SIZE;
       return isSupported && isWithinSize;
     });
@@ -399,7 +421,7 @@ serve(async (req) => {
         ? (announcedAttachmentCount > 0
           ? "Attachments announced by provider but download failed"
           : "No attachments found")
-        : `No supported attachments (found: ${attachments.map(a => a.name).join(", ")})`)
+        : `No supported attachments (found: ${attachments.map((a) => a.name).join(", ")})`)
       : null;
 
     const { data: emailImport, error: importErr } = await supabase
@@ -442,7 +464,6 @@ serve(async (req) => {
       try {
         const filePath = `${org.owner_user_id}/${Date.now()}-${att.name}`;
 
-        // Upload to storage
         const { error: uploadErr } = await supabase.storage
           .from("documents")
           .upload(filePath, att.file);
@@ -452,7 +473,6 @@ serve(async (req) => {
           continue;
         }
 
-        // Determine MIME type
         let fileType = att.file.type;
         if (!fileType || fileType === "application/octet-stream") {
           const ext = att.name.toLowerCase().split(".").pop();
@@ -465,7 +485,6 @@ serve(async (req) => {
           fileType = mimeMap[ext || ""] || "application/octet-stream";
         }
 
-        // Create document record
         const { data: doc, error: docErr } = await supabase
           .from("documents")
           .insert({
@@ -488,7 +507,6 @@ serve(async (req) => {
 
         processedCount++;
 
-        // Trigger AI extraction (fire and forget for each attachment)
         if (LOVABLE_API_KEY) {
           const extractUrl = `${supabaseUrl}/functions/v1/extract-document`;
           fetch(extractUrl, {
@@ -505,7 +523,6 @@ serve(async (req) => {
       }
     }
 
-    // Update email import with final counts
     await supabase
       .from("email_imports")
       .update({
@@ -522,13 +539,13 @@ serve(async (req) => {
         processed: processedCount,
         total: supportedAttachments.length,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("inbound-email error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
