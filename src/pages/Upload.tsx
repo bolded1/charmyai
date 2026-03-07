@@ -154,38 +154,14 @@ export default function UploadPage() {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="flex justify-center">
         <Button
           variant="outline"
-          className="h-auto py-4 flex-col gap-2"
-          onClick={() => document.getElementById("file-input")?.click()}
-        >
-          <FolderUp className="h-5 w-5 text-muted-foreground" />
-          <span className="text-xs font-medium">Upload Files</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto py-4 flex-col gap-2 lg:hidden"
+          className="h-auto py-4 px-8 flex-col gap-2 lg:hidden"
           onClick={() => document.getElementById("camera-input")?.click()}
         >
           <Camera className="h-5 w-5 text-muted-foreground" />
           <span className="text-xs font-medium">Scan Document</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto py-4 flex-col gap-2 hidden lg:flex"
-          onClick={() => document.getElementById("file-input")?.click()}
-        >
-          <Camera className="h-5 w-5 text-muted-foreground" />
-          <span className="text-xs font-medium">Scan Document</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto py-4 flex-col gap-2"
-          onClick={() => document.getElementById("file-input")?.click()}
-        >
-          <FileText className="h-5 w-5 text-muted-foreground" />
-          <span className="text-xs font-medium">Import Documents</span>
         </Button>
         <input
           id="camera-input"
