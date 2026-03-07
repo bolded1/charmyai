@@ -50,6 +50,53 @@ function getAttachmentUrlCandidates(url: string): string[] {
   return [...new Set(candidates)];
 }
 
+function getMessageUrlCandidates(url: string): string[] {
+  const candidates = [url];
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "storage-europe-west1.api.mailgun.net") {
+      const euHost = new URL(url);
+      euHost.hostname = "api.eu.mailgun.net";
+      candidates.push(euHost.toString());
+
+      const usHost = new URL(url);
+      usHost.hostname = "api.mailgun.net";
+      candidates.push(usHost.toString());
+    }
+  } catch {
+    // keep original URL only
+  }
+
+  return [...new Set(candidates)];
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(url: string, init: RequestInit, attempts = 4): Promise<Response | null> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await fetch(url, init);
+
+      // Message/attachment can be briefly unavailable right after webhook fires
+      const shouldRetry = [404, 408, 425, 429, 500, 502, 503, 504].includes(response.status);
+      if (!response.ok && shouldRetry && attempt < attempts) {
+        await sleep(250 * attempt);
+        continue;
+      }
+
+      return response;
+    } catch {
+      if (attempt < attempts) {
+        await sleep(250 * attempt);
+        continue;
+      }
+    }
+  }
+
+  return null;
+}
+
 async function downloadAttachmentFromRef(ref: AttachmentRef, mailgunApiKey?: string | null): Promise<{ file: File; name: string } | null> {
   const headers: Record<string, string> = {};
   if (mailgunApiKey) {
@@ -60,9 +107,10 @@ async function downloadAttachmentFromRef(ref: AttachmentRef, mailgunApiKey?: str
 
   for (const candidate of candidates) {
     try {
-      const response = await fetch(candidate, { headers });
-      if (!response.ok) {
-        console.error(`Failed downloading attachment URL (${response.status}):`, candidate);
+      const response = await fetchWithRetry(candidate, { headers });
+      if (!response || !response.ok) {
+        const status = response?.status ?? "no-response";
+        console.error(`Failed downloading attachment URL (${status}):`, candidate);
         continue;
       }
 
