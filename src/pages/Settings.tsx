@@ -168,8 +168,8 @@ export default function SettingsPage() {
                       <Select value={profileForm.timezone} onValueChange={(v) => setProfileForm((p) => ({ ...p, timezone: v }))}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {["UTC", "Europe/Berlin", "Europe/London", "America/New_York", "America/Los_Angeles", "Asia/Tokyo"].map((tz) => (
-                            <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                          {ALL_TIMEZONES.map((tz) => (
+                            <SelectItem key={tz} value={tz}>{tz.replace(/_/g, " ")}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
