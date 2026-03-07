@@ -120,8 +120,11 @@ export default function OnboardingPage() {
     }
 
     if (step === 1) {
-      // Update org name if provided, otherwise keep the default
-      if (orgName.trim() && org) {
+      if (!orgName.trim()) {
+        toast.error("Company name is required.");
+        return;
+      }
+      if (org) {
         try {
           await updateOrg.mutateAsync({ id: org.id, name: orgName.trim() });
         } catch {
