@@ -253,6 +253,14 @@ serve(async (req) => {
     const messageHeaders = formData.get("message-headers") as string || "";
     const messageUrl = formData.get("message-url") as string || "";
     const bodyMime = formData.get("body-mime") as string || "";
+    const timestamp = formData.get("timestamp") as string || "";
+    const token = formData.get("token") as string || "";
+    const signature = formData.get("signature") as string || "";
+    const signedFields: MailgunSignedFields = {
+      timestamp: timestamp || undefined,
+      token: token || undefined,
+      signature: signature || undefined,
+    };
 
     // === DIAGNOSTIC LOGGING ===
     const fieldDiag: string[] = [];
