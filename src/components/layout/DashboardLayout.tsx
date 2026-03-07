@@ -22,6 +22,7 @@ import { useKeyboardShortcuts, MOD_LABEL } from "@/hooks/useKeyboardShortcuts";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 
 const mobileNavItems = [
   { title: "Capture", url: "/app", icon: Upload },
