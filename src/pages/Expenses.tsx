@@ -126,7 +126,6 @@ export default function ExpensesPage() {
     setSelectedId(null);
     setEditData(null);
     setFileUrl(null);
-    setSignedFileUrl(null);
     setFileType(null);
   };
 
