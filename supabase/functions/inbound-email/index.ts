@@ -173,14 +173,13 @@ serve(async (req) => {
 
           for (const [idx, ref] of refs.entries()) {
             try {
-              const authHeader = mailgunApiKey
-                ? { Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}` }
-                : undefined;
-
-              let response = await fetch(ref.url);
-              if (!response.ok && authHeader) {
-                response = await fetch(ref.url, { headers: authHeader });
+              // Mailgun storage URLs always require Basic auth
+              const headers: Record<string, string> = {};
+              if (mailgunApiKey) {
+                headers["Authorization"] = `Basic ${btoa(`api:${mailgunApiKey}`)}`;
               }
+
+              const response = await fetch(ref.url, { headers });
               if (!response.ok) {
                 console.error(`Failed downloading attachment URL (${response.status}):`, ref.url);
                 continue;
