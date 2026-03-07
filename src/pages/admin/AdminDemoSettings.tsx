@@ -46,7 +46,7 @@ export default function AdminDemoSettingsPage() {
 
   const loadSettings = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("demo_settings")
       .select("key, value");
 
@@ -67,7 +67,7 @@ export default function AdminDemoSettingsPage() {
     try {
       const entries = Object.entries(settings);
       for (const [key, value] of entries) {
-        await supabase
+        await (supabase as any)
           .from("demo_settings")
           .update({ value: JSON.parse(JSON.stringify(value)), updated_at: new Date().toISOString() })
           .eq("key", key);

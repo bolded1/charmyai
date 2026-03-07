@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.inbound-email]
 verify_jwt = false
+
+[functions.demo-extract]
+verify_jwt = false
+
+[functions.demo-cleanup]
+verify_jwt = false
