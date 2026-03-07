@@ -116,7 +116,7 @@ export default function OnboardingPage() {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
-      toast.success("Setup complete! Welcome to DocuLedger.");
+      toast.success("Setup complete! Welcome to Charmy.");
       navigate("/app");
     }
   };
