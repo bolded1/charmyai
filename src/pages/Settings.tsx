@@ -76,15 +76,8 @@ export default function SettingsPage() {
     }
   }, [profile]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (themeMode === "dark") root.classList.add("dark");
-    else if (themeMode === "light") root.classList.remove("dark");
-    else root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
-    localStorage.setItem("theme-mode", themeMode);
-    // Re-apply accent color since dark/light need different derived values
-    applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
-  }, [themeMode, org?.primary_color]);
+
+
 
   // Auto-save profile with debounce
   const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
