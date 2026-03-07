@@ -205,14 +205,16 @@ export default function SettingsPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="organization">Organization</TabsTrigger>
-          <TabsTrigger value="email-import">Email Import</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="audit">Audit Log</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          <TabsList className="inline-flex w-auto min-w-max">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="organization">Organization</TabsTrigger>
+            <TabsTrigger value="email-import">Email Import</TabsTrigger>
+            <TabsTrigger value="appearance">Appearance</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="audit">Audit Log</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ════════════════ PROFILE ════════════════ */}
         <TabsContent value="profile">

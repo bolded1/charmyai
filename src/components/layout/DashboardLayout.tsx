@@ -2,10 +2,8 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { MobileHeader } from "./MobileHeader";
-import { AppMobileDrawer } from "./AppMobileDrawer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera } from "lucide-react";
+import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -16,11 +14,22 @@ import {
   DropdownMenuGroup, DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { useKeyboardShortcuts, MOD_LABEL } from "@/hooks/useKeyboardShortcuts";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
+import { useBrandLogo } from "@/hooks/useBrandLogo";
+
+const mobileNavItems = [
+  { title: "Capture", url: "/app", icon: Upload },
+  { title: "Documents", url: "/app/documents", icon: FileText },
+  { title: "Expenses", url: "/app/expenses", icon: Receipt },
+  { title: "Income", url: "/app/income", icon: TrendingUp },
+  { title: "Exports", url: "/app/exports", icon: Download },
+  { title: "Team", url: "/app/team", icon: UsersRound },
+  { title: "Settings", url: "/app/settings", icon: Settings },
+];
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -31,6 +40,7 @@ export default function DashboardLayout() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { settings: layoutSettings } = useLayoutSettings();
   const isMobile = useIsMobile();
+  const brandLogo = useBrandLogo();
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
@@ -147,13 +157,50 @@ export default function DashboardLayout() {
         </div>
 
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Mobile header */}
-          <MobileHeader
-            pageTitle={pageTitle}
-            drawerContent={<AppMobileDrawer />}
-            profileMenu={profileMenu}
-            showQuickActions
-          />
+          {/* Mobile header with logo + profile */}
+          <header className="h-12 border-b border-border bg-card flex items-center justify-between px-3 shrink-0 md:hidden">
+            <div className="flex items-center gap-2">
+              {brandLogo ? (
+                <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain" />
+              ) : (
+                <Link to="/app" className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
+                    <FileText className="h-3 w-3 text-white" />
+                  </div>
+                  <span className="font-semibold text-sm text-foreground">Charmy</span>
+                </Link>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <NotificationsPopover />
+              {profileMenu}
+            </div>
+          </header>
+
+          {/* Mobile navigation tab bar */}
+          <nav className="md:hidden border-b border-border bg-card overflow-x-auto scrollbar-hide">
+            <div className="flex min-w-max px-1">
+              {mobileNavItems.map((item) => {
+                const isActive = item.url === "/app"
+                  ? location.pathname === "/app"
+                  : location.pathname.startsWith(item.url);
+                return (
+                  <Link
+                    key={item.url}
+                    to={item.url}
+                    className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap border-b-2 transition-colors ${
+                      isActive
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5" />
+                    {item.title}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
 
           {/* Desktop header - hidden on mobile */}
           <header className="h-12 border-b border-border bg-card items-center justify-between px-6 shrink-0 hidden md:flex">
