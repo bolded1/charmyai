@@ -33,6 +33,7 @@ interface ExpenseEdit {
 export default function ExpensesPage() {
   const [search, setSearch] = useState("");
   const [currencyFilter, setCurrencyFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
