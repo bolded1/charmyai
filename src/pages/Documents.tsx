@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, type DocumentRecord } from "@/hooks/useDocuments";
+import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
