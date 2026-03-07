@@ -18,6 +18,8 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
 import Expenses from "./pages/Expenses";
+import Income from "./pages/Income";
+import Contacts from "./pages/Contacts";
 import Categories from "./pages/Categories";
 import Exports from "./pages/Exports";
 import Team from "./pages/Team";
