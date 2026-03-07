@@ -7,7 +7,7 @@ export default function AboutPage() {
     <div>
       <section className="py-20">
         <div className="container max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">About DocuLedger</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">About Charmy</h1>
           <p className="text-lg text-muted-foreground mb-8">
             We're building the future of financial document processing. Our mission is to eliminate
             manual data entry from accounting workflows forever.
