@@ -428,8 +428,6 @@ export default function IncomePage() {
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Customer</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Date</th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Due Date</th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Category</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Currency</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">Net</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">VAT</th>
