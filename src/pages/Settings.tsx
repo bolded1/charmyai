@@ -371,9 +371,6 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-end">
-              <Button onClick={handleSave}>Save Changes</Button>
-            </div>
           </div>
         </TabsContent>
 
