@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { mockAuditLog } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
+import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
