@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MarketingLayout from "@/components/layout/MarketingLayout";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import AdminLayout from "@/components/layout/AdminLayout";
 import Index from "./pages/Index";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
@@ -22,6 +23,15 @@ import Contacts from "./pages/Contacts";
 import Exports from "./pages/Exports";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminOrganizations from "./pages/admin/AdminOrganizations";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminDocuments from "./pages/admin/AdminDocuments";
+import AdminUsage from "./pages/admin/AdminUsage";
+import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminSupport from "./pages/admin/AdminSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +68,19 @@ const App = () => (
             <Route path="exports" element={<Exports />} />
             <Route path="team" element={<Team />} />
             <Route path="settings" element={<Settings />} />
+          </Route>
+
+          {/* Admin pages */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="organizations" element={<AdminOrganizations />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="documents" element={<AdminDocuments />} />
+            <Route path="usage" element={<AdminUsage />} />
+            <Route path="subscriptions" element={<AdminSubscriptions />} />
+            <Route path="audit" element={<AdminAuditLogs />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="support" element={<AdminSupport />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
