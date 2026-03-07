@@ -135,43 +135,21 @@ export default function ExpensesPage() {
     closeEdit();
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (!fileUrl) return;
-    try {
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = selectedExpense?.supplier_name
-        ? `${selectedExpense.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
-        : "document";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      // Fallback: open in new tab
-      window.open(fileUrl, "_blank");
-    }
+    const a = document.createElement("a");
+    a.href = fileUrl;
+    a.download = selectedExpense?.supplier_name
+      ? `${selectedExpense.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
+      : "document";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
-  const handleOpenFile = async () => {
-    const sourceUrl = signedFileUrl || fileUrl;
-    if (!sourceUrl) return;
-
-    try {
-      const response = await fetch(sourceUrl);
-      const rawBlob = await response.blob();
-      const typedBlob = new Blob([rawBlob], {
-        type: fileType || rawBlob.type || "application/octet-stream",
-      });
-      const blobUrl = URL.createObjectURL(typedBlob);
-      window.open(blobUrl, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-    } catch {
-      window.open(sourceUrl, "_blank", "noopener,noreferrer");
-    }
+  const handleOpenFile = () => {
+    if (!fileUrl) return;
+    window.open(fileUrl, "_blank", "noopener,noreferrer");
   };
 
   // Date range logic
