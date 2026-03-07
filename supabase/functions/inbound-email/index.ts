@@ -10,6 +10,89 @@ const corsHeaders = {
 const SUPPORTED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 const MAX_ATTACHMENT_SIZE = 20 * 1024 * 1024; // 20MB
 
+type AttachmentRef = {
+  url: string;
+  name?: string;
+  contentType?: string;
+};
+
+function getAttachmentUrlCandidates(url: string): string[] {
+  const candidates = [url];
+
+  try {
+    const parsed = new URL(url);
+    const idxMatch = parsed.pathname.match(/\/attachments\/(\d+)$/);
+
+    // Some providers announce /attachments/0 but file exists at /attachments/1
+    if (idxMatch) {
+      const idx = Number(idxMatch[1]);
+      if (Number.isFinite(idx)) {
+        const plusOne = new URL(url);
+        plusOne.pathname = parsed.pathname.replace(/\/attachments\/\d+$/, `/attachments/${idx + 1}`);
+        candidates.push(plusOne.toString());
+      }
+    }
+
+    // Regional fallback hosts observed in Mailgun routes
+    if (parsed.hostname === "storage-europe-west1.api.mailgun.net") {
+      const euHost = new URL(url);
+      euHost.hostname = "api.eu.mailgun.net";
+      candidates.push(euHost.toString());
+
+      const usHost = new URL(url);
+      usHost.hostname = "api.mailgun.net";
+      candidates.push(usHost.toString());
+    }
+  } catch {
+    // keep original URL only
+  }
+
+  return [...new Set(candidates)];
+}
+
+async function downloadAttachmentFromRef(ref: AttachmentRef, mailgunApiKey?: string | null): Promise<{ file: File; name: string } | null> {
+  const headers: Record<string, string> = {};
+  if (mailgunApiKey) {
+    headers.Authorization = `Basic ${btoa(`api:${mailgunApiKey}`)}`;
+  }
+
+  const candidates = getAttachmentUrlCandidates(ref.url);
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate, { headers });
+      if (!response.ok) {
+        console.error(`Failed downloading attachment URL (${response.status}):`, candidate);
+        continue;
+      }
+
+      const blob = await response.blob();
+      if (!blob || blob.size === 0) continue;
+
+      let filename = ref.name || "attachment";
+      if (!ref.name) {
+        try {
+          const pathname = new URL(candidate).pathname;
+          const lastSegment = pathname.split("/").pop();
+          if (lastSegment) filename = decodeURIComponent(lastSegment);
+        } catch {
+          // keep fallback filename
+        }
+      }
+
+      const file = new File([blob], filename, {
+        type: ref.contentType || blob.type || "application/octet-stream",
+      });
+
+      return { file, name: file.name };
+    } catch (downloadErr) {
+      console.error("Attachment URL download error:", downloadErr);
+    }
+  }
+
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
