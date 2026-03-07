@@ -212,14 +212,14 @@ serve(async (req) => {
       }
     }
 
-    // Method 4: Mailgun store+notify format - "attachments" contains JSON with attachment URLs
+    // Method 4: Mailgun store+notify format - "attachments" can be JSON refs or a count
     if (attachments.length === 0) {
       const attachmentsField = formData.get("attachments");
       if (typeof attachmentsField === "string" && attachmentsField.trim()) {
         try {
           const parsed = JSON.parse(attachmentsField) as unknown;
 
-          const refs: { url: string; name?: string; contentType?: string }[] = [];
+          const refs: AttachmentRef[] = [];
           if (Array.isArray(parsed)) {
             for (const item of parsed) {
               if (item && typeof item === "object") {
@@ -250,49 +250,61 @@ serve(async (req) => {
                 }
               }
             }
+          } else if (typeof parsed === "number") {
+            announcedAttachmentCount = parsed;
           }
 
-          announcedAttachmentCount = refs.length;
+          announcedAttachmentCount = Math.max(announcedAttachmentCount, refs.length);
           const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
 
-          for (const [idx, ref] of refs.entries()) {
-            try {
-              // Mailgun storage URLs always require Basic auth
-              const headers: Record<string, string> = {};
-              if (mailgunApiKey) {
-                headers["Authorization"] = `Basic ${btoa(`api:${mailgunApiKey}`)}`;
-              }
-
-              const response = await fetch(ref.url, { headers });
-              if (!response.ok) {
-                console.error(`Failed downloading attachment URL (${response.status}):`, ref.url);
-                continue;
-              }
-
-              const blob = await response.blob();
-              if (!blob || blob.size === 0) continue;
-
-              let filename = ref.name || `attachment-${idx + 1}`;
-              if (!ref.name) {
-                try {
-                  const pathname = new URL(ref.url).pathname;
-                  const lastSegment = pathname.split("/").pop();
-                  if (lastSegment) filename = decodeURIComponent(lastSegment);
-                } catch {
-                  // ignore URL parsing error and keep fallback filename
-                }
-              }
-
-              const file = new File([blob], filename, {
-                type: ref.contentType || blob.type || "application/octet-stream",
-              });
-              attachments.push({ file, name: file.name });
-            } catch (downloadErr) {
-              console.error("Attachment URL download error:", downloadErr);
-            }
+          for (const ref of refs) {
+            const downloaded = await downloadAttachmentFromRef(ref, mailgunApiKey);
+            if (downloaded) attachments.push(downloaded);
           }
         } catch (parseErr) {
           console.error("Could not parse Mailgun attachments field:", parseErr);
+        }
+      }
+    }
+
+    // Method 5: Fetch metadata from Mailgun message-url, then download attachments
+    if (attachments.length === 0 && messageUrl) {
+      const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
+
+      if (!mailgunApiKey) {
+        console.error("MAILGUN_API_KEY is missing; cannot fetch message-url attachments");
+      } else {
+        try {
+          const headers = {
+            Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}`,
+          };
+
+          const messageRes = await fetch(messageUrl, { headers });
+          if (!messageRes.ok) {
+            console.error(`Failed fetching message-url (${messageRes.status}):`, messageUrl);
+          } else {
+            const payload = await messageRes.json() as Record<string, unknown>;
+            const payloadAttachments = Array.isArray(payload.attachments)
+              ? payload.attachments as Record<string, unknown>[]
+              : [];
+
+            announcedAttachmentCount = Math.max(announcedAttachmentCount, payloadAttachments.length);
+
+            const refs: AttachmentRef[] = payloadAttachments
+              .map((item) => ({
+                url: (item.url || item["attachment-url"] || item.download_url) as string | undefined,
+                name: (item.name || item.filename) as string | undefined,
+                contentType: (item["content-type"] || item.contentType || item.mimetype) as string | undefined,
+              }))
+              .filter((item): item is AttachmentRef => Boolean(item.url));
+
+            for (const ref of refs) {
+              const downloaded = await downloadAttachmentFromRef(ref, mailgunApiKey);
+              if (downloaded) attachments.push(downloaded);
+            }
+          }
+        } catch (err) {
+          console.error("Failed processing message-url attachments:", err);
         }
       }
     }
