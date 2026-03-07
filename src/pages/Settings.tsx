@@ -80,20 +80,64 @@ export default function SettingsPage() {
   });
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
-  const [logoLight, setLogoLight] = useState<string | null>(() => localStorage.getItem("brand-logo-light"));
-  const [logoDark, setLogoDark] = useState<string | null>(() => localStorage.getItem("brand-logo-dark"));
+  const [logoLight, setLogoLight] = useState<string | null>(null);
+  const [logoDark, setLogoDark] = useState<string | null>(null);
+  const logoInitialLoadRef = useRef(true);
 
-  // Persist logos and notify sidebar
+  // Load logos from database on mount
   useEffect(() => {
-    if (logoLight) localStorage.setItem("brand-logo-light", logoLight);
-    else localStorage.removeItem("brand-logo-light");
-    window.dispatchEvent(new Event("brand-logo-changed"));
-  }, [logoLight]);
+    const loadLogos = async () => {
+      const { data: lightData } = await supabase
+        .from("demo_settings")
+        .select("value")
+        .eq("key", "brand-logo-light")
+        .maybeSingle();
+      const { data: darkData } = await supabase
+        .from("demo_settings")
+        .select("value")
+        .eq("key", "brand-logo-dark")
+        .maybeSingle();
+      
+      const normalizeVal = (v: unknown) => {
+        if (typeof v === "string" && v.startsWith("data:image")) return v;
+        if (typeof v === "string") { try { const p = JSON.parse(v); return typeof p === "string" && p.startsWith("data:image") ? p : null; } catch { return null; } }
+        return null;
+      };
+      setLogoLight(normalizeVal(lightData?.value));
+      setLogoDark(normalizeVal(darkData?.value));
+      // Mark initial load done after setting state
+      setTimeout(() => { logoInitialLoadRef.current = false; }, 100);
+    };
+    loadLogos();
+  }, []);
+
+  // Persist logos to database and notify sidebar
+  const saveLogo = useCallback(async (key: string, value: string | null) => {
+    try {
+      if (value) {
+        const { data: existing } = await supabase.from("demo_settings").select("id").eq("key", key).maybeSingle();
+        if (existing) {
+          await supabase.from("demo_settings").update({ value: JSON.stringify(value), updated_at: new Date().toISOString() }).eq("key", key);
+        } else {
+          await supabase.from("demo_settings").insert({ key, value: JSON.stringify(value) });
+        }
+      } else {
+        await supabase.from("demo_settings").delete().eq("key", key);
+      }
+      window.dispatchEvent(new Event("brand-logo-changed"));
+    } catch {
+      toast.error("Failed to save logo. Make sure you have admin permissions.");
+    }
+  }, []);
+
   useEffect(() => {
-    if (logoDark) localStorage.setItem("brand-logo-dark", logoDark);
-    else localStorage.removeItem("brand-logo-dark");
-    window.dispatchEvent(new Event("brand-logo-changed"));
-  }, [logoDark]);
+    if (logoInitialLoadRef.current) return;
+    saveLogo("brand-logo-light", logoLight);
+  }, [logoLight, saveLogo]);
+  useEffect(() => {
+    if (logoInitialLoadRef.current) return;
+    saveLogo("brand-logo-dark", logoDark);
+  }, [logoDark, saveLogo]);
   const [iconLight, setIconLight] = useState<string | null>(null);
   const [iconDark, setIconDark] = useState<string | null>(null);
   const [favicon, setFavicon] = useState<string | null>(null);
