@@ -1,14 +1,9 @@
-import { dashboardStats, mockDocuments, mockAuditLog } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Receipt, TrendingUp, AlertCircle, DollarSign } from "lucide-react";
-
-const stats = [
-  { label: "Documents Uploaded", value: dashboardStats.documentsUploaded, icon: FileText, change: "+12 this week" },
-  { label: "Expenses This Month", value: `€${dashboardStats.expensesThisMonth.toLocaleString()}`, icon: Receipt, change: "+€1,234" },
-  { label: "Income Invoices", value: `€${dashboardStats.incomeInvoices.toLocaleString()}`, icon: TrendingUp, change: "+€5,000" },
-  { label: "Awaiting Review", value: dashboardStats.awaitingReview, icon: AlertCircle, change: "2 urgent" },
-];
+import { FileText, Receipt, AlertCircle } from "lucide-react";
+import { useDocuments, useExpenseRecords } from "@/hooks/useDocuments";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   processing: "bg-muted text-muted-foreground",
@@ -18,11 +13,48 @@ const statusColors: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const recentDocs = mockDocuments.slice(0, 5);
+  const { user } = useAuth();
+  const { data: documents = [], isLoading: docsLoading } = useDocuments();
+  const { data: expenses = [], isLoading: expLoading } = useExpenseRecords();
+
+  if (!user) {
+    return <div className="text-center py-12 text-muted-foreground">Please log in to view dashboard.</div>;
+  }
+
+  const isLoading = docsLoading || expLoading;
+
+  const awaitingReview = documents.filter((d) => d.status === "needs_review").length;
+
+  // Group expenses by currency
+  const expensesByCurrency: Record<string, number> = {};
+  expenses.forEach((e) => {
+    const cur = e.currency || "EUR";
+    expensesByCurrency[cur] = (expensesByCurrency[cur] || 0) + Number(e.total_amount || 0);
+  });
+
+  const stats = [
+    { label: "Documents Uploaded", value: documents.length, icon: FileText, sub: `${documents.filter(d => d.status === 'approved').length} approved` },
+    ...Object.entries(expensesByCurrency).map(([cur, total]) => ({
+      label: `Expenses (${cur})`,
+      value: `${cur === "EUR" ? "€" : "$"}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      icon: Receipt,
+      sub: `${expenses.filter(e => e.currency === cur).length} records`,
+    })),
+    { label: "Awaiting Review", value: awaitingReview, icon: AlertCircle, sub: awaitingReview > 0 ? "Action needed" : "All clear" },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const recentDocs = documents.slice(0, 5);
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
           <Card key={s.label}>
@@ -34,19 +66,20 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="text-2xl font-bold">{s.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{s.change}</p>
+              <p className="text-xs text-muted-foreground mt-1">{s.sub}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Recent Documents */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Documents</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Recent Documents</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentDocs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No documents yet. Upload your first invoice to get started.</p>
+          ) : (
             <div className="space-y-3">
               {recentDocs.map((doc) => (
                 <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -55,42 +88,24 @@ export default function DashboardPage() {
                       <FileText className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{doc.fileName}</p>
-                      <p className="text-xs text-muted-foreground">{doc.supplier || doc.customer || 'Processing...'}</p>
+                      <p className="text-sm font-medium truncate">{doc.file_name}</p>
+                      <p className="text-xs text-muted-foreground">{doc.supplier_name || "Processing..."}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    {doc.totalAmount > 0 && <span className="text-sm font-medium">{doc.currency} {doc.totalAmount.toFixed(2)}</span>}
-                    <Badge variant="secondary" className={statusColors[doc.status]}>
-                      {doc.status.replace('_', ' ')}
+                    {Number(doc.total_amount) > 0 && (
+                      <span className="text-sm font-medium">{doc.currency} {Number(doc.total_amount).toFixed(2)}</span>
+                    )}
+                    <Badge variant="secondary" className={statusColors[doc.status] || ""}>
+                      {doc.status.replace("_", " ")}
                     </Badge>
                   </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Activity Feed */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {mockAuditLog.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="flex gap-3">
-                  <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
-                  <div>
-                    <p className="text-sm">{entry.action}</p>
-                    <p className="text-xs text-muted-foreground">{entry.user} · {new Date(entry.timestamp).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
