@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,19 @@ import { Badge } from "@/components/ui/badge";
 import { mockAuditLog } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
-import { useState, useEffect } from "react";
-import { Camera, Loader2, Sun, Moon, Monitor } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Camera, Loader2, Sun, Moon, Monitor, Upload, X, ImageIcon } from "lucide-react";
+
+const ACCENT_COLORS = [
+  { name: "Emerald", hue: "160 84% 36%", darkHue: "160 60% 46%" },
+  { name: "Blue", hue: "217 85% 50%", darkHue: "217 70% 58%" },
+  { name: "Violet", hue: "262 70% 50%", darkHue: "262 60% 58%" },
+  { name: "Rose", hue: "350 70% 50%", darkHue: "350 60% 55%" },
+  { name: "Amber", hue: "38 90% 50%", darkHue: "38 70% 54%" },
+  { name: "Teal", hue: "174 70% 36%", darkHue: "174 55% 46%" },
+  { name: "Indigo", hue: "234 70% 52%", darkHue: "234 60% 60%" },
+  { name: "Slate", hue: "220 14% 40%", darkHue: "220 14% 55%" },
+];
 
 export default function SettingsPage() {
   const { profile, isLoading, updateProfile, uploadAvatar, initials } = useProfile();
@@ -19,6 +30,14 @@ export default function SettingsPage() {
     first_name: "", last_name: "", phone: "", job_title: "", timezone: "UTC", language: "en",
   });
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
+  const [accentColor, setAccentColor] = useState(0);
+  const [buttonTextColor, setButtonTextColor] = useState<"white" | "black">("white");
+
+  // Brand logos state
+  const [logoLight, setLogoLight] = useState<string | null>(null);
+  const [logoDark, setLogoDark] = useState<string | null>(null);
+  const [iconLight, setIconLight] = useState<string | null>(null);
+  const [iconDark, setIconDark] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -36,6 +55,18 @@ export default function SettingsPage() {
     else if (themeMode === "light") root.classList.remove("dark");
     else root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
   }, [themeMode]);
+
+  // Apply accent color
+  useEffect(() => {
+    const root = document.documentElement;
+    const color = ACCENT_COLORS[accentColor];
+    root.style.setProperty("--primary", color.hue);
+    root.style.setProperty("--ring", color.hue);
+
+    // Button text color
+    const textHsl = buttonTextColor === "white" ? "0 0% 100%" : "0 0% 0%";
+    root.style.setProperty("--primary-foreground", textHsl);
+  }, [accentColor, buttonTextColor]);
 
   const handleSave = () => toast.success("Settings saved!");
 
@@ -57,6 +88,14 @@ export default function SettingsPage() {
     catch { toast.error("Failed to upload avatar."); }
   };
 
+  const handleImageUpload = (setter: (url: string | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setter(url);
+    toast.success("Image uploaded!");
+  };
+
   return (
     <div className="max-w-3xl space-y-6">
       <Tabs defaultValue="profile" className="space-y-6">
@@ -68,6 +107,7 @@ export default function SettingsPage() {
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
         </TabsList>
 
+        {/* ── Profile ── */}
         <TabsContent value="profile">
           {isLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
@@ -90,7 +130,6 @@ export default function SettingsPage() {
                     <p className="text-xs text-muted-foreground">{profile?.email}</p>
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
@@ -149,6 +188,7 @@ export default function SettingsPage() {
           )}
         </TabsContent>
 
+        {/* ── Organization ── */}
         <TabsContent value="organization">
           <Card>
             <CardContent className="p-6 space-y-4">
@@ -188,11 +228,74 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
+        {/* ── Appearance ── */}
         <TabsContent value="appearance">
-          <Card>
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground">Theme</Label>
+          <div className="space-y-6">
+            {/* Branding / Logos */}
+            <Card>
+              <CardContent className="p-6 space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium mb-1">Company Branding</h3>
+                  <p className="text-xs text-muted-foreground">Upload your company logo and icon for light and dark modes.</p>
+                </div>
+
+                <div className="space-y-5">
+                  {/* Light mode assets */}
+                  <div className="space-y-3">
+                    <Label className="text-xs text-muted-foreground">Light Mode</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <BrandUploadBox
+                        label="Logo"
+                        hint="Recommended: 240×60px"
+                        image={logoLight}
+                        onUpload={handleImageUpload(setLogoLight)}
+                        onRemove={() => setLogoLight(null)}
+                        tall
+                      />
+                      <BrandUploadBox
+                        label="Icon"
+                        hint="Recommended: 64×64px"
+                        image={iconLight}
+                        onUpload={handleImageUpload(setIconLight)}
+                        onRemove={() => setIconLight(null)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dark mode assets */}
+                  <div className="space-y-3">
+                    <Label className="text-xs text-muted-foreground">Dark Mode</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <BrandUploadBox
+                        label="Logo"
+                        hint="Recommended: 240×60px"
+                        image={logoDark}
+                        onUpload={handleImageUpload(setLogoDark)}
+                        onRemove={() => setLogoDark(null)}
+                        tall
+                        dark
+                      />
+                      <BrandUploadBox
+                        label="Icon"
+                        hint="Recommended: 64×64px"
+                        image={iconDark}
+                        onUpload={handleImageUpload(setIconDark)}
+                        onRemove={() => setIconDark(null)}
+                        dark
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Theme Mode */}
+            <Card>
+              <CardContent className="p-6 space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium mb-1">Theme</h3>
+                  <p className="text-xs text-muted-foreground">Choose light, dark, or follow your system preference.</p>
+                </div>
                 <div className="grid grid-cols-3 gap-3">
                   {([
                     { value: "light", label: "Light", icon: Sun },
@@ -211,54 +314,119 @@ export default function SettingsPage() {
                     </button>
                   ))}
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Compact View</p>
-                  <p className="text-xs text-muted-foreground">Reduce spacing in tables</p>
-                </div>
-                <Switch />
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* Preview */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Preview</Label>
-                <div className="rounded-lg border border-border overflow-hidden bg-background p-4">
+            {/* Accent Color */}
+            <Card>
+              <CardContent className="p-6 space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium mb-1">Accent Color</h3>
+                  <p className="text-xs text-muted-foreground">Choose the primary color used for buttons, links, and highlights.</p>
+                </div>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
+                  {ACCENT_COLORS.map((color, i) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setAccentColor(i)}
+                      className={`group flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-colors ${
+                        accentColor === i ? "border-foreground" : "border-border hover:border-border-strong"
+                      }`}
+                      title={color.name}
+                    >
+                      <div
+                        className={`h-8 w-8 rounded-full transition-transform ${accentColor === i ? "scale-110 ring-2 ring-offset-2 ring-offset-background" : ""}`}
+                        style={{
+                          backgroundColor: `hsl(${color.hue})`,
+                          ...(accentColor === i ? { ["--tw-ring-color" as string]: `hsl(${color.hue})` } : {}),
+                        }}
+                      />
+                      <span className="text-[10px] text-muted-foreground">{color.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Button text color */}
+                <div className="space-y-3">
+                  <Label className="text-xs text-muted-foreground">Button Text Color</Label>
                   <div className="flex gap-3">
-                    <div className="w-24 shrink-0 rounded-md bg-sidebar p-2 space-y-1">
-                      <div className="h-5 rounded-sm px-2 flex items-center" style={{ backgroundColor: "hsl(var(--sidebar-active-bg))" }}>
-                        <span className="text-[9px] font-medium" style={{ color: "hsl(var(--sidebar-active-text))" }}>Dashboard</span>
-                      </div>
-                      <div className="h-5 rounded-sm px-2 flex items-center">
-                        <span className="text-[9px] text-sidebar-foreground">Documents</span>
-                      </div>
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <div className="rounded-md border border-border bg-card p-3">
-                        <span className="text-xs font-medium">Card</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Body text</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="h-6 px-2.5 rounded-md bg-primary flex items-center">
-                          <span className="text-[9px] font-medium text-primary-foreground">Primary</span>
+                    <button
+                      onClick={() => setButtonTextColor("white")}
+                      className={`flex items-center gap-2.5 rounded-lg border px-4 py-2.5 transition-colors ${
+                        buttonTextColor === "white" ? "border-foreground" : "border-border hover:border-border-strong"
+                      }`}
+                    >
+                      <div className="h-5 w-5 rounded-full bg-white border border-border" />
+                      <span className="text-xs">White</span>
+                    </button>
+                    <button
+                      onClick={() => setButtonTextColor("black")}
+                      className={`flex items-center gap-2.5 rounded-lg border px-4 py-2.5 transition-colors ${
+                        buttonTextColor === "black" ? "border-foreground" : "border-border hover:border-border-strong"
+                      }`}
+                    >
+                      <div className="h-5 w-5 rounded-full bg-black border border-border" />
+                      <span className="text-xs">Black</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live preview */}
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Preview</Label>
+                  <div className="rounded-lg border border-border overflow-hidden bg-background p-4">
+                    <div className="flex gap-3">
+                      <div className="w-24 shrink-0 rounded-md bg-sidebar p-2 space-y-1">
+                        <div className="h-5 rounded-sm px-2 flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue} / 0.12)` }}>
+                          <span className="text-[9px] font-medium" style={{ color: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>Dashboard</span>
                         </div>
-                        <div className="h-6 px-2.5 rounded-md border border-border bg-card flex items-center">
-                          <span className="text-[9px] text-foreground">Outline</span>
+                        <div className="h-5 rounded-sm px-2 flex items-center">
+                          <span className="text-[9px] text-sidebar-foreground">Documents</span>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Badge variant="success" className="text-[9px] h-4 px-1.5">Success</Badge>
-                        <Badge variant="warning" className="text-[9px] h-4 px-1.5">Warning</Badge>
-                        <Badge variant="info" className="text-[9px] h-4 px-1.5">Info</Badge>
+                      <div className="flex-1 space-y-2">
+                        <div className="rounded-md border border-border bg-card p-3">
+                          <span className="text-xs font-medium">Card</span>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Body text</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="h-6 px-2.5 rounded-md flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>
+                            <span className="text-[9px] font-medium" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }}>Primary</span>
+                          </div>
+                          <div className="h-6 px-2.5 rounded-md border border-border bg-card flex items-center">
+                            <span className="text-[9px] text-foreground">Outline</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge variant="success" className="text-[9px] h-4 px-1.5">Success</Badge>
+                          <Badge variant="warning" className="text-[9px] h-4 px-1.5">Warning</Badge>
+                          <Badge variant="info" className="text-[9px] h-4 px-1.5">Info</Badge>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Compact view */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Compact View</p>
+                    <p className="text-xs text-muted-foreground">Reduce spacing in tables</p>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button onClick={handleSave}>Save Appearance</Button>
+          </div>
         </TabsContent>
 
+        {/* ── Security ── */}
         <TabsContent value="security">
           <Card>
             <CardContent className="p-6 space-y-6">
@@ -281,6 +449,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
+        {/* ── Audit Log ── */}
         <TabsContent value="audit">
           <Card>
             <CardContent className="p-0">
@@ -309,6 +478,57 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/* ── Brand Upload Box Component ── */
+function BrandUploadBox({
+  label,
+  hint,
+  image,
+  onUpload,
+  onRemove,
+  tall,
+  dark,
+}: {
+  label: string;
+  hint: string;
+  image: string | null;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: () => void;
+  tall?: boolean;
+  dark?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="space-y-1.5">
+      <span className="text-xs font-medium">{label}</span>
+      <div
+        className={`relative rounded-lg border border-dashed border-border flex items-center justify-center overflow-hidden transition-colors cursor-pointer hover:border-border-strong ${
+          tall ? "h-24" : "h-20"
+        } ${dark ? "bg-[hsl(222,20%,10%)]" : "bg-muted/30"}`}
+        onClick={() => inputRef.current?.click()}
+      >
+        {image ? (
+          <>
+            <img src={image} alt={label} className="max-h-full max-w-full object-contain p-2" />
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(); }}
+              className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-1">
+            <ImageIcon className={`h-4 w-4 ${dark ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
+            <span className={`text-[10px] ${dark ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`}>{hint}</span>
+          </div>
+        )}
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
+      </div>
     </div>
   );
 }
