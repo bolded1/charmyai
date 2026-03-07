@@ -325,6 +325,30 @@ export function useUpdateExpense() {
   });
 }
 
+export function useUpdateIncome() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, any> }) => {
+      const { data, error } = await supabase
+        .from("income_records")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["income"] });
+      toast.success("Income record updated");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    },
+  });
+}
+
 export function getDocumentFileUrl(filePath: string): string {
   const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
   return data.publicUrl;
