@@ -14,8 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useKeyboardShortcuts, MOD_LABEL } from "@/hooks/useKeyboardShortcuts";
-import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
+import { NotificationsPopover } from "@/components/NotificationsPopover";
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -23,7 +23,7 @@ export default function DashboardLayout() {
   const pageTitle = getPageTitle(location.pathname);
   const { user, loading } = useAuth();
   const { profile, displayName, initials } = useProfile();
-  const [hasNotifications] = useState(true);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
@@ -55,16 +55,7 @@ export default function DashboardLayout() {
               <span className="text-sm font-medium text-foreground">{pageTitle}</span>
             </div>
             <div className="flex items-center gap-1">
-              {/* Notifications */}
-              <button
-                className="relative h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                onClick={() => {/* TODO: notifications panel */}}
-              >
-                <Bell className="h-4 w-4" />
-                {hasNotifications && (
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
-                )}
-              </button>
+              <NotificationsPopover />
 
               {/* User Menu */}
               <DropdownMenu>
@@ -83,7 +74,6 @@ export default function DashboardLayout() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-60">
-                  {/* User identity */}
                   <DropdownMenuLabel className="font-normal p-3">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9 shrink-0">
@@ -98,7 +88,6 @@ export default function DashboardLayout() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
 
-                  {/* Workspace */}
                   <DropdownMenuLabel className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
                     Workspace
                   </DropdownMenuLabel>
@@ -108,7 +97,6 @@ export default function DashboardLayout() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
 
-                  {/* Account */}
                   <DropdownMenuGroup>
                     <DropdownMenuItem onClick={() => navigate("/app/settings")} className="px-3">
                       <User className="h-3.5 w-3.5 mr-2" />
@@ -130,7 +118,6 @@ export default function DashboardLayout() {
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
 
-                  {/* System */}
                   <DropdownMenuGroup>
                     <DropdownMenuItem className="px-3">
                       <HelpCircle className="h-3.5 w-3.5 mr-2" />
@@ -144,7 +131,6 @@ export default function DashboardLayout() {
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
 
-                  {/* Logout */}
                   <DropdownMenuItem onClick={handleSignOut} className="px-3 text-muted-foreground">
                     <LogOut className="h-3.5 w-3.5 mr-2" />
                     <span className="text-[13px]">Sign Out</span>
