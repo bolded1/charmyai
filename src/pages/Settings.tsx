@@ -449,55 +449,6 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Brand Color Palette */}
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Brand Color Palette" description="Define your brand colors for consistent use across documents, emails, and exports." />
-                <div className="space-y-4">
-                  <div className="flex gap-3 items-end flex-wrap">
-                    {brandColors.map((color, i) => (
-                      <div key={i} className="group relative flex flex-col items-center gap-1.5">
-                        <label className="relative cursor-pointer">
-                          <div
-                            className="h-10 w-10 rounded-lg border-2 border-border shadow-theme-sm transition-transform hover:scale-110"
-                            style={{ backgroundColor: color }}
-                          />
-                          <input
-                            type="color"
-                            value={color}
-                            onChange={(e) => {
-                              const updated = [...brandColors];
-                              updated[i] = e.target.value;
-                              setBrandColors(updated);
-                            }}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                          />
-                        </label>
-                        <span className="text-[10px] text-muted-foreground font-mono uppercase">{color}</span>
-                        {brandColors.length > 2 && (
-                          <button
-                            onClick={() => setBrandColors(brandColors.filter((_, j) => j !== i))}
-                            className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
-                          >
-                            <X className="h-2.5 w-2.5" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    {brandColors.length < 8 && (
-                      <button
-                        onClick={() => setBrandColors([...brandColors, "#6B7280"])}
-                        className="h-10 w-10 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-                      >
-                        <span className="text-lg leading-none">+</span>
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/70">Click a swatch to change it. These colors will be available in document templates and email branding.</p>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Email Branding */}
             <Card>
               <CardContent className="p-6">
