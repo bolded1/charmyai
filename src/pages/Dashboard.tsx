@@ -65,7 +65,6 @@ export default function DashboardPage() {
   });
 
   const stats = [
-    { label: "Documents Uploaded", value: documents.length, icon: FileText, sub: `${documents.filter(d => d.status === 'approved').length} approved` },
     ...Object.entries(expensesByCurrency).map(([cur, total]) => ({
       label: `Expenses (${cur})`,
       value: `${cur === "EUR" ? "€" : "$"}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
