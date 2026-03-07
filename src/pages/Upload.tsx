@@ -89,37 +89,63 @@ export default function UploadPage() {
         </Card>
       )}
 
-      <Card>
-        <CardContent className="p-0">
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-16 text-center transition-colors cursor-pointer ${
-              dragOver ? "border-primary bg-accent" : "border-border"
-            }`}
-            onClick={() => document.getElementById("file-input")?.click()}
-          >
-            <UploadIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-semibold text-lg mb-1">Drop documents here</h3>
-            <p className="text-sm text-muted-foreground mb-4">or click to browse files</p>
-            <p className="text-xs text-muted-foreground">
-              Supports PDF, PNG, JPG up to 20MB
-            </p>
-            <input
-              id="file-input"
-              type="file"
-              className="hidden"
-              multiple
-              accept=".pdf,.png,.jpg,.jpeg"
-              onChange={handleFileSelect}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-0">
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
+                dragOver ? "border-primary bg-accent" : "border-border"
+              }`}
+              onClick={() => document.getElementById("file-input")?.click()}
+            >
+              <UploadIcon className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-semibold text-lg mb-1">Upload Files</h3>
+              <p className="text-sm text-muted-foreground mb-3">Drop files or click to browse</p>
+              <p className="text-xs text-muted-foreground">
+                Supports PDF, PNG, JPG up to 20MB
+              </p>
+              <input
+                id="file-input"
+                type="file"
+                className="hidden"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg"
+                onChange={handleFileSelect}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-0">
+            <div
+              className="border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer border-border hover:border-primary hover:bg-accent"
+              onClick={() => document.getElementById("camera-input")?.click()}
+            >
+              <Camera className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-semibold text-lg mb-1">Scan Document</h3>
+              <p className="text-sm text-muted-foreground mb-3">Use your camera to capture</p>
+              <p className="text-xs text-muted-foreground">
+                Takes a photo and processes it automatically
+              </p>
+              <input
+                id="camera-input"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {files.length > 0 && (
         <Card>
