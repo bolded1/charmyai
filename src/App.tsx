@@ -14,7 +14,7 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Onboarding from "./pages/Onboarding";
-import Dashboard from "./pages/Dashboard";
+
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
 import Expenses from "./pages/Expenses";
@@ -61,7 +61,6 @@ const App = () => (
           {/* Dashboard pages */}
           <Route path="/app" element={<DashboardLayout />}>
             <Route index element={<Upload />} />
-            <Route path="dashboard" element={<Dashboard />} />
             <Route path="upload" element={<Upload />} />
             <Route path="documents" element={<Documents />} />
             <Route path="expenses" element={<Expenses />} />
