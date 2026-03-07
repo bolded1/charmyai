@@ -72,7 +72,7 @@ export function DashboardSidebar() {
           <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
             <FileText className="h-3 w-3 text-white" />
           </div>
-          {!collapsed && <span className="font-semibold text-[13px] text-sidebar-accent-foreground">DocuLedger</span>}
+          {showLabels && <span className="font-semibold text-[13px] text-sidebar-accent-foreground">DocuLedger</span>}
         </Link>
       </SidebarHeader>
       <SidebarContent className="px-1.5 pt-1">
