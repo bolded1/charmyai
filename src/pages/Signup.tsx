@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { FileText } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useBrandLogo } from "@/hooks/useBrandLogo";
 
 export default function SignupPage() {
   const [loading, setLoading] = useState(false);
