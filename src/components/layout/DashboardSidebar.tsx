@@ -1,22 +1,30 @@
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Upload, FileText, Receipt, Tag,
-  Download, UsersRound, Settings, FileText as Logo, LogOut,
+  LayoutDashboard, Upload, FileText, Receipt, TrendingUp, Users2,
+  Download, UsersRound, Settings, LogOut,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-const navItems = [
+const financeItems = [
   { title: "Dashboard", url: "/app", icon: LayoutDashboard },
   { title: "Upload", url: "/app/upload", icon: Upload },
   { title: "Documents", url: "/app/documents", icon: FileText },
+];
+
+const recordsItems = [
   { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Categories", url: "/app/categories", icon: Tag },
+  { title: "Income", url: "/app/income", icon: TrendingUp },
+  { title: "Contacts", url: "/app/contacts", icon: Users2 },
   { title: "Exports", url: "/app/exports", icon: Download },
+];
+
+const systemItems = [
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
 ];
@@ -32,38 +40,49 @@ export function DashboardSidebar() {
     navigate("/login");
   };
 
+  const renderGroup = (label: string, items: typeof financeItems) => (
+    <SidebarGroup>
+      {!collapsed && (
+        <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-widest text-sidebar-muted px-3 mb-1">
+          {label}
+        </SidebarGroupLabel>
+      )}
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                <NavLink to={item.url} end={item.url === '/app'}>
+                  <item.icon className="h-4 w-4" />
+                  {!collapsed && <span>{item.title}</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 pb-3">
         <Link to="/app" className="flex items-center gap-2.5">
           <div className="h-7 w-7 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
-            <Logo className="h-3.5 w-3.5 text-sidebar-primary-foreground" />
+            <FileText className="h-3.5 w-3.5 text-white" />
           </div>
           {!collapsed && <span className="font-semibold text-sm text-sidebar-accent-foreground">DocuLedger</span>}
         </Link>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
-                    <NavLink to={item.url} end={item.url === '/app'}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="px-1">
+        {renderGroup("Documents", financeItems)}
+        {renderGroup("Finance", recordsItems)}
+        {renderGroup("System", systemItems)}
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSignOut}>
+            <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-muted">
               <LogOut className="h-4 w-4" />
               {!collapsed && <span>Sign Out</span>}
             </SidebarMenuButton>
