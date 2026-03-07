@@ -10,6 +10,89 @@ const corsHeaders = {
 const SUPPORTED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 const MAX_ATTACHMENT_SIZE = 20 * 1024 * 1024; // 20MB
 
+type AttachmentRef = {
+  url: string;
+  name?: string;
+  contentType?: string;
+};
+
+function getAttachmentUrlCandidates(url: string): string[] {
+  const candidates = [url];
+
+  try {
+    const parsed = new URL(url);
+    const idxMatch = parsed.pathname.match(/\/attachments\/(\d+)$/);
+
+    // Some providers announce /attachments/0 but file exists at /attachments/1
+    if (idxMatch) {
+      const idx = Number(idxMatch[1]);
+      if (Number.isFinite(idx)) {
+        const plusOne = new URL(url);
+        plusOne.pathname = parsed.pathname.replace(/\/attachments\/\d+$/, `/attachments/${idx + 1}`);
+        candidates.push(plusOne.toString());
+      }
+    }
+
+    // Regional fallback hosts observed in Mailgun routes
+    if (parsed.hostname === "storage-europe-west1.api.mailgun.net") {
+      const euHost = new URL(url);
+      euHost.hostname = "api.eu.mailgun.net";
+      candidates.push(euHost.toString());
+
+      const usHost = new URL(url);
+      usHost.hostname = "api.mailgun.net";
+      candidates.push(usHost.toString());
+    }
+  } catch {
+    // keep original URL only
+  }
+
+  return [...new Set(candidates)];
+}
+
+async function downloadAttachmentFromRef(ref: AttachmentRef, mailgunApiKey?: string | null): Promise<{ file: File; name: string } | null> {
+  const headers: Record<string, string> = {};
+  if (mailgunApiKey) {
+    headers.Authorization = `Basic ${btoa(`api:${mailgunApiKey}`)}`;
+  }
+
+  const candidates = getAttachmentUrlCandidates(ref.url);
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate, { headers });
+      if (!response.ok) {
+        console.error(`Failed downloading attachment URL (${response.status}):`, candidate);
+        continue;
+      }
+
+      const blob = await response.blob();
+      if (!blob || blob.size === 0) continue;
+
+      let filename = ref.name || "attachment";
+      if (!ref.name) {
+        try {
+          const pathname = new URL(candidate).pathname;
+          const lastSegment = pathname.split("/").pop();
+          if (lastSegment) filename = decodeURIComponent(lastSegment);
+        } catch {
+          // keep fallback filename
+        }
+      }
+
+      const file = new File([blob], filename, {
+        type: ref.contentType || blob.type || "application/octet-stream",
+      });
+
+      return { file, name: file.name };
+    } catch (downloadErr) {
+      console.error("Attachment URL download error:", downloadErr);
+    }
+  }
+
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,6 +110,7 @@ serve(async (req) => {
     const from = formData.get("from") as string || "";
     const subject = formData.get("subject") as string || "";
     const messageHeaders = formData.get("message-headers") as string || "";
+    const messageUrl = formData.get("message-url") as string || "";
 
     // Extract email and name from "from" field: "John Doe <john@example.com>"
     const fromMatch = from.match(/^(?:"?(.+?)"?\s)?<?([^\s>]+@[^\s>]+)>?$/);
@@ -128,14 +212,14 @@ serve(async (req) => {
       }
     }
 
-    // Method 4: Mailgun store+notify format - "attachments" contains JSON with attachment URLs
+    // Method 4: Mailgun store+notify format - "attachments" can be JSON refs or a count
     if (attachments.length === 0) {
       const attachmentsField = formData.get("attachments");
       if (typeof attachmentsField === "string" && attachmentsField.trim()) {
         try {
           const parsed = JSON.parse(attachmentsField) as unknown;
 
-          const refs: { url: string; name?: string; contentType?: string }[] = [];
+          const refs: AttachmentRef[] = [];
           if (Array.isArray(parsed)) {
             for (const item of parsed) {
               if (item && typeof item === "object") {
@@ -166,49 +250,61 @@ serve(async (req) => {
                 }
               }
             }
+          } else if (typeof parsed === "number") {
+            announcedAttachmentCount = parsed;
           }
 
-          announcedAttachmentCount = refs.length;
+          announcedAttachmentCount = Math.max(announcedAttachmentCount, refs.length);
           const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
 
-          for (const [idx, ref] of refs.entries()) {
-            try {
-              // Mailgun storage URLs always require Basic auth
-              const headers: Record<string, string> = {};
-              if (mailgunApiKey) {
-                headers["Authorization"] = `Basic ${btoa(`api:${mailgunApiKey}`)}`;
-              }
-
-              const response = await fetch(ref.url, { headers });
-              if (!response.ok) {
-                console.error(`Failed downloading attachment URL (${response.status}):`, ref.url);
-                continue;
-              }
-
-              const blob = await response.blob();
-              if (!blob || blob.size === 0) continue;
-
-              let filename = ref.name || `attachment-${idx + 1}`;
-              if (!ref.name) {
-                try {
-                  const pathname = new URL(ref.url).pathname;
-                  const lastSegment = pathname.split("/").pop();
-                  if (lastSegment) filename = decodeURIComponent(lastSegment);
-                } catch {
-                  // ignore URL parsing error and keep fallback filename
-                }
-              }
-
-              const file = new File([blob], filename, {
-                type: ref.contentType || blob.type || "application/octet-stream",
-              });
-              attachments.push({ file, name: file.name });
-            } catch (downloadErr) {
-              console.error("Attachment URL download error:", downloadErr);
-            }
+          for (const ref of refs) {
+            const downloaded = await downloadAttachmentFromRef(ref, mailgunApiKey);
+            if (downloaded) attachments.push(downloaded);
           }
         } catch (parseErr) {
           console.error("Could not parse Mailgun attachments field:", parseErr);
+        }
+      }
+    }
+
+    // Method 5: Fetch metadata from Mailgun message-url, then download attachments
+    if (attachments.length === 0 && messageUrl) {
+      const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
+
+      if (!mailgunApiKey) {
+        console.error("MAILGUN_API_KEY is missing; cannot fetch message-url attachments");
+      } else {
+        try {
+          const headers = {
+            Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}`,
+          };
+
+          const messageRes = await fetch(messageUrl, { headers });
+          if (!messageRes.ok) {
+            console.error(`Failed fetching message-url (${messageRes.status}):`, messageUrl);
+          } else {
+            const payload = await messageRes.json() as Record<string, unknown>;
+            const payloadAttachments = Array.isArray(payload.attachments)
+              ? payload.attachments as Record<string, unknown>[]
+              : [];
+
+            announcedAttachmentCount = Math.max(announcedAttachmentCount, payloadAttachments.length);
+
+            const refs: AttachmentRef[] = payloadAttachments
+              .map((item) => ({
+                url: (item.url || item["attachment-url"] || item.download_url) as string | undefined,
+                name: (item.name || item.filename) as string | undefined,
+                contentType: (item["content-type"] || item.contentType || item.mimetype) as string | undefined,
+              }))
+              .filter((item): item is AttachmentRef => Boolean(item.url));
+
+            for (const ref of refs) {
+              const downloaded = await downloadAttachmentFromRef(ref, mailgunApiKey);
+              if (downloaded) attachments.push(downloaded);
+            }
+          }
+        } catch (err) {
+          console.error("Failed processing message-url attachments:", err);
         }
       }
     }
