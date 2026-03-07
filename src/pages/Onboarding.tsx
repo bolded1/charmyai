@@ -62,9 +62,17 @@ export default function OnboardingPage() {
   const { data: org } = useOrganization();
   const updateOrg = useUpdateOrganization();
 
+  // Pre-populate from signup metadata
+  const metaName = user?.user_metadata?.full_name || "";
+  const [metaFirst, metaLast] = (() => {
+    const parts = metaName.trim().split(/\s+/);
+    if (parts.length >= 2) return [parts[0], parts.slice(1).join(" ")];
+    return [parts[0] || "", ""];
+  })();
+
   // Step 1 state
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState(metaFirst);
+  const [lastName, setLastName] = useState(metaLast);
   const [jobTitle, setJobTitle] = useState("");
   const [phone, setPhone] = useState("");
   const [companyRole, setCompanyRole] = useState("Owner");
