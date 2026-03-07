@@ -32,6 +32,7 @@ import AdminUsage from "./pages/admin/AdminUsage";
 import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminDemoSettings from "./pages/admin/AdminDemoSettings";
 import AdminSupport from "./pages/admin/AdminSupport";
 import NotFound from "./pages/NotFound";
 
@@ -120,6 +121,7 @@ const App = () => (
             <Route path="subscriptions" element={<AdminSubscriptions />} />
             <Route path="audit" element={<AdminAuditLogs />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="demo-settings" element={<AdminDemoSettings />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 
