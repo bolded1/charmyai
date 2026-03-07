@@ -75,16 +75,20 @@ export default function ExpensesPage() {
       try {
         // Fetch as blob to avoid cross-origin issues in preview
         const response = await fetch(signedUrl);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
+        const rawBlob = await response.blob();
+        // Ensure blob has correct MIME type for proper rendering
+        const typedBlob = new Blob([rawBlob], { type: doc.file_type || rawBlob.type });
+        const blobUrl = URL.createObjectURL(typedBlob);
         if (!cancelled) {
           setFileUrl(blobUrl);
+          setSignedFileUrl(signedUrl);
           setFileType(doc.file_type);
           setLoadingFile(false);
         }
       } catch {
         if (!cancelled) {
           setFileUrl(signedUrl);
+          setSignedFileUrl(signedUrl);
           setFileType(doc.file_type);
           setLoadingFile(false);
         }
