@@ -120,17 +120,18 @@ export default function DocumentsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead>
-                  <tr className="border-b text-left">
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Document</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Supplier/Customer</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Amount</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground"></th>
-                  </tr>
-                </thead>
+                 <thead>
+                   <tr className="border-b text-left">
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Document</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Source</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Supplier/Customer</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Amount</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
+                     <th className="p-3 text-xs font-medium text-muted-foreground"></th>
+                   </tr>
+                 </thead>
                 <tbody>
                   {filtered.map((doc) => (
                     <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
