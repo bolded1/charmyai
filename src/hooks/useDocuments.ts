@@ -296,6 +296,8 @@ export function useUploadIncomeDocument() {
     },
   });
 }
+
+export function useUpdateExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
