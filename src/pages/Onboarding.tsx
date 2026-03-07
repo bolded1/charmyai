@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Building2, Users, UserCircle, ArrowRight, ArrowLeft, Camera } from "lucide-react";
+import { FileText, Building2, UserCircle, ArrowRight, ArrowLeft, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -14,7 +14,6 @@ const steps = [
   { title: "Your Profile", icon: UserCircle },
   { title: "Create Organization", icon: Building2 },
   { title: "Company Information", icon: FileText },
-  { title: "Invite Team", icon: Users },
 ];
 
 const companyRoles = ["Owner", "Founder", "Accountant", "Finance Manager", "Admin", "Staff"];
@@ -173,21 +172,6 @@ export default function OnboardingPage() {
                 <Label>Address</Label>
                 <Input placeholder="123 Main St, Berlin" />
               </div>
-            </div>
-          )}
-          {step === 3 && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Invite team members to collaborate on document processing.</p>
-              {[1, 2].map((i) => (
-                <div key={i} className="grid grid-cols-3 gap-3">
-                  <Input placeholder="First name" />
-                  <Input placeholder="Last name" />
-                  <Input placeholder="Email address" />
-                </div>
-              ))}
-              <Button variant="ghost" size="sm" className="w-full" onClick={next}>
-                Skip for now
-              </Button>
             </div>
           )}
 
