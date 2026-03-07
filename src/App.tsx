@@ -38,41 +38,13 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const ACCENT_COLORS = [
-  { name: "Navy", hue: "224 64% 33%" },
-  { name: "Blue", hue: "217 85% 50%" },
-  { name: "Emerald", hue: "160 84% 36%" },
-  { name: "Violet", hue: "262 70% 50%" },
-  { name: "Rose", hue: "350 70% 50%" },
-  { name: "Amber", hue: "38 90% 50%" },
-  { name: "Teal", hue: "174 70% 36%" },
-  { name: "Indigo", hue: "234 70% 52%" },
-];
-
-// Apply persisted theme & accent on startup
+// Apply persisted theme on startup (accent color loads from org after auth)
 function applyPersistedSettings() {
   const root = document.documentElement;
   const theme = localStorage.getItem("theme-mode") || "system";
   if (theme === "dark") root.classList.add("dark");
   else if (theme === "light") root.classList.remove("dark");
   else root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-  const accentIdx = parseInt(localStorage.getItem("accent-color") || "0", 10);
-  const color = ACCENT_COLORS[accentIdx] || ACCENT_COLORS[0];
-  root.style.setProperty("--primary", color.hue);
-  root.style.setProperty("--ring", color.hue);
-  root.style.setProperty("--sidebar-primary", color.hue);
-  root.style.setProperty("--sidebar-ring", color.hue);
-  const [h, s, l] = color.hue.split(" ").map((v: string) => parseFloat(v));
-  root.style.setProperty("--primary-hover", `${h} ${s}% ${Math.max(l - 6, 10)}%`);
-  const isDark = root.classList.contains("dark");
-  root.style.setProperty("--brand-soft", isDark ? `${h} 30% 14%` : `${h} 40% 95%`);
-  root.style.setProperty("--sidebar-active-bg", isDark ? `${h} 25% 12%` : `${h} 40% 95%`);
-  root.style.setProperty("--sidebar-active-text", isDark ? `${h} 50% 62%` : `${h} ${s}% ${Math.max(l - 8, 10)}%`);
-
-  const btnText = localStorage.getItem("button-text-color") || "white";
-  root.style.setProperty("--primary-foreground", btnText === "white" ? "0 0% 100%" : "0 0% 0%");
-  root.style.setProperty("--sidebar-primary-foreground", btnText === "white" ? "0 0% 100%" : "0 0% 0%");
 }
 applyPersistedSettings();
 
