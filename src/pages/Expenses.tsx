@@ -54,59 +54,56 @@ export default function ExpensesPage() {
         if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
         return null;
       });
-      setSignedFileUrl(null);
       setFileType(null);
       return;
     }
 
-    setFileUrl((prev) => {
-      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-      return null;
-    });
-    setSignedFileUrl(null);
+    let cancelled = false;
+    let localBlobUrl: string | null = null;
+    setLoadingFile(true);
     setFileType(null);
 
-    let cancelled = false;
-    setLoadingFile(true);
-
     (async () => {
-      // Get the document record to find file_path and file_type
       const { data: doc } = await supabase
         .from("documents")
         .select("file_path, file_type")
         .eq("id", selectedExpense.document_id)
         .single();
 
-      if (cancelled || !doc) { setLoadingFile(false); return; }
-
-      const signedUrl = await getDocumentSignedUrl(doc.file_path);
-      if (cancelled || !signedUrl) { setLoadingFile(false); return; }
-
-      try {
-        // Fetch as blob to avoid cross-origin issues in preview
-        const response = await fetch(signedUrl);
-        const rawBlob = await response.blob();
-        // Ensure blob has correct MIME type for proper rendering
-        const typedBlob = new Blob([rawBlob], { type: doc.file_type || rawBlob.type });
-        const blobUrl = URL.createObjectURL(typedBlob);
-        if (!cancelled) {
-          setFileUrl(blobUrl);
-          setSignedFileUrl(signedUrl);
-          setFileType(doc.file_type);
-          setLoadingFile(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setFileUrl(signedUrl);
-          setSignedFileUrl(signedUrl);
-          setFileType(doc.file_type);
-          setLoadingFile(false);
-        }
+      if (cancelled || !doc) {
+        setLoadingFile(false);
+        return;
       }
+
+      const { data: fileBlob, error: fileError } = await supabase.storage
+        .from("documents")
+        .download(doc.file_path);
+
+      if (cancelled) return;
+
+      if (fileError || !fileBlob) {
+        setFileUrl(null);
+        setFileType(doc.file_type || null);
+        setLoadingFile(false);
+        return;
+      }
+
+      const typedBlob = new Blob([fileBlob], {
+        type: doc.file_type || fileBlob.type || "application/octet-stream",
+      });
+
+      localBlobUrl = URL.createObjectURL(typedBlob);
+      setFileUrl((prev) => {
+        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return localBlobUrl;
+      });
+      setFileType(doc.file_type || typedBlob.type || null);
+      setLoadingFile(false);
     })();
 
     return () => {
       cancelled = true;
+      if (localBlobUrl) URL.revokeObjectURL(localBlobUrl);
     };
   }, [selectedExpense?.document_id]);
 
