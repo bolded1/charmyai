@@ -451,6 +451,7 @@ export type Database = {
           logo_light: string | null
           name: string
           owner_user_id: string
+          primary_color: string | null
           updated_at: string
         }
         Insert: {
@@ -461,6 +462,7 @@ export type Database = {
           logo_light?: string | null
           name: string
           owner_user_id: string
+          primary_color?: string | null
           updated_at?: string
         }
         Update: {
@@ -471,6 +473,7 @@ export type Database = {
           logo_light?: string | null
           name?: string
           owner_user_id?: string
+          primary_color?: string | null
           updated_at?: string
         }
         Relationships: []

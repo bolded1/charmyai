@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { useKeyboardShortcuts, MOD_LABEL } from "@/hooks/useKeyboardShortcuts";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 
 const mobileNavItems = [
   { title: "Capture", url: "/app", icon: Upload },
@@ -43,6 +45,11 @@ export default function DashboardLayout() {
   const { settings: layoutSettings } = useLayoutSettings();
   const isMobile = useIsMobile();
   const brandLogo = useBrandLogo();
+
+  // Apply org accent color
+  useEffect(() => {
+    applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
+  }, [org?.primary_color]);
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 

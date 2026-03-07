@@ -19,17 +19,8 @@ import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartph
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
-
-const ACCENT_COLORS = [
-  { name: "Navy", hue: "224 64% 33%", darkHue: "224 50% 50%" },
-  { name: "Blue", hue: "217 85% 50%", darkHue: "217 70% 58%" },
-  { name: "Emerald", hue: "160 84% 36%", darkHue: "160 60% 46%" },
-  { name: "Violet", hue: "262 70% 50%", darkHue: "262 60% 58%" },
-  { name: "Rose", hue: "350 70% 50%", darkHue: "350 60% 55%" },
-  { name: "Amber", hue: "38 90% 50%", darkHue: "38 70% 54%" },
-  { name: "Teal", hue: "174 70% 36%", darkHue: "174 55% 46%" },
-  { name: "Indigo", hue: "234 70% 52%", darkHue: "234 60% 60%" },
-];
+import { AccentColorPicker } from "@/components/AccentColorPicker";
+import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 
 /* ── Section Header helper ── */
 function SectionHeader({ title, description }: { title: string; description: string }) {
@@ -72,13 +63,6 @@ export default function SettingsPage() {
   });
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">(() => {
     return (localStorage.getItem("theme-mode") as "light" | "dark" | "system") || "system";
-  });
-  const [accentColor, setAccentColor] = useState(() => {
-    const stored = localStorage.getItem("accent-color");
-    return stored ? parseInt(stored, 10) : 0;
-  });
-  const [buttonTextColor, setButtonTextColor] = useState<"white" | "black">(() => {
-    return (localStorage.getItem("button-text-color") as "white" | "black") || "white";
   });
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
@@ -143,29 +127,12 @@ export default function SettingsPage() {
     localStorage.setItem("theme-mode", themeMode);
   }, [themeMode]);
 
+  // Apply org accent color when org loads
   useEffect(() => {
-    const root = document.documentElement;
-    const color = ACCENT_COLORS[accentColor];
-    root.style.setProperty("--primary", color.hue);
-    root.style.setProperty("--ring", color.hue);
-    root.style.setProperty("--sidebar-primary", color.hue);
-    root.style.setProperty("--sidebar-ring", color.hue);
-    const [h, s, l] = color.hue.split(" ").map((v) => parseFloat(v));
-    root.style.setProperty("--primary-hover", `${h} ${s}% ${Math.max(l - 6, 10)}%`);
-    const isDark = root.classList.contains("dark");
-    root.style.setProperty("--brand-soft", isDark ? `${h} 30% 14%` : `${h} 40% 95%`);
-    root.style.setProperty("--sidebar-active-bg", isDark ? `${h} 25% 12%` : `${h} 40% 95%`);
-    root.style.setProperty("--sidebar-active-text", isDark ? `${h} 50% 62%` : `${h} ${s}% ${Math.max(l - 8, 10)}%`);
-    localStorage.setItem("accent-color", String(accentColor));
-  }, [accentColor]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const textHsl = buttonTextColor === "white" ? "0 0% 100%" : "0 0% 0%";
-    root.style.setProperty("--primary-foreground", textHsl);
-    root.style.setProperty("--sidebar-primary-foreground", textHsl);
-    localStorage.setItem("button-text-color", buttonTextColor);
-  }, [buttonTextColor]);
+    if (org?.primary_color) {
+      applyAccentColor(org.primary_color);
+    }
+  }, [org?.primary_color]);
 
   // Auto-save profile with debounce
   const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -550,104 +517,17 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Accent & Colors */}
+            {/* Accent Color */}
             <Card>
               <CardContent className="p-6">
-                <SectionHeader title="Accent Color" description="Applied to buttons, links, active states, and highlights." />
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
-                  {ACCENT_COLORS.map((color, i) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setAccentColor(i)}
-                      className="group flex flex-col items-center gap-1.5"
-                      title={color.name}
-                    >
-                      <div className="relative">
-                        <div
-                          className={`h-9 w-9 rounded-full transition-all ${
-                            accentColor === i ? "ring-2 ring-offset-2 ring-offset-background scale-105" : "hover:scale-105"
-                          }`}
-                          style={{
-                            backgroundColor: `hsl(${color.hue})`,
-                            ...(accentColor === i ? { ["--tw-ring-color" as string]: `hsl(${color.hue})` } : {}),
-                          }}
-                        />
-                        {accentColor === i && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Check className="h-3.5 w-3.5" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }} />
-                          </div>
-                        )}
-                      </div>
-                      <span className={`text-[10px] ${accentColor === i ? "text-foreground font-medium" : "text-muted-foreground"}`}>{color.name}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <Separator className="my-5" />
-
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-3">Button Text Color</p>
-                  <div className="flex gap-3">
-                    {(["white", "black"] as const).map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setButtonTextColor(color)}
-                        className={`flex items-center gap-2.5 rounded-lg border px-4 py-2.5 transition-all ${
-                          buttonTextColor === color
-                            ? "border-foreground ring-1 ring-foreground/10"
-                            : "border-border hover:border-border-strong"
-                        }`}
-                      >
-                        <div className={`h-4 w-4 rounded-full border border-border ${color === "white" ? "bg-white" : "bg-black"}`} />
-                        <span className="text-xs font-medium capitalize">{color}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator className="my-5" />
-
-                {/* Live preview */}
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-3">Preview</p>
-                  <div className="rounded-lg border border-border overflow-hidden bg-background p-4">
-                    <div className="flex gap-3">
-                      <div className="w-24 shrink-0 rounded-md bg-sidebar p-2 space-y-1">
-                        <div className="h-5 rounded-sm px-2 flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue} / 0.12)` }}>
-                          <span className="text-[9px] font-medium" style={{ color: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>Dashboard</span>
-                        </div>
-                        <div className="h-5 rounded-sm px-2 flex items-center">
-                          <span className="text-[9px] text-sidebar-foreground">Documents</span>
-                        </div>
-                        <div className="h-5 rounded-sm px-2 flex items-center">
-                          <span className="text-[9px] text-sidebar-foreground">Expenses</span>
-                        </div>
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="rounded-md border border-border bg-card p-3">
-                          <span className="text-xs font-medium">Card Title</span>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">This is how cards will look.</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <div className="h-6 px-3 rounded-md flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>
-                            <span className="text-[9px] font-medium" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }}>Primary</span>
-                          </div>
-                          <div className="h-6 px-3 rounded-md border border-border bg-card flex items-center">
-                            <span className="text-[9px] text-foreground">Secondary</span>
-                          </div>
-                          <div className="h-6 px-3 rounded-md flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue} / 0.1)` }}>
-                            <span className="text-[9px] font-medium" style={{ color: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>Soft</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Badge variant="success" className="text-[9px] h-4 px-1.5">Success</Badge>
-                          <Badge variant="warning" className="text-[9px] h-4 px-1.5">Warning</Badge>
-                          <Badge variant="info" className="text-[9px] h-4 px-1.5">Info</Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <SectionHeader title="Primary Accent Color" description="Applied to buttons, links, active states, highlights, and charts across the entire app." />
+                <AccentColorPicker
+                  currentColor={org?.primary_color || DEFAULT_ACCENT_COLOR}
+                  onSave={async (hex) => {
+                    if (!org) return;
+                    await updateOrg.mutateAsync({ id: org.id, primary_color: hex });
+                  }}
+                />
               </CardContent>
             </Card>
 

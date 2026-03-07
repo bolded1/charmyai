@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ADD COLUMN primary_color text DEFAULT '#1E3A8A';
