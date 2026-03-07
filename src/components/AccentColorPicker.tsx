@@ -3,11 +3,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, RotateCcw, AlertCircle } from "lucide-react";
+import { Check, RotateCcw, AlertCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { isValidHex, generateColorVariations, applyAccentColor, DEFAULT_ACCENT_COLOR, PRESET_COLORS } from "@/lib/color-utils";
+import {
+  isValidHex, generateColorVariations, applyAccentColor,
+  DEFAULT_ACCENT_COLOR, PRESET_COLORS, getContrastForeground, contrastRatio,
+} from "@/lib/color-utils";
 
 interface AccentColorPickerProps {
   currentColor: string;
@@ -21,7 +23,6 @@ export function AccentColorPicker({ currentColor, onSave }: AccentColorPickerPro
   const [saving, setSaving] = useState(false);
   const hasChanges = selectedColor !== (currentColor || DEFAULT_ACCENT_COLOR);
 
-  // Sync when currentColor changes (e.g. org loads)
   useEffect(() => {
     if (currentColor) {
       setSelectedColor(currentColor);
@@ -34,7 +35,7 @@ export function AccentColorPicker({ currentColor, onSave }: AccentColorPickerPro
     setSelectedColor(upper);
     setHexInput(upper);
     setHexError("");
-    applyAccentColor(upper); // live preview
+    applyAccentColor(upper);
   };
 
   const handleHexInputChange = (value: string) => {
@@ -50,31 +51,22 @@ export function AccentColorPicker({ currentColor, onSave }: AccentColorPickerPro
     }
   };
 
-  const handlePresetClick = (hex: string) => {
-    handleColorPickerChange(hex);
-  };
-
-  const handleReset = () => {
-    handleColorPickerChange(DEFAULT_ACCENT_COLOR);
-  };
+  const handlePresetClick = (hex: string) => handleColorPickerChange(hex);
+  const handleReset = () => handleColorPickerChange(DEFAULT_ACCENT_COLOR);
 
   const handleSave = async () => {
-    if (!isValidHex(selectedColor)) {
-      toast.error("Please enter a valid color.");
-      return;
-    }
+    if (!isValidHex(selectedColor)) { toast.error("Please enter a valid color."); return; }
     setSaving(true);
-    try {
-      await onSave(selectedColor);
-      toast.success("Accent color saved!");
-    } catch {
-      toast.error("Failed to save color.");
-    } finally {
-      setSaving(false);
-    }
+    try { await onSave(selectedColor); toast.success("Accent color saved!"); }
+    catch { toast.error("Failed to save color."); }
+    finally { setSaving(false); }
   };
 
   const vars = generateColorVariations(selectedColor);
+  const fgColor = getContrastForeground(selectedColor);
+  const fgHex = fgColor === "white" ? "#FFFFFF" : "#000000";
+  const ratio = contrastRatio(selectedColor, fgHex);
+  const passesAA = ratio >= 4.5;
 
   return (
     <div className="space-y-5">
@@ -113,6 +105,14 @@ export function AccentColorPicker({ currentColor, onSave }: AccentColorPickerPro
               className="h-9 w-9 rounded-md border border-border shrink-0"
               style={{ backgroundColor: isValidHex(selectedColor) ? selectedColor : "#ccc" }}
             />
+          </div>
+
+          {/* Contrast indicator */}
+          <div className="flex items-center gap-1.5 mt-1">
+            <ShieldCheck className={`h-3 w-3 ${passesAA ? "text-success" : "text-warning"}`} />
+            <span className={`text-[10px] ${passesAA ? "text-success" : "text-warning"}`}>
+              {passesAA ? "WCAG AA pass" : "Low contrast — auto-adjusted"} · {ratio.toFixed(1)}:1
+            </span>
           </div>
         </div>
       </div>
@@ -179,9 +179,10 @@ export function AccentColorPicker({ currentColor, onSave }: AccentColorPickerPro
                 <span className="text-xs font-medium">Card Title</span>
                 <p className="text-[10px] text-muted-foreground mt-0.5">This is how cards will look.</p>
               </div>
+              {/* Buttons */}
               <div className="flex gap-2">
-                <div className="h-6 px-3 rounded-md flex items-center" style={{ backgroundColor: `hsl(${vars.primary})` }}>
-                  <span className="text-[9px] font-medium text-white">Primary</span>
+                <div className="h-6 px-3 rounded-md flex items-center" style={{ backgroundColor: `hsl(${vars.primary})`, color: fgHex }}>
+                  <span className="text-[9px] font-medium">Primary</span>
                 </div>
                 <div className="h-6 px-3 rounded-md border border-border bg-card flex items-center">
                   <span className="text-[9px] text-foreground">Secondary</span>
@@ -190,15 +191,28 @@ export function AccentColorPicker({ currentColor, onSave }: AccentColorPickerPro
                   <span className="text-[9px] font-medium" style={{ color: `hsl(${vars.primary})` }}>Soft</span>
                 </div>
               </div>
+              {/* Link, progress, checkbox, input focus */}
               <div className="flex gap-2 items-center">
                 <a className="text-[10px] underline" style={{ color: `hsl(${vars.primary})` }}>Link color</a>
                 <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
                   <div className="h-full w-3/4 rounded-full" style={{ backgroundColor: `hsl(${vars.primary})` }} />
                 </div>
                 <div className="h-3 w-3 rounded-sm border-2" style={{ borderColor: `hsl(${vars.primary})`, backgroundColor: `hsl(${vars.primary})` }}>
-                  <Check className="h-2 w-2 text-white" />
+                  <Check className="h-2 w-2" style={{ color: fgHex }} />
                 </div>
               </div>
+              {/* Input with focus ring */}
+              <div className="rounded-md border-2 bg-card px-2 py-1 text-[9px] text-muted-foreground" style={{ borderColor: `hsl(${vars.primary})`, boxShadow: `0 0 0 2px hsl(${vars.primary} / 0.2)` }}>
+                Input focus state
+              </div>
+              {/* Chart bars */}
+              <div className="flex items-end gap-1 h-8">
+                {[vars.chart1, vars.chart2, vars.chart3, vars.chart4, vars.chart5].map((c, i) => (
+                  <div key={i} className="flex-1 rounded-sm" style={{ height: `${60 + (i % 3) * 15}%`, backgroundColor: `hsl(${c})` }} />
+                ))}
+                <span className="text-[8px] text-muted-foreground ml-1">Charts</span>
+              </div>
+              {/* Badges */}
               <div className="flex gap-2">
                 <Badge variant="success" className="text-[9px] h-4 px-1.5">Success</Badge>
                 <Badge variant="warning" className="text-[9px] h-4 px-1.5">Warning</Badge>
