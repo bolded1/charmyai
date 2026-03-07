@@ -517,104 +517,17 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Accent & Colors */}
+            {/* Accent Color */}
             <Card>
               <CardContent className="p-6">
-                <SectionHeader title="Accent Color" description="Applied to buttons, links, active states, and highlights." />
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
-                  {ACCENT_COLORS.map((color, i) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setAccentColor(i)}
-                      className="group flex flex-col items-center gap-1.5"
-                      title={color.name}
-                    >
-                      <div className="relative">
-                        <div
-                          className={`h-9 w-9 rounded-full transition-all ${
-                            accentColor === i ? "ring-2 ring-offset-2 ring-offset-background scale-105" : "hover:scale-105"
-                          }`}
-                          style={{
-                            backgroundColor: `hsl(${color.hue})`,
-                            ...(accentColor === i ? { ["--tw-ring-color" as string]: `hsl(${color.hue})` } : {}),
-                          }}
-                        />
-                        {accentColor === i && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Check className="h-3.5 w-3.5" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }} />
-                          </div>
-                        )}
-                      </div>
-                      <span className={`text-[10px] ${accentColor === i ? "text-foreground font-medium" : "text-muted-foreground"}`}>{color.name}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <Separator className="my-5" />
-
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-3">Button Text Color</p>
-                  <div className="flex gap-3">
-                    {(["white", "black"] as const).map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setButtonTextColor(color)}
-                        className={`flex items-center gap-2.5 rounded-lg border px-4 py-2.5 transition-all ${
-                          buttonTextColor === color
-                            ? "border-foreground ring-1 ring-foreground/10"
-                            : "border-border hover:border-border-strong"
-                        }`}
-                      >
-                        <div className={`h-4 w-4 rounded-full border border-border ${color === "white" ? "bg-white" : "bg-black"}`} />
-                        <span className="text-xs font-medium capitalize">{color}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator className="my-5" />
-
-                {/* Live preview */}
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-3">Preview</p>
-                  <div className="rounded-lg border border-border overflow-hidden bg-background p-4">
-                    <div className="flex gap-3">
-                      <div className="w-24 shrink-0 rounded-md bg-sidebar p-2 space-y-1">
-                        <div className="h-5 rounded-sm px-2 flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue} / 0.12)` }}>
-                          <span className="text-[9px] font-medium" style={{ color: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>Dashboard</span>
-                        </div>
-                        <div className="h-5 rounded-sm px-2 flex items-center">
-                          <span className="text-[9px] text-sidebar-foreground">Documents</span>
-                        </div>
-                        <div className="h-5 rounded-sm px-2 flex items-center">
-                          <span className="text-[9px] text-sidebar-foreground">Expenses</span>
-                        </div>
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="rounded-md border border-border bg-card p-3">
-                          <span className="text-xs font-medium">Card Title</span>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">This is how cards will look.</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <div className="h-6 px-3 rounded-md flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>
-                            <span className="text-[9px] font-medium" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }}>Primary</span>
-                          </div>
-                          <div className="h-6 px-3 rounded-md border border-border bg-card flex items-center">
-                            <span className="text-[9px] text-foreground">Secondary</span>
-                          </div>
-                          <div className="h-6 px-3 rounded-md flex items-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue} / 0.1)` }}>
-                            <span className="text-[9px] font-medium" style={{ color: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>Soft</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Badge variant="success" className="text-[9px] h-4 px-1.5">Success</Badge>
-                          <Badge variant="warning" className="text-[9px] h-4 px-1.5">Warning</Badge>
-                          <Badge variant="info" className="text-[9px] h-4 px-1.5">Info</Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <SectionHeader title="Primary Accent Color" description="Applied to buttons, links, active states, highlights, and charts across the entire app." />
+                <AccentColorPicker
+                  currentColor={org?.primary_color || DEFAULT_ACCENT_COLOR}
+                  onSave={async (hex) => {
+                    if (!org) return;
+                    await updateOrg.mutateAsync({ id: org.id, primary_color: hex });
+                  }}
+                />
               </CardContent>
             </Card>
 
