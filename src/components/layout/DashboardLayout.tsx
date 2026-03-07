@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Plus } from "lucide-react";
+import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import {
@@ -25,6 +26,7 @@ export default function DashboardLayout() {
   const { user, loading } = useAuth();
   const { profile, displayName, initials } = useProfile();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const { settings: layoutSettings } = useLayoutSettings();
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
@@ -140,7 +142,7 @@ export default function DashboardLayout() {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-8 overflow-auto surface-sunken">
+          <main className={`flex-1 overflow-auto surface-sunken ${layoutSettings.compactView ? "p-4" : "p-8"}`}>
             <Outlet />
           </main>
         </div>

@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { mockAuditLog } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
+import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
@@ -69,6 +70,7 @@ export default function SettingsPage() {
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
   const [accentColor, setAccentColor] = useState(0);
   const [buttonTextColor, setButtonTextColor] = useState<"white" | "black">("white");
+  const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
   const [logoLight, setLogoLight] = useState<string | null>(null);
   const [logoDark, setLogoDark] = useState<string | null>(null);
@@ -659,10 +661,10 @@ export default function SettingsPage() {
                 <SectionHeader title="Layout" description="Control density and spacing preferences." />
                 <div className="divide-y divide-border">
                   <SettingRow title="Compact View" description="Reduce spacing in tables and lists for denser data display.">
-                    <Switch />
+                    <Switch checked={layoutSettings.compactView} onCheckedChange={(v) => updateLayout({ compactView: v })} />
                   </SettingRow>
                   <SettingRow title="Show Sidebar Labels" description="Display text labels alongside navigation icons.">
-                    <Switch defaultChecked />
+                    <Switch checked={layoutSettings.showSidebarLabels} onCheckedChange={(v) => updateLayout({ showSidebarLabels: v })} />
                   </SettingRow>
                 </div>
               </CardContent>
