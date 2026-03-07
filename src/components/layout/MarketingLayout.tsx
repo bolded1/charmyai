@@ -12,6 +12,7 @@ const navLinks = [
 ];
 
 export default function MarketingLayout() {
+  const brandLogo = useBrandLogo();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
