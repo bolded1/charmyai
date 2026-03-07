@@ -827,13 +827,21 @@ function BrandUploadBox({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="space-y-1.5">
-      <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
+    <div className={`space-y-1.5 ${wide ? "" : ""}`}>
       <div
-        className={`relative rounded-lg border border-dashed flex items-center justify-center overflow-hidden transition-all cursor-pointer hover:border-primary/40 ${
-          tall ? "h-24" : "h-20"
+        className={`relative rounded-lg border border-dashed flex items-center justify-center overflow-hidden transition-all cursor-pointer group hover:border-primary/40 ${
+          tall ? "h-28" : "h-20"
         } ${dark ? "bg-[hsl(222,20%,10%)] border-[hsl(222,12%,20%)]" : "bg-muted/20 border-border"}`}
         onClick={() => inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+        onDrop={(e) => {
+          e.preventDefault(); e.stopPropagation();
+          const file = e.dataTransfer.files?.[0];
+          if (file) {
+            const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+            onUpload(fakeEvent);
+          }
+        }}
       >
         {image ? (
           <>
