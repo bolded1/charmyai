@@ -31,7 +31,8 @@ export default function UploadPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: documents = [] } = useDocuments();
-  const { importEmailAddress } = useOrganization();
+  const { data: orgData } = useOrganization();
+  const importEmailAddress = orgData ? getImportEmailAddress(orgData.import_email_token) : null;
 
   const copyEmail = () => {
     if (importEmailAddress) {
