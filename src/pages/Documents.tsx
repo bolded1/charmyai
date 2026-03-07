@@ -141,6 +141,15 @@ export default function DocumentsPage() {
                           <span className="text-sm font-medium truncate max-w-[200px]">{doc.file_name}</span>
                         </div>
                       </td>
+                      <td className="p-3">
+                        {(doc as any).source === "email_import" ? (
+                          <Badge variant="secondary" className="text-[10px] gap-1">
+                            <Mail className="h-3 w-3" /> Email
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Upload</span>
+                        )}
+                      </td>
                       <td className="p-3 text-sm text-muted-foreground capitalize">
                         {(doc.document_type || "—").replace("_", " ")}
                       </td>
