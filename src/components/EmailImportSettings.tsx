@@ -147,11 +147,11 @@ export default function EmailImportSettings() {
         </CardContent>
       </Card>
 
-      {/* Recent Imports */}
+      {/* Recent Imports Table */}
       <Card>
         <CardContent className="p-0">
           <div className="px-5 py-4 border-b border-border">
-            <h3 className="text-sm font-medium">Recent Imports</h3>
+            <h3 className="text-sm font-medium">Recent Email Imports</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Emails received and processed recently.</p>
           </div>
           {importsLoading ? (
@@ -165,29 +165,55 @@ export default function EmailImportSettings() {
               <p className="text-xs text-muted-foreground/70 mt-1">Forward an invoice to your import address to get started</p>
             </div>
           ) : (
-            <div className="divide-y divide-border-subtle">
-              {imports.map((imp: any) => (
-                <div key={imp.id} className="flex items-start gap-3 px-5 py-3.5 hover:bg-accent/30 transition-colors">
-                  <div className="mt-0.5 shrink-0">{statusIcons[imp.status] || statusIcons.processing}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{imp.subject || "(no subject)"}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {imp.sender_name ? `${imp.sender_name} <${imp.sender_email}>` : imp.sender_email}
-                    </p>
-                    {imp.error_message && (
-                      <p className="text-xs text-destructive mt-0.5">{imp.error_message}</p>
-                    )}
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <Badge variant="secondary" className="text-[10px]">
-                      {imp.processed_count}/{imp.attachment_count} files
-                    </Badge>
-                    <p className="text-[11px] text-muted-foreground/60 mt-1">
-                      {new Date(imp.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Received</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Sender</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Subject</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground text-center">Attachments</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Result</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground text-center">Documents</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {imports.map((imp: any) => {
+                    const status = getImportStatus(imp);
+                    return (
+                      <tr key={imp.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="p-3 text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(imp.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                          <span className="block text-[10px] text-muted-foreground/60">
+                            {new Date(imp.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </td>
+                        <td className="p-3 max-w-[160px]">
+                          <p className="text-sm truncate">{imp.sender_name || imp.sender_email || "—"}</p>
+                          {imp.sender_name && (
+                            <p className="text-[10px] text-muted-foreground truncate">{imp.sender_email}</p>
+                          )}
+                        </td>
+                        <td className="p-3 max-w-[200px]">
+                          <p className="text-sm truncate">{imp.subject || "(no subject)"}</p>
+                          {imp.error_message && (
+                            <p className="text-[10px] text-destructive truncate mt-0.5">{imp.error_message}</p>
+                          )}
+                        </td>
+                        <td className="p-3 text-center text-sm">{imp.attachment_count}</td>
+                        <td className="p-3">
+                          <Badge variant="secondary" className={`text-[10px] gap-1 ${status.className}`}>
+                            {status.icon} {status.label}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-center text-sm font-medium">
+                          {imp.processed_count > 0 ? imp.processed_count : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
