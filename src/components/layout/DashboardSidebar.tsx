@@ -6,7 +6,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
-  Upload, FileText, Receipt, TrendingUp, Users2,
+  Upload, FileText, Receipt, TrendingUp,
   Download, UsersRound, Settings, LogOut,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +20,7 @@ const financeItems = [
 const recordsItems = [
   { title: "Expenses", url: "/app/expenses", icon: Receipt },
   { title: "Income", url: "/app/income", icon: TrendingUp },
-  { title: "Contacts", url: "/app/contacts", icon: Users2 },
+  
   { title: "Exports", url: "/app/exports", icon: Download },
 ];
 

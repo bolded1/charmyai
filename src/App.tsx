@@ -19,7 +19,7 @@ import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
-import Contacts from "./pages/Contacts";
+
 import Categories from "./pages/Categories";
 import Exports from "./pages/Exports";
 import Team from "./pages/Team";
@@ -104,7 +104,7 @@ const App = () => (
             <Route path="documents" element={<Documents />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
-            <Route path="contacts" element={<Contacts />} />
+            
             <Route path="categories" element={<Categories />} />
             <Route path="exports" element={<Exports />} />
             <Route path="team" element={<Team />} />
