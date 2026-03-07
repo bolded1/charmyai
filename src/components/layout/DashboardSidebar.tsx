@@ -33,6 +33,8 @@ export function DashboardSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
+  const { settings } = useLayoutSettings();
+  const showLabels = settings.showSidebarLabels && !collapsed;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
