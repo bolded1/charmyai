@@ -449,46 +449,6 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Email Branding */}
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Email Branding" description="Customize the header image used in outgoing notification emails." />
-                <BrandUploadBox
-                  label="Email Header"
-                  hint="600 × 120 px, PNG or JPG — appears at top of all outgoing emails"
-                  image={emailHeader}
-                  onUpload={handleImageUpload(setEmailHeader)}
-                  onRemove={() => setEmailHeader(null)}
-                  tall
-                  wide
-                />
-                <div className="mt-4 rounded-lg border border-border overflow-hidden">
-                  <div className="px-4 py-2 border-b border-border bg-muted/30">
-                    <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5"><Eye className="h-3 w-3" /> Email Preview</p>
-                  </div>
-                  <div className="bg-card p-4 space-y-3">
-                    {emailHeader ? (
-                      <img src={emailHeader} alt="Email header" className="w-full h-16 object-cover rounded-md" />
-                    ) : (
-                      <div className="w-full h-16 rounded-md flex items-center justify-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>
-                        <span className="text-xs font-semibold" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }}>Your Company</span>
-                      </div>
-                    )}
-                    <div className="space-y-1.5 px-2">
-                      <div className="h-3 w-3/4 rounded-sm bg-muted" />
-                      <div className="h-3 w-full rounded-sm bg-muted" />
-                      <div className="h-3 w-2/3 rounded-sm bg-muted" />
-                    </div>
-                    <div className="px-2">
-                      <div className="h-7 w-28 rounded-md flex items-center justify-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>
-                        <span className="text-[10px] font-medium" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }}>View Document</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Theme */}
             <Card>
               <CardContent className="p-6">
