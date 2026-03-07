@@ -110,6 +110,7 @@ serve(async (req) => {
     const from = formData.get("from") as string || "";
     const subject = formData.get("subject") as string || "";
     const messageHeaders = formData.get("message-headers") as string || "";
+    const messageUrl = formData.get("message-url") as string || "";
 
     // Extract email and name from "from" field: "John Doe <john@example.com>"
     const fromMatch = from.match(/^(?:"?(.+?)"?\s)?<?([^\s>]+@[^\s>]+)>?$/);
