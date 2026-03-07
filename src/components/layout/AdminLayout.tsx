@@ -1,15 +1,29 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileHeader } from "./MobileHeader";
 import { AdminMobileDrawer } from "./AdminMobileDrawer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Shield } from "lucide-react";
+import { Shield, Loader2 } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export default function AdminLayout() {
   const location = useLocation();
   const pageTitle = getPageTitle(location.pathname);
+  const isAdmin = useIsAdmin();
+
+  if (isAdmin === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/app" replace />;
+  }
 
   const profileBadge = (
     <div className="flex items-center gap-2">
