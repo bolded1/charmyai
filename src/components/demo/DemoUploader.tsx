@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileText, Loader2, Sparkles } from "lucide-react";
+import { Upload, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +35,6 @@ export function DemoUploader() {
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load sample data
   const handleSampleDocument = () => {
     const sampleData: ExtractedData = {
       document_type: "expense_invoice",
@@ -45,9 +44,9 @@ export function DemoUploader() {
       invoice_date: "2026-02-28",
       due_date: "2026-03-30",
       currency: "EUR",
-      net_amount: 2450.00,
-      vat_amount: 465.50,
-      total_amount: 2915.50,
+      net_amount: 2450.0,
+      vat_amount: 465.5,
+      total_amount: 2915.5,
       vat_number: "DE123456789",
       category: "IT Services",
       confidence: 96,
@@ -74,11 +73,9 @@ export function DemoUploader() {
     setProcessingStep("Uploading document...");
 
     try {
-      // Generate session ID
       const sessionId = crypto.randomUUID();
       const filePath = `demo/${sessionId}/${file.name}`;
 
-      // Upload to demo-uploads bucket
       setProcessingStep("Uploading document...");
       const { error: uploadErr } = await supabase.storage
         .from("demo-uploads")
@@ -86,7 +83,6 @@ export function DemoUploader() {
 
       if (uploadErr) throw new Error("Upload failed: " + uploadErr.message);
 
-      // Create demo_uploads record
       setProcessingStep("Preparing for AI analysis...");
       const { data: demoRecord, error: insertErr } = await (supabase as any)
         .from("demo_uploads")
@@ -100,27 +96,22 @@ export function DemoUploader() {
         .select("id")
         .single();
 
-      if (insertErr || !demoRecord) throw new Error("Failed to create demo record: " + (insertErr?.message || "No data returned"));
+      if (insertErr || !demoRecord)
+        throw new Error("Failed to create demo record: " + (insertErr?.message || "No data returned"));
 
-      // Create preview URL for images
       if (file.type.startsWith("image/")) {
-        const url = URL.createObjectURL(file);
-        setFilePreviewUrl(url);
+        setFilePreviewUrl(URL.createObjectURL(file));
       } else {
         setFilePreviewUrl(null);
       }
 
-      // Call demo-extract edge function
       setProcessingStep("AI is reading your document...");
       const { data: result, error: fnErr } = await supabase.functions.invoke("demo-extract", {
         body: { demoUploadId: demoRecord.id },
       });
 
       if (fnErr) throw new Error("Extraction failed");
-
-      if (result?.error) {
-        throw new Error(result.error);
-      }
+      if (result?.error) throw new Error(result.error);
 
       setProcessingStep("Extraction complete!");
       setExtractedData(result.extracted);
@@ -158,44 +149,31 @@ export function DemoUploader() {
 
   return (
     <>
-      <section className="py-20">
-        <div className="container max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-8"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-soft border border-brand text-sm font-medium mb-4">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Try It Now — No Account Needed
+      <section className="pb-16">
+        <div className="container max-w-xl">
+          {/* Demo Card */}
+          <div className="surface-elevated rounded-2xl border border-border p-6 md:p-8">
+            <div className="text-center mb-5">
+              <h2 className="text-lg font-semibold mb-1">
+                Try Charmy — No Account Needed
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Upload an invoice or receipt and see how Charmy extracts financial data instantly.
+              </p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              See Scan AI in Action
-            </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Upload an invoice or receipt to see how Scan AI extracts financial data instantly.
-            </p>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+            {/* Drop zone */}
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onClick={() => !isProcessing && fileInputRef.current?.click()}
               className={`
-                relative rounded-xl border-2 border-dashed p-12 text-center cursor-pointer
-                transition-all duration-300 group
+                relative rounded-xl border-2 border-dashed p-8 md:p-10 text-center cursor-pointer
+                transition-all duration-200 group
                 ${isDragging
                   ? "border-primary bg-brand-soft scale-[1.01]"
-                  : "border-border hover:border-primary/50 hover:bg-brand-soft/50"
+                  : "border-border hover:border-primary/50 hover:bg-brand-soft/30"
                 }
                 ${isProcessing ? "pointer-events-none opacity-80" : ""}
               `}
@@ -215,15 +193,14 @@ export function DemoUploader() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-4"
+                    className="flex flex-col items-center gap-3"
                   >
-                    <div className="relative">
-                      <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                      <div className="absolute inset-0 h-12 w-12 rounded-full bg-primary/10 animate-pulse" />
-                    </div>
+                    <Loader2 className="h-10 w-10 text-primary animate-spin" />
                     <div>
-                      <p className="font-medium text-foreground">{processingStep}</p>
-                      <p className="text-sm text-muted-foreground mt-1">This usually takes a few seconds</p>
+                      <p className="font-medium text-sm">{processingStep}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This usually takes a few seconds
+                      </p>
                     </div>
                   </motion.div>
                 ) : (
@@ -232,17 +209,17 @@ export function DemoUploader() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-4"
+                    className="flex flex-col items-center gap-3"
                   >
-                    <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center group-hover:bg-brand-soft transition-colors">
-                      <Upload className="h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <div className="h-12 w-12 rounded-2xl bg-accent flex items-center justify-center group-hover:bg-brand-soft transition-colors">
+                      <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">
-                        Drop your invoice or receipt here
+                      <p className="font-medium text-sm">
+                        Drag and drop a file or click to upload
                       </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        or click to browse · PDF, PNG, JPG up to {MAX_SIZE_MB}MB
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PDF · PNG · JPG — up to {MAX_SIZE_MB}MB
                       </p>
                     </div>
                   </motion.div>
@@ -250,26 +227,30 @@ export function DemoUploader() {
               </AnimatePresence>
             </div>
 
-            <div className="flex items-center justify-center mt-4 gap-2">
-              <span className="text-sm text-muted-foreground">No file handy?</span>
+            {/* Sample link */}
+            <div className="flex items-center justify-center mt-4 gap-1.5">
+              <span className="text-xs text-muted-foreground">No file handy?</span>
               <Button
                 variant="link"
                 size="sm"
-                className="text-primary p-0 h-auto"
+                className="text-primary p-0 h-auto text-xs"
                 onClick={handleSampleDocument}
                 disabled={isProcessing}
               >
-                <FileText className="h-3.5 w-3.5 mr-1" />
+                <FileText className="h-3 w-3 mr-1" />
                 Try a sample invoice
               </Button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       <DemoResultsModal
         open={showResults}
-        onClose={() => { setShowResults(false); setIsProcessing(false); }}
+        onClose={() => {
+          setShowResults(false);
+          setIsProcessing(false);
+        }}
         extractedData={extractedData}
         fileName={fileName}
         previewUrl={filePreviewUrl}
