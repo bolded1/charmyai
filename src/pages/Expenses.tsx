@@ -107,13 +107,25 @@ export default function ExpensesPage() {
     closeEdit();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!fileUrl) return;
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = selectedExpense?.supplier_name ? `${selectedExpense.supplier_name}-invoice` : "document";
-    a.target = "_blank";
-    a.click();
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = selectedExpense?.supplier_name
+        ? `${selectedExpense.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
+        : "document";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open in new tab
+      window.open(fileUrl, "_blank");
+    }
   };
 
   // Date range logic
