@@ -16,7 +16,7 @@ export function useIsAdmin() {
 
       const { data } = await supabase.rpc("has_role", {
         _user_id: user.id,
-        _role: "admin",
+        _role: "platform_admin",
       });
 
       if (mounted) setIsAdmin(!!data);
