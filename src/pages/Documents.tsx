@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2, Mail } from "lucide-react";
 import { useState } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
