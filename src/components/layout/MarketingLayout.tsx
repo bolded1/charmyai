@@ -106,7 +106,7 @@ export default function MarketingLayout() {
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-sm text-muted-foreground text-center">
-            © 2024 DocuLedger. All rights reserved.
+            © 2024 Charmy. All rights reserved.
           </div>
         </div>
       </footer>

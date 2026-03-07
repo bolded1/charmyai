@@ -113,7 +113,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>From Email</Label>
-                  <Input defaultValue="noreply@doculedger.com" />
+                  <Input defaultValue="noreply@charmy.ai" />
                 </div>
               </div>
               <div className="flex items-center justify-between">

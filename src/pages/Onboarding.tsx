@@ -133,7 +133,7 @@ export default function OnboardingPage() {
             <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
-            DocuLedger
+            Charmy
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             {steps.map((_, i) => (

@@ -184,7 +184,7 @@ export default function ExportsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `doculedger-income${suffix}-export.${ext}`;
+      a.download = `charmy-income${suffix}-export.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
 

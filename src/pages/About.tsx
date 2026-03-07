@@ -14,7 +14,7 @@ export default function AboutPage() {
           </p>
           <div className="space-y-6 text-muted-foreground">
             <p>
-              DocuLedger was born from a simple observation: accountants and finance teams spend
+              Charmy was born from a simple observation: accountants and finance teams spend
               an enormous amount of time manually entering data from invoices and receipts into
               spreadsheets and accounting systems.
             </p>
