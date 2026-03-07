@@ -105,6 +105,7 @@ export default function SettingsPage() {
     if (themeMode === "dark") root.classList.add("dark");
     else if (themeMode === "light") root.classList.remove("dark");
     else root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
+    localStorage.setItem("theme-mode", themeMode);
   }, [themeMode]);
 
   useEffect(() => {
@@ -114,6 +115,8 @@ export default function SettingsPage() {
     root.style.setProperty("--ring", color.hue);
     const textHsl = buttonTextColor === "white" ? "0 0% 100%" : "0 0% 0%";
     root.style.setProperty("--primary-foreground", textHsl);
+    localStorage.setItem("accent-color", String(accentColor));
+    localStorage.setItem("button-text-color", buttonTextColor);
   }, [accentColor, buttonTextColor]);
 
   const handleSave = () => toast.success("Settings saved!");
