@@ -38,6 +38,7 @@ export default function AdminDemoSettingsPage() {
   const [settings, setSettings] = useState<DemoSettings>(DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
 
   useEffect(() => {
     loadSettings();
