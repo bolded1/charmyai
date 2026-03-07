@@ -18,6 +18,7 @@ import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
+import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
 
 const ACCENT_COLORS = [
   { name: "Navy", hue: "224 64% 33%", darkHue: "224 50% 50%" },
