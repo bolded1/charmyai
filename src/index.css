@@ -91,84 +91,86 @@
 
   .dark {
     /* ═══════════════════════════════════════════
-       MINIMAL DARK THEME — App default (blue)
+       PREMIUM DARK THEME — Layered, calm, modern
+       Warm-tinted dark surfaces avoid pure black.
+       Subtle blue undertone for fintech feel.
     ═══════════════════════════════════════════ */
 
-    --background:      222 20% 8%;
-    --background-page: 222 18% 9%;
-    --card:            222 16% 13%;
-    --popover:         222 14% 15%;
+    --background:      224 18% 10%;
+    --background-page: 224 16% 11%;
+    --card:            224 14% 14%;
+    --popover:         224 13% 16%;
 
-    --surface-sunken:   222 20% 8%;
-    --surface-elevated: 222 16% 13%;
-    --surface-hover:    222 14% 16%;
-    --overlay:          222 25% 4%;
+    --surface-sunken:   224 18% 9%;
+    --surface-elevated: 224 13% 16%;
+    --surface-hover:    224 12% 18%;
+    --overlay:          224 22% 5%;
 
-    --foreground:         210 25% 95%;
-    --card-foreground:    210 25% 95%;
-    --popover-foreground: 210 25% 95%;
-    --text-secondary:     215 12% 64%;
-    --muted-foreground:   215 8% 54%;
+    --foreground:         210 20% 93%;
+    --card-foreground:    210 20% 93%;
+    --popover-foreground: 210 20% 93%;
+    --text-secondary:     215 14% 65%;
+    --muted-foreground:   215 10% 50%;
     --text-on-primary:    0 0% 100%;
 
-    --primary:            217 72% 53%;
+    --primary:            217 72% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover:      217 72% 45%;
-    --brand-soft:         224 30% 14%;
-    --brand-border:       224 35% 26%;
-    --primary-icon:       217 65% 60%;
-    --ring:               217 72% 53%;
+    --primary-hover:      217 72% 48%;
+    --brand-soft:         224 28% 16%;
+    --brand-border:       224 30% 28%;
+    --primary-icon:       217 60% 62%;
+    --ring:               217 72% 56%;
 
-    --secondary:            222 15% 17%;
-    --secondary-foreground: 210 25% 95%;
-    --muted:                222 15% 17%;
-    --accent:               222 14% 16%;
-    --accent-foreground:    210 25% 95%;
+    --secondary:            224 14% 18%;
+    --secondary-foreground: 210 20% 93%;
+    --muted:                224 14% 18%;
+    --accent:               224 12% 17%;
+    --accent-foreground:    210 20% 93%;
 
-    --destructive:            0 55% 48%;
+    --destructive:            0 50% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:        222 12% 20%;
-    --border-subtle:  222 12% 17%;
-    --border-strong:  222 12% 26%;
-    --input:          222 12% 20%;
+    --border:        224 12% 21%;
+    --border-subtle:  224 12% 18%;
+    --border-strong:  224 12% 28%;
+    --input:          224 12% 21%;
 
-    --success:       152 50% 44%;
-    --success-soft:  152 30% 14%;
-    --warning:       38 70% 54%;
-    --warning-soft:  38 50% 14%;
-    --danger:        0 55% 48%;
-    --danger-soft:   0 40% 14%;
-    --info:          217 70% 58%;
-    --info-soft:     217 50% 14%;
+    --success:       152 48% 46%;
+    --success-soft:  152 25% 15%;
+    --warning:       38 65% 56%;
+    --warning-soft:  38 40% 15%;
+    --danger:        0 50% 52%;
+    --danger-soft:   0 35% 15%;
+    --info:          217 65% 60%;
+    --info-soft:     217 40% 15%;
 
-    --input-bg:         222 18% 11%;
-    --input-focus:      217 72% 53%;
-    --table-row-hover:  222 14% 15%;
-    --link-color:       217 65% 58%;
+    --input-bg:         224 16% 12%;
+    --input-focus:      217 72% 56%;
+    --table-row-hover:  224 12% 16%;
+    --link-color:       217 60% 62%;
 
-    --chart-1:          217 72% 53%;
-    --chart-2:          262 45% 55%;
-    --chart-3:          337 40% 50%;
-    --chart-4:          57 35% 55%;
-    --chart-5:          137 30% 50%;
+    --chart-1:          217 65% 58%;
+    --chart-2:          262 40% 58%;
+    --chart-3:          340 35% 55%;
+    --chart-4:          55 35% 55%;
+    --chart-5:          140 30% 52%;
 
-    --sidebar-background:         222 22% 6%;
-    --sidebar-foreground:         215 10% 55%;
-    --sidebar-primary:            217 72% 53%;
+    --sidebar-background:         224 20% 8%;
+    --sidebar-foreground:         215 12% 52%;
+    --sidebar-primary:            217 72% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             222 18% 11%;
-    --sidebar-accent-foreground:  210 18% 90%;
-    --sidebar-border:             222 15% 14%;
-    --sidebar-ring:               217 72% 53%;
-    --sidebar-active-bg:          224 25% 12%;
-    --sidebar-active-text:        217 65% 65%;
-    --sidebar-muted:              215 8% 42%;
+    --sidebar-accent:             224 16% 13%;
+    --sidebar-accent-foreground:  210 16% 88%;
+    --sidebar-border:             224 14% 16%;
+    --sidebar-ring:               217 72% 56%;
+    --sidebar-active-bg:          224 22% 14%;
+    --sidebar-active-text:        217 58% 68%;
+    --sidebar-muted:              215 10% 40%;
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-    --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.35);
-    --shadow-overlay: 0 8px 24px -4px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.03);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.15), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-md: 0 2px 8px -1px rgb(0 0 0 / 0.25), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-lg: 0 4px 16px -2px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-overlay: 0 8px 30px -4px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.04);
   }
 
   /* ═══════════════════════════════════════════
