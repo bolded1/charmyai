@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileRecordCard } from "@/components/ui/responsive-table";
 
 const actionColors: Record<string, string> = {
   document_uploaded: "bg-accent text-accent-foreground",
@@ -22,6 +24,7 @@ const actionColors: Record<string, string> = {
 export default function AdminAuditLogsPage() {
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
+  const isMobile = useIsMobile();
 
   const allActions = [...new Set(adminAuditLogs.map((l) => l.action))];
 
@@ -39,7 +42,7 @@ export default function AdminAuditLogsPage() {
           <Input placeholder="Search logs..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={actionFilter} onValueChange={setActionFilter}>
-          <SelectTrigger className="w-[200px]"><SelectValue placeholder="All Actions" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="All Actions" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Actions</SelectItem>
             {allActions.map((a) => (
@@ -49,40 +52,61 @@ export default function AdminAuditLogsPage() {
         </Select>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Timestamp</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">User</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Organization</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Action</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Entity</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((entry) => (
-                  <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="p-3 text-sm text-muted-foreground whitespace-nowrap">{new Date(entry.timestamp).toLocaleString()}</td>
-                    <td className="p-3 text-sm">{entry.user}</td>
-                    <td className="p-3 text-sm text-muted-foreground">{entry.organization}</td>
-                    <td className="p-3">
-                      <Badge variant="secondary" className={`text-[10px] capitalize ${actionColors[entry.action] || ''}`}>
-                        {entry.action.replace(/_/g, ' ')}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-sm text-muted-foreground">{entry.entity}</td>
-                    <td className="p-3 text-sm">{entry.details}</td>
+      {isMobile ? (
+        <div className="space-y-2">
+          {filtered.map((entry) => (
+            <MobileRecordCard
+              key={entry.id}
+              title={entry.details}
+              subtitle={entry.user}
+              badge={{
+                label: entry.action.replace(/_/g, " "),
+                className: actionColors[entry.action] || "",
+              }}
+              fields={[
+                { label: "Organization", value: entry.organization },
+                { label: "Entity", value: entry.entity },
+                { label: "Time", value: new Date(entry.timestamp).toLocaleString() },
+              ]}
+            />
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Timestamp</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">User</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Organization</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Action</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Entity</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Details</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody>
+                  {filtered.map((entry) => (
+                    <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="p-3 text-sm text-muted-foreground whitespace-nowrap">{new Date(entry.timestamp).toLocaleString()}</td>
+                      <td className="p-3 text-sm">{entry.user}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{entry.organization}</td>
+                      <td className="p-3">
+                        <Badge variant="secondary" className={`text-[10px] capitalize ${actionColors[entry.action] || ''}`}>
+                          {entry.action.replace(/_/g, ' ')}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-sm text-muted-foreground">{entry.entity}</td>
+                      <td className="p-3 text-sm">{entry.details}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

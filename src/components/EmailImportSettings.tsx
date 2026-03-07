@@ -8,6 +8,8 @@ import { Mail, Copy, Check, Loader2, Inbox, AlertTriangle, CheckCircle2, XCircle
 import { useState } from "react";
 import { toast } from "sonner";
 import { useOrganization, useCreateOrganization, useEmailImports, getImportEmailAddress } from "@/hooks/useOrganization";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileRecordCard } from "@/components/ui/responsive-table";
 
 function SectionHeader({ title, description }: { title: string; description: string }) {
   return (
@@ -37,6 +39,7 @@ export default function EmailImportSettings() {
   const createOrg = useCreateOrganization();
   const [copied, setCopied] = useState(false);
   const [orgName, setOrgName] = useState("");
+  const isMobile = useIsMobile();
 
   const importEmail = org ? getImportEmailAddress(org.import_email_token) : null;
 
@@ -163,6 +166,25 @@ export default function EmailImportSettings() {
               <Inbox className="h-8 w-8 text-muted-foreground/40 mb-3" />
               <p className="text-sm text-muted-foreground">No emails received yet</p>
               <p className="text-xs text-muted-foreground/70 mt-1">Forward an invoice to your import address to get started</p>
+            </div>
+          ) : isMobile ? (
+            <div className="p-2 space-y-2">
+              {imports.map((imp: any) => {
+                const status = getImportStatus(imp);
+                return (
+                  <MobileRecordCard
+                    key={imp.id}
+                    title={imp.sender_name || imp.sender_email || "Unknown sender"}
+                    subtitle={imp.subject || "(no subject)"}
+                    badge={{ label: status.label, className: status.className }}
+                    fields={[
+                      { label: "Received", value: new Date(imp.created_at).toLocaleDateString() },
+                      { label: "Attachments", value: String(imp.attachment_count) },
+                      { label: "Processed", value: imp.processed_count > 0 ? String(imp.processed_count) : "—" },
+                    ]}
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="overflow-x-auto">
