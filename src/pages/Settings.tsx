@@ -19,17 +19,8 @@ import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartph
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
-
-const ACCENT_COLORS = [
-  { name: "Navy", hue: "224 64% 33%", darkHue: "224 50% 50%" },
-  { name: "Blue", hue: "217 85% 50%", darkHue: "217 70% 58%" },
-  { name: "Emerald", hue: "160 84% 36%", darkHue: "160 60% 46%" },
-  { name: "Violet", hue: "262 70% 50%", darkHue: "262 60% 58%" },
-  { name: "Rose", hue: "350 70% 50%", darkHue: "350 60% 55%" },
-  { name: "Amber", hue: "38 90% 50%", darkHue: "38 70% 54%" },
-  { name: "Teal", hue: "174 70% 36%", darkHue: "174 55% 46%" },
-  { name: "Indigo", hue: "234 70% 52%", darkHue: "234 60% 60%" },
-];
+import { AccentColorPicker } from "@/components/AccentColorPicker";
+import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 
 /* ── Section Header helper ── */
 function SectionHeader({ title, description }: { title: string; description: string }) {
