@@ -126,7 +126,7 @@ export default function OnboardingPage() {
     : (user?.email?.[0] || "U").toUpperCase();
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 surface-sunken">
+    <div className="marketing min-h-screen flex items-center justify-center p-4 surface-sunken">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 font-bold text-xl mb-4">
