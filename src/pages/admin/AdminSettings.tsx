@@ -7,19 +7,92 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useState, useRef } from "react";
+import { Upload, X, Sun, Moon } from "lucide-react";
+
+function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; storageKey: string; icon: React.ElementType }) {
+  const [preview, setPreview] = useState<string | null>(() => localStorage.getItem(storageKey));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error("Logo must be under 2MB"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      localStorage.setItem(storageKey, dataUrl);
+      setPreview(dataUrl);
+      window.dispatchEvent(new Event("brand-logo-changed"));
+      toast.success(`${label} updated`);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemove = () => {
+    localStorage.removeItem(storageKey);
+    setPreview(null);
+    window.dispatchEvent(new Event("brand-logo-changed"));
+    toast.success(`${label} removed`);
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label className="flex items-center gap-1.5 text-sm">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        {label}
+      </Label>
+      {preview ? (
+        <div className="relative inline-block border rounded-lg p-3 bg-muted/30">
+          <img src={preview} alt={label} className="h-12 max-w-[12rem] object-contain" />
+          <button
+            onClick={handleRemove}
+            className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:bg-destructive/90"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => inputRef.current?.click()}
+          className="flex items-center gap-2 border border-dashed rounded-lg px-4 py-3 text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
+        >
+          <Upload className="h-4 w-4" />
+          Upload logo
+        </button>
+      )}
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <p className="text-xs text-muted-foreground">PNG, SVG, or JPG. Max 2MB.</p>
+    </div>
+  );
+}
 
 export default function AdminSettingsPage() {
   const handleSave = () => toast.success("Settings saved!");
 
   return (
     <div className="max-w-3xl mx-auto">
-      <Tabs defaultValue="ai" className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full">
+      <Tabs defaultValue="branding" className="space-y-6">
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="ai">AI Processing</TabsTrigger>
           <TabsTrigger value="limits">Limits</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="system">System</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="branding">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, and marketing pages. Provide separate versions for light and dark themes.</p>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
+                <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="ai">
           <Card>
