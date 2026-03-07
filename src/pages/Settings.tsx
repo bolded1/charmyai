@@ -71,39 +71,42 @@ export default function SettingsPage() {
 
   const [logoLight, setLogoLight] = useState<string | null>(null);
   const [logoDark, setLogoDark] = useState<string | null>(null);
-  const logoInitialLoadRef = useRef(true);
+  const [appIcon, setAppIcon] = useState<string | null>(null);
+  const brandInitialLoadRef = useRef(true);
 
-  // Load logos from organization on mount / when org loads
+  // Load branding from organization on mount / when org loads
   useEffect(() => {
     if (org) {
       setLogoLight(org.logo_light || null);
       setLogoDark(org.logo_dark || null);
-      setTimeout(() => { logoInitialLoadRef.current = false; }, 100);
+      setAppIcon(org.app_icon || null);
+      setTimeout(() => { brandInitialLoadRef.current = false; }, 100);
     }
   }, [org]);
 
-  // Persist logos to organization table
-  const saveLogo = useCallback(async (field: "logo_light" | "logo_dark", value: string | null) => {
+  // Persist branding to organization table
+  const saveBrandField = useCallback(async (field: "logo_light" | "logo_dark" | "app_icon", value: string | null) => {
     if (!org) return;
     try {
       await updateOrg.mutateAsync({ id: org.id, [field]: value });
     } catch {
-      toast.error("Failed to save logo.");
+      toast.error("Failed to save branding.");
     }
   }, [org, updateOrg]);
 
   useEffect(() => {
-    if (logoInitialLoadRef.current) return;
-    saveLogo("logo_light", logoLight);
-  }, [logoLight, saveLogo]);
+    if (brandInitialLoadRef.current) return;
+    saveBrandField("logo_light", logoLight);
+  }, [logoLight, saveBrandField]);
   useEffect(() => {
-    if (logoInitialLoadRef.current) return;
-    saveLogo("logo_dark", logoDark);
-  }, [logoDark, saveLogo]);
-  const [iconLight, setIconLight] = useState<string | null>(null);
-  const [iconDark, setIconDark] = useState<string | null>(null);
-  const [favicon, setFavicon] = useState<string | null>(null);
-  const [emailHeader, setEmailHeader] = useState<string | null>(null);
+    if (brandInitialLoadRef.current) return;
+    saveBrandField("logo_dark", logoDark);
+  }, [logoDark, saveBrandField]);
+  useEffect(() => {
+    if (brandInitialLoadRef.current) return;
+    saveBrandField("app_icon", appIcon);
+  }, [appIcon, saveBrandField]);
+
   const [brandColors, setBrandColors] = useState(["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"]);
   const [brandPreviewMode, setBrandPreviewMode] = useState<"light" | "dark">("light");
 
