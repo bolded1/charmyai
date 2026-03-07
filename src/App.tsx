@@ -39,14 +39,14 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const ACCENT_COLORS = [
-  { name: "Emerald", hue: "160 84% 36%" },
+  { name: "Navy", hue: "224 64% 33%" },
   { name: "Blue", hue: "217 85% 50%" },
+  { name: "Emerald", hue: "160 84% 36%" },
   { name: "Violet", hue: "262 70% 50%" },
   { name: "Rose", hue: "350 70% 50%" },
   { name: "Amber", hue: "38 90% 50%" },
   { name: "Teal", hue: "174 70% 36%" },
   { name: "Indigo", hue: "234 70% 52%" },
-  { name: "Slate", hue: "220 14% 40%" },
 ];
 
 // Apply persisted theme & accent on startup
