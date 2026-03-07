@@ -22,7 +22,7 @@ export default function MarketingLayout() {
             <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-foreground">DocuLedger</span>
+            <span className="text-foreground">Charmy</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
