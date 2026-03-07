@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { FileText } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useBrandLogo } from "@/hooks/useBrandLogo";
 
 export default function LoginPage() {
+  const brandLogo = useBrandLogo();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,10 +33,16 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl mb-2">
-            <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary-foreground" />
-            </div>
-            Charmy
+            {brandLogo ? (
+              <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
+            ) : (
+              <>
+                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
+                </div>
+                Charmy
+              </>
+            )}
           </Link>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>
