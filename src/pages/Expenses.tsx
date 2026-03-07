@@ -45,6 +45,7 @@ export default function ExpensesPage() {
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
 
