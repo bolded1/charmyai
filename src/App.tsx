@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
 import Expenses from "./pages/Expenses";
+import Categories from "./pages/Categories";
 import Exports from "./pages/Exports";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
