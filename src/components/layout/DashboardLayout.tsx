@@ -44,8 +44,6 @@ function getPageTitle(path: string): string {
     '/app/upload': 'Upload Documents',
     '/app/documents': 'Documents',
     '/app/expenses': 'Expenses',
-    '/app/income': 'Income Invoices',
-    '/app/contacts': 'Contacts',
     '/app/exports': 'Exports',
     '/app/team': 'Team',
     '/app/settings': 'Settings',
