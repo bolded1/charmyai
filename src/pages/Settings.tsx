@@ -64,13 +64,7 @@ export default function SettingsPage() {
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">(() => {
     return (localStorage.getItem("theme-mode") as "light" | "dark" | "system") || "system";
   });
-  const [accentColor, setAccentColor] = useState(() => {
-    const stored = localStorage.getItem("accent-color");
-    return stored ? parseInt(stored, 10) : 0;
-  });
-  const [buttonTextColor, setButtonTextColor] = useState<"white" | "black">(() => {
-    return (localStorage.getItem("button-text-color") as "white" | "black") || "white";
-  });
+  const [themeMode_unused] = [null]; // removed old accent state
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
   const { data: org } = useOrganization();
