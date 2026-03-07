@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Eye, Ban, Trash2, Building2, Users, FileText, CreditCard } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileRecordCard } from "@/components/ui/responsive-table";
+import { OverflowActions } from "@/components/ui/overflow-actions";
 import { toast } from "sonner";
 
 const planColors: Record<string, string> = {
@@ -27,6 +30,7 @@ export default function AdminOrganizations() {
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState("all");
   const [selected, setSelected] = useState<AdminOrganization | null>(null);
+  const isMobile = useIsMobile();
 
   const filtered = adminOrganizations.filter((org) => {
     const matchesSearch = org.name.toLowerCase().includes(search.toLowerCase()) || org.owner.toLowerCase().includes(search.toLowerCase());
@@ -37,6 +41,12 @@ export default function AdminOrganizations() {
   const orgUsers = selected ? adminUsers.filter((u) => u.organizationId === selected.id) : [];
   const orgDocs = selected ? adminDocuments.filter((d) => d.organization === selected?.name) : [];
 
+  const getOrgActions = (org: AdminOrganization) => [
+    { label: "View Details", icon: <Eye className="h-3.5 w-3.5" />, onClick: () => setSelected(org) },
+    { label: org.status === "suspended" ? "Activate" : "Suspend", icon: <Ban className="h-3.5 w-3.5" />, onClick: () => toast.info(`${org.name} ${org.status === 'suspended' ? 'activated' : 'suspended'}`) },
+    { label: "Delete", icon: <Trash2 className="h-3.5 w-3.5" />, onClick: () => toast.error(`${org.name} deleted`), destructive: true },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
@@ -45,7 +55,7 @@ export default function AdminOrganizations() {
           <Input placeholder="Search organizations..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={planFilter} onValueChange={setPlanFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Plans" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="All Plans" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Plans</SelectItem>
             <SelectItem value="starter">Starter</SelectItem>
@@ -55,57 +65,78 @@ export default function AdminOrganizations() {
         </Select>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Organization</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Owner</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Plan</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Users</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Documents</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Created</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
-                  <th className="p-3 text-xs font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((org) => (
-                  <tr key={org.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-sm font-medium">{org.name}</span>
-                      </div>
-                    </td>
-                    <td className="p-3 text-sm text-muted-foreground">{org.owner}</td>
-                    <td className="p-3"><Badge variant="secondary" className={`capitalize ${planColors[org.plan]}`}>{org.plan}</Badge></td>
-                    <td className="p-3 text-sm">{org.users}</td>
-                    <td className="p-3 text-sm">{org.documentsUploaded}</td>
-                    <td className="p-3 text-sm text-muted-foreground">{org.createdAt}</td>
-                    <td className="p-3"><Badge variant="secondary" className={`capitalize ${statusColors[org.status]}`}>{org.status}</Badge></td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(org)}>
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info(`${org.name} ${org.status === 'suspended' ? 'activated' : 'suspended'}`)}>
-                          <Ban className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => toast.error(`${org.name} deleted`)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
+      {isMobile ? (
+        <div className="space-y-2">
+          {filtered.map((org) => (
+            <MobileRecordCard
+              key={org.id}
+              title={org.name}
+              subtitle={org.owner}
+              badge={{ label: org.status, className: statusColors[org.status] }}
+              fields={[
+                { label: "Plan", value: org.plan },
+                { label: "Users", value: String(org.users) },
+                { label: "Documents", value: String(org.documentsUploaded) },
+                { label: "Created", value: org.createdAt },
+              ]}
+              onClick={() => setSelected(org)}
+              actions={<OverflowActions actions={getOrgActions(org)} />}
+            />
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Organization</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Owner</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Plan</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Users</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Documents</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Created</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody>
+                  {filtered.map((org) => (
+                    <tr key={org.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm font-medium">{org.name}</span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-sm text-muted-foreground">{org.owner}</td>
+                      <td className="p-3"><Badge variant="secondary" className={`capitalize ${planColors[org.plan]}`}>{org.plan}</Badge></td>
+                      <td className="p-3 text-sm">{org.users}</td>
+                      <td className="p-3 text-sm">{org.documentsUploaded}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{org.createdAt}</td>
+                      <td className="p-3"><Badge variant="secondary" className={`capitalize ${statusColors[org.status]}`}>{org.status}</Badge></td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(org)}>
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info(`${org.name} ${org.status === 'suspended' ? 'activated' : 'suspended'}`)}>
+                            <Ban className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => toast.error(`${org.name} deleted`)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Organization Detail Dialog */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
@@ -117,7 +148,7 @@ export default function AdminOrganizations() {
           </DialogHeader>
           {selected && (
             <Tabs defaultValue="info" className="mt-2">
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className={`grid w-full ${isMobile ? "grid-cols-2" : "grid-cols-4"}`}>
                 <TabsTrigger value="info">Info</TabsTrigger>
                 <TabsTrigger value="users">Users ({orgUsers.length})</TabsTrigger>
                 <TabsTrigger value="documents">Docs ({orgDocs.length})</TabsTrigger>

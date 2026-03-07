@@ -12,6 +12,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useExpenseRecords, useUpdateExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -43,6 +45,7 @@ export default function ExpensesPage() {
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
 
@@ -307,7 +310,7 @@ export default function ExpensesPage() {
         )}
       </div>
 
-      {/* Table */}
+      {/* Table / Cards */}
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
@@ -317,6 +320,24 @@ export default function ExpensesPage() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">
               No expense records found for the selected filters.
+            </div>
+          ) : isMobile ? (
+            <div className="p-2 space-y-2">
+              {filtered.map((doc) => (
+                <MobileRecordCard
+                  key={doc.id}
+                  title={doc.supplier_name}
+                  subtitle={doc.invoice_number || undefined}
+                  badge={{ label: doc.category || "—" }}
+                  fields={[
+                    { label: "Date", value: doc.invoice_date },
+                    { label: "Currency", value: doc.currency },
+                    { label: "Net", value: Number(doc.net_amount).toFixed(2) },
+                    { label: "Total", value: Number(doc.total_amount).toFixed(2) },
+                  ]}
+                  onClick={() => openEdit(doc)}
+                />
+              ))}
             </div>
           ) : (
             <div className="overflow-x-auto">

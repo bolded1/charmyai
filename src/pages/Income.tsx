@@ -14,6 +14,8 @@ import {
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useIncomeRecords, useUploadIncomeDocument, useUpdateIncome } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -57,6 +59,7 @@ export default function IncomePage() {
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { data: income = [], isLoading } = useIncomeRecords();
   const uploadMutation = useUploadIncomeDocument();
   const updateIncome = useUpdateIncome();
@@ -409,7 +412,7 @@ export default function IncomePage() {
         )}
       </div>
 
-      {/* Income Table */}
+      {/* Income Table / Cards */}
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
@@ -419,6 +422,23 @@ export default function IncomePage() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">
               No income records found for the selected filters.
+            </div>
+          ) : isMobile ? (
+            <div className="p-2 space-y-2">
+              {filtered.map((doc) => (
+                <MobileRecordCard
+                  key={doc.id}
+                  title={doc.customer_name}
+                  subtitle={doc.invoice_number || undefined}
+                  fields={[
+                    { label: "Date", value: doc.invoice_date },
+                    { label: "Currency", value: doc.currency },
+                    { label: "Net", value: Number(doc.net_amount).toFixed(2) },
+                    { label: "Total", value: Number(doc.total_amount).toFixed(2) },
+                  ]}
+                  onClick={() => openEdit(doc)}
+                />
+              ))}
             </div>
           ) : (
             <div className="overflow-x-auto">
