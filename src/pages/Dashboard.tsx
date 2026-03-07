@@ -153,7 +153,7 @@ export default function DashboardPage() {
               return (
                 <Card key={cur}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Expenses by Category ({cur})</CardTitle>
+                    <CardTitle>Expenses by Category ({cur})</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {data.length === 0 ? (
