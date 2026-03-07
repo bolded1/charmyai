@@ -51,10 +51,21 @@ export default function ExpensesPage() {
   // Load file preview when opening dialog
   useEffect(() => {
     if (!selectedExpense?.document_id) {
-      setFileUrl(null);
+      setFileUrl((prev) => {
+        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setSignedFileUrl(null);
       setFileType(null);
       return;
     }
+
+    setFileUrl((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setSignedFileUrl(null);
+    setFileType(null);
 
     let cancelled = false;
     setLoadingFile(true);
