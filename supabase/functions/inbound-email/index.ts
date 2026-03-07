@@ -19,6 +19,47 @@ type AttachmentRef = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+type MailgunSignedFields = {
+  timestamp?: string;
+  token?: string;
+  signature?: string;
+};
+
+function normalizeMailgunApiKey(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+
+  const cleaned = raw
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/\s+/g, "");
+
+  if (!cleaned) return null;
+  if (cleaned.toLowerCase().startsWith("api:")) return cleaned.slice(4);
+  if (cleaned.toLowerCase().startsWith("basic ")) return cleaned;
+  return cleaned;
+}
+
+function buildMailgunAuthHeader(mailgunApiKey: string): string {
+  if (mailgunApiKey.toLowerCase().startsWith("basic ")) {
+    return mailgunApiKey;
+  }
+  return `Basic ${btoa(`api:${mailgunApiKey}`)}`;
+}
+
+function withSignedQuery(url: string, signed?: MailgunSignedFields): string | null {
+  if (!signed?.timestamp || !signed?.token || !signed?.signature) return null;
+
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("timestamp", signed.timestamp);
+    parsed.searchParams.set("token", signed.token);
+    parsed.searchParams.set("signature", signed.signature);
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Promise<Response | null> {
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
@@ -28,12 +69,17 @@ async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Pro
       // Retry on transient errors
       if ([404, 408, 429, 500, 502, 503, 504].includes(response.status) && attempt < attempts) {
         // Consume body to avoid resource leak
-        await response.text();
+        await response.text().catch(() => {});
         await sleep(500 * attempt);
         continue;
       }
       return response;
-    } catch {
+    } catch (err) {
+      console.error("Mailgun fetch threw", {
+        attempt,
+        url,
+        error: err instanceof Error ? err.message : String(err),
+      });
       if (attempt < attempts) {
         await sleep(500 * attempt);
         continue;
@@ -64,31 +110,67 @@ function getApiHosts(originalUrl: string): string[] {
   return hosts;
 }
 
+function buildMailgunUrlCandidates(url: string, signed?: MailgunSignedFields): string[] {
+  const candidates = new Set<string>();
+  const base = [url, withSignedQuery(url, signed)].filter(Boolean) as string[];
+
+  for (const baseUrl of base) {
+    candidates.add(baseUrl);
+
+    try {
+      const parsed = new URL(baseUrl);
+      const altHosts = getApiHosts(baseUrl);
+      for (const host of altHosts) {
+        if (host === parsed.hostname) continue;
+        const altUrl = new URL(baseUrl);
+        altUrl.hostname = host;
+        candidates.add(altUrl.toString());
+      }
+    } catch {
+      // URL parsing error
+    }
+  }
+
+  return Array.from(candidates);
+}
+
 async function downloadFromMailgun(
   url: string,
   mailgunApiKey: string,
+  signed?: MailgunSignedFields,
 ): Promise<Response | null> {
-  const headers = { Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}` };
+  const headers = { Authorization: buildMailgunAuthHeader(mailgunApiKey) };
+  const candidates = buildMailgunUrlCandidates(url, signed);
 
-  // Try original URL first
-  let response = await fetchWithRetry(url, { headers });
-  if (response?.ok) return response;
-  if (response) await response.text().catch(() => {}); // consume body
+  for (const candidate of candidates) {
+    // Attempt with Basic auth first
+    let response = await fetchWithRetry(candidate, { headers });
+    if (response?.ok) return response;
 
-  // Try alternate hosts
-  const altHosts = getApiHosts(url);
-  try {
-    const parsed = new URL(url);
-    for (const host of altHosts) {
-      if (host === parsed.hostname) continue;
-      const altUrl = new URL(url);
-      altUrl.hostname = host;
-      response = await fetchWithRetry(altUrl.toString(), { headers });
-      if (response?.ok) return response;
-      if (response) await response.text().catch(() => {}); // consume body
+    const status = response?.status ?? "no-response";
+    if (response) {
+      const body = await response.text().catch(() => "");
+      console.error("Mailgun auth download failed", {
+        url: candidate,
+        status,
+        bodyPreview: body.slice(0, 200),
+      });
+    } else {
+      console.error("Mailgun auth download failed", { url: candidate, status });
     }
-  } catch {
-    // URL parsing error
+
+    // If signed params exist, also try anonymous signed URL fallback
+    if (signed?.timestamp && signed?.token && signed?.signature) {
+      response = await fetchWithRetry(candidate, {});
+      if (response?.ok) return response;
+
+      const unsignedStatus = response?.status ?? "no-response";
+      if (response) await response.text().catch(() => {});
+      console.error("Mailgun signed-url fallback failed", {
+        url: candidate,
+        status: unsignedStatus,
+      });
+    }
   }
 
   return null;
@@ -171,6 +253,14 @@ serve(async (req) => {
     const messageHeaders = formData.get("message-headers") as string || "";
     const messageUrl = formData.get("message-url") as string || "";
     const bodyMime = formData.get("body-mime") as string || "";
+    const timestamp = formData.get("timestamp") as string || "";
+    const token = formData.get("token") as string || "";
+    const signature = formData.get("signature") as string || "";
+    const signedFields: MailgunSignedFields = {
+      timestamp: timestamp || undefined,
+      token: token || undefined,
+      signature: signature || undefined,
+    };
 
     // === DIAGNOSTIC LOGGING ===
     const fieldDiag: string[] = [];
@@ -296,7 +386,12 @@ serve(async (req) => {
     }
 
     // Strategy 3: Parse "attachments" JSON field → download from URLs
-    const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
+    const mailgunApiKey = normalizeMailgunApiKey(Deno.env.get("MAILGUN_API_KEY"));
+    if (!mailgunApiKey) {
+      console.error("MAILGUN_API_KEY is missing or invalid after normalization");
+    } else {
+      console.log("DIAG: MAILGUN_API_KEY detected", { length: mailgunApiKey.length });
+    }
 
     if (attachments.length === 0 && attachmentsRaw) {
       try {
@@ -322,7 +417,7 @@ serve(async (req) => {
         // Download refs that have URLs
         if (mailgunApiKey) {
           for (const ref of refs.filter((r) => r.url)) {
-            const response = await downloadFromMailgun(ref.url, mailgunApiKey);
+            const response = await downloadFromMailgun(ref.url, mailgunApiKey, signedFields);
             if (!response || !response.ok) {
               console.error("Strategy 3: All download attempts failed for:", ref.url);
               continue;
@@ -347,7 +442,7 @@ serve(async (req) => {
     if (attachments.length === 0 && messageUrl && mailgunApiKey) {
       console.log("Strategy 4: Trying message-url fetch...");
 
-      const messageRes = await downloadFromMailgun(messageUrl, mailgunApiKey);
+      const messageRes = await downloadFromMailgun(messageUrl, mailgunApiKey, signedFields);
 
       if (messageRes?.ok) {
         try {
@@ -363,7 +458,7 @@ serve(async (req) => {
             const url = (item.url || item["attachment-url"]) as string | undefined;
             if (!url) continue;
 
-            const response = await downloadFromMailgun(url, mailgunApiKey);
+            const response = await downloadFromMailgun(url, mailgunApiKey, signedFields);
             if (!response?.ok) {
               console.error("Strategy 4: Failed downloading attachment:", url);
               continue;
