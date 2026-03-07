@@ -50,15 +50,42 @@ function SaveIndicator({ saving }: { saving: boolean }) {
   );
 }
 
+function normalizeLogoValue(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  if (value.startsWith("data:image")) return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return typeof parsed === "string" && parsed.startsWith("data:image") ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Logo upload with auto-save via database (demo_settings) ──
 function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; storageKey: string; icon: React.ElementType }) {
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.from("demo_settings").select("value").eq("key", storageKey).maybeSingle().then(({ data }) => {
-      if (data?.value) setPreview(data.value as string);
-    });
+    const load = async () => {
+      const { data } = await supabase.from("demo_settings").select("value").eq("key", storageKey).maybeSingle();
+      const dbLogo = normalizeLogoValue(data?.value);
+
+      if (dbLogo) {
+        setPreview(dbLogo);
+        return;
+      }
+
+      const legacyLocalLogo = localStorage.getItem(storageKey);
+      if (legacyLocalLogo && legacyLocalLogo.startsWith("data:image")) {
+        setPreview(legacyLocalLogo);
+        await supabase.from("demo_settings").upsert({ key: storageKey, value: legacyLocalLogo }, { onConflict: "key" });
+        window.dispatchEvent(new Event("brand-logo-changed"));
+      }
+    };
+
+    load();
   }, [storageKey]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,10 +96,11 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
     reader.onload = async () => {
       const dataUrl = reader.result as string;
       const { error } = await supabase.from("demo_settings").upsert(
-        { key: storageKey, value: JSON.stringify(dataUrl) },
+        { key: storageKey, value: dataUrl },
         { onConflict: "key" }
       );
-      if (error) { toast.error("Failed to save logo"); return; }
+      if (error) { toast.error(`Failed to save logo: ${error.message}`); return; }
+      localStorage.removeItem(storageKey);
       setPreview(dataUrl);
       window.dispatchEvent(new Event("brand-logo-changed"));
       toast.success(`${label} updated`);
@@ -81,7 +109,9 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
   };
 
   const handleRemove = async () => {
-    await supabase.from("demo_settings").delete().eq("key", storageKey);
+    const { error } = await supabase.from("demo_settings").delete().eq("key", storageKey);
+    if (error) { toast.error(`Failed to remove logo: ${error.message}`); return; }
+    localStorage.removeItem(storageKey);
     setPreview(null);
     window.dispatchEvent(new Event("brand-logo-changed"));
     toast.success(`${label} removed`);
