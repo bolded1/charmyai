@@ -64,7 +64,6 @@ export default function SettingsPage() {
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">(() => {
     return (localStorage.getItem("theme-mode") as "light" | "dark" | "system") || "system";
   });
-  const [themeMode_unused] = [null]; // removed old accent state
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
   const { data: org } = useOrganization();
