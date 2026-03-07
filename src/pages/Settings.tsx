@@ -18,6 +18,7 @@ import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
+import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
 
 const ACCENT_COLORS = [
   { name: "Navy", hue: "224 64% 33%", darkHue: "224 50% 50%" },
@@ -81,63 +82,39 @@ export default function SettingsPage() {
   });
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
+  const { data: org } = useOrganization();
+  const updateOrg = useUpdateOrganization();
+
   const [logoLight, setLogoLight] = useState<string | null>(null);
   const [logoDark, setLogoDark] = useState<string | null>(null);
   const logoInitialLoadRef = useRef(true);
 
-  // Load logos from database on mount
+  // Load logos from organization on mount / when org loads
   useEffect(() => {
-    const loadLogos = async () => {
-      const { data: lightData } = await supabase
-        .from("demo_settings")
-        .select("value")
-        .eq("key", "brand-logo-light")
-        .maybeSingle();
-      const { data: darkData } = await supabase
-        .from("demo_settings")
-        .select("value")
-        .eq("key", "brand-logo-dark")
-        .maybeSingle();
-      
-      const normalizeVal = (v: unknown) => {
-        if (typeof v === "string" && v.startsWith("data:image")) return v;
-        if (typeof v === "string") { try { const p = JSON.parse(v); return typeof p === "string" && p.startsWith("data:image") ? p : null; } catch { return null; } }
-        return null;
-      };
-      setLogoLight(normalizeVal(lightData?.value));
-      setLogoDark(normalizeVal(darkData?.value));
-      // Mark initial load done after setting state
+    if (org) {
+      setLogoLight(org.logo_light || null);
+      setLogoDark(org.logo_dark || null);
       setTimeout(() => { logoInitialLoadRef.current = false; }, 100);
-    };
-    loadLogos();
-  }, []);
-
-  // Persist logos to database and notify sidebar
-  const saveLogo = useCallback(async (key: string, value: string | null) => {
-    try {
-      if (value) {
-        const { data: existing } = await supabase.from("demo_settings").select("id").eq("key", key).maybeSingle();
-        if (existing) {
-          await supabase.from("demo_settings").update({ value: JSON.stringify(value), updated_at: new Date().toISOString() }).eq("key", key);
-        } else {
-          await supabase.from("demo_settings").insert({ key, value: JSON.stringify(value) });
-        }
-      } else {
-        await supabase.from("demo_settings").delete().eq("key", key);
-      }
-      window.dispatchEvent(new Event("brand-logo-changed"));
-    } catch {
-      toast.error("Failed to save logo. Make sure you have admin permissions.");
     }
-  }, []);
+  }, [org]);
+
+  // Persist logos to organization table
+  const saveLogo = useCallback(async (field: "logo_light" | "logo_dark", value: string | null) => {
+    if (!org) return;
+    try {
+      await updateOrg.mutateAsync({ id: org.id, [field]: value });
+    } catch {
+      toast.error("Failed to save logo.");
+    }
+  }, [org, updateOrg]);
 
   useEffect(() => {
     if (logoInitialLoadRef.current) return;
-    saveLogo("brand-logo-light", logoLight);
+    saveLogo("logo_light", logoLight);
   }, [logoLight, saveLogo]);
   useEffect(() => {
     if (logoInitialLoadRef.current) return;
-    saveLogo("brand-logo-dark", logoDark);
+    saveLogo("logo_dark", logoDark);
   }, [logoDark, saveLogo]);
   const [iconLight, setIconLight] = useState<string | null>(null);
   const [iconDark, setIconDark] = useState<string | null>(null);
