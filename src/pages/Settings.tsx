@@ -122,26 +122,8 @@ export default function SettingsPage() {
     catch { toast.error("Failed to upload avatar."); }
   };
 
-  const ALLOWED_FORMATS = ["image/png", "image/jpeg", "image/svg+xml", "image/webp"];
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-  const handleImageUpload = (setter: (url: string | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!ALLOWED_FORMATS.includes(file.type)) {
-      toast.error("Unsupported format. Use PNG, JPG, SVG, or WebP.");
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error("File too large. Maximum size is 2MB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setter(reader.result as string);
-      toast.success("Image updated!");
-    };
-    reader.readAsDataURL(file);
+
   };
 
   const handlePasswordUpdate = () => {
