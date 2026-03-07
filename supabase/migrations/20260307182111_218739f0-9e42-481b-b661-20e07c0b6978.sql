@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ADD COLUMN app_icon text DEFAULT NULL;
