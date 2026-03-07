@@ -59,6 +59,7 @@ export default function IncomePage() {
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { data: income = [], isLoading } = useIncomeRecords();
   const uploadMutation = useUploadIncomeDocument();
   const updateIncome = useUpdateIncome();
