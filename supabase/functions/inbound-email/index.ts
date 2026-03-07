@@ -50,6 +50,53 @@ function getAttachmentUrlCandidates(url: string): string[] {
   return [...new Set(candidates)];
 }
 
+function getMessageUrlCandidates(url: string): string[] {
+  const candidates = [url];
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "storage-europe-west1.api.mailgun.net") {
+      const euHost = new URL(url);
+      euHost.hostname = "api.eu.mailgun.net";
+      candidates.push(euHost.toString());
+
+      const usHost = new URL(url);
+      usHost.hostname = "api.mailgun.net";
+      candidates.push(usHost.toString());
+    }
+  } catch {
+    // keep original URL only
+  }
+
+  return [...new Set(candidates)];
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(url: string, init: RequestInit, attempts = 4): Promise<Response | null> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await fetch(url, init);
+
+      // Message/attachment can be briefly unavailable right after webhook fires
+      const shouldRetry = [404, 408, 425, 429, 500, 502, 503, 504].includes(response.status);
+      if (!response.ok && shouldRetry && attempt < attempts) {
+        await sleep(250 * attempt);
+        continue;
+      }
+
+      return response;
+    } catch {
+      if (attempt < attempts) {
+        await sleep(250 * attempt);
+        continue;
+      }
+    }
+  }
+
+  return null;
+}
+
 async function downloadAttachmentFromRef(ref: AttachmentRef, mailgunApiKey?: string | null): Promise<{ file: File; name: string } | null> {
   const headers: Record<string, string> = {};
   if (mailgunApiKey) {
@@ -60,9 +107,10 @@ async function downloadAttachmentFromRef(ref: AttachmentRef, mailgunApiKey?: str
 
   for (const candidate of candidates) {
     try {
-      const response = await fetch(candidate, { headers });
-      if (!response.ok) {
-        console.error(`Failed downloading attachment URL (${response.status}):`, candidate);
+      const response = await fetchWithRetry(candidate, { headers });
+      if (!response || !response.ok) {
+        const status = response?.status ?? "no-response";
+        console.error(`Failed downloading attachment URL (${status}):`, candidate);
         continue;
       }
 
@@ -279,24 +327,45 @@ serve(async (req) => {
             Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}`,
           };
 
-          const messageRes = await fetch(messageUrl, { headers });
-          if (!messageRes.ok) {
-            console.error(`Failed fetching message-url (${messageRes.status}):`, messageUrl);
-          } else {
-            const payload = await messageRes.json() as Record<string, unknown>;
-            const payloadAttachments = Array.isArray(payload.attachments)
-              ? payload.attachments as Record<string, unknown>[]
+          const messageUrlCandidates = getMessageUrlCandidates(messageUrl);
+          let messagePayload: Record<string, unknown> | null = null;
+          let resolvedMessageUrl: string | null = null;
+
+          for (const candidate of messageUrlCandidates) {
+            const messageRes = await fetchWithRetry(candidate, { headers });
+            if (!messageRes || !messageRes.ok) {
+              const status = messageRes?.status ?? "no-response";
+              console.error(`Failed fetching message-url (${status}):`, candidate);
+              continue;
+            }
+
+            messagePayload = await messageRes.json() as Record<string, unknown>;
+            resolvedMessageUrl = candidate;
+            break;
+          }
+
+          if (messagePayload && resolvedMessageUrl) {
+            const payloadAttachments = Array.isArray(messagePayload.attachments)
+              ? messagePayload.attachments as Record<string, unknown>[]
               : [];
 
             announcedAttachmentCount = Math.max(announcedAttachmentCount, payloadAttachments.length);
 
-            const refs: AttachmentRef[] = payloadAttachments
+            let refs: AttachmentRef[] = payloadAttachments
               .map((item) => ({
                 url: (item.url || item["attachment-url"] || item.download_url) as string | undefined,
                 name: (item.name || item.filename) as string | undefined,
                 contentType: (item["content-type"] || item.contentType || item.mimetype) as string | undefined,
               }))
               .filter((item): item is AttachmentRef => Boolean(item.url));
+
+            // Fallback: construct attachment URLs if payload omits attachment url list
+            if (refs.length === 0 && announcedAttachmentCount > 0) {
+              refs = Array.from({ length: announcedAttachmentCount }).map((_, idx) => ({
+                url: `${resolvedMessageUrl}/attachments/${idx}`,
+                name: `attachment-${idx + 1}`,
+              }));
+            }
 
             for (const ref of refs) {
               const downloaded = await downloadAttachmentFromRef(ref, mailgunApiKey);
