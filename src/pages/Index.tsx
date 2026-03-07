@@ -5,6 +5,7 @@ import {
   FileText, Zap, Shield, Download, ArrowRight, CheckCircle2,
   Upload, Brain, ClipboardCheck, Star, ChevronRight
 } from "lucide-react";
+import { DemoUploader } from "@/components/demo/DemoUploader";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
