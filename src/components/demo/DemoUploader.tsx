@@ -87,7 +87,7 @@ export function DemoUploader() {
 
       // Create demo_uploads record
       setProcessingStep("Preparing for AI analysis...");
-      const { data: demoRecord, error: insertErr } = await supabase
+      const { data: demoRecord, error: insertErr } = await (supabase as any)
         .from("demo_uploads")
         .insert({
           session_id: sessionId,
@@ -99,7 +99,7 @@ export function DemoUploader() {
         .select("id")
         .single();
 
-      if (insertErr || !demoRecord) throw new Error("Failed to create demo record");
+      if (insertErr || !demoRecord) throw new Error("Failed to create demo record: " + (insertErr?.message || "No data returned"));
 
       // Create preview URL for images
       if (file.type.startsWith("image/")) {
