@@ -10,6 +10,9 @@ import { useState } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileRecordCard } from "@/components/ui/responsive-table";
+import { OverflowActions } from "@/components/ui/overflow-actions";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
@@ -25,6 +28,7 @@ export default function DocumentsPage() {
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
   const [editData, setEditData] = useState<Partial<DocumentRecord>>({});
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   const { data: documents = [], isLoading } = useDocuments(statusFilter);
   const updateDoc = useUpdateDocument();
@@ -87,6 +91,17 @@ export default function DocumentsPage() {
     );
   }
 
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "processing": return "Processing";
+      case "processed":
+      case "needs_review": return "Needs Review";
+      case "approved": return "Approved";
+      case "exported": return "Exported";
+      default: return status;
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
@@ -95,7 +110,7 @@ export default function DocumentsPage() {
           <Input placeholder="Search documents..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue />
           </SelectTrigger>
@@ -109,17 +124,45 @@ export default function DocumentsPage() {
         </Select>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground text-sm">
-              No documents found. Upload your first document to get started.
-            </div>
-          ) : (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12 text-muted-foreground text-sm">
+            No documents found. Upload your first document to get started.
+          </CardContent>
+        </Card>
+      ) : isMobile ? (
+        /* Mobile card view */
+        <div className="space-y-2">
+          {filtered.map((doc) => (
+            <MobileRecordCard
+              key={doc.id}
+              title={doc.file_name}
+              subtitle={doc.supplier_name || doc.customer_name || undefined}
+              badge={{
+                label: statusLabel(doc.status),
+                className: statusColors[doc.status] || "",
+              }}
+              fields={[
+                { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
+                { label: "Date", value: doc.invoice_date || "—" },
+                { label: "Amount", value: doc.total_amount && Number(doc.total_amount) > 0
+                  ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
+                  : "—"
+                },
+                { label: "Source", value: (doc as any).source === "email_import" ? "Email" : "Upload" },
+              ]}
+              onClick={() => openReview(doc)}
+            />
+          ))}
+        </div>
+      ) : (
+        /* Desktop table */
+        <Card>
+          <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
                  <thead>
@@ -192,9 +235,9 @@ export default function DocumentsPage() {
                 </tbody>
               </table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Review Dialog */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
