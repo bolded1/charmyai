@@ -35,11 +35,11 @@ export function DashboardSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
-        <Link to="/app" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center shrink-0">
-            <Logo className="h-4 w-4 text-sidebar-primary-foreground" />
+        <Link to="/app" className="flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
+            <Logo className="h-3.5 w-3.5 text-sidebar-primary-foreground" />
           </div>
-          {!collapsed && <span className="font-bold text-sidebar-accent-foreground">DocuLedger</span>}
+          {!collapsed && <span className="font-semibold text-sm text-sidebar-accent-foreground">DocuLedger</span>}
         </Link>
       </SidebarHeader>
       <SidebarContent>
