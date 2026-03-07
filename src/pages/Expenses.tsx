@@ -1,37 +1,101 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Receipt, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Search, Receipt, Loader2, CalendarIcon, X } from "lucide-react";
+import { useState, useMemo } from "react";
 import { useExpenseRecords } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
+import { cn } from "@/lib/utils";
+
+type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
 export default function ExpensesPage() {
   const [search, setSearch] = useState("");
   const [currencyFilter, setCurrencyFilter] = useState("all");
+  const [datePreset, setDatePreset] = useState<DatePreset>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
   const { user } = useAuth();
   const { data: expenses = [], isLoading } = useExpenseRecords();
 
-  const filtered = expenses.filter((d) => {
-    const matchesSearch =
-      (d.supplier_name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (d.invoice_number || "").toLowerCase().includes(search.toLowerCase());
-    const matchesCurrency = currencyFilter === "all" || d.currency === currencyFilter;
-    return matchesSearch && matchesCurrency;
-  });
+  // Compute date range from preset
+  const dateRange = useMemo(() => {
+    const now = new Date();
+    switch (datePreset) {
+      case "this_month":
+        return { from: startOfMonth(now), to: endOfMonth(now) };
+      case "last_month": {
+        const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        return { from: startOfMonth(last), to: endOfMonth(last) };
+      }
+      case "this_quarter":
+        return { from: startOfQuarter(now), to: endOfQuarter(now) };
+      case "this_year":
+        return { from: startOfYear(now), to: endOfYear(now) };
+      case "last_year": {
+        const ly = new Date(now.getFullYear() - 1, 0, 1);
+        return { from: startOfYear(ly), to: endOfYear(ly) };
+      }
+      case "custom":
+        return { from: dateFrom, to: dateTo };
+      default:
+        return { from: undefined, to: undefined };
+    }
+  }, [datePreset, dateFrom, dateTo]);
 
-  // Totals by currency
-  const totalEur = expenses
+  // Single filtered list used for both table AND totals
+  const filtered = useMemo(() => {
+    return expenses.filter((d) => {
+      const matchesSearch =
+        (d.supplier_name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (d.invoice_number || "").toLowerCase().includes(search.toLowerCase());
+      const matchesCurrency = currencyFilter === "all" || d.currency === currencyFilter;
+
+      let matchesDate = true;
+      if (dateRange.from || dateRange.to) {
+        const docDate = d.invoice_date ? new Date(d.invoice_date) : null;
+        if (!docDate) {
+          matchesDate = false;
+        } else {
+          if (dateRange.from && docDate < dateRange.from) matchesDate = false;
+          if (dateRange.to && docDate > dateRange.to) matchesDate = false;
+        }
+      }
+
+      return matchesSearch && matchesCurrency && matchesDate;
+    });
+  }, [expenses, search, currencyFilter, dateRange]);
+
+  // Totals from filtered data
+  const totalEur = filtered
     .filter((e) => e.currency === "EUR")
     .reduce((sum, e) => sum + Number(e.total_amount || 0), 0);
-  const totalUsd = expenses
+  const totalUsd = filtered
     .filter((e) => e.currency === "USD")
     .reduce((sum, e) => sum + Number(e.total_amount || 0), 0);
+  const eurCount = filtered.filter((e) => e.currency === "EUR").length;
+  const usdCount = filtered.filter((e) => e.currency === "USD").length;
+
+  const clearDateFilter = () => {
+    setDatePreset("all");
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
 
   if (!user) {
     return <div className="text-center py-12 text-muted-foreground">Please log in to view expenses.</div>;
   }
+
+  const activeDateLabel = datePreset !== "all"
+    ? datePreset === "custom"
+      ? `${dateFrom ? format(dateFrom, "dd/MM/yyyy") : "..."} – ${dateTo ? format(dateTo, "dd/MM/yyyy") : "..."}`
+      : datePreset.replace("_", " ")
+    : null;
 
   return (
     <div className="space-y-4">
@@ -44,7 +108,7 @@ export default function ExpensesPage() {
               <Badge variant="outline" className="text-xs">EUR</Badge>
             </div>
             <div className="text-2xl font-bold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            <p className="text-xs text-muted-foreground mt-1">{expenses.filter(e => e.currency === "EUR").length} records</p>
+            <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
           </CardContent>
         </Card>
         <Card>
@@ -54,19 +118,63 @@ export default function ExpensesPage() {
               <Badge variant="outline" className="text-xs">USD</Badge>
             </div>
             <div className="text-2xl font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            <p className="text-xs text-muted-foreground mt-1">{expenses.filter(e => e.currency === "USD").length} records</p>
+            <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Search & filter */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
+      {/* Filters row */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search expenses..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+
+        <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
+          <SelectTrigger className="w-40">
+            <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="this_month">This Month</SelectItem>
+            <SelectItem value="last_month">Last Month</SelectItem>
+            <SelectItem value="this_quarter">This Quarter</SelectItem>
+            <SelectItem value="this_year">This Year</SelectItem>
+            <SelectItem value="last_year">Last Year</SelectItem>
+            <SelectItem value="custom">Custom Range</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {datePreset === "custom" && (
+          <>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3 w-3 mr-1" />
+                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "From"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left text-xs", !dateTo && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3 w-3 mr-1" />
+                  {dateTo ? format(dateTo, "dd/MM/yyyy") : "To"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+          </>
+        )}
+
         <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-28">
             <SelectValue placeholder="Currency" />
           </SelectTrigger>
           <SelectContent>
@@ -75,6 +183,12 @@ export default function ExpensesPage() {
             <SelectItem value="USD">USD</SelectItem>
           </SelectContent>
         </Select>
+
+        {(datePreset !== "all" || currencyFilter !== "all" || search) && (
+          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setSearch(""); }}>
+            <X className="h-3 w-3 mr-1" /> Clear
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -85,7 +199,7 @@ export default function ExpensesPage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">
-              No expense records yet. Upload and approve documents to create expense records.
+              No expense records found for the selected filters.
             </div>
           ) : (
             <div className="overflow-x-auto">
