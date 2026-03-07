@@ -1,18 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Receipt, AlertCircle, Upload as UploadIcon, Loader2, CheckCircle2, X, AlertCircle as AlertCircleIcon } from "lucide-react";
+import { FileText, Receipt, AlertCircle, Upload as UploadIcon, Loader2 } from "lucide-react";
 import { useDocuments, useExpenseRecords, useUploadDocument } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
-import { useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
-const statusColors: Record<string, string> = {
-  processing: "bg-muted text-muted-foreground",
-  needs_review: "bg-accent text-accent-foreground",
-  approved: "bg-primary/10 text-primary",
-  exported: "bg-secondary text-secondary-foreground",
-};
+const CHART_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--accent-foreground))",
+  "hsl(220, 70%, 55%)",
+  "hsl(150, 60%, 45%)",
+  "hsl(35, 80%, 55%)",
+  "hsl(280, 60%, 55%)",
+  "hsl(0, 65%, 55%)",
+  "hsl(180, 50%, 45%)",
+  "hsl(60, 70%, 45%)",
+  "hsl(310, 50%, 50%)",
+];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -35,12 +41,22 @@ export default function DashboardPage() {
     e.target.value = "";
   }, [user, uploadMutation, navigate]);
 
+  const categoryData = useMemo(() => {
+    const map: Record<string, number> = {};
+    expenses.forEach((e) => {
+      const cat = e.category || "Uncategorized";
+      map[cat] = (map[cat] || 0) + Number(e.total_amount || 0);
+    });
+    return Object.entries(map)
+      .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
+      .sort((a, b) => b.value - a.value);
+  }, [expenses]);
+
   if (!user) {
     return <div className="text-center py-12 text-muted-foreground">Please log in to view dashboard.</div>;
   }
 
   const isLoading = docsLoading || expLoading;
-  const awaitingReview = documents.filter((d) => d.status === "needs_review").length;
 
   const expensesByCurrency: Record<string, number> = {};
   expenses.forEach((e) => {
@@ -56,7 +72,6 @@ export default function DashboardPage() {
       icon: Receipt,
       sub: `${expenses.filter(e => e.currency === cur).length} records`,
     })),
-    { label: "Awaiting Review", value: awaitingReview, icon: AlertCircle, sub: awaitingReview > 0 ? "Action needed" : "All clear" },
   ];
 
   if (isLoading) {
@@ -67,12 +82,10 @@ export default function DashboardPage() {
     );
   }
 
-  const recentDocs = documents.slice(0, 5);
-
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((s) => (
           <Card key={s.label}>
             <CardContent className="p-5">
@@ -89,69 +102,86 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Upload Area */}
-      <Card>
-        <CardContent className="p-0">
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer ${
-              dragOver ? "border-primary bg-accent" : "border-border"
-            }`}
-            onClick={() => document.getElementById("dashboard-file-input")?.click()}
-          >
-            <UploadIcon className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <h3 className="font-semibold mb-1">Drop documents here</h3>
-            <p className="text-sm text-muted-foreground mb-2">or click to browse files</p>
-            <p className="text-xs text-muted-foreground">Supports PDF, PNG, JPG up to 20MB</p>
-            <input
-              id="dashboard-file-input"
-              type="file"
-              className="hidden"
-              multiple
-              accept=".pdf,.png,.jpg,.jpeg"
-              onChange={handleFileSelect}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Documents */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Recent Documents</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentDocs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No documents yet. Upload your first invoice to get started.</p>
-          ) : (
-            <div className="space-y-3">
-              {recentDocs.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{doc.file_name}</p>
-                      <p className="text-xs text-muted-foreground">{doc.supplier_name || "Processing..."}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {Number(doc.total_amount) > 0 && (
-                      <span className="text-sm font-medium">{doc.currency} {Number(doc.total_amount).toFixed(2)}</span>
-                    )}
-                    <Badge variant="secondary" className={statusColors[doc.status] || ""}>
-                      {doc.status.replace("_", " ")}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Upload Area */}
+        <Card>
+          <CardContent className="p-0">
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer ${
+                dragOver ? "border-primary bg-accent" : "border-border"
+              }`}
+              onClick={() => document.getElementById("dashboard-file-input")?.click()}
+            >
+              <UploadIcon className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-semibold mb-1">Drop documents here</h3>
+              <p className="text-sm text-muted-foreground mb-2">or click to browse files</p>
+              <p className="text-xs text-muted-foreground">Supports PDF, PNG, JPG up to 20MB</p>
+              <input
+                id="dashboard-file-input"
+                type="file"
+                className="hidden"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg"
+                onChange={handleFileSelect}
+              />
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Expenses by Category Pie Chart */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Expenses by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {categoryData.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-12">No expense data yet.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={3}
+                    dataKey="value"
+                    nameKey="name"
+                    stroke="none"
+                  >
+                    {categoryData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => `€${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      color: "hsl(var(--popover-foreground))",
+                      fontSize: "13px",
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value) => (
+                      <span style={{ color: "hsl(var(--foreground))", fontSize: "12px" }}>{value}</span>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
