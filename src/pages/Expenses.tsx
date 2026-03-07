@@ -33,6 +33,7 @@ interface ExpenseEdit {
 export default function ExpensesPage() {
   const [search, setSearch] = useState("");
   const [currencyFilter, setCurrencyFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
@@ -167,12 +168,19 @@ export default function ExpensesPage() {
     }
   }, [datePreset, dateFrom, dateTo]);
 
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    expenses.forEach((e) => { if (e.category) set.add(e.category); });
+    return Array.from(set).sort();
+  }, [expenses]);
+
   const filtered = useMemo(() => {
     return expenses.filter((d) => {
       const matchesSearch =
         (d.supplier_name || "").toLowerCase().includes(search.toLowerCase()) ||
         (d.invoice_number || "").toLowerCase().includes(search.toLowerCase());
       const matchesCurrency = currencyFilter === "all" || d.currency === currencyFilter;
+      const matchesCategory = categoryFilter === "all" || (d.category || "") === categoryFilter;
       let matchesDate = true;
       if (dateRange.from || dateRange.to) {
         const docDate = d.invoice_date ? new Date(d.invoice_date) : null;
@@ -182,9 +190,9 @@ export default function ExpensesPage() {
           if (dateRange.to && docDate > dateRange.to) matchesDate = false;
         }
       }
-      return matchesSearch && matchesCurrency && matchesDate;
+      return matchesSearch && matchesCurrency && matchesCategory && matchesDate;
     });
-  }, [expenses, search, currencyFilter, dateRange]);
+  }, [expenses, search, currencyFilter, categoryFilter, dateRange]);
 
   const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
   const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
@@ -287,8 +295,19 @@ export default function ExpensesPage() {
             <SelectItem value="USD">USD</SelectItem>
           </SelectContent>
         </Select>
-        {(datePreset !== "all" || currencyFilter !== "all" || search) && (
-          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setSearch(""); }}>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(datePreset !== "all" || currencyFilter !== "all" || categoryFilter !== "all" || search) && (
+          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
             <X className="h-3 w-3 mr-1" /> Clear
           </Button>
         )}
