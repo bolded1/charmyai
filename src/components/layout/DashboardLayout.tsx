@@ -1,8 +1,9 @@
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut } from "lucide-react";
+import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import {
@@ -54,7 +55,15 @@ export default function DashboardLayout() {
               <SidebarTrigger />
               <span className="text-sm font-medium text-foreground">{pageTitle}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={() => navigate("/app/upload")}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Upload Document</span>
+              </Button>
               <NotificationsPopover />
 
               {/* User Menu */}
@@ -152,8 +161,9 @@ export default function DashboardLayout() {
 
 function getPageTitle(path: string): string {
   const map: Record<string, string> = {
-    '/app': 'Dashboard',
-    '/app/upload': 'Upload',
+    '/app': 'Capture',
+    '/app/upload': 'Capture',
+    '/app/dashboard': 'Dashboard',
     '/app/documents': 'Documents',
     '/app/expenses': 'Expenses',
     '/app/income': 'Income',
@@ -162,5 +172,5 @@ function getPageTitle(path: string): string {
     '/app/team': 'Team',
     '/app/settings': 'Settings',
   };
-  return map[path] || 'Dashboard';
+  return map[path] || 'Capture';
 }

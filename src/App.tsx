@@ -60,7 +60,8 @@ const App = () => (
 
           {/* Dashboard pages */}
           <Route path="/app" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
+            <Route index element={<Upload />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="upload" element={<Upload />} />
             <Route path="documents" element={<Documents />} />
             <Route path="expenses" element={<Expenses />} />
