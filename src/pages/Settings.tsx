@@ -191,13 +191,25 @@ export default function SettingsPage() {
 
   // Auto-save profile with debounce
   const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const initialLoadRef = useRef(true);
+  const profileReadyRef = useRef(false);
+  const lastSavedFormRef = useRef<string>("");
+
+  // Mark ready only after profile has populated the form
+  useEffect(() => {
+    if (profile && !profileReadyRef.current) {
+      // Wait a tick so the form state from profile load is set
+      setTimeout(() => {
+        lastSavedFormRef.current = JSON.stringify(profileForm);
+        profileReadyRef.current = true;
+      }, 100);
+    }
+  }, [profile, profileForm]);
 
   useEffect(() => {
-    if (initialLoadRef.current) {
-      initialLoadRef.current = false;
-      return;
-    }
+    if (!profileReadyRef.current) return;
+    const serialized = JSON.stringify(profileForm);
+    if (serialized === lastSavedFormRef.current) return;
+
     if (profileTimerRef.current) clearTimeout(profileTimerRef.current);
     profileTimerRef.current = setTimeout(async () => {
       try {
@@ -206,6 +218,7 @@ export default function SettingsPage() {
           phone: profileForm.phone || null, job_title: profileForm.job_title || null,
           timezone: profileForm.timezone, language: profileForm.language,
         });
+        lastSavedFormRef.current = serialized;
         toast.success("Saved");
       } catch { toast.error("Failed to save."); }
     }, 800);
