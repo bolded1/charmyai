@@ -54,7 +54,15 @@ export default function DashboardLayout() {
               <SidebarTrigger />
               <span className="text-sm font-medium text-foreground">{pageTitle}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={() => navigate("/app/upload")}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Upload Document</span>
+              </Button>
               <NotificationsPopover />
 
               {/* User Menu */}
