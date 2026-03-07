@@ -68,15 +68,31 @@ export default function ExpensesPage() {
 
       if (cancelled || !doc) { setLoadingFile(false); return; }
 
-      const url = await getDocumentSignedUrl(doc.file_path);
-      if (!cancelled) {
-        setFileUrl(url);
-        setFileType(doc.file_type);
-        setLoadingFile(false);
+      const signedUrl = await getDocumentSignedUrl(doc.file_path);
+      if (cancelled || !signedUrl) { setLoadingFile(false); return; }
+
+      try {
+        // Fetch as blob to avoid cross-origin issues in preview
+        const response = await fetch(signedUrl);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        if (!cancelled) {
+          setFileUrl(blobUrl);
+          setFileType(doc.file_type);
+          setLoadingFile(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setFileUrl(signedUrl);
+          setFileType(doc.file_type);
+          setLoadingFile(false);
+        }
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedExpense?.document_id]);
 
   const openEdit = (expense: typeof expenses[0]) => {
