@@ -116,7 +116,7 @@ export default function HomePage() {
                 className="surface-elevated rounded-xl p-6 text-center"
               >
                 <div className="h-12 w-12 rounded-xl bg-brand-soft flex items-center justify-center mx-auto mb-4">
-                  <step.icon className="h-6 w-6 text-primary" />
+                  <step.icon className="h-6 w-6 text-primary-icon" />
                 </div>
                 <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
                   Step {i + 1}
@@ -219,7 +219,7 @@ export default function HomePage() {
                 className="flex items-center gap-3 p-4 surface-elevated rounded-xl"
               >
                 <div className="h-9 w-9 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
-                  <b.icon className="h-4.5 w-4.5 text-primary" />
+                  <b.icon className="h-4.5 w-4.5 text-primary-icon" />
                 </div>
                 <span className="text-sm font-medium">{b.text}</span>
               </motion.div>
