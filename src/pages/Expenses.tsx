@@ -51,10 +51,21 @@ export default function ExpensesPage() {
   // Load file preview when opening dialog
   useEffect(() => {
     if (!selectedExpense?.document_id) {
-      setFileUrl(null);
+      setFileUrl((prev) => {
+        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setSignedFileUrl(null);
       setFileType(null);
       return;
     }
+
+    setFileUrl((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setSignedFileUrl(null);
+    setFileType(null);
 
     let cancelled = false;
     setLoadingFile(true);
@@ -148,6 +159,24 @@ export default function ExpensesPage() {
     } catch {
       // Fallback: open in new tab
       window.open(fileUrl, "_blank");
+    }
+  };
+
+  const handleOpenFile = async () => {
+    const sourceUrl = signedFileUrl || fileUrl;
+    if (!sourceUrl) return;
+
+    try {
+      const response = await fetch(sourceUrl);
+      const rawBlob = await response.blob();
+      const typedBlob = new Blob([rawBlob], {
+        type: fileType || rawBlob.type || "application/octet-stream",
+      });
+      const blobUrl = URL.createObjectURL(typedBlob);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } catch {
+      window.open(sourceUrl, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -368,7 +397,7 @@ export default function ExpensesPage() {
                           <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleDownload}>
                             <Download className="h-3 w-3 mr-1" /> Download
                           </Button>
-                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => window.open(signedFileUrl || fileUrl, "_blank")}>
+                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleOpenFile}>
                             <ExternalLink className="h-3 w-3 mr-1" /> Open
                           </Button>
                         </>
@@ -383,7 +412,15 @@ export default function ExpensesPage() {
                     ) : fileUrl && isImage ? (
                       <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain" />
                     ) : fileUrl && isPdf ? (
-                      <iframe src={fileUrl} className="w-full h-[300px]" title="Document preview" />
+                      <object data={fileUrl} type="application/pdf" className="w-full h-[360px]">
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                          <FileText className="h-8 w-8 mb-2" />
+                          <p className="text-sm">PDF preview not available in this browser</p>
+                          <Button variant="link" size="sm" className="mt-1 text-xs" onClick={handleOpenFile}>
+                            Open PDF in new tab
+                          </Button>
+                        </div>
+                      </object>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                         <FileText className="h-8 w-8 mb-2" />
