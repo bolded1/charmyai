@@ -7,6 +7,7 @@ import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, Lo
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useOrganization } from "@/hooks/useOrganization";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -37,6 +38,7 @@ export default function DashboardLayout() {
   const pageTitle = getPageTitle(location.pathname);
   const { user, loading } = useAuth();
   const { profile, displayName, initials } = useProfile();
+  const { data: org } = useOrganization();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { settings: layoutSettings } = useLayoutSettings();
   const isMobile = useIsMobile();
@@ -97,7 +99,7 @@ export default function DashboardLayout() {
         </DropdownMenuLabel>
         <DropdownMenuItem className="text-xs text-muted-foreground px-3 cursor-default" disabled>
           <Building2 className="h-3.5 w-3.5 mr-2" />
-          Acme Ltd
+          {org?.name || "My Organization"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 

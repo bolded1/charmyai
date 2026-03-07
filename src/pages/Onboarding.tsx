@@ -120,8 +120,11 @@ export default function OnboardingPage() {
     }
 
     if (step === 1) {
-      // Update org name if provided, otherwise keep the default
-      if (orgName.trim() && org) {
+      if (!orgName.trim()) {
+        toast.error("Company name is required.");
+        return;
+      }
+      if (org) {
         try {
           await updateOrg.mutateAsync({ id: org.id, name: orgName.trim() });
         } catch {
@@ -219,8 +222,8 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Organization Name</Label>
-                <Input placeholder="Acme Corp (optional — can set later)" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+                <Label>Company Name *</Label>
+                <Input placeholder="Acme Corp" value={orgName} onChange={(e) => setOrgName(e.target.value)} required />
               </div>
 
               {/* Industry as tabs */}
