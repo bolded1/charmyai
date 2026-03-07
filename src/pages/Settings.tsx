@@ -819,11 +819,11 @@ export default function SettingsPage() {
 
 /* ── Brand Upload Box Component ── */
 function BrandUploadBox({
-  label, hint, image, onUpload, onRemove, tall, dark,
+  label, hint, image, onUpload, onRemove, tall, dark, wide,
 }: {
   label: string; hint: string; image: string | null;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRemove: () => void; tall?: boolean; dark?: boolean;
+  onRemove: () => void; tall?: boolean; dark?: boolean; wide?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
