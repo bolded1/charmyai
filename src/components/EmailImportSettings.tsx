@@ -167,6 +167,25 @@ export default function EmailImportSettings() {
               <p className="text-sm text-muted-foreground">No emails received yet</p>
               <p className="text-xs text-muted-foreground/70 mt-1">Forward an invoice to your import address to get started</p>
             </div>
+          ) : isMobile ? (
+            <div className="p-2 space-y-2">
+              {imports.map((imp: any) => {
+                const status = getImportStatus(imp);
+                return (
+                  <MobileRecordCard
+                    key={imp.id}
+                    title={imp.sender_name || imp.sender_email || "Unknown sender"}
+                    subtitle={imp.subject || "(no subject)"}
+                    badge={{ label: status.label, className: status.className }}
+                    fields={[
+                      { label: "Received", value: new Date(imp.created_at).toLocaleDateString() },
+                      { label: "Attachments", value: String(imp.attachment_count) },
+                      { label: "Processed", value: imp.processed_count > 0 ? String(imp.processed_count) : "—" },
+                    ]}
+                  />
+                );
+              })}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
