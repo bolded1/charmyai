@@ -90,10 +90,11 @@ serve(async (req) => {
     }
 
     // Collect attachments from form data
-    // Mailgun sends attachments as "attachment-1", "attachment-2", etc.
+    // Mailgun can send as "attachment-1", "attachment-2", or just multiple "attachment" entries
     const attachments: { file: File; name: string }[] = [];
-    const attachmentCount = parseInt(formData.get("attachment-count") as string || "0", 10);
 
+    // Method 1: Try "attachment-N" format (Mailgun legacy)
+    const attachmentCount = parseInt(formData.get("attachment-count") as string || "0", 10);
     for (let i = 1; i <= Math.max(attachmentCount, 30); i++) {
       const file = formData.get(`attachment-${i}`) as File | null;
       if (!file) {
@@ -102,6 +103,31 @@ serve(async (req) => {
       }
       attachments.push({ file, name: file.name || `attachment-${i}` });
     }
+
+    // Method 2: Try "attachment" entries (Mailgun default for most routes)
+    if (attachments.length === 0) {
+      const allEntries = formData.getAll("attachment");
+      for (const entry of allEntries) {
+        if (entry instanceof File && entry.size > 0) {
+          attachments.push({ file: entry, name: entry.name || `attachment-${attachments.length + 1}` });
+        }
+      }
+    }
+
+    // Method 3: Scan all form fields for File objects (catch-all)
+    if (attachments.length === 0) {
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File && value.size > 0 && !["inline", "content-id-map"].includes(key)) {
+          const type = value.type?.toLowerCase() || "";
+          const ext = value.name?.toLowerCase().split(".").pop() || "";
+          if (SUPPORTED_TYPES.includes(type) || ["pdf", "png", "jpg", "jpeg"].includes(ext)) {
+            attachments.push({ file: value, name: value.name || key });
+          }
+        }
+      }
+    }
+
+    console.log(`Found ${attachments.length} attachments. Form fields: ${[...formData.keys()].join(", ")}`);
 
     // Filter supported attachments
     const supportedAttachments = attachments.filter((a) => {
