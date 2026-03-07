@@ -39,6 +39,7 @@ export default function EmailImportSettings() {
   const createOrg = useCreateOrganization();
   const [copied, setCopied] = useState(false);
   const [orgName, setOrgName] = useState("");
+  const isMobile = useIsMobile();
 
   const importEmail = org ? getImportEmailAddress(org.import_email_token) : null;
 
