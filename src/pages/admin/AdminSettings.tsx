@@ -49,19 +49,29 @@ function SaveIndicator({ saving }: { saving: boolean }) {
   );
 }
 
-// ── Logo upload with auto-save via localStorage + event ──
+// ── Logo upload with auto-save via database (demo_settings) ──
 function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; storageKey: string; icon: React.ElementType }) {
-  const [preview, setPreview] = useState<string | null>(() => localStorage.getItem(storageKey));
+  const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    supabase.from("demo_settings").select("value").eq("key", storageKey).maybeSingle().then(({ data }) => {
+      if (data?.value) setPreview(data.value as string);
+    });
+  }, [storageKey]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) { toast.error("Logo must be under 2MB"); return; }
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const dataUrl = reader.result as string;
-      localStorage.setItem(storageKey, dataUrl);
+      const { error } = await supabase.from("demo_settings").upsert(
+        { key: storageKey, value: JSON.stringify(dataUrl) },
+        { onConflict: "key" }
+      );
+      if (error) { toast.error("Failed to save logo"); return; }
       setPreview(dataUrl);
       window.dispatchEvent(new Event("brand-logo-changed"));
       toast.success(`${label} updated`);
@@ -69,8 +79,8 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
     reader.readAsDataURL(file);
   };
 
-  const handleRemove = () => {
-    localStorage.removeItem(storageKey);
+  const handleRemove = async () => {
+    await supabase.from("demo_settings").delete().eq("key", storageKey);
     setPreview(null);
     window.dispatchEvent(new Event("brand-logo-changed"));
     toast.success(`${label} removed`);
