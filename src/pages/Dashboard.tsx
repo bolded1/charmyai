@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Receipt, AlertCircle, Upload as UploadIcon, Loader2 } from "lucide-react";
+import { FileText, Receipt, AlertCircle, Upload as UploadIcon, Loader2, Camera } from "lucide-react";
 import { useDocuments, useExpenseRecords, useUploadDocument } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useCallback, useMemo } from "react";
