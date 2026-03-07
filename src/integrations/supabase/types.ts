@@ -14,7 +14,241 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      documents: {
+        Row: {
+          category: string | null
+          confidence_score: number | null
+          created_at: string
+          currency: string | null
+          customer_name: string | null
+          document_type: string | null
+          due_date: string | null
+          extracted_data: Json | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          invoice_date: string | null
+          invoice_number: string | null
+          net_amount: number | null
+          ocr_text: string | null
+          status: string
+          supplier_name: string | null
+          total_amount: number | null
+          updated_at: string
+          user_corrections: Json | null
+          user_id: string
+          validation_errors: Json | null
+          vat_amount: number | null
+          vat_number: string | null
+        }
+        Insert: {
+          category?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_name?: string | null
+          document_type?: string | null
+          due_date?: string | null
+          extracted_data?: Json | null
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type: string
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          net_amount?: number | null
+          ocr_text?: string | null
+          status?: string
+          supplier_name?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          user_corrections?: Json | null
+          user_id: string
+          validation_errors?: Json | null
+          vat_amount?: number | null
+          vat_number?: string | null
+        }
+        Update: {
+          category?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_name?: string | null
+          document_type?: string | null
+          due_date?: string | null
+          extracted_data?: Json | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          net_amount?: number | null
+          ocr_text?: string | null
+          status?: string
+          supplier_name?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          user_corrections?: Json | null
+          user_id?: string
+          validation_errors?: Json | null
+          vat_amount?: number | null
+          vat_number?: string | null
+        }
+        Relationships: []
+      }
+      expense_records: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string
+          document_id: string | null
+          due_date: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          net_amount: number
+          supplier_name: string
+          total_amount: number
+          user_id: string
+          vat_amount: number
+          vat_number: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date: string
+          invoice_number?: string | null
+          net_amount?: number
+          supplier_name: string
+          total_amount?: number
+          user_id: string
+          vat_amount?: number
+          vat_number?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          net_amount?: number
+          supplier_name?: string
+          total_amount?: number
+          user_id?: string
+          vat_amount?: number
+          vat_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_records_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      export_history: {
+        Row: {
+          created_at: string
+          export_name: string
+          export_type: string
+          format: string
+          id: string
+          row_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          export_name: string
+          export_type: string
+          format?: string
+          id?: string
+          row_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          export_name?: string
+          export_type?: string
+          format?: string
+          id?: string
+          row_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      income_records: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string
+          customer_name: string
+          document_id: string | null
+          due_date: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          net_amount: number
+          total_amount: number
+          user_id: string
+          vat_amount: number
+          vat_number: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          customer_name: string
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date: string
+          invoice_number?: string | null
+          net_amount?: number
+          total_amount?: number
+          user_id: string
+          vat_amount?: number
+          vat_number?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          net_amount?: number
+          total_amount?: number
+          user_id?: string
+          vat_amount?: number
+          vat_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "income_records_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
