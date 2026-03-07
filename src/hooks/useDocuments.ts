@@ -205,3 +205,40 @@ export function useIncomeRecords() {
     },
   });
 }
+
+export function useUpdateExpense() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, any> }) => {
+      const { data, error } = await supabase
+        .from("expense_records")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      toast.success("Expense updated");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    },
+  });
+}
+
+export function getDocumentFileUrl(filePath: string): string {
+  const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
+  return data.publicUrl;
+}
+
+export async function getDocumentSignedUrl(filePath: string): Promise<string | null> {
+  const { data, error } = await supabase.storage
+    .from("documents")
+    .createSignedUrl(filePath, 3600);
+  if (error) return null;
+  return data.signedUrl;
+}
