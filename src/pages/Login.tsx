@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 
 export default function LoginPage() {
+  const brandLogo = useBrandLogo();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
