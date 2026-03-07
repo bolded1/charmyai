@@ -132,18 +132,28 @@ export default function SettingsPage() {
     localStorage.setItem("button-text-color", buttonTextColor);
   }, [buttonTextColor]);
 
-  const handleSave = () => toast.success("Settings saved!");
+  // Auto-save profile with debounce
+  const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadRef = useRef(true);
 
-  const handleProfileSave = async () => {
-    try {
-      await updateProfile.mutateAsync({
-        first_name: profileForm.first_name || null, last_name: profileForm.last_name || null,
-        phone: profileForm.phone || null, job_title: profileForm.job_title || null,
-        timezone: profileForm.timezone, language: profileForm.language,
-      });
-      toast.success("Profile updated!");
-    } catch { toast.error("Failed to update profile."); }
-  };
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (profileTimerRef.current) clearTimeout(profileTimerRef.current);
+    profileTimerRef.current = setTimeout(async () => {
+      try {
+        await updateProfile.mutateAsync({
+          first_name: profileForm.first_name || null, last_name: profileForm.last_name || null,
+          phone: profileForm.phone || null, job_title: profileForm.job_title || null,
+          timezone: profileForm.timezone, language: profileForm.language,
+        });
+        toast.success("Saved");
+      } catch { toast.error("Failed to save."); }
+    }, 800);
+    return () => { if (profileTimerRef.current) clearTimeout(profileTimerRef.current); };
+  }, [profileForm]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
