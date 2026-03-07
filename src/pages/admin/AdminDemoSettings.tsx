@@ -79,6 +79,18 @@ export default function AdminDemoSettingsPage() {
     setSaving(false);
   };
 
+  const handleCleanup = async () => {
+    setCleaning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("demo-cleanup");
+      if (error) throw error;
+      toast.success(`Cleanup complete. Deleted ${data?.deleted || 0} expired demo records.`);
+    } catch {
+      toast.error("Cleanup failed");
+    }
+    setCleaning(false);
+  };
+
   const updateSetting = <K extends keyof DemoSettings>(key: K, value: DemoSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
