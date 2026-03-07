@@ -124,23 +124,25 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Scan Document - shown first and large on mobile/tablet */}
+      {/* Scan Document - shown first on mobile/tablet, compact */}
       <Card className="overflow-hidden lg:hidden">
         <CardContent className="p-0">
           <div
-            className="relative p-16 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg border-border hover:border-primary/50 hover:bg-accent/50"
+            className="relative px-6 py-8 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg border-border hover:border-primary/50 hover:bg-accent/50"
             onClick={() => document.getElementById("camera-input")?.click()}
           >
-            <div className="mx-auto mb-5 h-16 w-16 rounded-2xl flex items-center justify-center bg-muted">
-              <Camera className="h-7 w-7 text-muted-foreground" />
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-muted">
+                <Camera className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-semibold text-foreground">Scan Document</h2>
+                <p className="text-xs text-muted-foreground">Capture with your camera</p>
+              </div>
             </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">Scan Document</h2>
-            <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-              Use your camera to capture invoices, receipts, or bills. They'll be automatically processed.
-            </p>
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <Badge variant="secondary" className="text-xs px-3 py-1">Photo</Badge>
-              <Badge variant="secondary" className="text-xs px-3 py-1">Auto-process</Badge>
+            <div className="flex items-center justify-center gap-2">
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Photo</Badge>
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Auto-process</Badge>
             </div>
             <input
               id="camera-input"
@@ -161,29 +163,29 @@ export default function UploadPage() {
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            className={`relative p-16 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg ${
+            className={`relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg ${
               dragOver
                 ? "border-primary bg-primary/5 scale-[1.01]"
                 : "border-border hover:border-primary/50 hover:bg-accent/50"
             }`}
             onClick={() => document.getElementById("file-input")?.click()}
           >
-            <div className={`mx-auto mb-5 h-16 w-16 rounded-2xl flex items-center justify-center transition-colors ${
+            <div className={`mx-auto mb-3 md:mb-5 h-12 w-12 md:h-14 md:w-14 rounded-2xl flex items-center justify-center transition-colors ${
               dragOver ? "bg-primary/10" : "bg-muted"
             }`}>
-              <UploadIcon className={`h-7 w-7 transition-colors ${dragOver ? "text-primary" : "text-muted-foreground"}`} />
+              <UploadIcon className={`h-5 w-5 md:h-6 md:w-6 transition-colors ${dragOver ? "text-primary" : "text-muted-foreground"}`} />
             </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">
+            <h2 className="text-base md:text-xl font-semibold text-foreground mb-1 md:mb-2">
               {dragOver ? "Drop files to upload" : "Upload Documents"}
             </h2>
-            <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-              Drag and drop your invoices, receipts, or bills here. They'll be automatically processed and ready for review.
+            <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 max-w-md mx-auto">
+              Drag and drop your invoices, receipts, or bills here.
             </p>
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <Badge variant="secondary" className="text-xs px-3 py-1">PDF</Badge>
-              <Badge variant="secondary" className="text-xs px-3 py-1">PNG</Badge>
-              <Badge variant="secondary" className="text-xs px-3 py-1">JPG</Badge>
-              <span className="text-xs text-muted-foreground">Up to 20MB each</span>
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2 py-0.5">PDF</Badge>
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2 py-0.5">PNG</Badge>
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2 py-0.5">JPG</Badge>
+              <span className="text-[10px] md:text-xs text-muted-foreground">Up to 20MB</span>
             </div>
             <input
               id="file-input"
