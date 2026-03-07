@@ -329,10 +329,9 @@ export default function DocumentsPage() {
 
                 <div>
                   <Label className="text-xs text-muted-foreground">Category</Label>
-                  <Input
-                    className="h-8 text-sm"
+                  <CategorySelect
                     value={editData.category || ""}
-                    onChange={(e) => setEditData((p) => ({ ...p, category: e.target.value }))}
+                    onValueChange={(v) => setEditData((p) => ({ ...p, category: v }))}
                   />
                 </div>
               </div>

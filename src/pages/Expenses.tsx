@@ -422,7 +422,7 @@ export default function ExpensesPage() {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Category</Label>
-                  <Input className="h-8 text-sm" value={editData.category} onChange={(e) => setEditData({ ...editData, category: e.target.value })} />
+                  <CategorySelect value={editData.category} onValueChange={(v) => setEditData({ ...editData, category: v })} />
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Currency</Label>
