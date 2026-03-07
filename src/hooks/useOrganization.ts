@@ -51,6 +51,28 @@ export function useCreateOrganization() {
   });
 }
 
+export function useUpdateOrganization() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .update({ name })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Organization;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 export function useEmailImports() {
   return useQuery({
     queryKey: ["email-imports"],
