@@ -46,6 +46,11 @@ export default function DashboardLayout() {
   const isMobile = useIsMobile();
   const brandLogo = useBrandLogo();
 
+  // Apply org accent color
+  useEffect(() => {
+    applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
+  }, [org?.primary_color]);
+
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
   if (loading) {
