@@ -60,9 +60,11 @@ function applyPersistedSettings() {
   const color = ACCENT_COLORS[accentIdx] || ACCENT_COLORS[0];
   root.style.setProperty("--primary", color.hue);
   root.style.setProperty("--ring", color.hue);
+  root.style.setProperty("--sidebar-primary", color.hue);
 
   const btnText = localStorage.getItem("button-text-color") || "white";
   root.style.setProperty("--primary-foreground", btnText === "white" ? "0 0% 100%" : "0 0% 0%");
+  root.style.setProperty("--sidebar-primary-foreground", btnText === "white" ? "0 0% 100%" : "0 0% 0%");
 }
 applyPersistedSettings();
 
