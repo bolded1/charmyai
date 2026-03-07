@@ -122,7 +122,7 @@ export default function UploadPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="block lg:hidden">
           <CardContent className="p-0">
             <div
               className="border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer border-border hover:border-primary hover:bg-accent"

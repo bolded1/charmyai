@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Receipt, AlertCircle, Upload as UploadIcon, Loader2 } from "lucide-react";
+import { FileText, Receipt, AlertCircle, Upload as UploadIcon, Loader2, Camera } from "lucide-react";
 import { useDocuments, useExpenseRecords, useUploadDocument } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useCallback, useMemo } from "react";
@@ -93,6 +93,29 @@ export default function DashboardPage() {
                 className="hidden"
                 multiple
                 accept=".pdf,.png,.jpg,.jpeg"
+                onChange={handleFileSelect}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Scan Document - tablet/mobile only */}
+        <Card className="block lg:hidden">
+          <CardContent className="p-0">
+            <div
+              className="border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer border-border hover:border-primary hover:bg-accent"
+              onClick={() => document.getElementById("dashboard-camera-input")?.click()}
+            >
+              <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-semibold mb-1">Scan Document</h3>
+              <p className="text-sm text-muted-foreground mb-2">Use your camera to capture</p>
+              <p className="text-xs text-muted-foreground">Takes a photo and processes it automatically</p>
+              <input
+                id="dashboard-camera-input"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                capture="environment"
                 onChange={handleFileSelect}
               />
             </div>
