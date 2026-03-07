@@ -310,7 +310,7 @@ export default function ExpensesPage() {
         )}
       </div>
 
-      {/* Table */}
+      {/* Table / Cards */}
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
@@ -320,6 +320,24 @@ export default function ExpensesPage() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">
               No expense records found for the selected filters.
+            </div>
+          ) : isMobile ? (
+            <div className="p-2 space-y-2">
+              {filtered.map((doc) => (
+                <MobileRecordCard
+                  key={doc.id}
+                  title={doc.supplier_name}
+                  subtitle={doc.invoice_number || undefined}
+                  badge={{ label: doc.category || "—" }}
+                  fields={[
+                    { label: "Date", value: doc.invoice_date },
+                    { label: "Currency", value: doc.currency },
+                    { label: "Net", value: Number(doc.net_amount).toFixed(2) },
+                    { label: "Total", value: Number(doc.total_amount).toFixed(2) },
+                  ]}
+                  onClick={() => openEdit(doc)}
+                />
+              ))}
             </div>
           ) : (
             <div className="overflow-x-auto">
