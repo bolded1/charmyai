@@ -127,29 +127,12 @@ export default function SettingsPage() {
     localStorage.setItem("theme-mode", themeMode);
   }, [themeMode]);
 
+  // Apply org accent color when org loads
   useEffect(() => {
-    const root = document.documentElement;
-    const color = ACCENT_COLORS[accentColor];
-    root.style.setProperty("--primary", color.hue);
-    root.style.setProperty("--ring", color.hue);
-    root.style.setProperty("--sidebar-primary", color.hue);
-    root.style.setProperty("--sidebar-ring", color.hue);
-    const [h, s, l] = color.hue.split(" ").map((v) => parseFloat(v));
-    root.style.setProperty("--primary-hover", `${h} ${s}% ${Math.max(l - 6, 10)}%`);
-    const isDark = root.classList.contains("dark");
-    root.style.setProperty("--brand-soft", isDark ? `${h} 30% 14%` : `${h} 40% 95%`);
-    root.style.setProperty("--sidebar-active-bg", isDark ? `${h} 25% 12%` : `${h} 40% 95%`);
-    root.style.setProperty("--sidebar-active-text", isDark ? `${h} 50% 62%` : `${h} ${s}% ${Math.max(l - 8, 10)}%`);
-    localStorage.setItem("accent-color", String(accentColor));
-  }, [accentColor]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const textHsl = buttonTextColor === "white" ? "0 0% 100%" : "0 0% 0%";
-    root.style.setProperty("--primary-foreground", textHsl);
-    root.style.setProperty("--sidebar-primary-foreground", textHsl);
-    localStorage.setItem("button-text-color", buttonTextColor);
-  }, [buttonTextColor]);
+    if (org?.primary_color) {
+      applyAccentColor(org.primary_color);
+    }
+  }, [org?.primary_color]);
 
   // Auto-save profile with debounce
   const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
