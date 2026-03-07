@@ -222,8 +222,8 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Organization Name</Label>
-                <Input placeholder="Acme Corp (optional — can set later)" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+                <Label>Company Name *</Label>
+                <Input placeholder="Acme Corp" value={orgName} onChange={(e) => setOrgName(e.target.value)} required />
               </div>
 
               {/* Industry as tabs */}

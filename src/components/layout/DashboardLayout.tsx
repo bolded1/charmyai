@@ -99,7 +99,7 @@ export default function DashboardLayout() {
         </DropdownMenuLabel>
         <DropdownMenuItem className="text-xs text-muted-foreground px-3 cursor-default" disabled>
           <Building2 className="h-3.5 w-3.5 mr-2" />
-          Acme Ltd
+          {org?.name || "My Organization"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
