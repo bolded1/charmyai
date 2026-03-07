@@ -136,7 +136,7 @@ export default function DocumentsPage() {
                  </thead>
                 <tbody>
                   {filtered.map((doc) => (
-                    <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                    <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => openReview(doc)}>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -186,11 +186,7 @@ export default function DocumentsPage() {
                           )}
                         </Badge>
                       </td>
-                      <td className="p-3">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openReview(doc)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </td>
+                      <td className="p-3" />
                     </tr>
                   ))}
                 </tbody>
