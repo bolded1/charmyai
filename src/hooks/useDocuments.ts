@@ -206,7 +206,96 @@ export function useIncomeRecords() {
   });
 }
 
-export function useUpdateExpense() {
+export function useUploadIncomeDocument() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const filePath = `${user.id}/${Date.now()}-${file.name}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("documents")
+        .upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      // Create document record as sales_invoice
+      const { data: doc, error: insertError } = await supabase
+        .from("documents")
+        .insert({
+          user_id: user.id,
+          file_name: file.name,
+          file_path: filePath,
+          file_type: file.type,
+          file_size: file.size,
+          status: "processing",
+          document_type: "sales_invoice",
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+
+      // Trigger AI extraction
+      const { data: extractResult, error: fnError } = await supabase.functions.invoke("extract-document", {
+        body: { documentId: doc.id },
+      });
+
+      if (fnError) {
+        console.error("Extraction error:", fnError);
+        toast.error(`Extraction failed for ${file.name}.`);
+        return doc;
+      }
+
+      // Fetch updated document after extraction
+      const { data: updatedDoc, error: fetchErr } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("id", doc.id)
+        .single();
+
+      if (fetchErr || !updatedDoc) return doc;
+
+      // Auto-approve and create income record
+      await supabase
+        .from("documents")
+        .update({ status: "approved", updated_at: new Date().toISOString() })
+        .eq("id", doc.id);
+
+      const { error: incomeErr } = await supabase.from("income_records").insert({
+        user_id: user.id,
+        document_id: doc.id,
+        customer_name: updatedDoc.customer_name || updatedDoc.supplier_name || "Unknown",
+        invoice_number: updatedDoc.invoice_number,
+        invoice_date: updatedDoc.invoice_date || new Date().toISOString().split("T")[0],
+        due_date: updatedDoc.due_date,
+        currency: updatedDoc.currency || "EUR",
+        net_amount: updatedDoc.net_amount || 0,
+        vat_amount: updatedDoc.vat_amount || 0,
+        total_amount: updatedDoc.total_amount || 0,
+        vat_number: updatedDoc.vat_number,
+        category: updatedDoc.category,
+      });
+
+      if (incomeErr) {
+        console.error("Income record error:", incomeErr);
+        toast.error("Failed to create income record");
+      }
+
+      return updatedDoc;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["income"] });
+      toast.success("Invoice processed and added to income");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    },
+  });
+}
   const queryClient = useQueryClient();
 
   return useMutation({
