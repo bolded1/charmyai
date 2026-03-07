@@ -61,6 +61,11 @@ function applyPersistedSettings() {
   root.style.setProperty("--primary", color.hue);
   root.style.setProperty("--ring", color.hue);
   root.style.setProperty("--sidebar-primary", color.hue);
+  root.style.setProperty("--sidebar-ring", color.hue);
+  const [h, s, l] = color.hue.split(" ").map((v: string) => parseFloat(v));
+  root.style.setProperty("--primary-hover", `${h} ${s}% ${Math.max(l - 6, 10)}%`);
+  const isDark = root.classList.contains("dark");
+  root.style.setProperty("--brand-soft", isDark ? `${h} 30% 14%` : `${h} 40% 95%`);
 
   const btnText = localStorage.getItem("button-text-color") || "white";
   root.style.setProperty("--primary-foreground", btnText === "white" ? "0 0% 100%" : "0 0% 0%");
