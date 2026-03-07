@@ -69,6 +69,7 @@ export function DemoUploader() {
     }
 
     setIsProcessing(true);
+    setShowResults(true);
     setFileName(file.name);
     setProcessingStep("Uploading document...");
 
@@ -268,10 +269,12 @@ export function DemoUploader() {
 
       <DemoResultsModal
         open={showResults}
-        onClose={() => setShowResults(false)}
+        onClose={() => { setShowResults(false); setIsProcessing(false); }}
         extractedData={extractedData}
         fileName={fileName}
         previewUrl={filePreviewUrl}
+        isProcessing={isProcessing}
+        processingStep={processingStep}
       />
     </>
   );
