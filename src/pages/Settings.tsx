@@ -350,24 +350,174 @@ export default function SettingsPage() {
         {/* ════════════════ APPEARANCE ════════════════ */}
         <TabsContent value="appearance">
           <div className="space-y-6">
-            {/* Branding */}
+            {/* Branding - Logos & Icons */}
             <Card>
               <CardContent className="p-6">
-                <SectionHeader title="Company Branding" description="Upload your logo and icon for light and dark themes." />
-                <div className="space-y-6">
+                <SectionHeader title="Company Branding" description="Upload your logo, icon, and favicon for light and dark themes." />
+                
+                {/* Mode toggle for preview context */}
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setBrandPreviewMode("light")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                        brandPreviewMode === "light" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
+                      }`}
+                    >
+                      <Sun className="h-3 w-3" /> Light
+                    </button>
+                    <button
+                      onClick={() => setBrandPreviewMode("dark")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                        brandPreviewMode === "dark" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
+                      }`}
+                    >
+                      <Moon className="h-3 w-3" /> Dark
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Preview and upload assets for each mode</p>
+                </div>
+
+                <div className={`rounded-xl border p-5 space-y-5 transition-colors ${
+                  brandPreviewMode === "dark" ? "bg-[hsl(222,20%,8%)] border-[hsl(222,12%,18%)]" : "bg-muted/20 border-border"
+                }`}>
+                  {/* Logo Row */}
                   <div>
-                    <p className="text-xs font-medium text-foreground mb-3">Light Mode</p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <BrandUploadBox label="Logo" hint="240 × 60 px" image={logoLight} onUpload={handleImageUpload(setLogoLight)} onRemove={() => setLogoLight(null)} tall />
-                      <BrandUploadBox label="Icon" hint="64 × 64 px" image={iconLight} onUpload={handleImageUpload(setIconLight)} onRemove={() => setIconLight(null)} />
+                    <div className="flex items-center gap-2 mb-3">
+                      <ImageIcon className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
+                      <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,25%,90%)]" : "text-foreground"}`}>Logo</span>
+                      <span className={`text-[10px] ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/60"}`}>Recommended: 240 × 60 px, PNG or SVG with transparent background</span>
+                    </div>
+                    <BrandUploadBox
+                      label="Primary Logo"
+                      hint="Drop your logo here or click to upload"
+                      image={brandPreviewMode === "light" ? logoLight : logoDark}
+                      onUpload={handleImageUpload(brandPreviewMode === "light" ? setLogoLight : setLogoDark)}
+                      onRemove={() => (brandPreviewMode === "light" ? setLogoLight : setLogoDark)(null)}
+                      tall
+                      dark={brandPreviewMode === "dark"}
+                      wide
+                    />
+                  </div>
+
+                  {/* Icon + Favicon Row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Globe className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
+                        <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,25%,90%)]" : "text-foreground"}`}>App Icon</span>
+                      </div>
+                      <BrandUploadBox
+                        label="Icon"
+                        hint="64 × 64 px, square"
+                        image={brandPreviewMode === "light" ? iconLight : iconDark}
+                        onUpload={handleImageUpload(brandPreviewMode === "light" ? setIconLight : setIconDark)}
+                        onRemove={() => (brandPreviewMode === "light" ? setIconLight : setIconDark)(null)}
+                        dark={brandPreviewMode === "dark"}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Globe className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
+                        <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,25%,90%)]" : "text-foreground"}`}>Favicon</span>
+                      </div>
+                      <BrandUploadBox
+                        label="Favicon"
+                        hint="32 × 32 px, .ico or .png"
+                        image={favicon}
+                        onUpload={handleImageUpload(setFavicon)}
+                        onRemove={() => setFavicon(null)}
+                        dark={brandPreviewMode === "dark"}
+                      />
                     </div>
                   </div>
-                  <Separator />
-                  <div>
-                    <p className="text-xs font-medium text-foreground mb-3">Dark Mode</p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <BrandUploadBox label="Logo" hint="240 × 60 px" image={logoDark} onUpload={handleImageUpload(setLogoDark)} onRemove={() => setLogoDark(null)} tall dark />
-                      <BrandUploadBox label="Icon" hint="64 × 64 px" image={iconDark} onUpload={handleImageUpload(setIconDark)} onRemove={() => setIconDark(null)} dark />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Brand Color Palette */}
+            <Card>
+              <CardContent className="p-6">
+                <SectionHeader title="Brand Color Palette" description="Define your brand colors for consistent use across documents, emails, and exports." />
+                <div className="space-y-4">
+                  <div className="flex gap-3 items-end flex-wrap">
+                    {brandColors.map((color, i) => (
+                      <div key={i} className="group relative flex flex-col items-center gap-1.5">
+                        <label className="relative cursor-pointer">
+                          <div
+                            className="h-10 w-10 rounded-lg border-2 border-border shadow-theme-sm transition-transform hover:scale-110"
+                            style={{ backgroundColor: color }}
+                          />
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => {
+                              const updated = [...brandColors];
+                              updated[i] = e.target.value;
+                              setBrandColors(updated);
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                        </label>
+                        <span className="text-[10px] text-muted-foreground font-mono uppercase">{color}</span>
+                        {brandColors.length > 2 && (
+                          <button
+                            onClick={() => setBrandColors(brandColors.filter((_, j) => j !== i))}
+                            className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                          >
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {brandColors.length < 8 && (
+                      <button
+                        onClick={() => setBrandColors([...brandColors, "#6B7280"])}
+                        className="h-10 w-10 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                      >
+                        <span className="text-lg leading-none">+</span>
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/70">Click a swatch to change it. These colors will be available in document templates and email branding.</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Email Branding */}
+            <Card>
+              <CardContent className="p-6">
+                <SectionHeader title="Email Branding" description="Customize the header image used in outgoing notification emails." />
+                <BrandUploadBox
+                  label="Email Header"
+                  hint="600 × 120 px, PNG or JPG — appears at top of all outgoing emails"
+                  image={emailHeader}
+                  onUpload={handleImageUpload(setEmailHeader)}
+                  onRemove={() => setEmailHeader(null)}
+                  tall
+                  wide
+                />
+                <div className="mt-4 rounded-lg border border-border overflow-hidden">
+                  <div className="px-4 py-2 border-b border-border bg-muted/30">
+                    <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5"><Eye className="h-3 w-3" /> Email Preview</p>
+                  </div>
+                  <div className="bg-card p-4 space-y-3">
+                    {emailHeader ? (
+                      <img src={emailHeader} alt="Email header" className="w-full h-16 object-cover rounded-md" />
+                    ) : (
+                      <div className="w-full h-16 rounded-md flex items-center justify-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>
+                        <span className="text-xs font-semibold" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }}>Your Company</span>
+                      </div>
+                    )}
+                    <div className="space-y-1.5 px-2">
+                      <div className="h-3 w-3/4 rounded-sm bg-muted" />
+                      <div className="h-3 w-full rounded-sm bg-muted" />
+                      <div className="h-3 w-2/3 rounded-sm bg-muted" />
+                    </div>
+                    <div className="px-2">
+                      <div className="h-7 w-28 rounded-md flex items-center justify-center" style={{ backgroundColor: `hsl(${ACCENT_COLORS[accentColor].hue})` }}>
+                        <span className="text-[10px] font-medium" style={{ color: buttonTextColor === "white" ? "#fff" : "#000" }}>View Document</span>
+                      </div>
                     </div>
                   </div>
                 </div>
