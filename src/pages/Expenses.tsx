@@ -412,7 +412,15 @@ export default function ExpensesPage() {
                     ) : fileUrl && isImage ? (
                       <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain" />
                     ) : fileUrl && isPdf ? (
-                      <iframe src={fileUrl} className="w-full h-[300px]" title="Document preview" />
+                      <object data={fileUrl} type="application/pdf" className="w-full h-[360px]">
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                          <FileText className="h-8 w-8 mb-2" />
+                          <p className="text-sm">PDF preview not available in this browser</p>
+                          <Button variant="link" size="sm" className="mt-1 text-xs" onClick={handleOpenFile}>
+                            Open PDF in new tab
+                          </Button>
+                        </div>
+                      </object>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                         <FileText className="h-8 w-8 mb-2" />
