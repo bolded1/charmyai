@@ -39,6 +39,7 @@ export default function ExpensesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editData, setEditData] = useState<ExpenseEdit | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [signedFileUrl, setSignedFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
