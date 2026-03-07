@@ -1,6 +1,8 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
+import { MobileHeader } from "./MobileHeader";
+import { AdminMobileDrawer } from "./AdminMobileDrawer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
@@ -9,12 +11,33 @@ export default function AdminLayout() {
   const location = useLocation();
   const pageTitle = getPageTitle(location.pathname);
 
+  const profileBadge = (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-muted-foreground hidden sm:block">Platform Admin</span>
+      <Avatar className="h-7 w-7">
+        <AvatarFallback className="bg-destructive/10 text-destructive text-[10px]">SA</AvatarFallback>
+      </Avatar>
+    </div>
+  );
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <AdminSidebar />
+        {/* Desktop sidebar */}
+        <div className="hidden md:block">
+          <AdminSidebar />
+        </div>
+
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b bg-card flex items-center justify-between px-4 shrink-0">
+          {/* Mobile header */}
+          <MobileHeader
+            pageTitle={pageTitle}
+            drawerContent={<AdminMobileDrawer />}
+            profileMenu={profileBadge}
+          />
+
+          {/* Desktop header */}
+          <header className="h-14 border-b bg-card items-center justify-between px-4 shrink-0 hidden md:flex">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <h1 className="text-lg font-semibold">{pageTitle}</h1>
@@ -29,7 +52,8 @@ export default function AdminLayout() {
               </Avatar>
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-auto surface-sunken">
+
+          <main className="flex-1 p-4 md:p-6 overflow-auto surface-sunken">
             <Outlet />
           </main>
         </div>
