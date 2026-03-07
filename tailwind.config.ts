@@ -85,6 +85,14 @@ export default {
           soft: "hsl(var(--brand-soft))",
           border: "hsl(var(--brand-border))",
         },
+        chart: {
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
+        },
+        link: "hsl(var(--link-color))",
       },
       borderRadius: {
         lg: "var(--radius)",
