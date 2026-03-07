@@ -67,6 +67,7 @@ export default function OnboardingPage() {
   const [companyRole, setCompanyRole] = useState("Owner");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const brandLogo = useBrandLogo();
 
   // Step 2 state
   const [orgName, setOrgName] = useState("");
