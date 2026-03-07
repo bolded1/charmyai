@@ -7,6 +7,7 @@ import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, Lo
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useOrganization } from "@/hooks/useOrganization";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
