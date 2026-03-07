@@ -11,18 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 
 const teamMembers = [
-  { id: '1', name: 'John Doe', email: 'john@company.com', role: 'Owner', jobTitle: 'CEO', status: 'active', lastActive: '2026-03-07', avatar: null },
-  { id: '2', name: 'Jane Smith', email: 'jane@company.com', role: 'Accountant', jobTitle: 'Senior Accountant', status: 'active', lastActive: '2026-03-07', avatar: null },
-  { id: '3', name: 'Mike Wilson', email: 'mike@company.com', role: 'Staff', jobTitle: 'Finance Analyst', status: 'active', lastActive: '2026-03-06', avatar: null },
-  { id: '4', name: 'Sarah Johnson', email: 'sarah@company.com', role: 'Admin', jobTitle: 'Office Manager', status: 'pending', lastActive: '', avatar: null },
+  { id: '1', name: 'John Doe', email: 'john@company.com', role: 'Owner', jobTitle: 'CEO', status: 'active', lastActive: '2026-03-07' },
+  { id: '2', name: 'Jane Smith', email: 'jane@company.com', role: 'Accountant', jobTitle: 'Senior Accountant', status: 'active', lastActive: '2026-03-07' },
+  { id: '3', name: 'Mike Wilson', email: 'mike@company.com', role: 'Staff', jobTitle: 'Finance Analyst', status: 'active', lastActive: '2026-03-06' },
+  { id: '4', name: 'Sarah Johnson', email: 'sarah@company.com', role: 'Admin', jobTitle: 'Office Manager', status: 'pending', lastActive: '' },
 ];
-
-const roleColors: Record<string, string> = {
-  Owner: "bg-primary/10 text-primary",
-  Admin: "bg-accent text-accent-foreground",
-  Accountant: "bg-secondary text-secondary-foreground",
-  Staff: "bg-muted text-muted-foreground",
-};
 
 function getInitials(name: string) {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase();
@@ -38,14 +31,12 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">{teamMembers.length} members</p>
-        </div>
+        <p className="text-sm text-muted-foreground">{teamMembers.length} members</p>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Invite Member</Button>
+            <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Invite</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -53,31 +44,30 @@ export default function TeamPage() {
             </DialogHeader>
             <form onSubmit={handleInvite} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name *</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">First Name</Label>
                   <Input placeholder="John" required />
                 </div>
-                <div className="space-y-2">
-                  <Label>Last Name *</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Last Name</Label>
                   <Input placeholder="Smith" required />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Email *</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Email</Label>
                 <Input type="email" placeholder="email@company.com" required />
               </div>
-              <div className="space-y-2">
-                <Label>Job Title</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Job Title</Label>
                 <Input placeholder="e.g. Finance Manager" />
               </div>
-              <div className="space-y-2">
-                <Label>Role *</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Role</Label>
                 <Select defaultValue="Staff">
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Admin">Admin</SelectItem>
                     <SelectItem value="Accountant">Accountant</SelectItem>
-                    <SelectItem value="Finance Manager">Finance Manager</SelectItem>
                     <SelectItem value="Staff">Staff</SelectItem>
                   </SelectContent>
                 </Select>
@@ -90,42 +80,46 @@ export default function TeamPage() {
 
       <Card>
         <CardContent className="p-0">
-          {/* Header */}
-          <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-border bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            <span>Member</span>
-            <span>Job Title</span>
-            <span className="w-24 text-center">Role</span>
-            <span className="w-20 text-center">Status</span>
-            <span className="w-24 text-right">Last Active</span>
-          </div>
-          {teamMembers.map((member, i) => (
-            <div key={member.id} className={`grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 items-center px-4 py-3 transition-colors hover:bg-accent/50 ${i < teamMembers.length - 1 ? 'border-b border-border-subtle' : ''}`}>
-              <div className="flex items-center gap-3 min-w-0">
-                <Avatar className="h-9 w-9 shrink-0">
-                  {member.avatar && <AvatarImage src={member.avatar} />}
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs">{getInitials(member.name)}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{member.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{member.email}</p>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground truncate">{member.jobTitle}</p>
-              <div className="w-24 flex justify-center">
-                <Badge variant="secondary" className={`text-xs ${roleColors[member.role] || ''}`}>{member.role}</Badge>
-              </div>
-              <div className="w-20 flex justify-center">
-                {member.status === 'pending' ? (
-                  <Badge variant="outline" className="text-xs">Pending</Badge>
-                ) : (
-                  <Badge variant="success" className="text-xs">Active</Badge>
-                )}
-              </div>
-              <p className="w-24 text-xs text-muted-foreground text-right">
-                {member.lastActive ? new Date(member.lastActive).toLocaleDateString() : '—'}
-              </p>
-            </div>
-          ))}
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="p-4 text-left text-xs font-medium text-muted-foreground">Member</th>
+                <th className="p-4 text-left text-xs font-medium text-muted-foreground">Job Title</th>
+                <th className="p-4 text-left text-xs font-medium text-muted-foreground">Role</th>
+                <th className="p-4 text-left text-xs font-medium text-muted-foreground">Status</th>
+                <th className="p-4 text-right text-xs font-medium text-muted-foreground">Last Active</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teamMembers.map((member) => (
+                <tr key={member.id} className="border-b border-border-subtle last:border-0 hover:bg-accent/40 transition-colors">
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-muted text-muted-foreground text-[10px]">{getInitials(member.name)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">{member.name}</p>
+                        <p className="text-xs text-muted-foreground">{member.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-4 text-sm text-muted-foreground">{member.jobTitle}</td>
+                  <td className="p-4"><Badge variant="secondary" className="text-xs font-normal">{member.role}</Badge></td>
+                  <td className="p-4">
+                    {member.status === 'pending' ? (
+                      <Badge variant="outline" className="text-xs font-normal">Pending</Badge>
+                    ) : (
+                      <Badge variant="success" className="text-xs font-normal">Active</Badge>
+                    )}
+                  </td>
+                  <td className="p-4 text-sm text-muted-foreground text-right">
+                    {member.lastActive ? new Date(member.lastActive).toLocaleDateString() : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </CardContent>
       </Card>
     </div>

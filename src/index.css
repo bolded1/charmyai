@@ -7,190 +7,154 @@
 @layer base {
   :root {
     /* ═══════════════════════════════════════════
-       PREMIUM LIGHT THEME — Refined Structure
+       MINIMAL LIGHT THEME
     ═══════════════════════════════════════════ */
 
-    /* ── Background Layers (stronger separation) ── */
-    --background:    220 16% 93%;    /* Layer 0: App shell — noticeably tinted */
-    --background-page: 220 14% 95%;  /* Layer 1: Page canvas */
-    --card:          0 0% 100%;      /* Layer 2: Cards — pure white, clear lift */
-    --popover:       0 0% 100%;      /* Layer 3: Dropdowns/modals */
+    --background:      0 0% 98%;
+    --background-page: 0 0% 98%;
+    --card:            0 0% 100%;
+    --popover:         0 0% 100%;
 
-    --surface-sunken: 220 16% 93%;
+    --surface-sunken:   0 0% 97%;
     --surface-elevated: 0 0% 100%;
-    --surface-hover: 220 14% 95%;
-    --overlay: 222 47% 11%;
+    --surface-hover:    0 0% 96%;
+    --overlay:          220 20% 10%;
 
-    /* ── Foreground / Text (stronger contrast) ── */
-    --foreground:         222 47% 8%;    /* Near-black primary text */
-    --card-foreground:    222 47% 8%;
-    --popover-foreground: 222 47% 8%;
-    --text-secondary:     220 12% 38%;   /* Darker secondary */
-    --muted-foreground:   220 9% 44%;    /* Slightly darker muted */
+    --foreground:         220 20% 10%;
+    --card-foreground:    220 20% 10%;
+    --popover-foreground: 220 20% 10%;
+    --text-secondary:     220 10% 40%;
+    --muted-foreground:   220 8% 50%;
     --text-on-primary:    0 0% 100%;
 
-    /* ── Brand / Accent ── */
-    --primary:              160 84% 36%;
-    --primary-foreground:   0 0% 100%;
-    --primary-hover:        160 84% 30%;
-    --brand-soft:           160 50% 95%;
-    --brand-border:         160 50% 80%;
-    --ring:                 160 84% 36%;
+    --primary:            160 84% 36%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover:      160 84% 30%;
+    --brand-soft:         160 40% 95%;
+    --brand-border:       160 40% 78%;
+    --ring:               160 84% 36%;
 
-    /* ── Secondary ── */
-    --secondary:            220 16% 95%;
-    --secondary-foreground: 222 47% 8%;
+    --secondary:            220 10% 96%;
+    --secondary-foreground: 220 20% 10%;
+    --muted:                220 10% 96%;
+    --accent:               220 10% 95%;
+    --accent-foreground:    220 20% 10%;
 
-    /* ── Muted ── */
-    --muted:             220 16% 95%;
-
-    /* ── Accent (hover surfaces) ── */
-    --accent:            220 16% 93%;
-    --accent-foreground: 222 47% 8%;
-
-    /* ── Destructive ── */
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* ── Borders (stronger definition) ── */
-    --border:         220 13% 87%;     /* Default — more visible */
-    --border-subtle:  220 13% 91%;     /* Between table rows */
-    --border-strong:  220 13% 78%;     /* Emphasis borders */
-    --input:          220 13% 87%;
+    --border:        220 10% 90%;
+    --border-subtle:  220 10% 93%;
+    --border-strong:  220 10% 82%;
+    --input:          220 10% 90%;
 
-    /* ── Semantic ── */
-    --success:      152 69% 31%;
-    --success-soft:  152 50% 94%;
-    --warning:       38 92% 50%;
-    --warning-soft:  38 92% 95%;
+    --success:       152 60% 34%;
+    --success-soft:  152 40% 94%;
+    --warning:       38 90% 50%;
+    --warning-soft:  38 80% 95%;
     --danger:        0 72% 51%;
-    --danger-soft:   0 72% 96%;
-    --info:          217 91% 60%;
-    --info-soft:     217 91% 96%;
+    --danger-soft:   0 60% 96%;
+    --info:          217 85% 58%;
+    --info-soft:     217 80% 96%;
 
-    /* ── Component tokens ── */
-    --input-bg: 0 0% 100%;
-    --input-focus: 160 84% 36%;
-    --table-row-hover: 220 14% 97%;
-    --link-color: 160 84% 32%;
+    --input-bg:         0 0% 100%;
+    --input-focus:      160 84% 36%;
+    --table-row-hover:  0 0% 98%;
+    --link-color:       160 84% 32%;
 
-    /* ── Sidebar ── */
-    --sidebar-background:         222 47% 7%;
-    --sidebar-foreground:         220 14% 65%;
+    --sidebar-background:         220 15% 97%;
+    --sidebar-foreground:         220 8% 45%;
     --sidebar-primary:            160 84% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             222 30% 12%;
-    --sidebar-accent-foreground:  220 14% 92%;
-    --sidebar-border:             222 25% 14%;
+    --sidebar-accent:             220 10% 93%;
+    --sidebar-accent-foreground:  220 20% 10%;
+    --sidebar-border:             220 10% 90%;
     --sidebar-ring:               160 84% 36%;
-    --sidebar-active-bg:          222 30% 12%;
-    --sidebar-active-text:        0 0% 100%;
-    --sidebar-muted:              220 14% 45%;
+    --sidebar-active-bg:          160 40% 95%;
+    --sidebar-active-text:        160 84% 28%;
+    --sidebar-muted:              220 8% 60%;
 
-    /* ── Misc ── */
     --radius: 0.5rem;
     --hero-gradient: linear-gradient(135deg, hsl(160, 84%, 36%), hsl(174, 70%, 32%));
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
-    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
-    --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.1), 0 4px 8px -4px rgb(0 0 0 / 0.05);
-    --shadow-overlay: 0 12px 40px -8px rgb(0 0 0 / 0.14), 0 4px 12px -4px rgb(0 0 0 / 0.06);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+    --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.06);
+    --shadow-overlay: 0 8px 24px -4px rgb(0 0 0 / 0.08);
   }
 
   .dark {
     /* ═══════════════════════════════════════════
-       PREMIUM DARK THEME — Refined & Layered
+       MINIMAL DARK THEME
     ═══════════════════════════════════════════ */
 
-    /* ── Background Layers ──
-       Key: each layer needs 3-4% lightness jump for visible separation */
-    --background:    222 25% 7%;      /* Layer 0: Deep app shell */
-    --background-page: 222 22% 8.5%;  /* Layer 1: Page canvas */
-    --card:          222 20% 13%;     /* Layer 2: Cards — real lift from background */
-    --popover:       222 18% 16%;     /* Layer 3: Dropdowns/modals — top layer */
+    --background:      222 20% 8%;
+    --background-page: 222 18% 9%;
+    --card:            222 16% 13%;
+    --popover:         222 14% 15%;
 
-    --surface-sunken: 222 25% 7%;
-    --surface-elevated: 222 20% 13%;
-    --surface-hover: 222 18% 16%;
-    --overlay: 222 30% 4%;
+    --surface-sunken:   222 20% 8%;
+    --surface-elevated: 222 16% 13%;
+    --surface-hover:    222 14% 16%;
+    --overlay:          222 25% 4%;
 
-    /* ── Foreground / Text ──
-       Primary: bright enough for crisp readability
-       Secondary: clearly lighter than muted, not washed out
-       Muted: visible but receded — never below 55% lightness */
-    --foreground:         210 30% 96%;
-    --card-foreground:    210 30% 96%;
-    --popover-foreground: 210 30% 96%;
-    --text-secondary:     215 15% 65%;
-    --muted-foreground:   215 10% 55%;
+    --foreground:         210 25% 95%;
+    --card-foreground:    210 25% 95%;
+    --popover-foreground: 210 25% 95%;
+    --text-secondary:     215 12% 64%;
+    --muted-foreground:   215 8% 54%;
     --text-on-primary:    0 0% 100%;
 
-    /* ── Brand / Accent ──
-       Bumped lightness for visibility on dark surfaces */
-    --primary:              160 65% 48%;
-    --primary-foreground:   160 100% 6%;
-    --primary-hover:        160 65% 40%;
-    --brand-soft:           160 35% 14%;
-    --brand-border:         160 40% 28%;
-    --ring:                 160 65% 48%;
+    --primary:            160 60% 46%;
+    --primary-foreground: 160 100% 6%;
+    --primary-hover:      160 60% 38%;
+    --brand-soft:         160 30% 14%;
+    --brand-border:       160 35% 26%;
+    --ring:               160 60% 46%;
 
-    /* ── Secondary ── */
-    --secondary:            222 18% 17%;
-    --secondary-foreground: 210 30% 96%;
+    --secondary:            222 15% 17%;
+    --secondary-foreground: 210 25% 95%;
+    --muted:                222 15% 17%;
+    --accent:               222 14% 16%;
+    --accent-foreground:    210 25% 95%;
 
-    /* ── Muted ── */
-    --muted:             222 18% 17%;
-
-    /* ── Accent (hover surfaces) ── */
-    --accent:            222 18% 16%;
-    --accent-foreground: 210 30% 96%;
-
-    /* ── Destructive ── */
-    --destructive:            0 60% 50%;
+    --destructive:            0 55% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    /* ── Borders ──
-       Visible enough to define sections without being harsh */
-    --border:         222 15% 22%;
-    --border-subtle:  222 15% 18%;
-    --border-strong:  222 15% 28%;
-    --input:          222 15% 22%;
+    --border:        222 12% 20%;
+    --border-subtle:  222 12% 17%;
+    --border-strong:  222 12% 26%;
+    --input:          222 12% 20%;
 
-    /* ── Semantic (brighter on dark for readability) ── */
-    --success:      152 55% 45%;
-    --success-soft:  152 35% 14%;
-    --warning:       38 80% 56%;
-    --warning-soft:  38 55% 14%;
-    --danger:        0 60% 50%;
-    --danger-soft:   0 45% 14%;
-    --info:          217 80% 60%;
-    --info-soft:     217 55% 14%;
+    --success:       152 50% 44%;
+    --success-soft:  152 30% 14%;
+    --warning:       38 70% 54%;
+    --warning-soft:  38 50% 14%;
+    --danger:        0 55% 48%;
+    --danger-soft:   0 40% 14%;
+    --info:          217 70% 58%;
+    --info-soft:     217 50% 14%;
 
-    /* ── Component tokens ── */
-    --input-bg: 222 22% 11%;
-    --input-focus: 160 65% 48%;
-    --table-row-hover: 222 18% 15%;
-    --link-color: 160 60% 52%;
+    --input-bg:         222 18% 11%;
+    --input-focus:      160 60% 46%;
+    --table-row-hover:  222 14% 15%;
+    --link-color:       160 55% 50%;
 
-    /* ── Sidebar ──
-       Darker than main background for depth;
-       Active state clearly contrasts inactive */
-    --sidebar-background:         222 30% 5%;
-    --sidebar-foreground:         215 12% 58%;
-    --sidebar-primary:            160 65% 48%;
+    --sidebar-background:         222 22% 6%;
+    --sidebar-foreground:         215 10% 55%;
+    --sidebar-primary:            160 60% 46%;
     --sidebar-primary-foreground: 160 100% 6%;
-    --sidebar-accent:             222 22% 11%;
-    --sidebar-accent-foreground:  210 20% 92%;
-    --sidebar-border:             222 20% 13%;
-    --sidebar-ring:               160 65% 48%;
-    --sidebar-active-bg:          160 35% 12%;
-    --sidebar-active-text:        160 60% 70%;
-    --sidebar-muted:              215 10% 45%;
+    --sidebar-accent:             222 18% 11%;
+    --sidebar-accent-foreground:  210 18% 90%;
+    --sidebar-border:             222 15% 14%;
+    --sidebar-ring:               160 60% 46%;
+    --sidebar-active-bg:          160 25% 12%;
+    --sidebar-active-text:        160 50% 62%;
+    --sidebar-muted:              215 8% 42%;
 
-    /* ── Shadows (subtle glow effect in dark) ── */
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.02);
-    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.02);
-    --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.03);
-    --shadow-overlay: 0 16px 48px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+    --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.35);
+    --shadow-overlay: 0 8px 24px -4px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.03);
   }
 }
 
@@ -205,33 +169,23 @@
     font-feature-settings: 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
   }
 
-  /* ── Typography Hierarchy (stronger contrast) ── */
   h1 {
-    @apply text-2xl font-bold tracking-tight;
-    letter-spacing: -0.03em;
-    color: hsl(var(--foreground));
+    @apply text-xl font-semibold tracking-tight;
+    letter-spacing: -0.02em;
   }
   h2 {
-    @apply text-lg font-semibold tracking-tight;
-    letter-spacing: -0.02em;
-    color: hsl(var(--foreground));
+    @apply text-base font-semibold;
+    letter-spacing: -0.01em;
   }
   h3 {
-    @apply text-sm font-semibold tracking-tight;
-    color: hsl(var(--foreground));
+    @apply text-sm font-medium;
   }
   h4 {
-    @apply text-xs font-semibold uppercase tracking-wider;
+    @apply text-[11px] font-medium uppercase tracking-widest;
     color: hsl(var(--muted-foreground));
-  }
-
-  /* Improve input/select consistency */
-  input::placeholder,
-  textarea::placeholder {
-    color: hsl(var(--muted-foreground));
-    opacity: 0.7;
   }
 }
 
@@ -245,11 +199,9 @@
     background-image: var(--hero-gradient);
   }
 
-  /* ── Surface utilities ── */
   .surface-elevated {
     background-color: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    box-shadow: var(--shadow-sm);
   }
 
   .surface-sunken {
@@ -263,12 +215,11 @@
   }
 
   .glass-effect {
-    background-color: hsl(var(--card) / 0.8);
+    background-color: hsl(var(--card) / 0.85);
     backdrop-filter: blur(12px);
     border: 1px solid hsl(var(--border));
   }
 
-  /* ── Semantic backgrounds ── */
   .bg-success-soft { background-color: hsl(var(--success-soft)); }
   .bg-warning-soft { background-color: hsl(var(--warning-soft)); }
   .bg-danger-soft  { background-color: hsl(var(--danger-soft)); }
@@ -282,21 +233,14 @@
 
   .border-brand { border-color: hsl(var(--brand-border)); }
 
-  /* ── Premium focus ring ── */
   .focus-ring {
     @apply outline-none ring-2 ring-offset-2 ring-offset-background;
     ring-color: hsl(var(--ring));
   }
 
-  /* ── Text hierarchy helpers ── */
-  .text-primary-content {
-    color: hsl(var(--foreground));
-  }
-  .text-secondary-content {
-    color: hsl(var(--text-secondary));
-  }
+  .text-primary-content { color: hsl(var(--foreground)); }
+  .text-secondary-content { color: hsl(var(--text-secondary)); }
 
-  /* ── Shadow utilities ── */
   .shadow-theme-sm { box-shadow: var(--shadow-sm); }
   .shadow-theme-md { box-shadow: var(--shadow-md); }
   .shadow-theme-lg { box-shadow: var(--shadow-lg); }

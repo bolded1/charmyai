@@ -213,26 +213,20 @@ export default function ExpensesPage() {
   const isPdf = fileType === "application/pdf";
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-6xl space-y-6">
       {/* Currency summary cards */}
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-5">
         <Card>
           <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-muted-foreground">Expenses EUR</span>
-              <Badge variant="outline" className="text-xs">EUR</Badge>
-            </div>
-            <div className="text-2xl font-bold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-sm text-muted-foreground mb-1">Expenses EUR</p>
+            <p className="text-2xl font-semibold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-muted-foreground">Expenses USD</span>
-              <Badge variant="outline" className="text-xs">USD</Badge>
-            </div>
-            <div className="text-2xl font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-sm text-muted-foreground mb-1">Expenses USD</p>
+            <p className="text-2xl font-semibold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
           </CardContent>
         </Card>
@@ -328,34 +322,32 @@ export default function ExpensesPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b text-left">
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Supplier</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Invoice #</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Category</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Currency</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Net</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">VAT</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Total</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground"></th>
+                  <tr className="border-b border-border">
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Supplier</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Date</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Category</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Currency</th>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground">Net</th>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground">VAT</th>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground">Total</th>
+                    <th className="p-4 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((doc) => (
-                    <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
-                      <td className="p-3">
-                        <span className="text-sm font-medium">{doc.supplier_name}</span>
-                      </td>
-                      <td className="p-3 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{doc.invoice_date}</td>
-                      <td className="p-3"><Badge variant="secondary" className="text-xs">{doc.category || "—"}</Badge></td>
-                      <td className="p-3"><Badge variant="outline" className="text-xs">{doc.currency}</Badge></td>
-                      <td className="p-3 text-sm">{Number(doc.net_amount).toFixed(2)}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{Number(doc.vat_amount).toFixed(2)}</td>
-                      <td className="p-3 text-sm font-medium">{Number(doc.total_amount).toFixed(2)}</td>
-                      <td className="p-3">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(doc)}>
-                          <Pencil className="h-4 w-4" />
+                    <tr key={doc.id} className="border-b border-border-subtle last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
+                      <td className="p-4 text-sm font-medium">{doc.supplier_name}</td>
+                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
+                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
+                      <td className="p-4"><Badge variant="secondary" className="text-xs font-normal">{doc.category || "—"}</Badge></td>
+                      <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
+                      <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
+                      <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
+                      <td className="p-4 text-sm font-medium text-right tabular-nums">{Number(doc.total_amount).toFixed(2)}</td>
+                      <td className="p-4">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(doc)}>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
                       </td>
                     </tr>
