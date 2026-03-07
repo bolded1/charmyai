@@ -177,19 +177,6 @@ export default function OnboardingPage() {
           )}
           {step === 3 && (
             <div className="space-y-4">
-              <div className="border-2 border-dashed rounded-xl p-12 text-center">
-                <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="font-medium text-sm">Drag and drop your first document</p>
-                <p className="text-xs text-muted-foreground mt-1">PDF, PNG, or JPG up to 20MB</p>
-                <Button variant="outline" size="sm" className="mt-4">Browse Files</Button>
-              </div>
-              <Button variant="ghost" size="sm" className="w-full" onClick={next}>
-                Skip for now
-              </Button>
-            </div>
-          )}
-          {step === 4 && (
-            <div className="space-y-4">
               <p className="text-sm text-muted-foreground">Invite team members to collaborate on document processing.</p>
               {[1, 2].map((i) => (
                 <div key={i} className="grid grid-cols-3 gap-3">
