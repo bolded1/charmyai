@@ -124,23 +124,25 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Scan Document - shown first and large on mobile/tablet */}
+      {/* Scan Document - shown first on mobile/tablet, compact */}
       <Card className="overflow-hidden lg:hidden">
         <CardContent className="p-0">
           <div
-            className="relative p-16 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg border-border hover:border-primary/50 hover:bg-accent/50"
+            className="relative px-6 py-8 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg border-border hover:border-primary/50 hover:bg-accent/50"
             onClick={() => document.getElementById("camera-input")?.click()}
           >
-            <div className="mx-auto mb-5 h-16 w-16 rounded-2xl flex items-center justify-center bg-muted">
-              <Camera className="h-7 w-7 text-muted-foreground" />
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-muted">
+                <Camera className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-semibold text-foreground">Scan Document</h2>
+                <p className="text-xs text-muted-foreground">Capture with your camera</p>
+              </div>
             </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">Scan Document</h2>
-            <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-              Use your camera to capture invoices, receipts, or bills. They'll be automatically processed.
-            </p>
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <Badge variant="secondary" className="text-xs px-3 py-1">Photo</Badge>
-              <Badge variant="secondary" className="text-xs px-3 py-1">Auto-process</Badge>
+            <div className="flex items-center justify-center gap-2">
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Photo</Badge>
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Auto-process</Badge>
             </div>
             <input
               id="camera-input"
