@@ -7,27 +7,26 @@
 @layer base {
   :root {
     /* ═══════════════════════════════════════════
-       PREMIUM LIGHT THEME
-       Inspired by Stripe/Linear/Notion
+       PREMIUM LIGHT THEME — Refined Structure
     ═══════════════════════════════════════════ */
 
-    /* ── Background Layers ── */
-    --background:    220 16% 96%;    /* Layer 0: App shell */
-    --background-page: 220 14% 97%;  /* Layer 1: Page canvas */
-    --card:          0 0% 100%;      /* Layer 2: Cards/panels */
+    /* ── Background Layers (stronger separation) ── */
+    --background:    220 16% 93%;    /* Layer 0: App shell — noticeably tinted */
+    --background-page: 220 14% 95%;  /* Layer 1: Page canvas */
+    --card:          0 0% 100%;      /* Layer 2: Cards — pure white, clear lift */
     --popover:       0 0% 100%;      /* Layer 3: Dropdowns/modals */
 
-    --surface-sunken: 220 16% 96%;
+    --surface-sunken: 220 16% 93%;
     --surface-elevated: 0 0% 100%;
-    --surface-hover: 220 14% 94%;
+    --surface-hover: 220 14% 95%;
     --overlay: 222 47% 11%;
 
-    /* ── Foreground / Text ── */
-    --foreground:         222 47% 11%;   /* Primary text */
-    --card-foreground:    222 47% 11%;
-    --popover-foreground: 222 47% 11%;
-    --text-secondary:     220 9% 43%;    /* Secondary text */
-    --muted-foreground:   220 9% 46%;    /* Muted / metadata */
+    /* ── Foreground / Text (stronger contrast) ── */
+    --foreground:         222 47% 8%;    /* Near-black primary text */
+    --card-foreground:    222 47% 8%;
+    --popover-foreground: 222 47% 8%;
+    --text-secondary:     220 12% 38%;   /* Darker secondary */
+    --muted-foreground:   220 9% 44%;    /* Slightly darker muted */
     --text-on-primary:    0 0% 100%;
 
     /* ── Brand / Accent ── */
@@ -39,25 +38,25 @@
     --ring:                 160 84% 36%;
 
     /* ── Secondary ── */
-    --secondary:            220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary:            220 16% 95%;
+    --secondary-foreground: 222 47% 8%;
 
     /* ── Muted ── */
-    --muted:             220 14% 96%;
+    --muted:             220 16% 95%;
 
     /* ── Accent (hover surfaces) ── */
-    --accent:            220 14% 94%;
-    --accent-foreground: 222 47% 11%;
+    --accent:            220 16% 93%;
+    --accent-foreground: 222 47% 8%;
 
     /* ── Destructive ── */
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* ── Borders ── */
-    --border:         220 13% 90%;
-    --border-subtle:  220 13% 93%;
-    --border-strong:  220 13% 82%;
-    --input:          220 13% 90%;
+    /* ── Borders (stronger definition) ── */
+    --border:         220 13% 87%;     /* Default — more visible */
+    --border-subtle:  220 13% 91%;     /* Between table rows */
+    --border-strong:  220 13% 78%;     /* Emphasis borders */
+    --input:          220 13% 87%;
 
     /* ── Semantic ── */
     --success:      152 69% 31%;
@@ -91,10 +90,10 @@
     /* ── Misc ── */
     --radius: 0.5rem;
     --hero-gradient: linear-gradient(135deg, hsl(160, 84%, 36%), hsl(174, 70%, 32%));
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
-    --shadow-md: 0 2px 8px -2px rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04);
-    --shadow-lg: 0 4px 16px -4px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.04);
-    --shadow-overlay: 0 8px 30px -4px rgb(0 0 0 / 0.12), 0 4px 10px -4px rgb(0 0 0 / 0.06);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+    --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.1), 0 4px 8px -4px rgb(0 0 0 / 0.05);
+    --shadow-overlay: 0 12px 40px -8px rgb(0 0 0 / 0.14), 0 4px 12px -4px rgb(0 0 0 / 0.06);
   }
 
   .dark {
