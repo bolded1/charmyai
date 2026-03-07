@@ -85,7 +85,7 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-muted hover:text-sidebar-accent-foreground">
               <LogOut className="h-3.5 w-3.5" />
-              {!collapsed && <span>Sign Out</span>}
+              {showLabels && <span>Sign Out</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
