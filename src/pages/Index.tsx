@@ -77,7 +77,7 @@ export default function HomePage() {
               </ul>
             </div>
             <div className="surface-elevated rounded-xl p-8">
-              <h3 className="text-xl font-semibold mb-4 text-gradient">DocuLedger automates it all</h3>
+              <h3 className="text-xl font-semibold mb-4 text-gradient">Charmy automates it all</h3>
               <ul className="space-y-4">
                 {[
                   "Upload any invoice or receipt",
