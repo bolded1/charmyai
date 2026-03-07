@@ -9,6 +9,7 @@ import {
   Download, UsersRound, Settings, LogOut,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 
 const financeItems = [
   { title: "Capture", url: "/app", icon: Upload },
