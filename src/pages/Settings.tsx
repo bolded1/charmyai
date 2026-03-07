@@ -97,9 +97,12 @@ export default function SettingsPage() {
     toast.success("Image uploaded!");
   };
 
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "profile";
+
   return (
     <div className="max-w-3xl space-y-6">
-      <Tabs defaultValue="profile" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="organization">Organization</TabsTrigger>
