@@ -24,7 +24,6 @@ export default function DashboardLayout() {
   const { user, loading } = useAuth();
   const { profile, displayName, initials } = useProfile();
   const [hasNotifications] = useState(true);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
