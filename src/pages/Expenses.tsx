@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useExpenseRecords, useUpdateExpense } from "@/hooks/useDocuments";
+import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
@@ -421,7 +422,7 @@ export default function ExpensesPage() {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Category</Label>
-                  <Input className="h-8 text-sm" value={editData.category} onChange={(e) => setEditData({ ...editData, category: e.target.value })} />
+                  <CategorySelect value={editData.category} onValueChange={(v) => setEditData({ ...editData, category: v })} />
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Currency</Label>
