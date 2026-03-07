@@ -141,14 +141,14 @@
 
     --sidebar-background:         222 22% 6%;
     --sidebar-foreground:         215 10% 55%;
-    --sidebar-primary:            160 60% 46%;
-    --sidebar-primary-foreground: 160 100% 6%;
+    --sidebar-primary:            224 55% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent:             222 18% 11%;
     --sidebar-accent-foreground:  210 18% 90%;
     --sidebar-border:             222 15% 14%;
-    --sidebar-ring:               160 60% 46%;
-    --sidebar-active-bg:          160 25% 12%;
-    --sidebar-active-text:        160 50% 62%;
+    --sidebar-ring:               224 55% 55%;
+    --sidebar-active-bg:          224 25% 14%;
+    --sidebar-active-text:        224 50% 68%;
     --sidebar-muted:              215 8% 42%;
 
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
