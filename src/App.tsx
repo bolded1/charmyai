@@ -14,7 +14,7 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Onboarding from "./pages/Onboarding";
-import Dashboard from "./pages/Dashboard";
+
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
 import Expenses from "./pages/Expenses";
