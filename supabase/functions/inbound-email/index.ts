@@ -90,8 +90,9 @@ serve(async (req) => {
     }
 
     // Collect attachments from form data
-    // Mailgun can send as "attachment-1", "attachment-2", or just multiple "attachment" entries
+    // Mailgun can send files directly OR send an "attachments" JSON with downloadable URLs (store+notify)
     const attachments: { file: File; name: string }[] = [];
+    let announcedAttachmentCount = 0;
 
     // Method 1: Try "attachment-N" format (Mailgun legacy)
     const attachmentCount = parseInt(formData.get("attachment-count") as string || "0", 10);
@@ -104,7 +105,7 @@ serve(async (req) => {
       attachments.push({ file, name: file.name || `attachment-${i}` });
     }
 
-    // Method 2: Try "attachment" entries (Mailgun default for most routes)
+    // Method 2: Try "attachment" entries (Mailgun direct multipart)
     if (attachments.length === 0) {
       const allEntries = formData.getAll("attachment");
       for (const entry of allEntries) {
@@ -127,7 +128,93 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Found ${attachments.length} attachments. Form fields: ${[...formData.keys()].join(", ")}`);
+    // Method 4: Mailgun store+notify format - "attachments" contains JSON with attachment URLs
+    if (attachments.length === 0) {
+      const attachmentsField = formData.get("attachments");
+      if (typeof attachmentsField === "string" && attachmentsField.trim()) {
+        try {
+          const parsed = JSON.parse(attachmentsField) as unknown;
+
+          const refs: { url: string; name?: string; contentType?: string }[] = [];
+          if (Array.isArray(parsed)) {
+            for (const item of parsed) {
+              if (item && typeof item === "object") {
+                const obj = item as Record<string, unknown>;
+                const url = (obj.url || obj["attachment-url"] || obj.download_url) as string | undefined;
+                if (url) {
+                  refs.push({
+                    url,
+                    name: (obj.name || obj.filename) as string | undefined,
+                    contentType: (obj["content-type"] || obj.contentType || obj.mimetype) as string | undefined,
+                  });
+                }
+              }
+            }
+          } else if (parsed && typeof parsed === "object") {
+            for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+              if (typeof value === "string") {
+                refs.push({ url: value, name: key });
+              } else if (value && typeof value === "object") {
+                const obj = value as Record<string, unknown>;
+                const url = (obj.url || obj["attachment-url"] || obj.download_url) as string | undefined;
+                if (url) {
+                  refs.push({
+                    url,
+                    name: (obj.name || obj.filename || key) as string | undefined,
+                    contentType: (obj["content-type"] || obj.contentType || obj.mimetype) as string | undefined,
+                  });
+                }
+              }
+            }
+          }
+
+          announcedAttachmentCount = refs.length;
+          const mailgunApiKey = Deno.env.get("MAILGUN_API_KEY");
+
+          for (const [idx, ref] of refs.entries()) {
+            try {
+              const authHeader = mailgunApiKey
+                ? { Authorization: `Basic ${btoa(`api:${mailgunApiKey}`)}` }
+                : undefined;
+
+              let response = await fetch(ref.url);
+              if (!response.ok && authHeader) {
+                response = await fetch(ref.url, { headers: authHeader });
+              }
+              if (!response.ok) {
+                console.error(`Failed downloading attachment URL (${response.status}):`, ref.url);
+                continue;
+              }
+
+              const blob = await response.blob();
+              if (!blob || blob.size === 0) continue;
+
+              let filename = ref.name || `attachment-${idx + 1}`;
+              if (!ref.name) {
+                try {
+                  const pathname = new URL(ref.url).pathname;
+                  const lastSegment = pathname.split("/").pop();
+                  if (lastSegment) filename = decodeURIComponent(lastSegment);
+                } catch {
+                  // ignore URL parsing error and keep fallback filename
+                }
+              }
+
+              const file = new File([blob], filename, {
+                type: ref.contentType || blob.type || "application/octet-stream",
+              });
+              attachments.push({ file, name: file.name });
+            } catch (downloadErr) {
+              console.error("Attachment URL download error:", downloadErr);
+            }
+          }
+        } catch (parseErr) {
+          console.error("Could not parse Mailgun attachments field:", parseErr);
+        }
+      }
+    }
+
+    console.log(`Found ${attachments.length} attachments. Announced: ${announcedAttachmentCount}. Form fields: ${[...formData.keys()].join(", ")}`);
 
     // Filter supported attachments
     const supportedAttachments = attachments.filter((a) => {
@@ -145,7 +232,9 @@ serve(async (req) => {
 
     const errorMessage = supportedAttachments.length === 0
       ? (attachments.length === 0
-        ? "No attachments found"
+        ? (announcedAttachmentCount > 0
+          ? "Attachments announced by provider but download failed"
+          : "No attachments found")
         : `No supported attachments (found: ${attachments.map(a => a.name).join(", ")})`)
       : null;
 
