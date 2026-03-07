@@ -47,8 +47,10 @@ export default function ExpensesPage() {
   const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
+  const deleteExpense = useDeleteExpense();
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
