@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FileText, Receipt, AlertCircle, Upload as UploadIcon, Loader2, Camera } from "lucide-react";
+import { Upload as UploadIcon, Loader2, Camera } from "lucide-react";
 import { useDocuments, useExpenseRecords, useUploadDocument } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useCallback, useMemo } from "react";
@@ -9,15 +8,13 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 
 const CHART_COLORS = [
   "hsl(var(--primary))",
-  "hsl(var(--accent-foreground))",
-  "hsl(220, 70%, 55%)",
-  "hsl(150, 60%, 45%)",
-  "hsl(35, 80%, 55%)",
-  "hsl(280, 60%, 55%)",
-  "hsl(0, 65%, 55%)",
-  "hsl(180, 50%, 45%)",
-  "hsl(60, 70%, 45%)",
-  "hsl(310, 50%, 50%)",
+  "hsl(220, 55%, 52%)",
+  "hsl(150, 45%, 42%)",
+  "hsl(35, 65%, 50%)",
+  "hsl(280, 45%, 50%)",
+  "hsl(0, 50%, 50%)",
+  "hsl(180, 40%, 42%)",
+  "hsl(60, 55%, 42%)",
 ];
 
 export default function DashboardPage() {
@@ -68,143 +65,126 @@ export default function DashboardPage() {
     return <div className="text-center py-12 text-muted-foreground">Please log in to view dashboard.</div>;
   }
 
-  const isLoading = docsLoading || expLoading;
-
-
-  if (isLoading) {
+  if (docsLoading || expLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
+  const totalExpenses = expenses.reduce((s, e) => s + Number(e.total_amount || 0), 0);
+
   return (
-    <div className="space-y-8">
-      {/* ── Quick Upload Section ── */}
-        {/* Upload Area */}
+    <div className="max-w-5xl space-y-8">
+      {/* Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <Card>
-          <CardContent className="p-0">
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer ${
-                dragOver ? "border-primary bg-accent" : "border-border"
-              }`}
-              onClick={() => document.getElementById("dashboard-file-input")?.click()}
-            >
-              <UploadIcon className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-              <h3 className="font-semibold mb-1">Drop documents here</h3>
-              <p className="text-sm text-muted-foreground mb-2">or click to browse files</p>
-              <p className="text-xs text-muted-foreground">Supports PDF, PNG, JPG up to 20MB</p>
-              <input
-                id="dashboard-file-input"
-                type="file"
-                className="hidden"
-                multiple
-                accept=".pdf,.png,.jpg,.jpeg"
-                onChange={handleFileSelect}
-              />
-            </div>
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground mb-1">Documents</p>
+            <p className="text-2xl font-semibold">{documents.length}</p>
           </CardContent>
         </Card>
-
-        {/* Scan Document - tablet/mobile only */}
-        <Card className="block lg:hidden">
-          <CardContent className="p-0">
-            <div
-              className="border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer border-border hover:border-primary hover:bg-accent"
-              onClick={() => document.getElementById("dashboard-camera-input")?.click()}
-            >
-              <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-              <h3 className="font-semibold mb-1">Scan Document</h3>
-              <p className="text-sm text-muted-foreground mb-2">Use your camera to capture</p>
-              <p className="text-xs text-muted-foreground">Takes a photo and processes it automatically</p>
-              <input
-                id="dashboard-camera-input"
-                type="file"
-                className="hidden"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-              />
-            </div>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground mb-1">Expenses</p>
+            <p className="text-2xl font-semibold">{expenses.length}</p>
           </CardContent>
         </Card>
-
-      {/* ── Analytics Section ── */}
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Analytics</h4>
-        {currencies.length === 0 ? (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Expenses by Category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground text-center py-12">No expense data yet.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className={`grid gap-5 ${currencies.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"}`}>
-            {currencies.map((cur) => {
-              const data = categoryDataByCurrency[cur] || [];
-              const symbol = cur === "EUR" ? "€" : cur === "USD" ? "$" : cur + " ";
-              return (
-                <Card key={cur}>
-                  <CardHeader className="pb-2">
-                    <CardTitle>Expenses by Category ({cur})</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {data.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-12">No data.</p>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={280}>
-                        <PieChart>
-                          <Pie
-                            data={data}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={100}
-                            paddingAngle={3}
-                            dataKey="value"
-                            nameKey="name"
-                            stroke="none"
-                          >
-                            {data.map((_, i) => (
-                              <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            formatter={(value: number) => `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-                            contentStyle={{
-                              backgroundColor: "hsl(var(--popover))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "8px",
-                              color: "hsl(var(--popover-foreground))",
-                              fontSize: "13px",
-                            }}
-                          />
-                          <Legend
-                            verticalAlign="bottom"
-                            height={36}
-                            iconType="circle"
-                            iconSize={8}
-                            formatter={(value) => (
-                              <span style={{ color: "hsl(var(--foreground))", fontSize: "12px" }}>{value}</span>
-                            )}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground mb-1">Total Spent</p>
+            <p className="text-2xl font-semibold">€{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Upload */}
+      <Card>
+        <CardContent className="p-0">
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
+              dragOver ? "border-primary bg-brand-soft" : "border-border"
+            }`}
+            onClick={() => document.getElementById("dashboard-file-input")?.click()}
+          >
+            <UploadIcon className="h-6 w-6 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm font-medium mb-1">Drop documents here or click to browse</p>
+            <p className="text-xs text-muted-foreground">PDF, PNG, JPG up to 20MB</p>
+            <input
+              id="dashboard-file-input"
+              type="file"
+              className="hidden"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg"
+              onChange={handleFileSelect}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Scan - mobile */}
+      <Card className="block lg:hidden">
+        <CardContent className="p-0">
+          <div
+            className="border-2 border-dashed rounded-lg p-12 text-center cursor-pointer border-border hover:border-primary hover:bg-brand-soft transition-colors"
+            onClick={() => document.getElementById("dashboard-camera-input")?.click()}
+          >
+            <Camera className="h-6 w-6 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm font-medium mb-1">Scan document</p>
+            <p className="text-xs text-muted-foreground">Use your camera to capture</p>
+            <input id="dashboard-camera-input" type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFileSelect} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Charts */}
+      {currencies.length > 0 && (
+        <div className={`grid gap-5 ${currencies.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"}`}>
+          {currencies.map((cur) => {
+            const data = categoryDataByCurrency[cur] || [];
+            const symbol = cur === "EUR" ? "€" : cur === "USD" ? "$" : cur + " ";
+            return (
+              <Card key={cur}>
+                <CardHeader>
+                  <CardTitle>Expenses by Category ({cur})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {data.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-12">No data.</p>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <PieChart>
+                        <Pie data={data} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={2} dataKey="value" nameKey="name" stroke="none">
+                          {data.map((_, i) => (
+                            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value: number) => `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--popover))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "6px",
+                            color: "hsl(var(--popover-foreground))",
+                            fontSize: "13px",
+                          }}
+                        />
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" iconSize={7}
+                          formatter={(value) => <span style={{ color: "hsl(var(--foreground))", fontSize: "12px" }}>{value}</span>}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
