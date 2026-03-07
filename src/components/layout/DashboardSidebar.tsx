@@ -5,7 +5,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation, Link } from "react-router-dom";
 import {
-  LayoutDashboard, Upload, FileText, Receipt, TrendingUp,
+  LayoutDashboard, Upload, FileText, Receipt, Tag,
   Users2, Download, UsersRound, Settings, FileText as Logo, LogOut,
 } from "lucide-react";
 
