@@ -444,6 +444,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          app_icon: string | null
           created_at: string
           id: string
           import_email_token: string
@@ -455,6 +456,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          app_icon?: string | null
           created_at?: string
           id?: string
           import_email_token?: string
@@ -466,6 +468,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          app_icon?: string | null
           created_at?: string
           id?: string
           import_email_token?: string
