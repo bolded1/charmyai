@@ -215,24 +215,18 @@ export default function ExpensesPage() {
   return (
     <div className="max-w-6xl space-y-6">
       {/* Currency summary cards */}
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-5">
         <Card>
           <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-muted-foreground">Expenses EUR</span>
-              <Badge variant="outline" className="text-xs">EUR</Badge>
-            </div>
-            <div className="text-2xl font-bold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-sm text-muted-foreground mb-1">Expenses EUR</p>
+            <p className="text-2xl font-semibold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-muted-foreground">Expenses USD</span>
-              <Badge variant="outline" className="text-xs">USD</Badge>
-            </div>
-            <div className="text-2xl font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-sm text-muted-foreground mb-1">Expenses USD</p>
+            <p className="text-2xl font-semibold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
           </CardContent>
         </Card>
