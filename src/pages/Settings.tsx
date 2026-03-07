@@ -338,7 +338,7 @@ export default function SettingsPage() {
                         className={`h-8 w-8 rounded-full transition-transform ${accentColor === i ? "scale-110 ring-2 ring-offset-2 ring-offset-background" : ""}`}
                         style={{
                           backgroundColor: `hsl(${color.hue})`,
-                          ringColor: accentColor === i ? `hsl(${color.hue})` : undefined,
+                          ...(accentColor === i ? { ["--tw-ring-color" as string]: `hsl(${color.hue})` } : {}),
                         }}
                       />
                       <span className="text-[10px] text-muted-foreground">{color.name}</span>
