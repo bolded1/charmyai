@@ -5,7 +5,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Upload, FileText, Receipt, TrendingUp, Users2,
+  Upload, FileText, Receipt, TrendingUp, Users2,
   Download, UsersRound, Settings, LogOut,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
