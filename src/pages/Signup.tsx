@@ -35,12 +35,7 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center p-4 surface-sunken">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl mb-2">
-            <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary-foreground" />
-            </div>
-            Charmy
-          </Link>
+          <SaasLogo size="md" className="mb-2" />
           <p className="text-sm text-muted-foreground">Start your free trial</p>
         </div>
 

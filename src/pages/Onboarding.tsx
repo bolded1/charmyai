@@ -129,12 +129,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen flex items-center justify-center p-4 surface-sunken">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 font-bold text-xl mb-4">
-            <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary-foreground" />
-            </div>
-            Charmy
-          </div>
+          <SaasLogo size="md" asLink={false} className="mb-4" />
           <div className="flex items-center justify-center gap-2 mb-2">
             {steps.map((_, i) => (
               <div key={i} className={`h-1.5 w-10 rounded-full transition-colors ${i <= step ? 'bg-primary' : 'bg-border'}`} />
