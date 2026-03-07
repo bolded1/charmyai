@@ -416,7 +416,7 @@ export default function SettingsPage() {
             {/* Branding - Logos & Icons */}
             <Card>
               <CardContent className="p-6">
-                <SectionHeader title="Company Branding" description="Upload your logo, icon, and favicon for light and dark themes." />
+                <SectionHeader title="Company Branding" description="Upload your logo and app icon. These appear in navigation, invoices, exports, and emails." />
                 
                 {/* Mode toggle for preview context */}
                 <div className="flex items-center gap-2 mb-5">
@@ -442,56 +442,87 @@ export default function SettingsPage() {
                 </div>
 
                 <div className={`rounded-xl border p-5 space-y-5 transition-colors ${
-                  brandPreviewMode === "dark" ? "bg-[hsl(222,20%,8%)] border-[hsl(222,12%,18%)]" : "bg-muted/20 border-border"
+                  brandPreviewMode === "dark" ? "bg-[hsl(224,18%,10%)] border-[hsl(224,12%,21%)]" : "bg-muted/20 border-border"
                 }`}>
-                  {/* Logo Row */}
+                  {/* Light Logo */}
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <ImageIcon className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
-                      <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,25%,90%)]" : "text-foreground"}`}>Logo</span>
-                      <span className={`text-[10px] ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/60"}`}>Recommended: 240 × 60 px, PNG or SVG with transparent background</span>
+                      <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,20%,93%)]" : "text-foreground"}`}>
+                        {brandPreviewMode === "light" ? "Light Mode Logo" : "Dark Mode Logo"}
+                      </span>
+                      <span className={`text-[10px] ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/60"}`}>
+                        PNG, SVG, or JPG · Transparent BG recommended · Max 2MB
+                      </span>
                     </div>
                     <BrandUploadBox
-                      label="Primary Logo"
-                      hint="Drop your logo here or click to upload"
-                      image={brandPreviewMode === "light" ? logoLight : logoDark}
+                      label={brandPreviewMode === "light" ? "Light Logo" : "Dark Logo"}
+                      hint="Recommended: 240 × 60 px"
+                      image={brandPreviewMode === "light" ? logoLight : (logoDark || logoLight)}
                       onUpload={handleImageUpload(brandPreviewMode === "light" ? setLogoLight : setLogoDark)}
                       onRemove={() => (brandPreviewMode === "light" ? setLogoLight : setLogoDark)(null)}
                       tall
                       dark={brandPreviewMode === "dark"}
                       wide
                     />
+                    {brandPreviewMode === "dark" && !logoDark && logoLight && (
+                      <p className="text-[10px] text-muted-foreground mt-1.5">
+                        ℹ Using light logo as fallback. Upload a white/light version for dark mode.
+                      </p>
+                    )}
                   </div>
 
-                  {/* Icon + Favicon Row */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Globe className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
-                        <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,25%,90%)]" : "text-foreground"}`}>App Icon</span>
-                      </div>
-                      <BrandUploadBox
-                        label="Icon"
-                        hint="64 × 64 px, square"
-                        image={brandPreviewMode === "light" ? iconLight : iconDark}
-                        onUpload={handleImageUpload(brandPreviewMode === "light" ? setIconLight : setIconDark)}
-                        onRemove={() => (brandPreviewMode === "light" ? setIconLight : setIconDark)(null)}
-                        dark={brandPreviewMode === "dark"}
-                      />
+                  {/* App Icon */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Globe className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
+                      <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,20%,93%)]" : "text-foreground"}`}>App Icon / Favicon</span>
+                      <span className={`text-[10px] ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/60"}`}>
+                        Square · 512 × 512 px recommended
+                      </span>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Globe className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
-                        <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,25%,90%)]" : "text-foreground"}`}>Favicon</span>
-                      </div>
-                      <BrandUploadBox
-                        label="Favicon"
-                        hint="32 × 32 px, .ico or .png"
-                        image={favicon}
-                        onUpload={handleImageUpload(setFavicon)}
-                        onRemove={() => setFavicon(null)}
-                        dark={brandPreviewMode === "dark"}
-                      />
+                    <BrandUploadBox
+                      label="App Icon"
+                      hint="Used for browser tab, PWA, and bookmarks"
+                      image={appIcon}
+                      onUpload={handleImageUpload(setAppIcon)}
+                      onRemove={() => setAppIcon(null)}
+                      dark={brandPreviewMode === "dark"}
+                    />
+                  </div>
+                </div>
+
+                {/* Header Preview */}
+                <div className="mt-5">
+                  <Label className="text-xs font-medium text-muted-foreground mb-3 block">Header Preview</Label>
+                  <div className={`rounded-lg border overflow-hidden ${
+                    brandPreviewMode === "dark" ? "bg-[hsl(224,20%,8%)] border-[hsl(224,14%,16%)]" : "bg-card border-border"
+                  }`}>
+                    <div className={`flex items-center gap-3 px-4 py-3 border-b ${
+                      brandPreviewMode === "dark" ? "border-[hsl(224,14%,16%)]" : "border-border"
+                    }`}>
+                      {appIcon ? (
+                        <img src={appIcon} alt="Icon" className="h-6 w-6 rounded" />
+                      ) : (
+                        <div className={`h-6 w-6 rounded flex items-center justify-center text-[8px] font-bold ${
+                          brandPreviewMode === "dark" ? "bg-[hsl(224,14%,18%)] text-[hsl(210,20%,70%)]" : "bg-muted text-muted-foreground"
+                        }`}>C</div>
+                      )}
+                      {(brandPreviewMode === "light" ? logoLight : (logoDark || logoLight)) ? (
+                        <img
+                          src={(brandPreviewMode === "light" ? logoLight : (logoDark || logoLight))!}
+                          alt="Logo"
+                          className="h-6 max-w-[120px] object-contain"
+                        />
+                      ) : (
+                        <span className={`text-sm font-semibold ${
+                          brandPreviewMode === "dark" ? "text-[hsl(210,20%,93%)]" : "text-foreground"
+                        }`}>Charmy</span>
+                      )}
+                      <div className="flex-1" />
+                      <div className={`h-6 w-6 rounded-full ${
+                        brandPreviewMode === "dark" ? "bg-[hsl(224,14%,18%)]" : "bg-muted"
+                      }`} />
                     </div>
                   </div>
                 </div>
