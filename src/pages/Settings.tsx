@@ -177,11 +177,27 @@ export default function SettingsPage() {
     catch { toast.error("Failed to upload avatar."); }
   };
 
+  // Persist SaaS logos
+  useEffect(() => {
+    if (saasLogoLight) localStorage.setItem("saas-logo-light", saasLogoLight);
+    else localStorage.removeItem("saas-logo-light");
+    window.dispatchEvent(new Event("saas-logo-changed"));
+  }, [saasLogoLight]);
+  useEffect(() => {
+    if (saasLogoDark) localStorage.setItem("saas-logo-dark", saasLogoDark);
+    else localStorage.removeItem("saas-logo-dark");
+    window.dispatchEvent(new Event("saas-logo-changed"));
+  }, [saasLogoDark]);
+
   const handleImageUpload = (setter: (url: string | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setter(URL.createObjectURL(file));
-    toast.success("Image uploaded!");
+    const reader = new FileReader();
+    reader.onload = () => {
+      setter(reader.result as string);
+      toast.success("Image uploaded!");
+    };
+    reader.readAsDataURL(file);
   };
 
   const handlePasswordUpdate = () => {
