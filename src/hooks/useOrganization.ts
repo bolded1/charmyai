@@ -9,6 +9,7 @@ export interface Organization {
   owner_user_id: string;
   logo_light: string | null;
   logo_dark: string | null;
+  app_icon: string | null;
   primary_color: string | null;
   created_at: string;
   updated_at: string;
