@@ -295,8 +295,19 @@ export default function ExpensesPage() {
             <SelectItem value="USD">USD</SelectItem>
           </SelectContent>
         </Select>
-        {(datePreset !== "all" || currencyFilter !== "all" || search) && (
-          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setSearch(""); }}>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(datePreset !== "all" || currencyFilter !== "all" || categoryFilter !== "all" || search) && (
+          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
             <X className="h-3 w-3 mr-1" /> Clear
           </Button>
         )}
