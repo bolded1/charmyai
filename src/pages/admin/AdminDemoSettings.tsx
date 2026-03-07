@@ -235,6 +235,27 @@ export default function AdminDemoSettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Cleanup */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Cleanup</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Delete Expired Demo Data</p>
+              <p className="text-xs text-muted-foreground">
+                Manually trigger cleanup of expired demo uploads and files
+              </p>
+            </div>
+            <Button variant="destructive" size="sm" onClick={handleCleanup} disabled={cleaning}>
+              {cleaning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Run Cleanup
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Button onClick={handleSave} disabled={saving}>
         {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
         Save Settings
