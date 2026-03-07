@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,87 +6,185 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 222 30% 12%;
+    /* ═══════════════════════════════════════════
+       PREMIUM LIGHT THEME
+       Inspired by Stripe/Linear/Notion
+    ═══════════════════════════════════════════ */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 30% 12%;
+    /* ── Background Layers ── */
+    --background:    220 16% 96%;    /* Layer 0: App shell */
+    --background-page: 220 14% 97%;  /* Layer 1: Page canvas */
+    --card:          0 0% 100%;      /* Layer 2: Cards/panels */
+    --popover:       0 0% 100%;      /* Layer 3: Dropdowns/modals */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 30% 12%;
+    --surface-sunken: 220 16% 96%;
+    --surface-elevated: 0 0% 100%;
+    --surface-hover: 220 14% 94%;
+    --overlay: 222 47% 11%;
 
-    --primary: 160 84% 36%;
-    --primary-foreground: 0 0% 100%;
+    /* ── Foreground / Text ── */
+    --foreground:         222 47% 11%;   /* Primary text */
+    --card-foreground:    222 47% 11%;
+    --popover-foreground: 222 47% 11%;
+    --text-secondary:     220 9% 43%;    /* Secondary text */
+    --muted-foreground:   220 9% 46%;    /* Muted / metadata */
+    --text-on-primary:    0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 30% 12%;
+    /* ── Brand / Accent ── */
+    --primary:              160 84% 36%;
+    --primary-foreground:   0 0% 100%;
+    --primary-hover:        160 84% 30%;
+    --brand-soft:           160 50% 95%;
+    --brand-border:         160 50% 80%;
+    --ring:                 160 84% 36%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    /* ── Secondary ── */
+    --secondary:            220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --accent: 160 50% 94%;
-    --accent-foreground: 160 84% 22%;
+    /* ── Muted ── */
+    --muted:             220 14% 96%;
 
-    --destructive: 0 84% 60%;
+    /* ── Accent (hover surfaces) ── */
+    --accent:            220 14% 94%;
+    --accent-foreground: 222 47% 11%;
+
+    /* ── Destructive ── */
+    --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 160 84% 36%;
+    /* ── Borders ── */
+    --border:         220 13% 90%;
+    --border-subtle:  220 13% 93%;
+    --border-strong:  220 13% 82%;
+    --input:          220 13% 90%;
 
-    --radius: 0.75rem;
+    /* ── Semantic ── */
+    --success:      152 69% 31%;
+    --success-soft:  152 50% 94%;
+    --warning:       38 92% 50%;
+    --warning-soft:  38 92% 95%;
+    --danger:        0 72% 51%;
+    --danger-soft:   0 72% 96%;
+    --info:          217 91% 60%;
+    --info-soft:     217 91% 96%;
 
-    --sidebar-background: 222 30% 8%;
-    --sidebar-foreground: 220 14% 80%;
-    --sidebar-primary: 160 84% 36%;
+    /* ── Component tokens ── */
+    --input-bg: 0 0% 100%;
+    --input-focus: 160 84% 36%;
+    --table-row-hover: 220 14% 97%;
+    --link-color: 160 84% 32%;
+
+    /* ── Sidebar ── */
+    --sidebar-background:         222 47% 7%;
+    --sidebar-foreground:         220 14% 65%;
+    --sidebar-primary:            160 84% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 14%;
-    --sidebar-accent-foreground: 220 14% 90%;
-    --sidebar-border: 222 20% 16%;
-    --sidebar-ring: 160 84% 36%;
+    --sidebar-accent:             222 30% 12%;
+    --sidebar-accent-foreground:  220 14% 92%;
+    --sidebar-border:             222 25% 14%;
+    --sidebar-ring:               160 84% 36%;
+    --sidebar-active-bg:          222 30% 12%;
+    --sidebar-active-text:        0 0% 100%;
+    --sidebar-muted:              220 14% 45%;
 
-    --hero-gradient: linear-gradient(135deg, hsl(160, 84%, 36%), hsl(180, 70%, 30%));
-    --surface-elevated: 0 0% 100%;
-    --surface-sunken: 220 20% 96%;
+    /* ── Misc ── */
+    --radius: 0.5rem;
+    --hero-gradient: linear-gradient(135deg, hsl(160, 84%, 36%), hsl(174, 70%, 32%));
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    --shadow-md: 0 2px 8px -2px rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-lg: 0 4px 16px -4px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+    --shadow-overlay: 0 8px 30px -4px rgb(0 0 0 / 0.12), 0 4px 10px -4px rgb(0 0 0 / 0.06);
   }
 
   .dark {
-    --background: 222 30% 6%;
-    --foreground: 210 20% 95%;
+    /* ═══════════════════════════════════════════
+       PREMIUM DARK THEME
+       Layered, calm, high-contrast text
+    ═══════════════════════════════════════════ */
 
-    --card: 222 25% 10%;
-    --card-foreground: 210 20% 95%;
+    /* ── Background Layers ── */
+    --background:    224 30% 7%;     /* Layer 0: App shell */
+    --background-page: 224 28% 8%;   /* Layer 1: Page canvas */
+    --card:          224 25% 11%;    /* Layer 2: Cards */
+    --popover:       224 22% 13%;    /* Layer 3: Popovers */
 
-    --popover: 222 25% 10%;
-    --popover-foreground: 210 20% 95%;
+    --surface-sunken: 224 30% 7%;
+    --surface-elevated: 224 25% 11%;
+    --surface-hover: 224 22% 14%;
+    --overlay: 224 40% 4%;
 
-    --primary: 160 84% 40%;
-    --primary-foreground: 0 0% 100%;
+    /* ── Foreground / Text ── */
+    --foreground:         210 20% 93%;
+    --card-foreground:    210 20% 93%;
+    --popover-foreground: 210 20% 93%;
+    --text-secondary:     220 12% 60%;
+    --muted-foreground:   220 10% 52%;
+    --text-on-primary:    0 0% 100%;
 
-    --secondary: 222 20% 16%;
-    --secondary-foreground: 210 20% 95%;
+    /* ── Brand ── */
+    --primary:              160 70% 42%;
+    --primary-foreground:   0 0% 100%;
+    --primary-hover:        160 70% 36%;
+    --brand-soft:           160 40% 12%;
+    --brand-border:         160 40% 25%;
+    --ring:                 160 70% 42%;
 
-    --muted: 222 20% 16%;
-    --muted-foreground: 220 14% 55%;
+    /* ── Secondary ── */
+    --secondary:            224 22% 15%;
+    --secondary-foreground: 210 20% 93%;
 
-    --accent: 160 40% 15%;
-    --accent-foreground: 160 84% 60%;
+    /* ── Muted ── */
+    --muted:             224 22% 15%;
 
-    --destructive: 0 62% 30%;
+    /* ── Accent ── */
+    --accent:            224 22% 14%;
+    --accent-foreground: 210 20% 93%;
+
+    /* ── Destructive ── */
+    --destructive:            0 62% 45%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 222 20% 18%;
-    --input: 222 20% 18%;
-    --ring: 160 84% 40%;
+    /* ── Borders ── */
+    --border:         224 18% 18%;
+    --border-subtle:  224 18% 15%;
+    --border-strong:  224 18% 24%;
+    --input:          224 18% 18%;
 
-    --sidebar-background: 222 35% 5%;
-    --sidebar-foreground: 220 14% 75%;
-    --sidebar-primary: 160 84% 40%;
+    /* ── Semantic ── */
+    --success:      152 55% 40%;
+    --success-soft:  152 40% 12%;
+    --warning:       38 80% 52%;
+    --warning-soft:  38 60% 12%;
+    --danger:        0 62% 45%;
+    --danger-soft:   0 50% 12%;
+    --info:          217 80% 55%;
+    --info-soft:     217 60% 12%;
+
+    /* ── Component tokens ── */
+    --input-bg: 224 25% 10%;
+    --input-focus: 160 70% 42%;
+    --table-row-hover: 224 22% 13%;
+    --link-color: 160 70% 50%;
+
+    /* ── Sidebar ── */
+    --sidebar-background:         224 35% 5%;
+    --sidebar-foreground:         220 12% 55%;
+    --sidebar-primary:            160 70% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 12%;
-    --sidebar-accent-foreground: 220 14% 85%;
-    --sidebar-border: 222 20% 12%;
-    --sidebar-ring: 160 84% 40%;
+    --sidebar-accent:             224 28% 10%;
+    --sidebar-accent-foreground:  220 14% 88%;
+    --sidebar-border:             224 25% 12%;
+    --sidebar-ring:               160 70% 42%;
+    --sidebar-active-bg:          224 28% 10%;
+    --sidebar-active-text:        210 20% 95%;
+    --sidebar-muted:              220 12% 42%;
+
+    /* ── Shadows (subtle in dark mode) ── */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.15);
+    --shadow-md: 0 2px 8px -2px rgb(0 0 0 / 0.25), 0 1px 2px -1px rgb(0 0 0 / 0.15);
+    --shadow-lg: 0 4px 16px -4px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+    --shadow-overlay: 0 8px 30px -4px rgb(0 0 0 / 0.4), 0 4px 10px -4px rgb(0 0 0 / 0.25);
   }
 }
 
@@ -96,12 +194,34 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-semibold;
+  /* ── Typography Hierarchy ── */
+  h1 {
+    @apply text-2xl font-semibold tracking-tight;
+    letter-spacing: -0.025em;
+  }
+  h2 {
+    @apply text-xl font-semibold tracking-tight;
+    letter-spacing: -0.02em;
+  }
+  h3 {
+    @apply text-base font-semibold tracking-tight;
+  }
+  h4 {
+    @apply text-sm font-semibold;
+  }
+
+  /* Improve input/select consistency */
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.7;
   }
 }
 
@@ -115,15 +235,59 @@
     background-image: var(--hero-gradient);
   }
 
+  /* ── Surface utilities ── */
   .surface-elevated {
-    @apply bg-card shadow-sm border;
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-sm);
   }
 
   .surface-sunken {
     background-color: hsl(var(--surface-sunken));
   }
 
-  .glass-effect {
-    @apply bg-card/80 backdrop-blur-lg border;
+  .surface-overlay {
+    background-color: hsl(var(--popover));
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-overlay);
   }
+
+  .glass-effect {
+    background-color: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border));
+  }
+
+  /* ── Semantic backgrounds ── */
+  .bg-success-soft { background-color: hsl(var(--success-soft)); }
+  .bg-warning-soft { background-color: hsl(var(--warning-soft)); }
+  .bg-danger-soft  { background-color: hsl(var(--danger-soft)); }
+  .bg-info-soft    { background-color: hsl(var(--info-soft)); }
+  .bg-brand-soft   { background-color: hsl(var(--brand-soft)); }
+
+  .text-success { color: hsl(var(--success)); }
+  .text-warning { color: hsl(var(--warning)); }
+  .text-danger  { color: hsl(var(--danger)); }
+  .text-info    { color: hsl(var(--info)); }
+
+  .border-brand { border-color: hsl(var(--brand-border)); }
+
+  /* ── Premium focus ring ── */
+  .focus-ring {
+    @apply outline-none ring-2 ring-offset-2 ring-offset-background;
+    ring-color: hsl(var(--ring));
+  }
+
+  /* ── Text hierarchy helpers ── */
+  .text-primary-content {
+    color: hsl(var(--foreground));
+  }
+  .text-secondary-content {
+    color: hsl(var(--text-secondary));
+  }
+
+  /* ── Shadow utilities ── */
+  .shadow-theme-sm { box-shadow: var(--shadow-sm); }
+  .shadow-theme-md { box-shadow: var(--shadow-md); }
+  .shadow-theme-lg { box-shadow: var(--shadow-lg); }
 }
