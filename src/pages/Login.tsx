@@ -49,7 +49,7 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <span className="text-xs text-primary cursor-pointer">Forgot password?</span>
             </div>
-            <Input id="password" type="password" placeholder="••••••••" required />
+            <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
