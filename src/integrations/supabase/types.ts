@@ -447,6 +447,8 @@ export type Database = {
           created_at: string
           id: string
           import_email_token: string
+          logo_dark: string | null
+          logo_light: string | null
           name: string
           owner_user_id: string
           updated_at: string
@@ -455,6 +457,8 @@ export type Database = {
           created_at?: string
           id?: string
           import_email_token?: string
+          logo_dark?: string | null
+          logo_light?: string | null
           name: string
           owner_user_id: string
           updated_at?: string
@@ -463,6 +467,8 @@ export type Database = {
           created_at?: string
           id?: string
           import_email_token?: string
+          logo_dark?: string | null
+          logo_light?: string | null
           name?: string
           owner_user_id?: string
           updated_at?: string
