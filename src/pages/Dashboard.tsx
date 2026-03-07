@@ -133,18 +133,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Expenses by Category Pie Charts - split by currency */}
+      {/* ── Analytics Section ── */}
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Analytics</h4>
         {currencies.length === 0 ? (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Expenses by Category</CardTitle>
+              <CardTitle>Expenses by Category</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground text-center py-12">No expense data yet.</p>
             </CardContent>
           </Card>
         ) : (
-          <div className={`grid gap-6 ${currencies.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"}`}>
+          <div className={`grid gap-5 ${currencies.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"}`}>
             {currencies.map((cur) => {
               const data = categoryDataByCurrency[cur] || [];
               const symbol = cur === "EUR" ? "€" : cur === "USD" ? "$" : cur + " ";
