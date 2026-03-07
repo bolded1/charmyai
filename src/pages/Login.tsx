@@ -34,7 +34,7 @@ export default function LoginPage() {
             <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
-            DocuLedger
+            Charmy
           </Link>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>

@@ -77,7 +77,7 @@ export default function HomePage() {
               </ul>
             </div>
             <div className="surface-elevated rounded-xl p-8">
-              <h3 className="text-xl font-semibold mb-4 text-gradient">DocuLedger automates it all</h3>
+              <h3 className="text-xl font-semibold mb-4 text-gradient">Charmy automates it all</h3>
               <ul className="space-y-4">
                 {[
                   "Upload any invoice or receipt",
@@ -194,7 +194,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">What Our Users Say</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {[
-              { quote: "DocuLedger cut our invoice processing time by 80%. What used to take our team a full day now happens in an hour.", name: "Maria Schmidt", role: "CFO, TechStart GmbH" },
+              { quote: "Charmy cut our invoice processing time by 80%. What used to take our team a full day now happens in an hour.", name: "Maria Schmidt", role: "CFO, TechStart GmbH" },
               { quote: "Finally, a tool that understands accounting documents. The AI extraction is remarkably accurate.", name: "Thomas Weber", role: "Senior Accountant, Weber & Partners" },
             ].map((t) => (
               <div key={t.name} className="surface-elevated rounded-xl p-6">

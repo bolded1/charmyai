@@ -116,7 +116,7 @@ export default function OnboardingPage() {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
-      toast.success("Setup complete! Welcome to DocuLedger.");
+      toast.success("Setup complete! Welcome to Charmy.");
       navigate("/app");
     }
   };
@@ -133,7 +133,7 @@ export default function OnboardingPage() {
             <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
-            DocuLedger
+            Charmy
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             {steps.map((_, i) => (

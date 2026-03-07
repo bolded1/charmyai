@@ -30,7 +30,7 @@ export default function ContactPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="space-y-6">
               {[
-                { icon: Mail, title: "Email", detail: "hello@doculedger.com" },
+                { icon: Mail, title: "Email", detail: "hello@charmy.ai" },
                 { icon: Phone, title: "Phone", detail: "+49 30 1234567" },
                 { icon: MapPin, title: "Office", detail: "Berlin, Germany" },
               ].map((c) => (

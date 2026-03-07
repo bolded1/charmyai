@@ -22,7 +22,7 @@ export default function MarketingLayout() {
             <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-foreground">DocuLedger</span>
+            <span className="text-foreground">Charmy</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -79,7 +79,7 @@ export default function MarketingLayout() {
                 <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
                   <FileText className="h-4 w-4 text-primary-foreground" />
                 </div>
-                DocuLedger
+                Charmy
               </div>
               <p className="text-sm text-muted-foreground">AI-powered financial document processing for modern businesses.</p>
             </div>
@@ -106,7 +106,7 @@ export default function MarketingLayout() {
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-sm text-muted-foreground text-center">
-            © 2024 DocuLedger. All rights reserved.
+            © 2024 Charmy. All rights reserved.
           </div>
         </div>
       </footer>
