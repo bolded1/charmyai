@@ -67,5 +67,5 @@ export function useEmailImports() {
 }
 
 export function getImportEmailAddress(token: string): string {
-  return `${token}@imports.doculedger.com`;
+  return `${token}@imports.charmy.net`;
 }
