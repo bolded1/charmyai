@@ -115,11 +115,12 @@ export default function SettingsPage() {
     root.style.setProperty("--ring", color.hue);
     root.style.setProperty("--sidebar-primary", color.hue);
     root.style.setProperty("--sidebar-ring", color.hue);
-    // Derive hover (darken) and brand-soft (lighten) from accent hue
     const [h, s, l] = color.hue.split(" ").map((v) => parseFloat(v));
     root.style.setProperty("--primary-hover", `${h} ${s}% ${Math.max(l - 6, 10)}%`);
     const isDark = root.classList.contains("dark");
     root.style.setProperty("--brand-soft", isDark ? `${h} 30% 14%` : `${h} 40% 95%`);
+    root.style.setProperty("--sidebar-active-bg", isDark ? `${h} 25% 12%` : `${h} 40% 95%`);
+    root.style.setProperty("--sidebar-active-text", isDark ? `${h} 50% 62%` : `${h} ${s}% ${Math.max(l - 8, 10)}%`);
     localStorage.setItem("accent-color", String(accentColor));
   }, [accentColor]);
 

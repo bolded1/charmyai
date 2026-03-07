@@ -66,6 +66,8 @@ function applyPersistedSettings() {
   root.style.setProperty("--primary-hover", `${h} ${s}% ${Math.max(l - 6, 10)}%`);
   const isDark = root.classList.contains("dark");
   root.style.setProperty("--brand-soft", isDark ? `${h} 30% 14%` : `${h} 40% 95%`);
+  root.style.setProperty("--sidebar-active-bg", isDark ? `${h} 25% 12%` : `${h} 40% 95%`);
+  root.style.setProperty("--sidebar-active-text", isDark ? `${h} 50% 62%` : `${h} ${s}% ${Math.max(l - 8, 10)}%`);
 
   const btnText = localStorage.getItem("button-text-color") || "white";
   root.style.setProperty("--primary-foreground", btnText === "white" ? "0 0% 100%" : "0 0% 0%");
