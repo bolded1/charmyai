@@ -59,54 +59,10 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm] = useState({
     first_name: "", last_name: "", phone: "", job_title: "", timezone: "UTC", language: "en",
   });
-  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">(() => {
-    return (localStorage.getItem("theme-mode") as "light" | "dark" | "system") || "system";
-  });
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
   const { data: org } = useOrganization();
   const updateOrg = useUpdateOrganization();
-
-  const [logoLight, setLogoLight] = useState<string | null>(null);
-  const [logoDark, setLogoDark] = useState<string | null>(null);
-  const [appIcon, setAppIcon] = useState<string | null>(null);
-  const brandInitialLoadRef = useRef(true);
-
-  // Load branding from organization on mount / when org loads
-  useEffect(() => {
-    if (org) {
-      setLogoLight(org.logo_light || null);
-      setLogoDark(org.logo_dark || null);
-      setAppIcon(org.app_icon || null);
-      setTimeout(() => { brandInitialLoadRef.current = false; }, 100);
-    }
-  }, [org]);
-
-  // Persist branding to organization table
-  const saveBrandField = useCallback(async (field: "logo_light" | "logo_dark" | "app_icon", value: string | null) => {
-    if (!org) return;
-    try {
-      await updateOrg.mutateAsync({ id: org.id, [field]: value });
-    } catch {
-      toast.error("Failed to save branding.");
-    }
-  }, [org, updateOrg]);
-
-  useEffect(() => {
-    if (brandInitialLoadRef.current) return;
-    saveBrandField("logo_light", logoLight);
-  }, [logoLight, saveBrandField]);
-  useEffect(() => {
-    if (brandInitialLoadRef.current) return;
-    saveBrandField("logo_dark", logoDark);
-  }, [logoDark, saveBrandField]);
-  useEffect(() => {
-    if (brandInitialLoadRef.current) return;
-    saveBrandField("app_icon", appIcon);
-  }, [appIcon, saveBrandField]);
-
-  const [brandColors, setBrandColors] = useState(["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"]);
-  const [brandPreviewMode, setBrandPreviewMode] = useState<"light" | "dark">("light");
 
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
 
