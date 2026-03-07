@@ -70,6 +70,7 @@ export default function SettingsPage() {
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
   const [accentColor, setAccentColor] = useState(0);
   const [buttonTextColor, setButtonTextColor] = useState<"white" | "black">("white");
+  const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
   const [logoLight, setLogoLight] = useState<string | null>(null);
   const [logoDark, setLogoDark] = useState<string | null>(null);
