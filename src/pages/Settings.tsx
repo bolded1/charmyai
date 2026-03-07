@@ -388,6 +388,11 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
+        {/* ════════════════ EMAIL IMPORT ════════════════ */}
+        <TabsContent value="email-import">
+          <EmailImportSettings />
+        </TabsContent>
+
         {/* ════════════════ APPEARANCE ════════════════ */}
         <TabsContent value="appearance">
           <div className="space-y-6">
