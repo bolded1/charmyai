@@ -131,10 +131,16 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 font-bold text-xl mb-4">
-            <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary-foreground" />
-            </div>
-            Charmy
+            {brandLogo ? (
+              <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
+            ) : (
+              <>
+                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
+                </div>
+                Charmy
+              </>
+            )}
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             {steps.map((_, i) => (
