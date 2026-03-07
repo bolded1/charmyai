@@ -40,6 +40,7 @@ export default function DocumentsPage() {
 
   const openReview = (doc: DocumentRecord) => {
     setSelected(doc);
+    const discount = (doc as any).extracted_data?.discount_amount ?? (doc as any).user_corrections?.discount_amount ?? "";
     setEditData({
       document_type: doc.document_type,
       supplier_name: doc.supplier_name,
@@ -53,7 +54,8 @@ export default function DocumentsPage() {
       total_amount: doc.total_amount,
       vat_number: doc.vat_number,
       category: doc.category,
-    });
+      discount_amount: discount,
+    } as any);
   };
 
   const handleSave = async () => {
