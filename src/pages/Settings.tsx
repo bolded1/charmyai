@@ -727,23 +727,85 @@ function BrandUploadBox({
   onRemove: () => void; tall?: boolean; dark?: boolean; wide?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
+  const dragCounter = useRef(0);
+
+  const processFile = (file: File) => {
+    // Simulate progress while FileReader loads
+    setProgress(0);
+    let pct = 0;
+    const interval = setInterval(() => {
+      pct = Math.min(pct + Math.random() * 30 + 10, 90);
+      setProgress(Math.round(pct));
+    }, 80);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      clearInterval(interval);
+      setProgress(100);
+      setTimeout(() => setProgress(null), 400);
+    };
+    reader.readAsDataURL(file);
+
+    // Trigger the actual handler
+    const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+    onUpload(fakeEvent);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.types.includes("Files")) setIsDragging(true);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragging(false);
+  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
   return (
     <div className={`space-y-1.5 ${wide ? "" : ""}`}>
       <div
-        className={`relative rounded-lg border border-dashed flex items-center justify-center overflow-hidden transition-all cursor-pointer group hover:border-primary/40 ${
+        className={`relative rounded-lg border border-dashed flex items-center justify-center overflow-hidden cursor-pointer group transition-all ${
           tall ? "h-28" : "h-20"
-        } ${dark ? "bg-[hsl(224,18%,10%)] border-[hsl(224,12%,21%)]" : "bg-muted/20 border-border"}`}
+        } ${isDragging
+          ? "border-primary bg-primary/5 scale-[1.01] shadow-sm"
+          : dark
+            ? "bg-[hsl(224,18%,10%)] border-[hsl(224,12%,21%)] hover:border-primary/40"
+            : "bg-muted/20 border-border hover:border-primary/40"
+        }`}
         onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-        onDrop={(e) => {
-          e.preventDefault(); e.stopPropagation();
-          const file = e.dataTransfer.files?.[0];
-          if (file) {
-            const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
-            onUpload(fakeEvent);
-          }
-        }}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
+        {/* Progress bar */}
+        {progress !== null && (
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-muted overflow-hidden z-10">
+            <div
+              className="h-full bg-primary transition-all duration-150 ease-out rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
+
         {image ? (
           <>
             <img src={image} alt={label} className="max-h-full max-w-full object-contain p-3" />
@@ -754,6 +816,20 @@ function BrandUploadBox({
               <X className="h-3 w-3" />
             </button>
           </>
+        ) : isDragging ? (
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+              <Upload className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <span className="text-[11px] font-medium text-primary">Drop to upload</span>
+          </div>
+        ) : progress !== null ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className={`h-5 w-5 animate-spin ${dark ? "text-primary" : "text-primary"}`} />
+            <span className={`text-[11px] font-medium ${dark ? "text-[hsl(210,20%,75%)]" : "text-muted-foreground"}`}>
+              Uploading… {progress}%
+            </span>
+          </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
             <div className={`h-8 w-8 rounded-full flex items-center justify-center ${dark ? "bg-[hsl(224,14%,18%)]" : "bg-muted/60"}`}>
@@ -765,7 +841,7 @@ function BrandUploadBox({
             </div>
           </div>
         )}
-        <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={onUpload} />
+        <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={handleInputChange} />
       </div>
     </div>
   );
