@@ -162,6 +162,24 @@ export default function ExpensesPage() {
     }
   };
 
+  const handleOpenFile = async () => {
+    const sourceUrl = signedFileUrl || fileUrl;
+    if (!sourceUrl) return;
+
+    try {
+      const response = await fetch(sourceUrl);
+      const rawBlob = await response.blob();
+      const typedBlob = new Blob([rawBlob], {
+        type: fileType || rawBlob.type || "application/octet-stream",
+      });
+      const blobUrl = URL.createObjectURL(typedBlob);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } catch {
+      window.open(sourceUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
   // Date range logic
   const dateRange = useMemo(() => {
     const now = new Date();
