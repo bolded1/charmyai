@@ -2,7 +2,6 @@ import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
@@ -41,9 +40,9 @@ export function DashboardSidebar() {
   };
 
   const renderGroup = (label: string, items: typeof financeItems) => (
-    <SidebarGroup>
+    <SidebarGroup className="py-1">
       {!collapsed && (
-        <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-widest text-sidebar-muted px-3 mb-1">
+        <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
           {label}
         </SidebarGroupLabel>
       )}
@@ -53,7 +52,7 @@ export function DashboardSidebar() {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                 <NavLink to={item.url} end={item.url === '/app'}>
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="h-3.5 w-3.5" />
                   {!collapsed && <span>{item.title}</span>}
                 </NavLink>
               </SidebarMenuButton>
@@ -66,15 +65,15 @@ export function DashboardSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4 pb-3">
+      <SidebarHeader className="px-3 py-4">
         <Link to="/app" className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
-            <FileText className="h-3.5 w-3.5 text-white" />
+          <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
+            <FileText className="h-3 w-3 text-white" />
           </div>
-          {!collapsed && <span className="font-semibold text-sm text-sidebar-accent-foreground">DocuLedger</span>}
+          {!collapsed && <span className="font-semibold text-[13px] text-sidebar-accent-foreground">DocuLedger</span>}
         </Link>
       </SidebarHeader>
-      <SidebarContent className="px-1">
+      <SidebarContent className="px-1.5 pt-1">
         {renderGroup("Documents", financeItems)}
         {renderGroup("Finance", recordsItems)}
         {renderGroup("System", systemItems)}
@@ -82,8 +81,8 @@ export function DashboardSidebar() {
       <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-muted">
-              <LogOut className="h-4 w-4" />
+            <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-muted hover:text-sidebar-accent-foreground">
+              <LogOut className="h-3.5 w-3.5" />
               {!collapsed && <span>Sign Out</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
