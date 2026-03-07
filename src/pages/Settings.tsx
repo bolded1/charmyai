@@ -11,6 +11,7 @@ import { mockAuditLog } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, Upload, X, ImageIcon } from "lucide-react";
 
 const ACCENT_COLORS = [
