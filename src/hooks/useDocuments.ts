@@ -51,6 +51,10 @@ export function useDocuments(statusFilter?: string) {
   });
 }
 
+function sanitizeFileName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
@@ -59,7 +63,7 @@ export function useUploadDocument() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const filePath = `${user.id}/${Date.now()}-${file.name}`;
+      const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
