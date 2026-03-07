@@ -18,12 +18,18 @@ function SectionHeader({ title, description }: { title: string; description: str
   );
 }
 
-const statusIcons: Record<string, React.ReactNode> = {
-  processed: <CheckCircle2 className="h-3.5 w-3.5 text-primary" />,
-  processing: <Loader2 className="h-3.5 w-3.5 text-muted-foreground animate-spin" />,
-  failed: <XCircle className="h-3.5 w-3.5 text-destructive" />,
-  ignored: <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" />,
-};
+function getImportStatus(imp: any): { label: string; className: string; icon: React.ReactNode } {
+  if (imp.attachment_count === 0 || imp.status === "ignored") {
+    return { label: "Ignored", className: "bg-muted text-muted-foreground", icon: <AlertTriangle className="h-3 w-3" /> };
+  }
+  if (imp.status === "failed" || imp.processed_count === 0) {
+    return { label: "Failed", className: "bg-destructive/10 text-destructive", icon: <XCircle className="h-3 w-3" /> };
+  }
+  if (imp.processed_count < imp.attachment_count) {
+    return { label: "Partial", className: "bg-accent text-accent-foreground", icon: <AlertTriangle className="h-3 w-3" /> };
+  }
+  return { label: "Imported", className: "bg-primary/10 text-primary", icon: <CheckCircle2 className="h-3 w-3" /> };
+}
 
 export default function EmailImportSettings() {
   const { data: org, isLoading: orgLoading } = useOrganization();
