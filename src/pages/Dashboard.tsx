@@ -41,16 +41,28 @@ export default function DashboardPage() {
     e.target.value = "";
   }, [user, uploadMutation, navigate]);
 
-  const categoryData = useMemo(() => {
-    const map: Record<string, number> = {};
-    expenses.forEach((e) => {
-      const cat = e.category || "Uncategorized";
-      map[cat] = (map[cat] || 0) + Number(e.total_amount || 0);
-    });
-    return Object.entries(map)
-      .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
-      .sort((a, b) => b.value - a.value);
+  const currencies = useMemo(() => {
+    const set = new Set<string>();
+    expenses.forEach((e) => set.add(e.currency || "EUR"));
+    return Array.from(set).sort();
   }, [expenses]);
+
+  const categoryDataByCurrency = useMemo(() => {
+    const result: Record<string, { name: string; value: number }[]> = {};
+    currencies.forEach((cur) => {
+      const map: Record<string, number> = {};
+      expenses
+        .filter((e) => (e.currency || "EUR") === cur)
+        .forEach((e) => {
+          const cat = e.category || "Uncategorized";
+          map[cat] = (map[cat] || 0) + Number(e.total_amount || 0);
+        });
+      result[cur] = Object.entries(map)
+        .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
+        .sort((a, b) => b.value - a.value);
+    });
+    return result;
+  }, [expenses, currencies]);
 
   if (!user) {
     return <div className="text-center py-12 text-muted-foreground">Please log in to view dashboard.</div>;
