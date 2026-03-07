@@ -159,6 +159,11 @@ export default function DocumentsPage() {
                         {doc.total_amount && Number(doc.total_amount) > 0
                           ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
                           : "—"}
+                        {(doc as any).extracted_data?.discount_amount != null && (doc as any).extracted_data.discount_amount !== 0 && (
+                          <span className="block text-xs text-green-600 font-normal">
+                            Discount: -{(doc.currency || "EUR")} {Math.abs((doc as any).extracted_data.discount_amount).toFixed(2)}
+                          </span>
+                        )}
                       </td>
                       <td className="p-3">
                         <Badge variant="secondary" className={statusColors[doc.status] || ""}>
