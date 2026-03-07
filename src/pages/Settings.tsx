@@ -124,8 +124,6 @@ export default function SettingsPage() {
 
 
 
-  };
-
   const handlePasswordUpdate = () => {
     if (!passwordForm.current || !passwordForm.new) {
       toast.error("Please fill in all password fields.");
