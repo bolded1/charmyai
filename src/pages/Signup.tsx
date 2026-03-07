@@ -47,7 +47,7 @@ export default function SignupPage() {
         <form onSubmit={handleSubmit} className="surface-elevated rounded-xl p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input id="name" placeholder="John Doe" required />
+            <Input id="name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Work Email</Label>
