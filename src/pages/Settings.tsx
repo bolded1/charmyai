@@ -236,8 +236,12 @@ export default function SettingsPage() {
   const handleImageUpload = (setter: (url: string | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setter(URL.createObjectURL(file));
-    toast.success("Image uploaded!");
+    const reader = new FileReader();
+    reader.onload = () => {
+      setter(reader.result as string);
+      toast.success("Logo updated!");
+    };
+    reader.readAsDataURL(file);
   };
 
   const handlePasswordUpdate = () => {
