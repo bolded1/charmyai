@@ -2,6 +2,7 @@ import { Link, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useBrandLogo } from "@/hooks/useBrandLogo";
 
 const navLinks = [
   { label: "Features", to: "/features" },
