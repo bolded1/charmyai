@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { FileText, Building2, UserCircle, ArrowRight, ArrowLeft, Camera, Check, ChevronsUpDown } from "lucide-react";
+import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -66,6 +67,7 @@ export default function OnboardingPage() {
   const [companyRole, setCompanyRole] = useState("Owner");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const brandLogo = useBrandLogo();
 
   // Step 2 state
   const [orgName, setOrgName] = useState("");
@@ -130,10 +132,16 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 font-bold text-xl mb-4">
-            <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary-foreground" />
-            </div>
-            Charmy
+            {brandLogo ? (
+              <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
+            ) : (
+              <>
+                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
+                </div>
+                Charmy
+              </>
+            )}
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             {steps.map((_, i) => (
