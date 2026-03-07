@@ -14,6 +14,7 @@ const navItems = [
   { title: "Upload", url: "/app/upload", icon: Upload },
   { title: "Documents", url: "/app/documents", icon: FileText },
   { title: "Expenses", url: "/app/expenses", icon: Receipt },
+  { title: "Categories", url: "/app/categories", icon: Tag },
   { title: "Exports", url: "/app/exports", icon: Download },
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
