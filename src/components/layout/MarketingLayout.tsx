@@ -21,10 +21,16 @@ export default function MarketingLayout() {
       <header className="sticky top-0 z-50 glass-effect">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-foreground">Charmy</span>
+            {brandLogo ? (
+              <img src={brandLogo} alt="Charmy" className="h-8 max-w-[10rem] object-contain" />
+            ) : (
+              <>
+                <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-primary-foreground" />
+                </div>
+                <span className="text-foreground">Charmy</span>
+              </>
+            )}
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
