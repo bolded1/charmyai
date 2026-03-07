@@ -21,6 +21,7 @@ interface ExtractedData {
   currency?: string;
   net_amount?: number;
   vat_amount?: number;
+  discount_amount?: number;
   total_amount?: number;
   vat_number?: string;
   category?: string;
