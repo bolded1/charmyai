@@ -1,13 +1,21 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  Search, TrendingUp, Loader2, Upload, FileText, CheckCircle2, X, AlertCircle,
+  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon,
 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useIncomeRecords, useUploadIncomeDocument } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
+import { cn } from "@/lib/utils";
+
+type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
 interface UploadingFile {
   id: string;
@@ -20,18 +28,68 @@ interface UploadingFile {
 
 export default function IncomePage() {
   const [search, setSearch] = useState("");
+  const [currencyFilter, setCurrencyFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [datePreset, setDatePreset] = useState<DatePreset>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const { user } = useAuth();
   const { data: income = [], isLoading } = useIncomeRecords();
   const uploadMutation = useUploadIncomeDocument();
 
-  const filtered = income.filter((d) =>
-    (d.customer_name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (d.invoice_number || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const dateRange = useMemo(() => {
+    const now = new Date();
+    switch (datePreset) {
+      case "this_month": return { from: startOfMonth(now), to: endOfMonth(now) };
+      case "last_month": { const l = new Date(now.getFullYear(), now.getMonth() - 1, 1); return { from: startOfMonth(l), to: endOfMonth(l) }; }
+      case "this_quarter": return { from: startOfQuarter(now), to: endOfQuarter(now) };
+      case "this_year": return { from: startOfYear(now), to: endOfYear(now) };
+      case "last_year": { const ly = new Date(now.getFullYear() - 1, 0, 1); return { from: startOfYear(ly), to: endOfYear(ly) }; }
+      case "custom": return { from: dateFrom, to: dateTo };
+      default: return { from: undefined, to: undefined };
+    }
+  }, [datePreset, dateFrom, dateTo]);
 
-  const total = filtered.reduce((sum, d) => sum + Number(d.total_amount || 0), 0);
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    income.forEach((e) => { if (e.category) set.add(e.category); });
+    return Array.from(set).sort();
+  }, [income]);
+
+  const filtered = useMemo(() => {
+    return income.filter((d) => {
+      const matchesSearch =
+        (d.customer_name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (d.invoice_number || "").toLowerCase().includes(search.toLowerCase());
+      const matchesCurrency = currencyFilter === "all" || d.currency === currencyFilter;
+      const matchesCategory = categoryFilter === "all" || (d.category || "") === categoryFilter;
+      let matchesDate = true;
+      if (dateRange.from || dateRange.to) {
+        const docDate = d.invoice_date ? new Date(d.invoice_date) : null;
+        if (!docDate) matchesDate = false;
+        else {
+          if (dateRange.from && docDate < dateRange.from) matchesDate = false;
+          if (dateRange.to && docDate > dateRange.to) matchesDate = false;
+        }
+      }
+      return matchesSearch && matchesCurrency && matchesCategory && matchesDate;
+    });
+  }, [income, search, currencyFilter, categoryFilter, dateRange]);
+
+  const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
+  const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
+  const eurCount = filtered.filter((e) => e.currency === "EUR").length;
+  const usdCount = filtered.filter((e) => e.currency === "USD").length;
+
+  const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
+
+  const activeDateLabel = datePreset !== "all"
+    ? datePreset === "custom"
+      ? `${dateFrom ? format(dateFrom, "dd/MM/yyyy") : "..."} – ${dateTo ? format(dateTo, "dd/MM/yyyy") : "..."}`
+      : datePreset.replace("_", " ")
+    : null;
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -43,11 +101,7 @@ export default function IncomePage() {
     async (file: File) => {
       if (!user) return;
       const id = Math.random().toString(36).slice(2);
-      const entry: UploadingFile = {
-        id, name: file.name, size: formatSize(file.size), status: "uploading", progress: 20,
-      };
-      setFiles((prev) => [entry, ...prev]);
-
+      setFiles((prev) => [{ id, name: file.name, size: formatSize(file.size), status: "uploading", progress: 20 }, ...prev]);
       try {
         setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, progress: 40 } : f)));
         await new Promise((r) => setTimeout(r, 200));
@@ -55,43 +109,36 @@ export default function IncomePage() {
         await uploadMutation.mutateAsync(file);
         setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, status: "done", progress: 100 } : f)));
       } catch (err: any) {
-        setFiles((prev) =>
-          prev.map((f) => f.id === id ? { ...f, status: "error", progress: 100, error: err.message } : f)
-        );
+        setFiles((prev) => prev.map((f) => f.id === id ? { ...f, status: "error", progress: 100, error: err.message } : f));
       }
     },
     [user, uploadMutation]
   );
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    Array.from(e.dataTransfer.files).forEach(processFile);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    Array.from(e.target.files || []).forEach(processFile);
-    e.target.value = "";
-  };
-
+  const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); Array.from(e.dataTransfer.files).forEach(processFile); };
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => { Array.from(e.target.files || []).forEach(processFile); e.target.value = ""; };
   const removeFile = (id: string) => setFiles((prev) => prev.filter((f) => f.id !== id));
 
-  if (!user) {
-    return <div className="text-center py-12 text-muted-foreground">Please log in to view income.</div>;
-  }
+  if (!user) return <div className="text-center py-12 text-muted-foreground">Please log in to view income.</div>;
 
   return (
-    <div className="space-y-4">
-      {/* Total */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">Total income</p>
-          <p className="text-2xl font-bold">€{total.toFixed(2)}</p>
-        </div>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search invoices..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
+    <div className="max-w-6xl space-y-6">
+      {/* Currency summary cards */}
+      <div className="grid sm:grid-cols-2 gap-5">
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground mb-1">Income EUR</p>
+            <p className="text-2xl font-semibold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground mb-1">Income USD</p>
+            <p className="text-2xl font-semibold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Upload Box */}
@@ -102,20 +149,14 @@ export default function IncomePage() {
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
             className={`relative p-8 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg ${
-              dragOver
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50 hover:bg-accent/50"
+              dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-accent/50"
             }`}
             onClick={() => document.getElementById("income-file-input")?.click()}
           >
-            <div className={`mx-auto mb-3 h-12 w-12 rounded-xl flex items-center justify-center transition-colors ${
-              dragOver ? "bg-primary/10" : "bg-muted"
-            }`}>
+            <div className={`mx-auto mb-3 h-12 w-12 rounded-xl flex items-center justify-center transition-colors ${dragOver ? "bg-primary/10" : "bg-muted"}`}>
               <Upload className={`h-5 w-5 transition-colors ${dragOver ? "text-primary" : "text-muted-foreground"}`} />
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">
-              {dragOver ? "Drop to upload" : "Upload Sales Invoices"}
-            </h3>
+            <h3 className="text-base font-semibold text-foreground mb-1">{dragOver ? "Drop to upload" : "Upload Sales Invoices"}</h3>
             <p className="text-sm text-muted-foreground mb-3 max-w-sm mx-auto">
               Upload your company's invoices here. AI will extract the data and add it to your income records automatically.
             </p>
@@ -124,14 +165,7 @@ export default function IncomePage() {
               <Badge variant="secondary" className="text-xs px-2.5 py-0.5">PNG</Badge>
               <Badge variant="secondary" className="text-xs px-2.5 py-0.5">JPG</Badge>
             </div>
-            <input
-              id="income-file-input"
-              type="file"
-              className="hidden"
-              multiple
-              accept=".pdf,.png,.jpg,.jpeg"
-              onChange={handleFileSelect}
-            />
+            <input id="income-file-input" type="file" className="hidden" multiple accept=".pdf,.png,.jpg,.jpeg" onChange={handleFileSelect} />
           </div>
         </CardContent>
       </Card>
@@ -143,13 +177,7 @@ export default function IncomePage() {
             {files.map((file) => (
               <div key={file.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/50">
                 <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shrink-0">
-                  {file.status === "done" ? (
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                  ) : file.status === "error" ? (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  ) : (
-                    <Loader2 className="h-4 w-4 text-primary animate-spin" />
-                  )}
+                  {file.status === "done" ? <CheckCircle2 className="h-4 w-4 text-primary" /> : file.status === "error" ? <AlertCircle className="h-4 w-4 text-destructive" /> : <Loader2 className="h-4 w-4 text-primary animate-spin" />}
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center justify-between">
@@ -173,6 +201,83 @@ export default function IncomePage() {
         </Card>
       )}
 
+      {/* Filters row */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search income..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
+          <SelectTrigger className="w-40">
+            <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="this_month">This Month</SelectItem>
+            <SelectItem value="last_month">Last Month</SelectItem>
+            <SelectItem value="this_quarter">This Quarter</SelectItem>
+            <SelectItem value="this_year">This Year</SelectItem>
+            <SelectItem value="last_year">Last Year</SelectItem>
+            <SelectItem value="custom">Custom Range</SelectItem>
+          </SelectContent>
+        </Select>
+        {datePreset === "custom" && (
+          <>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3 w-3 mr-1" />
+                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "From"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left text-xs", !dateTo && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3 w-3 mr-1" />
+                  {dateTo ? format(dateTo, "dd/MM/yyyy") : "To"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+          </>
+        )}
+        <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
+          <SelectTrigger className="w-28">
+            <SelectValue placeholder="Currency" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="EUR">EUR</SelectItem>
+            <SelectItem value="USD">USD</SelectItem>
+          </SelectContent>
+        </Select>
+        {categories.length > 0 && (
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {(datePreset !== "all" || currencyFilter !== "all" || categoryFilter !== "all" || search) && (
+          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
+            <X className="h-3 w-3 mr-1" /> Clear
+          </Button>
+        )}
+      </div>
+
       {/* Income Table */}
       <Card>
         <CardContent className="p-0">
@@ -182,37 +287,41 @@ export default function IncomePage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">
-              No income records yet. Upload your sales invoices above to get started.
+              No income records found for the selected filters.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b text-left">
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Customer</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Invoice #</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Due Date</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Net</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">VAT</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Total</th>
+                  <tr className="border-b border-border">
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Customer</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Date</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Due Date</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Category</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Currency</th>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground">Net</th>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground">VAT</th>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((doc) => (
-                    <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="p-3">
+                    <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors">
+                      <td className="p-4">
                         <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm font-medium">{doc.customer_name}</span>
                         </div>
                       </td>
-                      <td className="p-3 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{doc.invoice_date}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{doc.due_date || "—"}</td>
-                      <td className="p-3 text-sm">{doc.currency} {Number(doc.net_amount).toFixed(2)}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{doc.currency} {Number(doc.vat_amount).toFixed(2)}</td>
-                      <td className="p-3 text-sm font-medium">{doc.currency} {Number(doc.total_amount).toFixed(2)}</td>
+                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
+                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
+                      <td className="p-4 text-sm text-muted-foreground">{doc.due_date || "—"}</td>
+                      <td className="p-4"><Badge variant="secondary" className="text-xs font-normal">{doc.category || "—"}</Badge></td>
+                      <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
+                      <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
+                      <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
+                      <td className="p-4 text-sm font-medium text-right tabular-nums">{Number(doc.total_amount).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
