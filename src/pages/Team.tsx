@@ -118,7 +118,7 @@ export default function TeamPage() {
                 {member.status === 'pending' ? (
                   <Badge variant="outline" className="text-xs">Pending</Badge>
                 ) : (
-                  <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">Active</Badge>
+                  <Badge variant="success" className="text-xs">Active</Badge>
                 )}
               </div>
               <p className="w-24 text-xs text-muted-foreground text-right">
