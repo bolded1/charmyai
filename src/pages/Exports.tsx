@@ -58,7 +58,9 @@ export default function ExportsPage() {
     setExporting(true);
 
     try {
-      const records = currency === "all" ? expenses : expenses.filter((e) => e.currency === currency);
+      let records = currency === "all" ? expenses : expenses.filter((e) => e.currency === currency);
+      if (expYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(expYear));
+      if (expMonth !== "all") records = records.filter((r) => r.invoice_date?.slice(5, 7) === expMonth);
 
       const headers = [
         "Date", "Due Date", "Supplier", "Invoice #", "VAT Number",
