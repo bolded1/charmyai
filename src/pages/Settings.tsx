@@ -114,12 +114,22 @@ export default function SettingsPage() {
     root.style.setProperty("--primary", color.hue);
     root.style.setProperty("--ring", color.hue);
     root.style.setProperty("--sidebar-primary", color.hue);
+    root.style.setProperty("--sidebar-ring", color.hue);
+    // Derive hover (darken) and brand-soft (lighten) from accent hue
+    const [h, s, l] = color.hue.split(" ").map((v) => parseFloat(v));
+    root.style.setProperty("--primary-hover", `${h} ${s}% ${Math.max(l - 6, 10)}%`);
+    const isDark = root.classList.contains("dark");
+    root.style.setProperty("--brand-soft", isDark ? `${h} 30% 14%` : `${h} 40% 95%`);
+    localStorage.setItem("accent-color", String(accentColor));
+  }, [accentColor]);
+
+  useEffect(() => {
+    const root = document.documentElement;
     const textHsl = buttonTextColor === "white" ? "0 0% 100%" : "0 0% 0%";
     root.style.setProperty("--primary-foreground", textHsl);
     root.style.setProperty("--sidebar-primary-foreground", textHsl);
-    localStorage.setItem("accent-color", String(accentColor));
     localStorage.setItem("button-text-color", buttonTextColor);
-  }, [accentColor, buttonTextColor]);
+  }, [buttonTextColor]);
 
   const handleSave = () => toast.success("Settings saved!");
 
