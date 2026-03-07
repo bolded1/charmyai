@@ -134,56 +134,75 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Expenses by Category Pie Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Expenses by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {categoryData.length === 0 ? (
+        {/* Expenses by Category Pie Charts - split by currency */}
+        {currencies.length === 0 ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Expenses by Category</CardTitle>
+            </CardHeader>
+            <CardContent>
               <p className="text-sm text-muted-foreground text-center py-12">No expense data yet.</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={3}
-                    dataKey="value"
-                    nameKey="name"
-                    stroke="none"
-                  >
-                    {categoryData.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number) => `€${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--popover))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      color: "hsl(var(--popover-foreground))",
-                      fontSize: "13px",
-                    }}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    iconType="circle"
-                    iconSize={8}
-                    formatter={(value) => (
-                      <span style={{ color: "hsl(var(--foreground))", fontSize: "12px" }}>{value}</span>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className={`grid gap-6 ${currencies.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"}`}>
+            {currencies.map((cur) => {
+              const data = categoryDataByCurrency[cur] || [];
+              const symbol = cur === "EUR" ? "€" : cur === "USD" ? "$" : cur + " ";
+              return (
+                <Card key={cur}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Expenses by Category ({cur})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {data.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-12">No data.</p>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={280}>
+                        <PieChart>
+                          <Pie
+                            data={data}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={3}
+                            dataKey="value"
+                            nameKey="name"
+                            stroke="none"
+                          >
+                            {data.map((_, i) => (
+                              <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value: number) => `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--popover))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                              color: "hsl(var(--popover-foreground))",
+                              fontSize: "13px",
+                            }}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            height={36}
+                            iconType="circle"
+                            iconSize={8}
+                            formatter={(value) => (
+                              <span style={{ color: "hsl(var(--foreground))", fontSize: "12px" }}>{value}</span>
+                            )}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
                     )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
