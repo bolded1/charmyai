@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 export default function ExportsPage() {
   const [format, setFormat] = useState("csv");
   const [currency, setCurrency] = useState("all");
+  const [expMonth, setExpMonth] = useState("all");
+  const [expYear, setExpYear] = useState("all");
   const [exporting, setExporting] = useState(false);
 
   const [incomeFormat, setIncomeFormat] = useState("csv");
