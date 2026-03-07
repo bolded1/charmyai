@@ -82,7 +82,11 @@ export default function ExportsPage() {
       const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
       const ext = format === "csv" ? "csv" : "xls";
       const mime = format === "csv" ? "text/csv" : "application/vnd.ms-excel";
-      const suffix = currency !== "all" ? `-${currency}` : "";
+      const parts: string[] = [];
+      if (currency !== "all") parts.push(currency);
+      if (expYear !== "all") parts.push(expYear);
+      if (expMonth !== "all") parts.push(months.find((m) => m.value === expMonth)?.label || expMonth);
+      const suffix = parts.length > 0 ? `-${parts.join("-")}` : "";
 
       const blob = new Blob([csv], { type: mime });
       const url = URL.createObjectURL(blob);
