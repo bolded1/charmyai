@@ -15,12 +15,10 @@ import { useProfile } from "@/hooks/useProfile";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff } from "lucide-react";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
-import { AccentColorPicker } from "@/components/AccentColorPicker";
-import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 
 /* ── Section Header helper ── */
 function SectionHeader({ title, description }: { title: string; description: string }) {
@@ -61,54 +59,10 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm] = useState({
     first_name: "", last_name: "", phone: "", job_title: "", timezone: "UTC", language: "en",
   });
-  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">(() => {
-    return (localStorage.getItem("theme-mode") as "light" | "dark" | "system") || "system";
-  });
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
   const { data: org } = useOrganization();
   const updateOrg = useUpdateOrganization();
-
-  const [logoLight, setLogoLight] = useState<string | null>(null);
-  const [logoDark, setLogoDark] = useState<string | null>(null);
-  const [appIcon, setAppIcon] = useState<string | null>(null);
-  const brandInitialLoadRef = useRef(true);
-
-  // Load branding from organization on mount / when org loads
-  useEffect(() => {
-    if (org) {
-      setLogoLight(org.logo_light || null);
-      setLogoDark(org.logo_dark || null);
-      setAppIcon(org.app_icon || null);
-      setTimeout(() => { brandInitialLoadRef.current = false; }, 100);
-    }
-  }, [org]);
-
-  // Persist branding to organization table
-  const saveBrandField = useCallback(async (field: "logo_light" | "logo_dark" | "app_icon", value: string | null) => {
-    if (!org) return;
-    try {
-      await updateOrg.mutateAsync({ id: org.id, [field]: value });
-    } catch {
-      toast.error("Failed to save branding.");
-    }
-  }, [org, updateOrg]);
-
-  useEffect(() => {
-    if (brandInitialLoadRef.current) return;
-    saveBrandField("logo_light", logoLight);
-  }, [logoLight, saveBrandField]);
-  useEffect(() => {
-    if (brandInitialLoadRef.current) return;
-    saveBrandField("logo_dark", logoDark);
-  }, [logoDark, saveBrandField]);
-  useEffect(() => {
-    if (brandInitialLoadRef.current) return;
-    saveBrandField("app_icon", appIcon);
-  }, [appIcon, saveBrandField]);
-
-  const [brandColors, setBrandColors] = useState(["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"]);
-  const [brandPreviewMode, setBrandPreviewMode] = useState<"light" | "dark">("light");
 
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
 
@@ -122,15 +76,8 @@ export default function SettingsPage() {
     }
   }, [profile]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (themeMode === "dark") root.classList.add("dark");
-    else if (themeMode === "light") root.classList.remove("dark");
-    else root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
-    localStorage.setItem("theme-mode", themeMode);
-    // Re-apply accent color since dark/light need different derived values
-    applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
-  }, [themeMode, org?.primary_color]);
+
+
 
   // Auto-save profile with debounce
   const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -175,26 +122,8 @@ export default function SettingsPage() {
     catch { toast.error("Failed to upload avatar."); }
   };
 
-  const ALLOWED_FORMATS = ["image/png", "image/jpeg", "image/svg+xml", "image/webp"];
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-  const handleImageUpload = (setter: (url: string | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!ALLOWED_FORMATS.includes(file.type)) {
-      toast.error("Unsupported format. Use PNG, JPG, SVG, or WebP.");
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error("File too large. Maximum size is 2MB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setter(reader.result as string);
-      toast.success("Image updated!");
-    };
-    reader.readAsDataURL(file);
+
   };
 
   const handlePasswordUpdate = () => {
@@ -225,7 +154,6 @@ export default function SettingsPage() {
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="organization">Organization</TabsTrigger>
             <TabsTrigger value="email-import">Email Import</TabsTrigger>
-            <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
@@ -410,170 +338,7 @@ export default function SettingsPage() {
           <EmailImportSettings />
         </TabsContent>
 
-        {/* ════════════════ APPEARANCE ════════════════ */}
-        <TabsContent value="appearance">
-          <div className="space-y-6">
-            {/* Branding - Logos & Icons */}
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Company Branding" description="Upload your logo and app icon. These appear in navigation, invoices, exports, and emails." />
-                
-                {/* Mode toggle for preview context */}
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="flex rounded-lg border border-border overflow-hidden">
-                    <button
-                      onClick={() => setBrandPreviewMode("light")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
-                        brandPreviewMode === "light" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
-                      }`}
-                    >
-                      <Sun className="h-3 w-3" /> Light
-                    </button>
-                    <button
-                      onClick={() => setBrandPreviewMode("dark")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
-                        brandPreviewMode === "dark" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
-                      }`}
-                    >
-                      <Moon className="h-3 w-3" /> Dark
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">Preview and upload assets for each mode</p>
-                </div>
 
-                <div className={`rounded-xl border p-5 space-y-5 transition-colors ${
-                  brandPreviewMode === "dark" ? "bg-[hsl(224,18%,10%)] border-[hsl(224,12%,21%)]" : "bg-muted/20 border-border"
-                }`}>
-                  {/* Light Logo */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <ImageIcon className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
-                      <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,20%,93%)]" : "text-foreground"}`}>
-                        {brandPreviewMode === "light" ? "Light Mode Logo" : "Dark Mode Logo"}
-                      </span>
-                      <span className={`text-[10px] ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/60"}`}>
-                        PNG, SVG, or JPG · Transparent BG recommended · Max 2MB
-                      </span>
-                    </div>
-                    <BrandUploadBox
-                      label={brandPreviewMode === "light" ? "Light Logo" : "Dark Logo"}
-                      hint="Recommended: 240 × 60 px"
-                      image={brandPreviewMode === "light" ? logoLight : (logoDark || logoLight)}
-                      onUpload={handleImageUpload(brandPreviewMode === "light" ? setLogoLight : setLogoDark)}
-                      onRemove={() => (brandPreviewMode === "light" ? setLogoLight : setLogoDark)(null)}
-                      tall
-                      dark={brandPreviewMode === "dark"}
-                      wide
-                    />
-                    {brandPreviewMode === "dark" && !logoDark && logoLight && (
-                      <p className="text-[10px] text-muted-foreground mt-1.5">
-                        ℹ Using light logo as fallback. Upload a white/light version for dark mode.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* App Icon */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Globe className={`h-3.5 w-3.5 ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,50%)]" : "text-muted-foreground"}`} />
-                      <span className={`text-xs font-medium ${brandPreviewMode === "dark" ? "text-[hsl(210,20%,93%)]" : "text-foreground"}`}>App Icon / Favicon</span>
-                      <span className={`text-[10px] ${brandPreviewMode === "dark" ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/60"}`}>
-                        Square · 512 × 512 px recommended
-                      </span>
-                    </div>
-                    <BrandUploadBox
-                      label="App Icon"
-                      hint="Used for browser tab, PWA, and bookmarks"
-                      image={appIcon}
-                      onUpload={handleImageUpload(setAppIcon)}
-                      onRemove={() => setAppIcon(null)}
-                      dark={brandPreviewMode === "dark"}
-                    />
-                  </div>
-                </div>
-
-                {/* Header Preview */}
-                <div className="mt-5">
-                  <Label className="text-xs font-medium text-muted-foreground mb-3 block">Header Preview</Label>
-                  <div className={`rounded-lg border overflow-hidden ${
-                    brandPreviewMode === "dark" ? "bg-[hsl(224,20%,8%)] border-[hsl(224,14%,16%)]" : "bg-card border-border"
-                  }`}>
-                    <div className={`flex items-center gap-3 px-4 py-3 border-b ${
-                      brandPreviewMode === "dark" ? "border-[hsl(224,14%,16%)]" : "border-border"
-                    }`}>
-                      {appIcon ? (
-                        <img src={appIcon} alt="Icon" className="h-6 w-6 rounded" />
-                      ) : (
-                        <div className={`h-6 w-6 rounded flex items-center justify-center text-[8px] font-bold ${
-                          brandPreviewMode === "dark" ? "bg-[hsl(224,14%,18%)] text-[hsl(210,20%,70%)]" : "bg-muted text-muted-foreground"
-                        }`}>C</div>
-                      )}
-                      {(brandPreviewMode === "light" ? logoLight : (logoDark || logoLight)) ? (
-                        <img
-                          src={(brandPreviewMode === "light" ? logoLight : (logoDark || logoLight))!}
-                          alt="Logo"
-                          className="h-6 max-w-[120px] object-contain"
-                        />
-                      ) : (
-                        <span className={`text-sm font-semibold ${
-                          brandPreviewMode === "dark" ? "text-[hsl(210,20%,93%)]" : "text-foreground"
-                        }`}>Charmy</span>
-                      )}
-                      <div className="flex-1" />
-                      <div className={`h-6 w-6 rounded-full ${
-                        brandPreviewMode === "dark" ? "bg-[hsl(224,14%,18%)]" : "bg-muted"
-                      }`} />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Theme */}
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Theme" description="Choose how the interface looks." />
-                <div className="grid grid-cols-3 gap-3">
-                  {([
-                    { value: "light", label: "Light", icon: Sun, desc: "Clean white interface" },
-                    { value: "dark", label: "Dark", icon: Moon, desc: "Easy on the eyes" },
-                    { value: "system", label: "System", icon: Monitor, desc: "Match your OS" },
-                  ] as const).map(({ value, label, icon: Icon, desc }) => (
-                    <button
-                      key={value}
-                      onClick={() => setThemeMode(value)}
-                      className={`flex flex-col items-center gap-1.5 rounded-lg border p-4 transition-all ${
-                        themeMode === value
-                          ? "border-primary bg-brand-soft ring-1 ring-primary/20"
-                          : "border-border hover:bg-accent hover:border-border-strong"
-                      }`}
-                    >
-                      <Icon className={`h-5 w-5 ${themeMode === value ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className={`text-xs font-medium ${themeMode === value ? "text-primary" : "text-foreground"}`}>{label}</span>
-                      <span className="text-[10px] text-muted-foreground">{desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Accent Color */}
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Primary Accent Color" description="Applied to buttons, links, active states, highlights, and charts across the entire app." />
-                <AccentColorPicker
-                  currentColor={org?.primary_color || DEFAULT_ACCENT_COLOR}
-                  onSave={async (hex) => {
-                    if (!org) return;
-                    await updateOrg.mutateAsync({ id: org.id, primary_color: hex });
-                  }}
-                />
-              </CardContent>
-            </Card>
-
-
-          </div>
-        </TabsContent>
 
         {/* ════════════════ SECURITY ════════════════ */}
         <TabsContent value="security">
@@ -718,131 +483,3 @@ export default function SettingsPage() {
   );
 }
 
-/* ── Brand Upload Box Component ── */
-function BrandUploadBox({
-  label, hint, image, onUpload, onRemove, tall, dark, wide,
-}: {
-  label: string; hint: string; image: string | null;
-  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRemove: () => void; tall?: boolean; dark?: boolean; wide?: boolean;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [progress, setProgress] = useState<number | null>(null);
-  const dragCounter = useRef(0);
-
-  const processFile = (file: File) => {
-    // Simulate progress while FileReader loads
-    setProgress(0);
-    let pct = 0;
-    const interval = setInterval(() => {
-      pct = Math.min(pct + Math.random() * 30 + 10, 90);
-      setProgress(Math.round(pct));
-    }, 80);
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      clearInterval(interval);
-      setProgress(100);
-      setTimeout(() => setProgress(null), 400);
-    };
-    reader.readAsDataURL(file);
-
-    // Trigger the actual handler
-    const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
-    onUpload(fakeEvent);
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    dragCounter.current++;
-    if (e.dataTransfer.types.includes("Files")) setIsDragging(true);
-  };
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    dragCounter.current--;
-    if (dragCounter.current === 0) setIsDragging(false);
-  };
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation();
-  };
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    setIsDragging(false);
-    dragCounter.current = 0;
-    const file = e.dataTransfer.files?.[0];
-    if (file) processFile(file);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) processFile(file);
-  };
-
-  return (
-    <div className={`space-y-1.5 ${wide ? "" : ""}`}>
-      <div
-        className={`relative rounded-lg border border-dashed flex items-center justify-center overflow-hidden cursor-pointer group transition-all ${
-          tall ? "h-28" : "h-20"
-        } ${isDragging
-          ? "border-primary bg-primary/5 scale-[1.01] shadow-sm"
-          : dark
-            ? "bg-[hsl(224,18%,10%)] border-[hsl(224,12%,21%)] hover:border-primary/40"
-            : "bg-muted/20 border-border hover:border-primary/40"
-        }`}
-        onClick={() => inputRef.current?.click()}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        {/* Progress bar */}
-        {progress !== null && (
-          <div className="absolute inset-x-0 bottom-0 h-1 bg-muted overflow-hidden z-10">
-            <div
-              className="h-full bg-primary transition-all duration-150 ease-out rounded-full"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
-
-        {image ? (
-          <>
-            <img src={image} alt={label} className="max-h-full max-w-full object-contain p-3" />
-            <button
-              onClick={(e) => { e.stopPropagation(); onRemove(); }}
-              className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-background/80 backdrop-blur border border-border flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </>
-        ) : isDragging ? (
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
-              <Upload className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <span className="text-[11px] font-medium text-primary">Drop to upload</span>
-          </div>
-        ) : progress !== null ? (
-          <div className="flex flex-col items-center gap-2">
-            <Loader2 className={`h-5 w-5 animate-spin ${dark ? "text-primary" : "text-primary"}`} />
-            <span className={`text-[11px] font-medium ${dark ? "text-[hsl(210,20%,75%)]" : "text-muted-foreground"}`}>
-              Uploading… {progress}%
-            </span>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${dark ? "bg-[hsl(224,14%,18%)]" : "bg-muted/60"}`}>
-              <Upload className={`h-3.5 w-3.5 ${dark ? "text-[hsl(215,12%,50%)]" : "text-muted-foreground/50"}`} />
-            </div>
-            <div className="text-center">
-              <span className={`text-[11px] font-medium block ${dark ? "text-[hsl(210,20%,75%)]" : "text-muted-foreground"}`}>Drop file or click to upload</span>
-              <span className={`text-[10px] ${dark ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/50"}`}>{hint}</span>
-            </div>
-          </div>
-        )}
-        <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={handleInputChange} />
-      </div>
-    </div>
-  );
-}
