@@ -1,22 +1,56 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Building2, UserCircle, ArrowRight, ArrowLeft, Camera } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { FileText, Building2, UserCircle, ArrowRight, ArrowLeft, Camera, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 const steps = [
   { title: "Your Profile", icon: UserCircle },
   { title: "Create Organization", icon: Building2 },
-  { title: "Company Information", icon: FileText },
 ];
 
 const companyRoles = ["Owner", "Founder", "Accountant", "Finance Manager", "Admin", "Staff"];
+
+const INDUSTRIES = [
+  { value: "technology", label: "Technology" },
+  { value: "consulting", label: "Consulting" },
+  { value: "retail", label: "Retail & E-commerce" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "construction", label: "Construction" },
+];
+
+const CURRENCIES = [
+  { value: "EUR", label: "EUR — Euro" },
+  { value: "USD", label: "USD — US Dollar" },
+  { value: "GBP", label: "GBP — British Pound" },
+  { value: "CHF", label: "CHF — Swiss Franc" },
+  { value: "CAD", label: "CAD — Canadian Dollar" },
+  { value: "AUD", label: "AUD — Australian Dollar" },
+];
+
+const COUNTRIES = [
+  "Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria","Azerbaijan",
+  "Bahrain","Bangladesh","Belarus","Belgium","Bolivia","Bosnia and Herzegovina","Brazil","Bulgaria","Cambodia",
+  "Cameroon","Canada","Chile","China","Colombia","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic",
+  "Denmark","Dominican Republic","Ecuador","Egypt","El Salvador","Estonia","Ethiopia","Finland","France",
+  "Georgia","Germany","Ghana","Greece","Guatemala","Honduras","Hong Kong","Hungary","Iceland","India",
+  "Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya",
+  "Kuwait","Latvia","Lebanon","Libya","Lithuania","Luxembourg","Malaysia","Malta","Mexico","Moldova",
+  "Monaco","Montenegro","Morocco","Myanmar","Nepal","Netherlands","New Zealand","Nigeria","North Macedonia",
+  "Norway","Oman","Pakistan","Panama","Paraguay","Peru","Philippines","Poland","Portugal","Qatar",
+  "Romania","Russia","Saudi Arabia","Senegal","Serbia","Singapore","Slovakia","Slovenia","South Africa",
+  "South Korea","Spain","Sri Lanka","Sweden","Switzerland","Taiwan","Tanzania","Thailand","Tunisia",
+  "Turkey","UAE","Uganda","Ukraine","United Kingdom","United States","Uruguay","Uzbekistan","Venezuela","Vietnam",
+];
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(0);
@@ -24,6 +58,7 @@ export default function OnboardingPage() {
   const { user } = useAuth();
   const { updateProfile, uploadAvatar } = useProfile();
 
+  // Step 1 state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -31,6 +66,15 @@ export default function OnboardingPage() {
   const [companyRole, setCompanyRole] = useState("Owner");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  // Step 2 state
+  const [orgName, setOrgName] = useState("");
+  const [industry, setIndustry] = useState("technology");
+  const [country, setCountry] = useState("");
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [currency, setCurrency] = useState("EUR");
+  const [vatNumber, setVatNumber] = useState("");
+  const [address, setAddress] = useState("");
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -58,6 +102,13 @@ export default function OnboardingPage() {
         }
       } catch {
         toast.error("Failed to save profile.");
+        return;
+      }
+    }
+
+    if (step === 1) {
+      if (!orgName.trim()) {
+        toast.error("Organization name is required.");
         return;
       }
     }
@@ -140,37 +191,99 @@ export default function OnboardingPage() {
               </div>
             </div>
           )}
+
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Organization Name</Label>
-                <Input placeholder="Acme Corp" />
+                <Label>Organization Name *</Label>
+                <Input placeholder="Acme Corp" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
               </div>
+
+              {/* Industry as tabs */}
               <div className="space-y-2">
                 <Label>Industry</Label>
-                <Input placeholder="Technology, Consulting, etc." />
+                <div className="flex flex-wrap gap-2">
+                  {INDUSTRIES.map((ind) => (
+                    <button
+                      key={ind.value}
+                      type="button"
+                      onClick={() => setIndustry(ind.value)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
+                        industry === ind.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground"
+                      )}
+                    >
+                      {ind.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {step === 2 && (
-            <div className="space-y-4">
+
+              {/* Country with search */}
+              <div className="space-y-2">
+                <Label>Country</Label>
+                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={countryOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {country || "Select country..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search country..." />
+                      <CommandList>
+                        <CommandEmpty>No country found.</CommandEmpty>
+                        <CommandGroup>
+                          {COUNTRIES.map((c) => (
+                            <CommandItem
+                              key={c}
+                              value={c}
+                              onSelect={() => {
+                                setCountry(c);
+                                setCountryOpen(false);
+                              }}
+                            >
+                              <Check className={cn("mr-2 h-4 w-4", country === c ? "opacity-100" : "opacity-0")} />
+                              {c}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Currency & VAT */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Country</Label>
-                  <Input placeholder="Germany" />
+                  <Label>Default Currency</Label>
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Default Currency</Label>
-                  <Input placeholder="EUR" />
+                  <Label>VAT Number</Label>
+                  <Input placeholder="DE123456789" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>VAT Number</Label>
-                <Input placeholder="DE123456789" />
-              </div>
+
               <div className="space-y-2">
                 <Label>Address</Label>
-                <Input placeholder="123 Main St, Berlin" />
+                <Input placeholder="123 Main St, Berlin" value={address} onChange={(e) => setAddress(e.target.value)} />
               </div>
             </div>
           )}
