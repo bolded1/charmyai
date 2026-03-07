@@ -97,7 +97,7 @@ export function DashboardSidebar() {
       <SidebarHeader className="px-3 py-4">
         <Link to="/app" className="flex items-center gap-2.5">
           {brandLogo ? (
-            <img src={brandLogo} alt="Logo" className="h-6 max-w-[6rem] object-contain shrink-0" />
+            <img src={brandLogo} alt="Logo" className="h-8 max-w-[8rem] object-contain shrink-0" />
           ) : (
             <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
               <FileText className="h-3 w-3 text-white" />
