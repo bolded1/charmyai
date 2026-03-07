@@ -12,7 +12,7 @@ import { mockAuditLog } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { ALL_TIMEZONES } from "@/lib/timezones";
@@ -132,18 +132,28 @@ export default function SettingsPage() {
     localStorage.setItem("button-text-color", buttonTextColor);
   }, [buttonTextColor]);
 
-  const handleSave = () => toast.success("Settings saved!");
+  // Auto-save profile with debounce
+  const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadRef = useRef(true);
 
-  const handleProfileSave = async () => {
-    try {
-      await updateProfile.mutateAsync({
-        first_name: profileForm.first_name || null, last_name: profileForm.last_name || null,
-        phone: profileForm.phone || null, job_title: profileForm.job_title || null,
-        timezone: profileForm.timezone, language: profileForm.language,
-      });
-      toast.success("Profile updated!");
-    } catch { toast.error("Failed to update profile."); }
-  };
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (profileTimerRef.current) clearTimeout(profileTimerRef.current);
+    profileTimerRef.current = setTimeout(async () => {
+      try {
+        await updateProfile.mutateAsync({
+          first_name: profileForm.first_name || null, last_name: profileForm.last_name || null,
+          phone: profileForm.phone || null, job_title: profileForm.job_title || null,
+          timezone: profileForm.timezone, language: profileForm.language,
+        });
+        toast.success("Saved");
+      } catch { toast.error("Failed to save."); }
+    }, 800);
+    return () => { if (profileTimerRef.current) clearTimeout(profileTimerRef.current); };
+  }, [profileForm]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -286,11 +296,6 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end">
-                <Button onClick={handleProfileSave} disabled={updateProfile.isPending}>
-                  {updateProfile.isPending ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> Saving...</> : "Save Changes"}
-                </Button>
-              </div>
             </div>
           )}
         </TabsContent>
@@ -366,9 +371,6 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-end">
-              <Button onClick={handleSave}>Save Changes</Button>
-            </div>
           </div>
         </TabsContent>
 
@@ -590,9 +592,6 @@ export default function SettingsPage() {
             </Card>
 
 
-            <div className="flex justify-end">
-              <Button onClick={handleSave}>Save Appearance</Button>
-            </div>
           </div>
         </TabsContent>
 
