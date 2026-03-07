@@ -1,19 +1,20 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Mail, MoreHorizontal } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
 const teamMembers = [
-  { id: '1', name: 'John Doe', email: 'john@company.com', role: 'Owner', status: 'active' },
-  { id: '2', name: 'Jane Smith', email: 'jane@company.com', role: 'Accountant', status: 'active' },
-  { id: '3', name: 'Mike Wilson', email: 'mike@company.com', role: 'Staff', status: 'active' },
-  { id: '4', name: 'Sarah Johnson', email: 'sarah@company.com', role: 'Admin', status: 'pending' },
+  { id: '1', name: 'John Doe', email: 'john@company.com', role: 'Owner', jobTitle: 'CEO', status: 'active', lastActive: '2026-03-07', avatar: null },
+  { id: '2', name: 'Jane Smith', email: 'jane@company.com', role: 'Accountant', jobTitle: 'Senior Accountant', status: 'active', lastActive: '2026-03-07', avatar: null },
+  { id: '3', name: 'Mike Wilson', email: 'mike@company.com', role: 'Staff', jobTitle: 'Finance Analyst', status: 'active', lastActive: '2026-03-06', avatar: null },
+  { id: '4', name: 'Sarah Johnson', email: 'sarah@company.com', role: 'Admin', jobTitle: 'Office Manager', status: 'pending', lastActive: '', avatar: null },
 ];
 
 const roleColors: Record<string, string> = {
@@ -22,6 +23,10 @@ const roleColors: Record<string, string> = {
   Accountant: "bg-secondary text-secondary-foreground",
   Staff: "bg-muted text-muted-foreground",
 };
+
+function getInitials(name: string) {
+  return name.split(' ').map((n) => n[0]).join('').toUpperCase();
+}
 
 export default function TeamPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -33,7 +38,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{teamMembers.length} members</p>
@@ -47,21 +52,32 @@ export default function TeamPage() {
               <DialogTitle>Invite Team Member</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleInvite} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Name</Label>
-                <Input placeholder="Full name" required />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>First Name *</Label>
+                  <Input placeholder="John" required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name *</Label>
+                  <Input placeholder="Smith" required />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>Email *</Label>
                 <Input type="email" placeholder="email@company.com" required />
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
+                <Label>Job Title</Label>
+                <Input placeholder="e.g. Finance Manager" />
+              </div>
+              <div className="space-y-2">
+                <Label>Role *</Label>
                 <Select defaultValue="Staff">
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Admin">Admin</SelectItem>
                     <SelectItem value="Accountant">Accountant</SelectItem>
+                    <SelectItem value="Finance Manager">Finance Manager</SelectItem>
                     <SelectItem value="Staff">Staff</SelectItem>
                   </SelectContent>
                 </Select>
@@ -74,21 +90,40 @@ export default function TeamPage() {
 
       <Card>
         <CardContent className="p-0">
+          {/* Header */}
+          <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-4 py-3 border-b bg-muted/30 text-xs font-medium text-muted-foreground">
+            <span>Member</span>
+            <span>Job Title</span>
+            <span className="w-24 text-center">Role</span>
+            <span className="w-20 text-center">Status</span>
+            <span className="w-24 text-right">Last Active</span>
+          </div>
           {teamMembers.map((member, i) => (
-            <div key={member.id} className={`flex items-center justify-between p-4 ${i < teamMembers.length - 1 ? 'border-b' : ''}`}>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                  {member.name.split(' ').map((n) => n[0]).join('')}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{member.name}</p>
-                  <p className="text-xs text-muted-foreground">{member.email}</p>
+            <div key={member.id} className={`grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 items-center px-4 py-3 ${i < teamMembers.length - 1 ? 'border-b' : ''}`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="h-9 w-9 shrink-0">
+                  {member.avatar && <AvatarImage src={member.avatar} />}
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs">{getInitials(member.name)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{member.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                {member.status === 'pending' && <Badge variant="outline" className="text-xs">Pending</Badge>}
-                <Badge variant="secondary" className={roleColors[member.role]}>{member.role}</Badge>
+              <p className="text-sm text-muted-foreground truncate">{member.jobTitle}</p>
+              <div className="w-24 flex justify-center">
+                <Badge variant="secondary" className={`text-xs ${roleColors[member.role] || ''}`}>{member.role}</Badge>
               </div>
+              <div className="w-20 flex justify-center">
+                {member.status === 'pending' ? (
+                  <Badge variant="outline" className="text-xs">Pending</Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">Active</Badge>
+                )}
+              </div>
+              <p className="w-24 text-xs text-muted-foreground text-right">
+                {member.lastActive ? new Date(member.lastActive).toLocaleDateString() : '—'}
+              </p>
             </div>
           ))}
         </CardContent>
