@@ -59,7 +59,8 @@ export function DashboardSidebar() {
       setBrandLogo(l);
     };
     window.addEventListener("storage", onStorage);
-    return () => { observer.disconnect(); window.removeEventListener("storage", onStorage); };
+    window.addEventListener("brand-logo-changed", onStorage);
+    return () => { observer.disconnect(); window.removeEventListener("storage", onStorage); window.removeEventListener("brand-logo-changed", onStorage); };
   }, []);
 
   const handleSignOut = async () => {

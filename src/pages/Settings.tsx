@@ -82,14 +82,16 @@ export default function SettingsPage() {
   const [logoLight, setLogoLight] = useState<string | null>(() => localStorage.getItem("brand-logo-light"));
   const [logoDark, setLogoDark] = useState<string | null>(() => localStorage.getItem("brand-logo-dark"));
 
-  // Persist logos
+  // Persist logos and notify sidebar
   useEffect(() => {
     if (logoLight) localStorage.setItem("brand-logo-light", logoLight);
     else localStorage.removeItem("brand-logo-light");
+    window.dispatchEvent(new Event("brand-logo-changed"));
   }, [logoLight]);
   useEffect(() => {
     if (logoDark) localStorage.setItem("brand-logo-dark", logoDark);
     else localStorage.removeItem("brand-logo-dark");
+    window.dispatchEvent(new Event("brand-logo-changed"));
   }, [logoDark]);
   const [iconLight, setIconLight] = useState<string | null>(null);
   const [iconDark, setIconDark] = useState<string | null>(null);
