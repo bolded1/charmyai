@@ -99,6 +99,29 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Scan Document - tablet/mobile only */}
+        <Card className="block lg:hidden">
+          <CardContent className="p-0">
+            <div
+              className="border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer border-border hover:border-primary hover:bg-accent"
+              onClick={() => document.getElementById("dashboard-camera-input")?.click()}
+            >
+              <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-semibold mb-1">Scan Document</h3>
+              <p className="text-sm text-muted-foreground mb-2">Use your camera to capture</p>
+              <p className="text-xs text-muted-foreground">Takes a photo and processes it automatically</p>
+              <input
+                id="dashboard-camera-input"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Expenses by Category Pie Chart */}
         <Card>
           <CardHeader className="pb-2">
