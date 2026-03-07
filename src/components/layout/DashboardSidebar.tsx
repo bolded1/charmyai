@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -36,6 +37,32 @@ export function DashboardSidebar() {
   const { settings } = useLayoutSettings();
   const showLabels = settings.showSidebarLabels && !collapsed;
 
+  const [brandLogo, setBrandLogo] = useState<string | null>(null);
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    const logo = localStorage.getItem(isDark ? "brand-logo-dark" : "brand-logo-light")
+      || localStorage.getItem("brand-logo-light");
+    setBrandLogo(logo);
+
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.classList.contains("dark");
+      const l = localStorage.getItem(dark ? "brand-logo-dark" : "brand-logo-light")
+        || localStorage.getItem("brand-logo-light");
+      setBrandLogo(l);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    const onStorage = () => {
+      const dark = document.documentElement.classList.contains("dark");
+      const l = localStorage.getItem(dark ? "brand-logo-dark" : "brand-logo-light")
+        || localStorage.getItem("brand-logo-light");
+      setBrandLogo(l);
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("brand-logo-changed", onStorage);
+    return () => { observer.disconnect(); window.removeEventListener("storage", onStorage); window.removeEventListener("brand-logo-changed", onStorage); };
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
@@ -69,10 +96,14 @@ export function DashboardSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-4">
         <Link to="/app" className="flex items-center gap-2.5">
-          <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
-            <FileText className="h-3 w-3 text-white" />
-          </div>
-          {showLabels && <span className="font-semibold text-[13px] text-sidebar-accent-foreground">DocuLedger</span>}
+          {brandLogo ? (
+            <img src={brandLogo} alt="Logo" className="h-6 max-w-[6rem] object-contain shrink-0" />
+          ) : (
+            <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
+              <FileText className="h-3 w-3 text-white" />
+            </div>
+          )}
+          {showLabels && !brandLogo && <span className="font-semibold text-[13px] text-sidebar-accent-foreground">DocuLedger</span>}
         </Link>
       </SidebarHeader>
       <SidebarContent className="px-1.5 pt-1">
