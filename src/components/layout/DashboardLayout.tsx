@@ -38,6 +38,7 @@ export default function DashboardLayout() {
   const pageTitle = getPageTitle(location.pathname);
   const { user, loading } = useAuth();
   const { profile, displayName, initials } = useProfile();
+  const { data: org } = useOrganization();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { settings: layoutSettings } = useLayoutSettings();
   const isMobile = useIsMobile();
