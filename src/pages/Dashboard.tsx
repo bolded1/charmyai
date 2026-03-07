@@ -69,23 +69,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {stats.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">{s.label}</span>
-                <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center">
-                  <s.icon className="h-4 w-4 text-accent-foreground" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold">{s.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{s.sub}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Upload Area */}
