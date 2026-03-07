@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload as UploadIcon, FileText, CheckCircle2, Loader2, X, AlertCircle } from "lucide-react";
+import { Upload as UploadIcon, FileText, CheckCircle2, Loader2, X, AlertCircle, Camera } from "lucide-react";
 import { useUploadDocument } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
