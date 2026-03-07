@@ -15,12 +15,10 @@ import { useProfile } from "@/hooks/useProfile";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Camera, Loader2, Sun, Moon, Monitor, X, ImageIcon, Shield, Key, Smartphone, Clock, Check, Upload, Palette, Globe, Mail, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff } from "lucide-react";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
-import { AccentColorPicker } from "@/components/AccentColorPicker";
-import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 
 /* ── Section Header helper ── */
 function SectionHeader({ title, description }: { title: string; description: string }) {
