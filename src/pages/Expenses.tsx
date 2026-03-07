@@ -322,7 +322,7 @@ export default function ExpensesPage() {
                 </thead>
                 <tbody>
                   {filtered.map((doc) => (
-                    <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                    <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
                       <td className="p-3">
                         <span className="text-sm font-medium">{doc.supplier_name}</span>
                       </td>
