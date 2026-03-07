@@ -1,15 +1,55 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { useState, useRef } from "react";
-import { Upload, X, Sun, Moon } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Upload, X, Sun, Moon, Check } from "lucide-react";
 
+// ── Auto-save hook with debounce ──
+function useAutoSave<T>(key: string, initialValue: T, delay = 800) {
+  const [value, setValue] = useState<T>(() => {
+    try {
+      const stored = localStorage.getItem(`admin-setting-${key}`);
+      return stored ? JSON.parse(stored) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
+  const [saving, setSaving] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const update = useCallback((newValue: T | ((prev: T) => T)) => {
+    setValue((prev) => {
+      const resolved = typeof newValue === "function" ? (newValue as (prev: T) => T)(prev) : newValue;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setSaving(true);
+      timerRef.current = setTimeout(() => {
+        localStorage.setItem(`admin-setting-${key}`, JSON.stringify(resolved));
+        setSaving(false);
+      }, delay);
+      return resolved;
+    });
+  }, [key, delay]);
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
+  return [value, update, saving] as const;
+}
+
+function SaveIndicator({ saving }: { saving: boolean }) {
+  if (!saving) return null;
+  return (
+    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground animate-fade-in">
+      <Check className="h-3 w-3" /> Saving…
+    </span>
+  );
+}
+
+// ── Logo upload with auto-save via localStorage + event ──
 function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; storageKey: string; icon: React.ElementType }) {
   const [preview, setPreview] = useState<string | null>(() => localStorage.getItem(storageKey));
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,10 +108,44 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
 }
 
 export default function AdminSettingsPage() {
-  const handleSave = () => toast.success("Settings saved!");
+  // AI settings
+  const [aiEnabled, setAiEnabled, aiSaving] = useAutoSave("ai-enabled", true);
+  const [aiModel, setAiModel, aiModelSaving] = useAutoSave("ai-model", "gemini-flash");
+  const [confidenceThreshold, setConfidenceThreshold, confSaving] = useAutoSave("confidence-threshold", "70");
+  const [autoApprove, setAutoApprove, autoAppSaving] = useAutoSave("auto-approve", false);
+
+  // Limits
+  const [maxFileSize, setMaxFileSize, mfsSaving] = useAutoSave("max-file-size", "20");
+  const [maxFiles, setMaxFiles, mfSaving] = useAutoSave("max-files", "10");
+  const [starterDocs, setStarterDocs, sdSaving] = useAutoSave("starter-docs", "50");
+  const [proDocs, setProDocs, pdSaving] = useAutoSave("pro-docs", "500");
+  const [entDocs, setEntDocs, edSaving] = useAutoSave("ent-docs", "999999");
+
+  // Email
+  const [fromName, setFromName, fnSaving] = useAutoSave("from-name", "Charmy");
+  const [fromEmail, setFromEmail, feSaving] = useAutoSave("from-email", "noreply@charmy.ai");
+  const [welcomeEmail, setWelcomeEmail, weSaving] = useAutoSave("welcome-email", true);
+  const [processingNotif, setProcessingNotif, pnSaving] = useAutoSave("processing-notif", true);
+
+  // System
+  const [maintenance, setMaintenance, mtSaving] = useAutoSave("maintenance", false);
+  const [newSignups, setNewSignups, nsSaving] = useAutoSave("new-signups", true);
+  const [debugLog, setDebugLog, dlSaving] = useAutoSave("debug-log", false);
+
+  const anySaving = aiSaving || aiModelSaving || confSaving || autoAppSaving ||
+    mfsSaving || mfSaving || sdSaving || pdSaving || edSaving ||
+    fnSaving || feSaving || weSaving || pnSaving ||
+    mtSaving || nsSaving || dlSaving;
 
   return (
     <div className="max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <div />
+        {anySaving && (
+          <span className="text-[11px] text-muted-foreground animate-pulse">Auto-saving…</span>
+        )}
+      </div>
+
       <Tabs defaultValue="branding" className="space-y-6">
         <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="branding">Branding</TabsTrigger>
@@ -85,7 +159,7 @@ export default function AdminSettingsPage() {
           <Card>
             <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
             <CardContent className="space-y-6">
-              <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, and marketing pages. Provide separate versions for light and dark themes.</p>
+              <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, login, onboarding, and marketing pages. Provide separate versions for light and dark themes.</p>
               <div className="grid sm:grid-cols-2 gap-6">
                 <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
                 <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
@@ -96,18 +170,23 @@ export default function AdminSettingsPage() {
 
         <TabsContent value="ai">
           <Card>
-            <CardHeader><CardTitle className="text-base">AI Processing Configuration</CardTitle></CardHeader>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">AI Processing Configuration</CardTitle>
+                <SaveIndicator saving={aiSaving || aiModelSaving || confSaving || autoAppSaving} />
+              </div>
+            </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">AI Document Processing</p>
                   <p className="text-xs text-muted-foreground">Enable or disable AI extraction globally</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch checked={aiEnabled} onCheckedChange={setAiEnabled} />
               </div>
               <div className="space-y-2">
                 <Label>AI Model</Label>
-                <Select defaultValue="gemini-flash">
+                <Select value={aiModel} onValueChange={setAiModel}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gemini-flash">Gemini 3 Flash (Fast)</SelectItem>
@@ -118,7 +197,7 @@ export default function AdminSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Confidence Threshold (%)</Label>
-                <Input type="number" defaultValue="70" />
+                <Input type="number" value={confidenceThreshold} onChange={(e) => setConfidenceThreshold(e.target.value)} />
                 <p className="text-xs text-muted-foreground">Documents below this threshold will be flagged for manual review</p>
               </div>
               <div className="flex items-center justify-between">
@@ -126,25 +205,29 @@ export default function AdminSettingsPage() {
                   <p className="text-sm font-medium">Auto-Approve High Confidence</p>
                   <p className="text-xs text-muted-foreground">Automatically approve documents with 95%+ confidence</p>
                 </div>
-                <Switch />
+                <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
               </div>
-              <Button onClick={handleSave}>Save Changes</Button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="limits">
           <Card>
-            <CardHeader><CardTitle className="text-base">Default Limits</CardTitle></CardHeader>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Default Limits</CardTitle>
+                <SaveIndicator saving={mfsSaving || mfSaving || sdSaving || pdSaving || edSaving} />
+              </div>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Max File Size (MB)</Label>
-                  <Input type="number" defaultValue="20" />
+                  <Input type="number" value={maxFileSize} onChange={(e) => setMaxFileSize(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Max Files Per Upload</Label>
-                  <Input type="number" defaultValue="10" />
+                  <Input type="number" value={maxFiles} onChange={(e) => setMaxFiles(e.target.value)} />
                 </div>
               </div>
               <div className="space-y-2">
@@ -154,39 +237,42 @@ export default function AdminSettingsPage() {
                     <Badge key={t} variant="secondary">{t}</Badge>
                   ))}
                 </div>
-                <Input placeholder="Add file type..." />
               </div>
               <div className="grid sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Starter Docs/Mo</Label>
-                  <Input type="number" defaultValue="50" />
+                  <Input type="number" value={starterDocs} onChange={(e) => setStarterDocs(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Pro Docs/Mo</Label>
-                  <Input type="number" defaultValue="500" />
+                  <Input type="number" value={proDocs} onChange={(e) => setProDocs(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Enterprise Docs/Mo</Label>
-                  <Input type="number" defaultValue="999999" />
+                  <Input type="number" value={entDocs} onChange={(e) => setEntDocs(e.target.value)} />
                 </div>
               </div>
-              <Button onClick={handleSave}>Save Changes</Button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="email">
           <Card>
-            <CardHeader><CardTitle className="text-base">System Email Settings</CardTitle></CardHeader>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">System Email Settings</CardTitle>
+                <SaveIndicator saving={fnSaving || feSaving || weSaving || pnSaving} />
+              </div>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>From Name</Label>
-                  <Input defaultValue="Charmy" />
+                  <Input value={fromName} onChange={(e) => setFromName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>From Email</Label>
-                  <Input defaultValue="noreply@charmy.ai" />
+                  <Input value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} />
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -194,44 +280,48 @@ export default function AdminSettingsPage() {
                   <p className="text-sm font-medium">Welcome Email</p>
                   <p className="text-xs text-muted-foreground">Send welcome email on signup</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch checked={welcomeEmail} onCheckedChange={setWelcomeEmail} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Processing Notifications</p>
                   <p className="text-xs text-muted-foreground">Notify users when documents are processed</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch checked={processingNotif} onCheckedChange={setProcessingNotif} />
               </div>
-              <Button onClick={handleSave}>Save Changes</Button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="system">
           <Card>
-            <CardHeader><CardTitle className="text-base">System Configuration</CardTitle></CardHeader>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">System Configuration</CardTitle>
+                <SaveIndicator saving={mtSaving || nsSaving || dlSaving} />
+              </div>
+            </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Maintenance Mode</p>
                   <p className="text-xs text-muted-foreground">Disable the platform for all users except admins</p>
                 </div>
-                <Switch />
+                <Switch checked={maintenance} onCheckedChange={setMaintenance} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">New Signups</p>
                   <p className="text-xs text-muted-foreground">Allow new user registrations</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch checked={newSignups} onCheckedChange={setNewSignups} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Debug Logging</p>
                   <p className="text-xs text-muted-foreground">Enable verbose logging for troubleshooting</p>
                 </div>
-                <Switch />
+                <Switch checked={debugLog} onCheckedChange={setDebugLog} />
               </div>
               <div className="space-y-2">
                 <Label>Platform Version</Label>
@@ -240,7 +330,6 @@ export default function AdminSettingsPage() {
                   <Badge variant="secondary" className="bg-primary/10 text-primary">Latest</Badge>
                 </div>
               </div>
-              <Button onClick={handleSave}>Save Changes</Button>
             </CardContent>
           </Card>
         </TabsContent>
