@@ -168,12 +168,19 @@ export default function ExpensesPage() {
     }
   }, [datePreset, dateFrom, dateTo]);
 
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    expenses.forEach((e) => { if (e.category) set.add(e.category); });
+    return Array.from(set).sort();
+  }, [expenses]);
+
   const filtered = useMemo(() => {
     return expenses.filter((d) => {
       const matchesSearch =
         (d.supplier_name || "").toLowerCase().includes(search.toLowerCase()) ||
         (d.invoice_number || "").toLowerCase().includes(search.toLowerCase());
       const matchesCurrency = currencyFilter === "all" || d.currency === currencyFilter;
+      const matchesCategory = categoryFilter === "all" || (d.category || "") === categoryFilter;
       let matchesDate = true;
       if (dateRange.from || dateRange.to) {
         const docDate = d.invoice_date ? new Date(d.invoice_date) : null;
@@ -183,9 +190,9 @@ export default function ExpensesPage() {
           if (dateRange.to && docDate > dateRange.to) matchesDate = false;
         }
       }
-      return matchesSearch && matchesCurrency && matchesDate;
+      return matchesSearch && matchesCurrency && matchesCategory && matchesDate;
     });
-  }, [expenses, search, currencyFilter, dateRange]);
+  }, [expenses, search, currencyFilter, categoryFilter, dateRange]);
 
   const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
   const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
