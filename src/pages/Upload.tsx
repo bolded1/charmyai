@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Upload as UploadIcon, FileText, CheckCircle2, Loader2, X, AlertCircle,
-  Camera, FolderUp, Clock, Eye, ArrowRight,
+  Camera, FolderUp, Clock, Eye, ArrowRight, Mail, Copy, Check,
 } from "lucide-react";
 import { useUploadDocument, useDocuments } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { useOrganization, getImportEmailAddress } from "@/hooks/useOrganization";
+import { toast } from "sonner";
 
 interface UploadingFile {
   id: string;
@@ -24,10 +26,22 @@ interface UploadingFile {
 export default function UploadPage() {
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [copied, setCopied] = useState(false);
   const uploadMutation = useUploadDocument();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: documents = [] } = useDocuments();
+  const { data: orgData } = useOrganization();
+  const importEmailAddress = orgData ? getImportEmailAddress(orgData.import_email_token) : null;
+
+  const copyEmail = () => {
+    if (importEmailAddress) {
+      navigator.clipboard.writeText(importEmailAddress);
+      setCopied(true);
+      toast.success("Email address copied!");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const processing = documents.filter((d) => d.status === "processing");
   const needsReview = documents.filter((d) => d.status === "processed" || d.status === "needs_review");
@@ -183,7 +197,34 @@ export default function UploadPage() {
         </CardContent>
       </Card>
 
-      {/* Active Uploads */}
+      {/* Email Import Address */}
+      {importEmailAddress && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Mail className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold mb-0.5">Import via Email</h3>
+                <p className="text-xs text-muted-foreground mb-2.5">
+                  Forward invoices to this address and they'll be automatically processed.
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-xs bg-muted px-3 py-2 rounded-md font-mono truncate border border-border/50">
+                    {importEmailAddress}
+                  </code>
+                  <Button variant="outline" size="sm" className="shrink-0 h-8 gap-1.5" onClick={copyEmail}>
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {files.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
