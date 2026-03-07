@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +11,13 @@ import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const steps = [
   { title: "Your Profile", icon: UserCircle },
-  { title: "Create Organization", icon: Building2 },
+  { title: "Organization Details", icon: Building2 },
 ];
 
 const companyRoles = ["Owner", "Founder", "Accountant", "Finance Manager", "Admin", "Staff"];
@@ -58,6 +59,8 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { updateProfile, uploadAvatar } = useProfile();
+  const { data: org } = useOrganization();
+  const updateOrg = useUpdateOrganization();
 
   // Step 1 state
   const [firstName, setFirstName] = useState("");
@@ -109,9 +112,14 @@ export default function OnboardingPage() {
     }
 
     if (step === 1) {
-      if (!orgName.trim()) {
-        toast.error("Organization name is required.");
-        return;
+      // Update org name if provided, otherwise keep the default
+      if (orgName.trim() && org) {
+        try {
+          await updateOrg.mutateAsync({ id: org.id, name: orgName.trim() });
+        } catch {
+          toast.error("Failed to update organization.");
+          return;
+        }
       }
     }
 
@@ -203,8 +211,8 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Organization Name *</Label>
-                <Input placeholder="Acme Corp" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+                <Label>Organization Name</Label>
+                <Input placeholder="Acme Corp (optional — can set later)" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
               </div>
 
               {/* Industry as tabs */}
