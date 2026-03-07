@@ -148,7 +148,10 @@ export default function SettingsPage() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground">Email</Label>
-                      <Input value={profile?.email || ""} disabled className="opacity-60" />
+                      <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/50 px-3 text-sm text-muted-foreground cursor-not-allowed">
+                        {profile?.email || "—"}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">This is the email you registered with and cannot be changed.</p>
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground">Phone</Label>
