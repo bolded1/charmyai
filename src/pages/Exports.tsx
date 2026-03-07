@@ -22,11 +22,16 @@ export default function ExportsPage() {
     try {
       const records = currency === "all" ? expenses : expenses.filter((e) => e.currency === currency);
 
-      const headers = ["Date", "Supplier", "Invoice #", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"];
+      const headers = [
+        "Date", "Due Date", "Supplier", "Invoice #", "VAT Number",
+        "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"
+      ];
       const rows = records.map((d: any) => [
         d.invoice_date || "",
+        d.due_date || "",
         d.supplier_name || "",
         d.invoice_number || "",
+        d.vat_number || "",
         d.currency || "EUR",
         Number(d.net_amount || 0).toFixed(2),
         Number(d.vat_amount || 0).toFixed(2),
