@@ -7,6 +7,8 @@ export interface Organization {
   name: string;
   import_email_token: string;
   owner_user_id: string;
+  logo_light: string | null;
+  logo_dark: string | null;
   created_at: string;
   updated_at: string;
 }
