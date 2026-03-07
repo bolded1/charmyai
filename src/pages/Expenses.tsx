@@ -213,7 +213,7 @@ export default function ExpensesPage() {
   const isPdf = fileType === "application/pdf";
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-6xl space-y-6">
       {/* Currency summary cards */}
       <div className="grid sm:grid-cols-2 gap-4">
         <Card>
