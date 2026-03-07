@@ -592,16 +592,44 @@ export default function IncomePage() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1" onClick={closeEdit}>Cancel</Button>
-                <Button size="sm" className="flex-1" onClick={handleSave} disabled={updateIncome.isPending}>
+                <Button size="sm" variant="destructive" onClick={() => setDeleteConfirmId(selectedId)} disabled={deleteIncome.isPending}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                </Button>
+                <div className="flex-1" />
+                <Button size="sm" variant="outline" onClick={closeEdit}>Cancel</Button>
+                <Button size="sm" onClick={handleSave} disabled={updateIncome.isPending}>
                   {updateIncome.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                  Save Changes
+                  Save
                 </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete income record?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently remove this income record. This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (deleteConfirmId) {
+                  await deleteIncome.mutateAsync(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                  closeEdit();
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
