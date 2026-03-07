@@ -1,7 +1,8 @@
 import { Link, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { SaasLogo } from "@/components/SaasLogo";
 
 const navLinks = [
   { label: "Features", to: "/features" },
@@ -18,12 +19,7 @@ export default function MarketingLayout() {
       {/* Header */}
       <header className="sticky top-0 z-50 glass-effect">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-foreground">Charmy</span>
-          </Link>
+          <SaasLogo size="sm" />
 
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((l) => (
@@ -75,12 +71,7 @@ export default function MarketingLayout() {
         <div className="container py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 font-bold text-lg mb-4">
-                <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-primary-foreground" />
-                </div>
-                Charmy
-              </div>
+              <SaasLogo size="sm" asLink={false} className="mb-4" />
               <p className="text-sm text-muted-foreground">AI-powered financial document processing for modern businesses.</p>
             </div>
             <div>
