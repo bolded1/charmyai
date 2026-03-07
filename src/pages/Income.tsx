@@ -438,12 +438,7 @@ export default function IncomePage() {
                 <tbody>
                   {filtered.map((doc) => (
                     <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{doc.customer_name}</span>
-                        </div>
-                      </td>
+                      <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
                       <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                       <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
                       <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
