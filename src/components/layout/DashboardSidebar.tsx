@@ -43,7 +43,7 @@ export function DashboardSidebar() {
 
   const renderGroup = (label: string, items: typeof financeItems) => (
     <SidebarGroup className="py-1">
-      {!collapsed && (
+      {showLabels && (
         <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
           {label}
         </SidebarGroupLabel>
@@ -55,7 +55,7 @@ export function DashboardSidebar() {
               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                 <NavLink to={item.url} end={item.url === '/app'}>
                   <item.icon className="h-3.5 w-3.5" />
-                  {!collapsed && <span>{item.title}</span>}
+                  {showLabels && <span>{item.title}</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
