@@ -5,21 +5,154 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { mockAuditLog } from "@/lib/mock-data";
 import { toast } from "sonner";
+import { useProfile } from "@/hooks/useProfile";
+import { useState, useEffect } from "react";
+import { Camera, Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
+  const { profile, isLoading, updateProfile, uploadAvatar, initials } = useProfile();
+  const [profileForm, setProfileForm] = useState({
+    first_name: "",
+    last_name: "",
+    phone: "",
+    job_title: "",
+    timezone: "UTC",
+    language: "en",
+  });
+
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone: profile.phone || "",
+        job_title: profile.job_title || "",
+        timezone: profile.timezone || "UTC",
+        language: profile.language || "en",
+      });
+    }
+  }, [profile]);
+
   const handleSave = () => toast.success("Settings saved!");
+
+  const handleProfileSave = async () => {
+    try {
+      await updateProfile.mutateAsync({
+        first_name: profileForm.first_name || null,
+        last_name: profileForm.last_name || null,
+        phone: profileForm.phone || null,
+        job_title: profileForm.job_title || null,
+        timezone: profileForm.timezone,
+        language: profileForm.language,
+      });
+      toast.success("Profile updated!");
+    } catch {
+      toast.error("Failed to update profile.");
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await uploadAvatar(file);
+      toast.success("Avatar updated!");
+    } catch {
+      toast.error("Failed to upload avatar.");
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto">
-      <Tabs defaultValue="organization" className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full">
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="profile">My Profile</TabsTrigger>
           <TabsTrigger value="organization">Organization</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="profile">
+          {isLoading ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">My Profile</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <label className="relative cursor-pointer group">
+                    <Avatar className="h-16 w-16">
+                      {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                      <AvatarFallback className="bg-primary text-primary-foreground text-lg">{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera className="h-4 w-4 text-white" />
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  </label>
+                  <div>
+                    <p className="font-medium">{profile?.full_name || profile?.email || "User"}</p>
+                    <p className="text-sm text-muted-foreground">{profile?.email}</p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>First Name</Label>
+                    <Input value={profileForm.first_name} onChange={(e) => setProfileForm((p) => ({ ...p, first_name: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Last Name</Label>
+                    <Input value={profileForm.last_name} onChange={(e) => setProfileForm((p) => ({ ...p, last_name: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input value={profile?.email || ""} disabled className="opacity-60" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Phone</Label>
+                    <Input value={profileForm.phone} onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Job Title</Label>
+                    <Input value={profileForm.job_title} onChange={(e) => setProfileForm((p) => ({ ...p, job_title: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Timezone</Label>
+                    <Select value={profileForm.timezone} onValueChange={(v) => setProfileForm((p) => ({ ...p, timezone: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["UTC", "Europe/Berlin", "Europe/London", "America/New_York", "America/Los_Angeles", "Asia/Tokyo"].map((tz) => (
+                          <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Language</Label>
+                    <Select value={profileForm.language} onValueChange={(v) => setProfileForm((p) => ({ ...p, language: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="de">Deutsch</SelectItem>
+                        <SelectItem value="fr">Français</SelectItem>
+                        <SelectItem value="es">Español</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button onClick={handleProfileSave} disabled={updateProfile.isPending}>
+                  {updateProfile.isPending ? "Saving..." : "Save Profile"}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         <TabsContent value="organization">
           <Card>
