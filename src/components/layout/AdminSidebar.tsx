@@ -18,6 +18,7 @@ const navItems = [
   { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
   { title: "Audit Logs", url: "/admin/audit", icon: ScrollText },
   { title: "System Settings", url: "/admin/settings", icon: Cog },
+  { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
 ];
 

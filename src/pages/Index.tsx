@@ -123,6 +123,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Demo Uploader */}
+      <DemoUploader />
+
       {/* Key Features */}
       <section className="py-20">
         <div className="container max-w-5xl">
