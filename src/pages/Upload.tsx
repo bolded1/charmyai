@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Upload as UploadIcon, FileText, CheckCircle2, Loader2, X, AlertCircle,
-  Camera, FolderUp, Clock, Eye, ArrowRight,
+  Camera, FolderUp, Clock, Eye, ArrowRight, Mail, Copy, Check,
 } from "lucide-react";
 import { useUploadDocument, useDocuments } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { useOrganization } from "@/hooks/useOrganization";
+import { toast } from "sonner";
 
 interface UploadingFile {
   id: string;
