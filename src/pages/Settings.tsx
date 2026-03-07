@@ -756,16 +756,16 @@ function BrandUploadBox({
           </>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${dark ? "bg-[hsl(222,15%,16%)]" : "bg-muted/60"}`}>
-              <Upload className={`h-3.5 w-3.5 ${dark ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/50"}`} />
+            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${dark ? "bg-[hsl(224,14%,18%)]" : "bg-muted/60"}`}>
+              <Upload className={`h-3.5 w-3.5 ${dark ? "text-[hsl(215,12%,50%)]" : "text-muted-foreground/50"}`} />
             </div>
             <div className="text-center">
-              <span className={`text-[11px] font-medium block ${dark ? "text-[hsl(210,25%,70%)]" : "text-muted-foreground"}`}>Drop file or click to upload</span>
-              <span className={`text-[10px] ${dark ? "text-[hsl(215,10%,35%)]" : "text-muted-foreground/50"}`}>{hint}</span>
+              <span className={`text-[11px] font-medium block ${dark ? "text-[hsl(210,20%,75%)]" : "text-muted-foreground"}`}>Drop file or click to upload</span>
+              <span className={`text-[10px] ${dark ? "text-[hsl(215,10%,40%)]" : "text-muted-foreground/50"}`}>{hint}</span>
             </div>
           </div>
         )}
-        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
+        <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={onUpload} />
       </div>
     </div>
   );
