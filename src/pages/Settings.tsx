@@ -67,9 +67,16 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm] = useState({
     first_name: "", last_name: "", phone: "", job_title: "", timezone: "UTC", language: "en",
   });
-  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
-  const [accentColor, setAccentColor] = useState(0);
-  const [buttonTextColor, setButtonTextColor] = useState<"white" | "black">("white");
+  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">(() => {
+    return (localStorage.getItem("theme-mode") as "light" | "dark" | "system") || "system";
+  });
+  const [accentColor, setAccentColor] = useState(() => {
+    const stored = localStorage.getItem("accent-color");
+    return stored ? parseInt(stored, 10) : 0;
+  });
+  const [buttonTextColor, setButtonTextColor] = useState<"white" | "black">(() => {
+    return (localStorage.getItem("button-text-color") as "white" | "black") || "white";
+  });
   const { settings: layoutSettings, update: updateLayout } = useLayoutSettings();
 
   const [logoLight, setLogoLight] = useState<string | null>(null);
