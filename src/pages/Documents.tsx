@@ -143,8 +143,12 @@ export default function DocumentsPage() {
               title={doc.file_name}
               subtitle={doc.supplier_name || doc.customer_name || undefined}
               badge={{
-                label: statusLabel(doc.status),
-                className: statusColors[doc.status] || "",
+                label: (doc as any).potential_duplicate_of
+                  ? "⚠ Duplicate"
+                  : statusLabel(doc.status),
+                className: (doc as any).potential_duplicate_of
+                  ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
+                  : statusColors[doc.status] || "",
               }}
               fields={[
                 { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
