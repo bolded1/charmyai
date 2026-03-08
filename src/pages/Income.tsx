@@ -592,6 +592,27 @@ export default function IncomePage() {
       </Card>
 
 
+      {/* Bulk Download Bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-card border border-border shadow-lg rounded-xl px-5 py-3"
+          >
+            <span className="text-sm font-medium">{selectedIds.size} selected</span>
+            <Button size="sm" onClick={handleBulkDownload} disabled={downloading}>
+              {downloading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Archive className="h-4 w-4 mr-1" />}
+              Download ZIP
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              <X className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Edit Dialog */}
       <Dialog open={!!selectedId} onOpenChange={() => closeEdit()}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
