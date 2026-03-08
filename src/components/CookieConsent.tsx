@@ -126,8 +126,8 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
                       className="p-5"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="h-10 w-10 rounded-xl icon-bg-amber flex items-center justify-center shrink-0">
-                          <Cookie className="h-5 w-5 text-amber" />
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <Cookie className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-bold mb-1">We use cookies</h3>
