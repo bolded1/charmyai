@@ -77,7 +77,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
               }`}
               layout
             >
-              <div className="bg-card rounded-2xl shadow-xl border border-border flex flex-col max-h-[calc(100vh-2rem)] md:max-h-[80vh]">
+              <div className="bg-card rounded-2xl shadow-xl border border-border flex flex-col max-h-[calc(100vh-2rem)] md:max-h-[80vh] overflow-hidden">
                 <AnimatePresence mode="wait">
                   {showPrivacy ? (
                     <motion.div
@@ -86,7 +86,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.15 }}
-                      className="flex flex-col min-h-0"
+                      className="flex flex-col min-h-0 max-h-[calc(100vh-2rem)] md:max-h-[80vh] overflow-hidden"
                     >
                       <div className="flex items-center gap-3 p-4 border-b border-border shrink-0">
                         <button
@@ -97,7 +97,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
                         </button>
                         <h3 className="text-sm font-bold">{c.title}</h3>
                       </div>
-                      <ScrollArea className="flex-1 min-h-0">
+                      <div className="flex-1 min-h-0 overflow-y-auto">
                         <div className="p-4 space-y-4">
                           <p className="text-xs text-muted-foreground leading-relaxed">{c.intro}</p>
                           {sections.map((section, i) => (
