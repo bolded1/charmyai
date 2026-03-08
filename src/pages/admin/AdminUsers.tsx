@@ -44,6 +44,19 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [selected, setSelected] = useState<UserRow | null>(null);
   const isMobile = useIsMobile();
+  const { startImpersonating } = useImpersonation();
+  const navigate = useNavigate();
+
+  const handleActAsUser = (user: UserRow) => {
+    const name = displayName(user);
+    startImpersonating({
+      userId: user.user_id,
+      email: user.email || "Unknown",
+      displayName: name,
+    });
+    toast.success(`Now viewing as ${name}`);
+    navigate("/app");
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
