@@ -67,6 +67,14 @@ serve(async (req) => {
       });
     }
 
+    // Verify the caller owns this document
+    if (doc.user_id !== userId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Download file from storage
     const { data: fileData, error: fileErr } = await supabase.storage
       .from("documents")
