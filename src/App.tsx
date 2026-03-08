@@ -46,6 +46,7 @@ import AdminSupport from "./pages/admin/AdminSupport";
 import AdminCMS from "./pages/admin/AdminCMS";
 import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminBroadcast from "./pages/admin/AdminBroadcast";
+import AdminRevenue from "./pages/admin/AdminRevenue";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
