@@ -119,18 +119,23 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
           <CardContent className="space-y-6 pt-0">
             {/* Currency selector */}
             {currencies.length > 1 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Currency:</span>
-                <Select value={activeCurrency} onValueChange={setSelectedCurrency}>
-                  <SelectTrigger className="w-[140px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencies.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 mt-1">
+                <div className="flex items-center justify-center h-8 w-8 rounded-md bg-primary/10">
+                  <span className="text-sm font-semibold text-primary">$</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-medium text-muted-foreground">Display Currency</span>
+                  <Select value={activeCurrency} onValueChange={setSelectedCurrency}>
+                    <SelectTrigger className="w-[150px] h-8 text-sm font-medium border-none shadow-none p-0 focus:ring-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencies.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             )}
 
