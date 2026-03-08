@@ -11,8 +11,7 @@ import { useBrandLogo } from "@/hooks/useBrandLogo";
 export default function SignupPage() {
   const brandLogo = useBrandLogo();
   const [loading, setLoading] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailSent, setEmailSent] = useState(false);
