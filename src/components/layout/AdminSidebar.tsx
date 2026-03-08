@@ -109,10 +109,10 @@ export function AdminSidebar() {
               <SidebarGroup key={group.label} className="py-0.5">
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-semibold border border-primary/15 shadow-sm" : "text-foreground/80 hover:text-foreground hover:bg-muted/60"}>
+                    <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-bold border border-primary/15 shadow-sm" : "text-foreground hover:text-foreground hover:bg-muted/60"}>
                       <NavLink to={item.url} end={item.url === "/admin"} className="rounded-xl">
                         <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                        {!collapsed && <span className="text-sm font-medium">{item.title}</span>}
+                        {!collapsed && <span className="text-[13.5px] font-semibold">{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
