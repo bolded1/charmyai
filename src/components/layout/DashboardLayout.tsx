@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings } from "lucide-react";
+import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -45,6 +46,7 @@ export default function DashboardLayout() {
   const { settings: layoutSettings } = useLayoutSettings();
   const isMobile = useIsMobile();
   const brandLogo = useBrandLogo();
+  const { impersonating, stopImpersonating } = useImpersonation();
 
   // Apply org accent color
   useEffect(() => {
@@ -166,6 +168,24 @@ export default function DashboardLayout() {
         </div>
 
         <div className="flex-1 flex flex-col min-w-0">
+          {/* Impersonation banner */}
+          {impersonating && (
+            <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 flex items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <ShieldAlert className="h-4 w-4 shrink-0" />
+                <span className="font-medium">Viewing as:</span>
+                <span>{impersonating.displayName} ({impersonating.email})</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 h-7"
+                onClick={() => { stopImpersonating(); navigate("/admin/users"); }}
+              >
+                <X className="h-3.5 w-3.5 mr-1" /> Stop
+              </Button>
+            </div>
+          )}
           {/* Mobile header with logo + profile */}
           <header className="h-12 border-b border-border bg-card flex items-center justify-between px-3 shrink-0 md:hidden">
             <div className="flex items-center gap-2">

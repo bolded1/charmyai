@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 
 export interface DocumentRecord {
   id: string;
@@ -32,13 +33,18 @@ export interface DocumentRecord {
 }
 
 export function useDocuments(statusFilter?: string) {
+  const { effectiveUserId } = useImpersonation();
   return useQuery({
-    queryKey: ["documents", statusFilter],
+    queryKey: ["documents", statusFilter, effectiveUserId],
     queryFn: async () => {
       let query = supabase
         .from("documents")
         .select("*")
         .order("created_at", { ascending: false });
+
+      if (effectiveUserId) {
+        query = query.eq("user_id", effectiveUserId);
+      }
 
       if (statusFilter && statusFilter !== "all") {
         query = query.eq("status", statusFilter);
@@ -183,13 +189,18 @@ export function useApproveDocument() {
 }
 
 export function useExpenseRecords() {
+  const { effectiveUserId } = useImpersonation();
   return useQuery({
-    queryKey: ["expenses"],
+    queryKey: ["expenses", effectiveUserId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("expense_records")
         .select("*")
         .order("invoice_date", { ascending: false });
+      if (effectiveUserId) {
+        query = query.eq("user_id", effectiveUserId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -197,13 +208,18 @@ export function useExpenseRecords() {
 }
 
 export function useIncomeRecords() {
+  const { effectiveUserId } = useImpersonation();
   return useQuery({
-    queryKey: ["income"],
+    queryKey: ["income", effectiveUserId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("income_records")
         .select("*")
         .order("invoice_date", { ascending: false });
+      if (effectiveUserId) {
+        query = query.eq("user_id", effectiveUserId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },

@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye, Loader2, RefreshCw } from "lucide-react";
+import { Search, Eye, Loader2, RefreshCw, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
+import { useNavigate } from "react-router-dom";
 
 interface UserRow {
   id: string;
@@ -42,6 +44,19 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [selected, setSelected] = useState<UserRow | null>(null);
   const isMobile = useIsMobile();
+  const { startImpersonating } = useImpersonation();
+  const navigate = useNavigate();
+
+  const handleActAsUser = (user: UserRow) => {
+    const name = displayName(user);
+    startImpersonating({
+      userId: user.user_id,
+      email: user.email || "Unknown",
+      displayName: name,
+    });
+    toast.success(`Now viewing as ${name}`);
+    navigate("/app");
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -164,9 +179,14 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">{new Date(user.created_at).toLocaleDateString()}</td>
                       <td className="p-3">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(user)}>
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(user)} title="View details">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleActAsUser(user)} title="Act as this user">
+                            <UserCheck className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -181,19 +201,28 @@ export default function AdminUsersPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>User Details</DialogTitle></DialogHeader>
           {selected && (
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { l: "Name", v: displayName(selected) },
-                { l: "Email", v: selected.email || "—" },
-                { l: "Role", v: (selected.role || "user").replace("_", " ") },
-                { l: "Status", v: selected.status || "active" },
-                { l: "Created", v: new Date(selected.created_at).toLocaleString() },
-              ].map((f) => (
-                <div key={f.l}>
-                  <p className="text-xs text-muted-foreground">{f.l}</p>
-                  <p className="text-sm font-medium capitalize">{f.v}</p>
-                </div>
-              ))}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { l: "Name", v: displayName(selected) },
+                  { l: "Email", v: selected.email || "—" },
+                  { l: "Role", v: (selected.role || "user").replace("_", " ") },
+                  { l: "Status", v: selected.status || "active" },
+                  { l: "Created", v: new Date(selected.created_at).toLocaleString() },
+                ].map((f) => (
+                  <div key={f.l}>
+                    <p className="text-xs text-muted-foreground">{f.l}</p>
+                    <p className="text-sm font-medium capitalize">{f.v}</p>
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => { setSelected(null); handleActAsUser(selected); }}
+              >
+                <UserCheck className="h-3.5 w-3.5 mr-2" /> Act as this user
+              </Button>
             </div>
           )}
         </DialogContent>
