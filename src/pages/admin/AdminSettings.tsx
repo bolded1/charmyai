@@ -22,21 +22,32 @@ function useAutoSave<T>(key: string, initialValue: T, delay = 800) {
   });
   const [saving, setSaving] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const pendingValueRef = useRef<T | null>(null);
 
   const update = useCallback((newValue: T | ((prev: T) => T)) => {
     setValue((prev) => {
       const resolved = typeof newValue === "function" ? (newValue as (prev: T) => T)(prev) : newValue;
       if (timerRef.current) clearTimeout(timerRef.current);
+      pendingValueRef.current = resolved;
       setSaving(true);
       timerRef.current = setTimeout(() => {
         localStorage.setItem(`admin-setting-${key}`, JSON.stringify(resolved));
+        pendingValueRef.current = null;
         setSaving(false);
       }, delay);
       return resolved;
     });
   }, [key, delay]);
 
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+  // Flush pending save on unmount instead of discarding it
+  useEffect(() => () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      if (pendingValueRef.current !== null) {
+        localStorage.setItem(`admin-setting-${key}`, JSON.stringify(pendingValueRef.current));
+      }
+    }
+  }, [key]);
 
   return [value, update, saving] as const;
 }
