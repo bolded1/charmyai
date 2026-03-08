@@ -239,7 +239,7 @@ export default function DashboardLayout() {
                     className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
                       isActive
                         ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
+                        : "border-transparent text-foreground/70 hover:text-foreground"
                     }`}
                   >
                     <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
