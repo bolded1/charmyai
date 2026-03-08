@@ -538,8 +538,7 @@ export default function IncomePage() {
           )}
         </CardContent>
       </Card>
-        </CardContent>
-      </Card>
+
 
       {/* Edit Dialog */}
       <Dialog open={!!selectedId} onOpenChange={() => closeEdit()}>
