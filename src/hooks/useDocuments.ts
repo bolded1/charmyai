@@ -33,13 +33,18 @@ export interface DocumentRecord {
 }
 
 export function useDocuments(statusFilter?: string) {
+  const { effectiveUserId } = useImpersonation();
   return useQuery({
-    queryKey: ["documents", statusFilter],
+    queryKey: ["documents", statusFilter, effectiveUserId],
     queryFn: async () => {
       let query = supabase
         .from("documents")
         .select("*")
         .order("created_at", { ascending: false });
+
+      if (effectiveUserId) {
+        query = query.eq("user_id", effectiveUserId);
+      }
 
       if (statusFilter && statusFilter !== "all") {
         query = query.eq("status", statusFilter);
