@@ -76,7 +76,7 @@ export default function AdminDashboard() {
                       fontSize: "12px",
                     }}
                   />
-                  <Bar dataKey="processed" fill="hsl(160, 84%, 36%)" radius={[4, 4, 0, 0]} name="Processed" />
+                  <Bar dataKey="processed" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} name="Processed" />
                   <Bar dataKey="failed" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} name="Failed" />
                 </BarChart>
               </ResponsiveContainer>
