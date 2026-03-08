@@ -216,7 +216,7 @@ export default function ExpensesPage() {
     });
   };
 
-  const selectableCount = filtered.filter((e) => e.document_id).length;
+  const selectableCount = filtered.length;
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length && filtered.length > 0) {
