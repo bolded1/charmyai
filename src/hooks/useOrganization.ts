@@ -11,6 +11,7 @@ export interface Organization {
   logo_dark: string | null;
   app_icon: string | null;
   primary_color: string | null;
+  default_currency: string;
   created_at: string;
   updated_at: string;
 }
