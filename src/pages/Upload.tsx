@@ -127,7 +127,8 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Scan Document - shown first on mobile/tablet, compact */}
+      {/* Onboarding Checklist */}
+      <OnboardingChecklist />
       <Card className="overflow-hidden border-0 lg:hidden">
         <CardContent className="p-0">
           <div
