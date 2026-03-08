@@ -27,9 +27,16 @@ function getInitials(name: string) {
 export default function TeamPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { data: limits } = usePlatformLimits();
+  const maxUsers = limits?.proUsersLimit ?? 10;
+  const atLimit = teamMembers.length >= maxUsers;
 
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
+    if (atLimit) {
+      toast.error(`Team member limit (${maxUsers}) reached. Contact your admin to increase it.`);
+      return;
+    }
     setDialogOpen(false);
     toast.success("Invitation sent!");
   };
