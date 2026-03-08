@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 import { TrendingUp, Trophy, BarChart3, CalendarRange } from "lucide-react";
 
@@ -17,124 +16,45 @@ interface CategoryAnalyticsProps {
   isLoading: boolean;
 }
 
-export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnalyticsProps) {
-  // Get unique currencies
-  const currencies = useMemo(() => {
-    const set = new Set(expenses.map((e) => e.currency));
-    return Array.from(set).sort();
-  }, [expenses]);
+interface CurrencyData {
+  currency: string;
+  categoryTotals: { name: string; total: number }[];
+  totalSpend: number;
+  recordCount: number;
+  monthlyTrends: { data: Record<string, any>[]; categories: string[] };
+}
 
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("");
+const COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+];
 
-  // Auto-select first currency
-  const activeCurrency = selectedCurrency || currencies[0] || "EUR";
-
-  // Filter expenses by selected currency
-  const filtered = useMemo(
-    () => expenses.filter((e) => e.currency === activeCurrency),
-    [expenses, activeCurrency]
-  );
-
-  // ── Spending by category ──
-  const categoryTotals = useMemo(() => {
-    const map = new Map<string, number>();
-    filtered.forEach((e) => {
-      const cat = e.category || "Uncategorized";
-      map.set(cat, (map.get(cat) || 0) + Number(e.total_amount));
-    });
-    return Array.from(map.entries())
-      .map(([name, total]) => ({ name, total: Math.round(total * 100) / 100 }))
-      .sort((a, b) => b.total - a.total);
-  }, [filtered]);
-
-  // ── Top categories ──
-  const topCategories = categoryTotals.slice(0, 5);
-
-  // ── Monthly trends (last 6 months) ──
-  const monthlyTrends = useMemo(() => {
-    const now = new Date();
-    const months: { key: string; label: string }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({
-        key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
-        label: d.toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
-      });
-    }
-
-    // Get top 4 categories for trend lines
-    const topCats = categoryTotals.slice(0, 4).map((c) => c.name);
-
-    const data = months.map(({ key, label }) => {
-      const row: Record<string, any> = { month: label };
-      topCats.forEach((cat) => {
-        row[cat] = 0;
-      });
-      filtered.forEach((e) => {
-        const eMonth = e.invoice_date?.slice(0, 7);
-        if (eMonth === key) {
-          const cat = e.category || "Uncategorized";
-          if (topCats.includes(cat)) {
-            row[cat] = Math.round(((row[cat] || 0) + Number(e.total_amount)) * 100) / 100;
-          }
-        }
-      });
-      return row;
-    });
-
-    return { data, categories: topCats };
-  }, [filtered, categoryTotals]);
-
-  const COLORS = [
-    "hsl(var(--primary))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
-  ];
-
-  const totalSpend = categoryTotals.reduce((sum, c) => sum + c.total, 0);
-
-  if (isLoading) return null;
-  if (expenses.length === 0) return null;
+function CurrencySection({ data }: { data: CurrencyData }) {
+  const { currency, categoryTotals, totalSpend, recordCount, monthlyTrends } = data;
+  const topCategories = categoryTotals.slice(0, 2);
 
   const formatAmount = (v: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
+    new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 
   return (
-    <div className="space-y-6">
-      {/* Currency selector */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          Category Analytics
-        </h2>
-        {currencies.length > 1 && (
-          <Select value={activeCurrency} onValueChange={setSelectedCurrency}>
-            <SelectTrigger className="w-[100px] h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {currencies.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        {currencies.length === 1 && (
-          <Badge variant="secondary" className="text-xs">{activeCurrency}</Badge>
-        )}
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className="text-sm font-semibold">{currency}</Badge>
+        <span className="text-xs text-muted-foreground">{recordCount} records</span>
       </div>
 
-      {/* Top categories + Total */}
+      {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-5 pb-4">
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Spend</p>
             <p className="text-2xl font-bold mt-1">{formatAmount(totalSpend)}</p>
-            <p className="text-xs text-muted-foreground mt-1">{categoryTotals.length} categories · {filtered.length} records</p>
+            <p className="text-xs text-muted-foreground mt-1">{categoryTotals.length} categories</p>
           </CardContent>
         </Card>
-        {topCategories.slice(0, 2).map((cat, i) => (
+        {topCategories.map((cat, i) => (
           <Card key={cat.name}>
             <CardContent className="pt-5 pb-4">
               <div className="flex items-center gap-1.5">
@@ -148,13 +68,13 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
         ))}
       </div>
 
-      {/* Spending by category bar chart */}
+      {/* Bar chart */}
       {categoryTotals.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              Spending by Category ({activeCurrency})
+              Spending by Category ({currency})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -182,7 +102,7 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <CalendarRange className="h-4 w-4 text-muted-foreground" />
-              Monthly Trends – Top Categories ({activeCurrency})
+              Monthly Trends – Top Categories ({currency})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -197,14 +117,7 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
                   />
                   {monthlyTrends.categories.map((cat, i) => (
-                    <Line
-                      key={cat}
-                      type="monotone"
-                      dataKey={cat}
-                      stroke={COLORS[i % COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ r: 3, fill: COLORS[i % COLORS.length] }}
-                    />
+                    <Line key={cat} type="monotone" dataKey={cat} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3, fill: COLORS[i % COLORS.length] }} />
                   ))}
                 </LineChart>
               </ResponsiveContainer>
@@ -220,6 +133,74 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnalyticsProps) {
+  const currencyDataList = useMemo(() => {
+    const currencies = Array.from(new Set(expenses.map((e) => e.currency))).sort();
+
+    return currencies.map((currency): CurrencyData => {
+      const filtered = expenses.filter((e) => e.currency === currency);
+
+      // Category totals
+      const map = new Map<string, number>();
+      filtered.forEach((e) => {
+        const cat = e.category || "Uncategorized";
+        map.set(cat, (map.get(cat) || 0) + Number(e.total_amount));
+      });
+      const categoryTotals = Array.from(map.entries())
+        .map(([name, total]) => ({ name, total: Math.round(total * 100) / 100 }))
+        .sort((a, b) => b.total - a.total);
+
+      // Monthly trends
+      const now = new Date();
+      const months: { key: string; label: string }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+          label: d.toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
+        });
+      }
+      const topCats = categoryTotals.slice(0, 4).map((c) => c.name);
+      const data = months.map(({ key, label }) => {
+        const row: Record<string, any> = { month: label };
+        topCats.forEach((cat) => { row[cat] = 0; });
+        filtered.forEach((e) => {
+          const eMonth = e.invoice_date?.slice(0, 7);
+          if (eMonth === key) {
+            const cat = e.category || "Uncategorized";
+            if (topCats.includes(cat)) {
+              row[cat] = Math.round(((row[cat] || 0) + Number(e.total_amount)) * 100) / 100;
+            }
+          }
+        });
+        return row;
+      });
+
+      return {
+        currency,
+        categoryTotals,
+        totalSpend: categoryTotals.reduce((sum, c) => sum + c.total, 0),
+        recordCount: filtered.length,
+        monthlyTrends: { data, categories: topCats },
+      };
+    });
+  }, [expenses]);
+
+  if (isLoading || expenses.length === 0) return null;
+
+  return (
+    <div className="space-y-8">
+      <h2 className="text-lg font-semibold flex items-center gap-2">
+        <BarChart3 className="h-5 w-5 text-primary" />
+        Category Analytics
+      </h2>
+      {currencyDataList.map((data) => (
+        <CurrencySection key={data.currency} data={data} />
+      ))}
     </div>
   );
 }
