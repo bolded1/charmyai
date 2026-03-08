@@ -111,11 +111,22 @@ export default function UploadPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    Array.from(e.dataTransfer.files).forEach(processFile);
+    const dropped = Array.from(e.dataTransfer.files);
+    if (dropped.length > maxFilesPerUpload) {
+      toast.error(`You can upload up to ${maxFilesPerUpload} files at a time.`);
+      return;
+    }
+    dropped.forEach(processFile);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    Array.from(e.target.files || []).forEach(processFile);
+    const selected = Array.from(e.target.files || []);
+    if (selected.length > maxFilesPerUpload) {
+      toast.error(`You can upload up to ${maxFilesPerUpload} files at a time.`);
+      e.target.value = "";
+      return;
+    }
+    selected.forEach(processFile);
     e.target.value = "";
   };
 
