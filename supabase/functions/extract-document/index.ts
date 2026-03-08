@@ -203,6 +203,28 @@ serve(async (req) => {
       ? "needs_review"
       : "needs_review"; // Always needs_review so user can approve
 
+    // Check for duplicate documents
+    let potentialDuplicateOf: string | null = null;
+    try {
+      const { data: dupResult } = await supabase.rpc("find_duplicate_document", {
+        _user_id: doc.user_id,
+        _document_id: documentId,
+        _supplier_name: extracted.supplier_name || null,
+        _invoice_number: extracted.invoice_number || null,
+        _invoice_date: extracted.invoice_date || null,
+        _total_amount: extracted.total_amount || null,
+      });
+      if (dupResult) {
+        potentialDuplicateOf = dupResult;
+        validationErrors.push({
+          field: "duplicate",
+          message: "This document appears to be a duplicate of an existing record.",
+        });
+      }
+    } catch (dupErr) {
+      console.error("Duplicate check error:", dupErr);
+    }
+
     // Update document with extracted data
     const { error: updateErr } = await supabase
       .from("documents")
@@ -224,6 +246,7 @@ serve(async (req) => {
         extracted_data: extracted,
         confidence_score: extracted.confidence || null,
         validation_errors: validationErrors.length > 0 ? validationErrors : null,
+        potential_duplicate_of: potentialDuplicateOf,
         updated_at: new Date().toISOString(),
       })
       .eq("id", documentId);
