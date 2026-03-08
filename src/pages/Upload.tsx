@@ -170,17 +170,20 @@ export default function UploadPage() {
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            className={`relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl ${
-              dragOver
+            className={`relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
+              dragOver || uploadPressed
                 ? "border-primary bg-primary/5 scale-[1.01] shadow-glow"
                 : "border-border hover:border-primary/50 hover:bg-accent/30"
             }`}
             onClick={() => document.getElementById("file-input")?.click()}
+            onPointerDown={() => setUploadPressed(true)}
+            onPointerUp={() => setUploadPressed(false)}
+            onPointerLeave={() => setUploadPressed(false)}
           >
             <div className={`mx-auto mb-3 md:mb-5 h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center transition-all ${
-              dragOver ? "bg-hero-gradient shadow-lg shadow-primary/25" : "icon-bg-blue"
+              dragOver || uploadPressed ? "bg-hero-gradient shadow-lg shadow-primary/25" : "icon-bg-blue"
             }`}>
-              <UploadIcon className={`h-6 w-6 md:h-7 md:w-7 transition-colors ${dragOver ? "text-white" : "text-primary"}`} />
+              <UploadIcon className={`h-6 w-6 md:h-7 md:w-7 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-primary"}`} />
             </div>
             <h2 className="text-base md:text-xl font-bold text-foreground mb-1 md:mb-2">
               {dragOver ? "Drop files to upload" : "Upload Documents"}
