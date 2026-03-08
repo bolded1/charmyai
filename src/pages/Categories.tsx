@@ -13,6 +13,9 @@ import {
   useAutoCategoryRules, useCreateAutoCategoryRule, useDeleteAutoCategoryRule,
 } from "@/hooks/useAutoCategoryRules";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import CategoryAnalytics from "@/components/CategoryAnalytics";
 
 export default function CategoriesPage() {
   const [newName, setNewName] = useState("");
@@ -34,6 +37,21 @@ export default function CategoriesPage() {
   const { data: rules = [], isLoading: rulesLoading } = useAutoCategoryRules();
   const createRule = useCreateAutoCategoryRule();
   const deleteRule = useDeleteAutoCategoryRule();
+
+  // Fetch expense records for analytics
+  const { data: expenses = [], isLoading: expensesLoading } = useQuery({
+    queryKey: ["expense-records-for-analytics", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("expense_records")
+        .select("category, currency, total_amount, invoice_date")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -88,7 +106,9 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl">
+      {/* Analytics Section */}
+      <CategoryAnalytics expenses={expenses} isLoading={expensesLoading} />
       {/* Categories Card */}
       <Card>
         <CardHeader>
