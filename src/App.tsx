@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
+import AcceptableUse from "./pages/AcceptableUse";
 
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
