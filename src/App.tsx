@@ -57,6 +57,7 @@ import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags";
 import AdminSystemHealth from "./pages/admin/AdminSystemHealth";
 import AdminScheduledJobs from "./pages/admin/AdminScheduledJobs";
+import AdminAISettings from "./pages/admin/AdminAISettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
