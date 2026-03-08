@@ -39,15 +39,9 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Apply persisted theme on startup (accent color loads from org after auth)
-function applyPersistedSettings() {
-  const root = document.documentElement;
-  const theme = localStorage.getItem("theme-mode") || "system";
-  if (theme === "dark") root.classList.add("dark");
-  else if (theme === "light") root.classList.remove("dark");
-  else root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
-}
-applyPersistedSettings();
+// Ensure dark mode class is never applied
+document.documentElement.classList.remove("dark");
+localStorage.removeItem("theme-mode");
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

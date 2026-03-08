@@ -15,7 +15,7 @@ function normalizeLogoValue(value: unknown): string | null {
 }
 
 /**
- * Returns the appropriate brand logo:
+ * Returns the appropriate brand logo (always light mode).
  * - Inside /app/*: prefers organization logo, falls back to admin (demo_settings) logo
  * - Outside /app/*: uses admin (demo_settings) logo only
  */
@@ -23,7 +23,6 @@ export function useBrandLogo() {
   const [logo, setLogo] = useState<string | null>(null);
   let pathname = "/";
   try {
-    // useLocation only works inside Router, guard for safety
     pathname = useLocation().pathname;
   } catch {
     // outside router context, default to marketing
@@ -34,62 +33,35 @@ export function useBrandLogo() {
     let mounted = true;
 
     const fetchLogo = async () => {
-      const isDark = document.documentElement.classList.contains("dark");
-
       // If inside app, try org logo first
       if (isApp) {
         const { data: orgData } = await supabase
           .from("organizations")
-          .select("logo_light, logo_dark")
+          .select("logo_light")
           .limit(1)
           .maybeSingle();
 
-        if (orgData) {
-          const orgLogo = isDark ? (orgData.logo_dark || orgData.logo_light) : orgData.logo_light;
-          if (orgLogo) {
-            if (mounted) setLogo(orgLogo);
-            return;
-          }
+        if (orgData?.logo_light) {
+          if (mounted) setLogo(orgData.logo_light);
+          return;
         }
       }
 
-      // Fall back to admin logo from demo_settings
-      const key = isDark ? "brand-logo-dark" : "brand-logo-light";
+      // Fall back to admin logo from demo_settings (always light)
       const { data } = await supabase
         .from("demo_settings")
         .select("value")
-        .eq("key", key)
+        .eq("key", "brand-logo-light")
         .maybeSingle();
 
-      const current = normalizeLogoValue(data?.value);
-      if (current) {
-        if (mounted) setLogo(current);
-        return;
-      }
-
-      // Dark mode fallback to light admin logo
-      if (isDark) {
-        const { data: fallback } = await supabase
-          .from("demo_settings")
-          .select("value")
-          .eq("key", "brand-logo-light")
-          .maybeSingle();
-
-        if (mounted) setLogo(normalizeLogoValue(fallback?.value));
-      } else if (mounted) {
-        setLogo(null);
-      }
+      if (mounted) setLogo(normalizeLogoValue(data?.value));
     };
 
     fetchLogo();
-
-    const observer = new MutationObserver(fetchLogo);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     window.addEventListener("brand-logo-changed", fetchLogo);
 
     return () => {
       mounted = false;
-      observer.disconnect();
       window.removeEventListener("brand-logo-changed", fetchLogo);
     };
   }, [isApp]);
