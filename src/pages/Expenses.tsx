@@ -8,7 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2, Archive } from "lucide-react";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -16,8 +17,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
+import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
