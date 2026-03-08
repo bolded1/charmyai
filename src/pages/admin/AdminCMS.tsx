@@ -16,6 +16,7 @@ import {
   contactDefaults,
   privacyDefaults,
   termsDefaults,
+  acceptableUseDefaults,
 } from "@/lib/cms-defaults";
 
 type PageConfig = {
@@ -166,6 +167,20 @@ const pages: PageConfig[] = [
       { key: "lastUpdated", label: "Last Updated Text", type: "input" },
       { key: "intro", label: "Introduction", type: "textarea" },
       ...Array.from({ length: 12 }, (_, i) => [
+        { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
+        { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
+      ]).flat(),
+    ],
+  },
+  {
+    slug: "acceptable-use",
+    label: "Acceptable Use",
+    defaults: acceptableUseDefaults,
+    fields: [
+      { key: "title", label: "Page Title", type: "input" },
+      { key: "lastUpdated", label: "Last Updated Text", type: "input" },
+      { key: "intro", label: "Introduction", type: "textarea" },
+      ...Array.from({ length: 10 }, (_, i) => [
         { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
         { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
       ]).flat(),
