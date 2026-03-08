@@ -91,21 +91,44 @@ export const pricingDefaults = {
 };
 
 export const aboutDefaults = {
-  title: "About Charmy",
+  heroBadge: "Our Story",
+  title: "We're on a mission to",
+  titleGradient: "eliminate manual data entry",
   intro:
-    "We're building the future of financial document processing. Our mission is to eliminate manual data entry from accounting workflows forever.",
+    "Charmy automates financial document processing so accountants and finance teams can focus on what actually matters — not typing numbers from invoices.",
+  storyLabel: "Our Story",
+  storyTitle: "Born from a",
+  storyTitleGradient: "simple observation",
   paragraph1:
     "Charmy was born from a simple observation: accountants and finance teams spend an enormous amount of time manually entering data from invoices and receipts into spreadsheets and accounting systems.",
   paragraph2:
     "With advances in AI and document understanding, we saw an opportunity to automate this entire workflow. Upload a document, let AI extract the data, review it, and export it — all in minutes instead of hours.",
   paragraph3:
     "Our team combines expertise in AI, fintech, and accounting to build a platform that truly understands financial documents and the needs of accounting professionals.",
+  valuesLabel: "What Drives Us",
+  valuesTitle: "Built on",
+  valuesTitleGradient: "core values",
+  value1Title: "Accuracy First",
+  value1Desc: "We obsess over extraction accuracy because your financial data must be correct. Every decimal matters.",
+  value2Title: "Simplicity by Design",
+  value2Desc: "Complex technology, simple experience. We believe powerful tools should feel effortless to use.",
+  value3Title: "Security & Privacy",
+  value3Desc: "GDPR-compliant from day one. Your documents are encrypted, protected, and never shared.",
+  value4Title: "Speed & Efficiency",
+  value4Desc: "Process documents in seconds, not hours. We're building the fastest invoice processing platform.",
   stat1Value: "10,000+",
   stat1Label: "Documents Processed",
   stat2Value: "500+",
   stat2Label: "Active Users",
   stat3Value: "95%",
   stat3Label: "Extraction Accuracy",
+  stat4Value: "< 30s",
+  stat4Label: "Average Processing",
+  ctaTitle: "Ready to",
+  ctaTitleGradient: "save hours every week?",
+  ctaSubtitle: "Start processing documents in minutes with a 7-day free trial.",
+  ctaButton: "Start Free Trial",
+  ctaSecondaryButton: "Contact Us",
 };
 
 export const contactDefaults = {
