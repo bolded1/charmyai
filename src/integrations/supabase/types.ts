@@ -83,6 +83,42 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_history: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          link: string | null
+          role_filter: string | null
+          segment: string
+          sent_by: string | null
+          sent_count: number
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          role_filter?: string | null
+          segment?: string
+          sent_by?: string | null
+          sent_count?: number
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          role_filter?: string | null
+          segment?: string
+          sent_by?: string | null
+          sent_count?: number
+          title?: string
+        }
+        Relationships: []
+      }
       demo_settings: {
         Row: {
           id: string

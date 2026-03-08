@@ -111,6 +111,17 @@ Deno.serve(async (req) => {
       inserted += batch.length;
     }
 
+    // Log to broadcast_history
+    await adminClient.from("broadcast_history").insert({
+      title,
+      body,
+      link: link || null,
+      segment: segment || "all",
+      role_filter: role_filter || null,
+      sent_count: inserted,
+      sent_by: caller.id,
+    });
+
     return new Response(JSON.stringify({ success: true, sent: inserted }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
