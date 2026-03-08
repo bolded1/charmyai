@@ -13,7 +13,7 @@ export function usePageContent<T extends Record<string, any>>(
         .select("content")
         .eq("page_slug", pageSlug)
         .maybeSingle();
-      return data?.content as Partial<T> | null;
+      return (data?.content as Partial<T>) ?? null;
     },
     staleTime: 60_000,
   });
