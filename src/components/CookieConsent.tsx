@@ -74,7 +74,8 @@ export function CookieConsent() {
               </button>
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
