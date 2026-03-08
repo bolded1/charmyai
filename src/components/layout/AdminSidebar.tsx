@@ -3,6 +3,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
+import { NavLink } from "@/components/NavLink";
 import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3,
