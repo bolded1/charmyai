@@ -65,7 +65,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-              <span className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</span>
+              <button type="button" onClick={() => { setForgotOpen(true); setForgotSent(false); setForgotEmail(email); }} className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</button>
             </div>
             <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 rounded-xl" />
           </div>
