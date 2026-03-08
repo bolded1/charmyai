@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye, FileText, Loader2, RefreshCw } from "lucide-react";
+import { Search, Eye, FileText, Loader2, RefreshCw, Download, Image as ImageIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
@@ -18,12 +18,17 @@ const statusColors: Record<string, string> = {
   failed: "bg-destructive/10 text-destructive",
 };
 
+const isImageType = (type: string) => type?.startsWith("image/");
+const isPdfType = (type: string) => type === "application/pdf";
+
 export default function AdminDocumentsPage() {
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<any | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [fileLoading, setFileLoading] = useState(false);
   const isMobile = useIsMobile();
 
   const fetchDocs = async () => {
@@ -44,6 +49,33 @@ export default function AdminDocumentsPage() {
   };
 
   useEffect(() => { fetchDocs(); }, []);
+
+  const getSignedUrl = async (filePath: string) => {
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(filePath, 3600);
+    if (error) return null;
+    return data.signedUrl;
+  };
+
+  const openPreview = async (doc: any) => {
+    setSelected(doc);
+    setFileUrl(null);
+    setFileLoading(true);
+    const url = await getSignedUrl(doc.file_path);
+    setFileUrl(url);
+    setFileLoading(false);
+  };
+
+  const handleDownload = async (doc: any) => {
+    const url = await getSignedUrl(doc.file_path);
+    if (!url) { toast.error("Could not generate download link"); return; }
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = doc.file_name;
+    a.target = "_blank";
+    a.click();
+  };
 
   const filtered = docs.filter((d) => {
     const matchesSearch = d.file_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -98,7 +130,7 @@ export default function AdminDocumentsPage() {
                 { label: "Date", value: new Date(doc.created_at).toLocaleDateString() },
                 { label: "Confidence", value: doc.confidence_score ? `${Math.round(doc.confidence_score * 100)}%` : "—" },
               ]}
-              onClick={() => setSelected(doc)}
+              onClick={() => openPreview(doc)}
             />
           ))}
         </div>
@@ -123,7 +155,11 @@ export default function AdminDocumentsPage() {
                     <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="p-3">
                         <div className="flex items-center gap-2">
-                          <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                          {isImageType(doc.file_type) ? (
+                            <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                          ) : (
+                            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
                           <span className="text-sm truncate max-w-[200px]">{doc.file_name}</span>
                         </div>
                       </td>
@@ -139,9 +175,14 @@ export default function AdminDocumentsPage() {
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</td>
                       <td className="p-3">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(doc)}>
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openPreview(doc)} title="Preview">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownload(doc)} title="Download">
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -153,10 +194,46 @@ export default function AdminDocumentsPage() {
       )}
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Document Details</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between gap-2">
+              <span>Document Details</span>
+              {selected && (
+                <Button variant="outline" size="sm" onClick={() => handleDownload(selected)}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> Download
+                </Button>
+              )}
+            </DialogTitle>
+          </DialogHeader>
           {selected && (
             <div className="space-y-4">
+              {/* File preview */}
+              <div className="rounded-lg border bg-muted/30 overflow-hidden">
+                {fileLoading ? (
+                  <div className="flex items-center justify-center py-16">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : fileUrl ? (
+                  isImageType(selected.file_type) ? (
+                    <img src={fileUrl} alt={selected.file_name} className="max-h-[400px] w-full object-contain" />
+                  ) : isPdfType(selected.file_type) ? (
+                    <iframe src={fileUrl} className="w-full h-[400px]" title={selected.file_name} />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                      <FileText className="h-10 w-10 mb-2 opacity-40" />
+                      <p className="text-sm">Preview not available for this file type</p>
+                      <Button variant="outline" size="sm" className="mt-3" onClick={() => handleDownload(selected)}>
+                        <Download className="h-3.5 w-3.5 mr-1" /> Download to view
+                      </Button>
+                    </div>
+                  )
+                ) : (
+                  <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+                    Could not load file preview
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { l: "File Name", v: selected.file_name },
