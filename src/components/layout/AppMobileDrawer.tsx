@@ -1,7 +1,7 @@
 import { NavLink } from "@/components/NavLink";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import {
-  Upload, FileText, Receipt, TrendingUp,
+  Upload, FileText, Receipt, TrendingUp, Tag,
   Download, UsersRound, Settings,
 } from "lucide-react";
 
@@ -10,6 +10,7 @@ const navItems = [
   { title: "Documents", url: "/app/documents", icon: FileText },
   { title: "Expenses", url: "/app/expenses", icon: Receipt },
   { title: "Income", url: "/app/income", icon: TrendingUp },
+  { title: "Categories", url: "/app/categories", icon: Tag },
   { title: "Exports", url: "/app/exports", icon: Download },
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
