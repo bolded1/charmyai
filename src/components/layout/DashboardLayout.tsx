@@ -46,6 +46,7 @@ export default function DashboardLayout() {
   const { settings: layoutSettings } = useLayoutSettings();
   const isMobile = useIsMobile();
   const brandLogo = useBrandLogo();
+  const { impersonating, stopImpersonating } = useImpersonation();
 
   // Apply org accent color
   useEffect(() => {
