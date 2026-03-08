@@ -28,6 +28,7 @@ const INDUSTRIES = [
   { value: "retail", label: "Retail & E-commerce" },
   { value: "healthcare", label: "Healthcare" },
   { value: "construction", label: "Construction" },
+  { value: "other", label: "Other" },
 ];
 
 const CURRENCIES = [
@@ -79,6 +80,7 @@ export default function OnboardingPage() {
   // Step 2 state
   const [orgName, setOrgName] = useState("");
   const [industry, setIndustry] = useState("technology");
+  const [customIndustry, setCustomIndustry] = useState("");
   const [country, setCountry] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
   const [currency, setCurrency] = useState("EUR");
@@ -242,6 +244,14 @@ export default function OnboardingPage() {
                     </button>
                   ))}
                 </div>
+                {industry === "other" && (
+                  <Input
+                    placeholder="Enter your industry..."
+                    value={customIndustry}
+                    onChange={(e) => setCustomIndustry(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
               </div>
 
               {/* Country with search */}
