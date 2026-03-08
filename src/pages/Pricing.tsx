@@ -1,52 +1,108 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
-
-const plans = [
-  {
-    name: "Starter", price: "Free", period: "forever",
-    desc: "Perfect for freelancers and individuals getting started.",
-    features: ["50 documents per month", "AI data extraction", "CSV export", "1 user", "Email support"],
-  },
-  {
-    name: "Professional", price: "€49", period: "/month",
-    desc: "For growing teams that need more power and collaboration.",
-    features: ["500 documents per month", "Everything in Starter", "Team access (up to 5 users)", "Priority email support", "Contacts management", "Custom export templates"],
-    popular: true,
-  },
-  {
-    name: "Enterprise", price: "€149", period: "/month",
-    desc: "For large organizations with high-volume processing needs.",
-    features: ["Unlimited documents", "Everything in Professional", "Unlimited users", "API access", "Dedicated account manager", "Custom integrations", "SSO authentication"],
-  },
-];
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { useSubscription, STRIPE_PLANS } from "@/hooks/useSubscription";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function PricingPage() {
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const { user } = useAuth();
+  const subscription = user ? useSubscription() : null;
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const handleCheckout = async (priceId: string) => {
+    if (!user) {
+      navigate("/signup");
+      return;
+    }
+    setCheckoutLoading(priceId);
+    try {
+      await subscription?.startCheckout(priceId);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start checkout");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
+
+  const proPriceId = billingCycle === "yearly"
+    ? STRIPE_PLANS.pro.price_id_yearly
+    : STRIPE_PLANS.pro.price_id_monthly;
+
+  const plans = [
+    {
+      key: "free",
+      name: "Free",
+      price: "€0",
+      period: "/forever",
+      desc: "Perfect for freelancers and individuals getting started.",
+      features: STRIPE_PLANS.free.features,
+      current: subscription?.plan === "free",
+    },
+    {
+      key: "pro",
+      name: "Pro",
+      price: billingCycle === "monthly" ? "€9.99" : "€99",
+      period: billingCycle === "monthly" ? "/month" : "/year",
+      desc: "For growing teams that need more power and collaboration.",
+      features: STRIPE_PLANS.pro.features,
+      popular: true,
+      current: subscription?.plan === "pro",
+      savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
+    },
+  ];
+
   return (
     <div>
       <section className="py-20">
         <div className="container max-w-4xl text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-lg text-muted-foreground">Start free. Upgrade as you grow. No hidden fees.</p>
+          <p className="text-lg text-muted-foreground mb-8">Start free. Upgrade as you grow. 14-day free trial on all paid plans.</p>
+
+          {/* Billing toggle */}
+          <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-muted">
+            <button
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle("yearly")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+            >
+              Yearly <span className="text-xs text-primary ml-1">Save 17%</span>
+            </button>
+          </div>
         </div>
       </section>
 
       <section className="pb-20">
-        <div className="container max-w-5xl">
-          <div className="grid md:grid-cols-3 gap-8">
+        <div className="container max-w-3xl">
+          <div className="grid md:grid-cols-2 gap-8">
             {plans.map((plan) => (
-              <div key={plan.name} className={`surface-elevated rounded-xl p-8 flex flex-col ${plan.popular ? 'ring-2 ring-primary relative' : ''}`}>
+              <div key={plan.key} className={`surface-elevated rounded-xl p-8 flex flex-col ${plan.popular ? 'ring-2 ring-primary relative' : ''}`}>
                 {plan.popular && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
                     Most Popular
                   </span>
                 )}
+                {plan.current && (
+                  <span className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
+                    Your Plan
+                  </span>
+                )}
                 <h3 className="text-xl font-bold">{plan.name}</h3>
                 <p className="text-sm text-muted-foreground mt-1 mb-6">{plan.desc}</p>
-                <div className="mb-6">
+                <div className="mb-1">
                   <span className="text-4xl font-bold">{plan.price}</span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
+                {plan.savings && <p className="text-xs text-primary font-medium mb-5">{plan.savings}</p>}
+                {!plan.savings && <div className="mb-5" />}
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm">
@@ -54,9 +110,33 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full" variant={plan.popular ? "default" : "outline"} asChild>
-                  <Link to="/signup">{plan.price === "Free" ? "Get Started Free" : "Start Free Trial"}</Link>
-                </Button>
+                {plan.key === "free" ? (
+                  plan.current ? (
+                    <Button className="w-full" variant="outline" disabled>Current Plan</Button>
+                  ) : (
+                    <Button className="w-full" variant="outline" asChild>
+                      <Link to="/signup">Get Started Free</Link>
+                    </Button>
+                  )
+                ) : (
+                  plan.current ? (
+                    <Button className="w-full" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
+                      Manage Subscription
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      disabled={!!checkoutLoading}
+                      onClick={() => proPriceId && handleCheckout(proPriceId)}
+                    >
+                      {checkoutLoading === proPriceId ? (
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</>
+                      ) : (
+                        "Start 14-Day Free Trial"
+                      )}
+                    </Button>
+                  )
+                )}
               </div>
             ))}
           </div>
@@ -68,10 +148,11 @@ export default function PricingPage() {
           <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
           <div className="text-left space-y-6 mt-8">
             {[
-              { q: "Can I switch plans later?", a: "Yes, you can upgrade or downgrade at any time. Changes take effect immediately." },
+              { q: "Can I switch plans later?", a: "Yes, you can upgrade or downgrade at any time. Changes take effect immediately with prorated billing." },
+              { q: "What happens after my trial ends?", a: "After your 14-day trial, you'll be charged automatically. You can cancel anytime before the trial ends." },
               { q: "What document formats are supported?", a: "We support PDF, PNG, and JPG files. Scanned documents work too." },
               { q: "Is my data secure?", a: "Yes. All documents are encrypted at rest and in transit. We never share your data." },
-              { q: "Do I need a credit card to start?", a: "No. The Starter plan is completely free with no credit card required." },
+              { q: "Do I need a credit card for the trial?", a: "Yes, a credit card is required to start the trial, but you won't be charged until the trial period ends." },
             ].map((faq) => (
               <div key={faq.q} className="surface-elevated rounded-lg p-5">
                 <h4 className="font-semibold text-sm">{faq.q}</h4>
