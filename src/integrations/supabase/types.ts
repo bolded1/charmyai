@@ -305,6 +305,68 @@ export type Database = {
           },
         ]
       }
+      email_campaigns: {
+        Row: {
+          created_at: string
+          error_count: number
+          errors: Json | null
+          html_body: string
+          id: string
+          recipient_count: number
+          role_filter: string | null
+          scheduled_at: string | null
+          segment: string
+          sent_at: string | null
+          sent_by: string | null
+          sent_count: number
+          status: string
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_count?: number
+          errors?: Json | null
+          html_body: string
+          id?: string
+          recipient_count?: number
+          role_filter?: string | null
+          scheduled_at?: string | null
+          segment?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_count?: number
+          errors?: Json | null
+          html_body?: string
+          id?: string
+          recipient_count?: number
+          role_filter?: string | null
+          scheduled_at?: string | null
+          segment?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_imports: {
         Row: {
           attachment_count: number
@@ -360,6 +422,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_templates: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          html_body: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          html_body?: string
+          id?: string
+          name: string
+          subject?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          html_body?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       expense_categories: {
         Row: {
