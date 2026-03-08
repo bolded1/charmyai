@@ -520,13 +520,11 @@ export default function IncomePage() {
                   </div>
                   {group.records.map((doc) => (
                     <div key={doc.id} className="flex items-start gap-2">
-                      {doc.document_id && (
-                        <Checkbox
-                          checked={selectedIds.has(doc.id)}
-                          onCheckedChange={() => toggleSelect(doc.id)}
-                          className="mt-4 shrink-0"
-                        />
-                      )}
+                      <Checkbox
+                        checked={selectedIds.has(doc.id)}
+                        onCheckedChange={() => toggleSelect(doc.id)}
+                        className="mt-4 shrink-0"
+                      />
                       <div className="flex-1">
                         <MobileRecordCard
                           title={doc.customer_name}
