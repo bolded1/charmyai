@@ -46,7 +46,7 @@ export function DashboardSidebar() {
   const renderGroup = (label: string, items: typeof financeItems) => (
     <SidebarGroup className="py-1">
       {showLabels && (
-        <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
+        <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
           {label}
         </SidebarGroupLabel>
       )}
@@ -56,8 +56,8 @@ export function DashboardSidebar() {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                 <NavLink to={item.url} end={item.url === '/app'}>
-                  <item.icon className="h-3.5 w-3.5" />
-                  {showLabels && <span>{item.title}</span>}
+                  <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  {showLabels && <span className="font-medium">{item.title}</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -90,8 +90,8 @@ export function DashboardSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-muted hover:text-sidebar-accent-foreground">
-              <LogOut className="h-3.5 w-3.5" />
-              {showLabels && <span>Sign Out</span>}
+              <LogOut className="h-3.5 w-3.5" strokeWidth={2.5} />
+              {showLabels && <span className="font-medium">Sign Out</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
