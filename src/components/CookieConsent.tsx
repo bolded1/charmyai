@@ -75,12 +75,6 @@ export function CookieConsent() {
                   </Button>
                 </div>
               </div>
-              <button
-                onClick={handleReject}
-                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-              >
-                <X className="h-4 w-4" />
-              </button>
             </div>
           </div>
           </motion.div>
