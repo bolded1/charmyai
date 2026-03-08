@@ -66,11 +66,13 @@ export default function AdminDocumentStatsPage() {
     const processing = docs.filter(d => d.status === "processing").length;
 
     const withConfidence = docs.filter(d => d.confidence_score != null);
+    // Normalize confidence to 0-1 range (DB may store as 0-100 or 0-1)
+    const normalizeConf = (score: number) => score > 1 ? score / 100 : score;
     const avgConfidence = withConfidence.length > 0
-      ? withConfidence.reduce((sum, d) => sum + (d.confidence_score || 0), 0) / withConfidence.length
+      ? withConfidence.reduce((sum, d) => sum + normalizeConf(d.confidence_score || 0), 0) / withConfidence.length
       : 0;
-    const lowConfidence = withConfidence.filter(d => (d.confidence_score || 0) < 0.7).length;
-    const highConfidence = withConfidence.filter(d => (d.confidence_score || 0) >= 0.9).length;
+    const lowConfidence = withConfidence.filter(d => normalizeConf(d.confidence_score || 0) < 0.7).length;
+    const highConfidence = withConfidence.filter(d => normalizeConf(d.confidence_score || 0) >= 0.9).length;
 
     const successRate = total > 0 ? (successful / total) * 100 : 0;
     const failureRate = total > 0 ? (failed / total) * 100 : 0;
