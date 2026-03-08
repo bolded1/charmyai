@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +9,7 @@ import { toast } from "sonner";
 import { useExpenseRecords, useIncomeRecords } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { exportToPdf } from "@/lib/pdf-export";
 
 const MONTHS = [
   { value: "01", label: "Jan", full: "January" },
@@ -71,14 +71,36 @@ function MonthMultiSelect({ selected, onChange }: { selected: string[]; onChange
   );
 }
 
+function buildSubtitle(year: string, months: string[], currency: string) {
+  const parts: string[] = [];
+  if (year !== "all") parts.push(year);
+  if (months.length > 0) parts.push(months.map((v) => MONTHS.find((m) => m.value === v)?.full).join(", "));
+  if (currency !== "all") parts.push(currency);
+  return parts.length > 0 ? parts.join(" · ") : "All records";
+}
+
+function buildFileName(type: string, year: string, months: string[], currency: string) {
+  const parts: string[] = [type];
+  if (currency !== "all") parts.push(currency);
+  if (year !== "all") parts.push(year);
+  if (months.length > 0) parts.push(months.map((v) => MONTHS.find((m) => m.value === v)?.label).join("-"));
+  return `charmy-${parts.join("-")}-export.pdf`;
+}
+
+function fmt(n: number | null | undefined) {
+  return Number(n || 0).toFixed(2);
+}
+
+function fmtCurrency(n: number, cur: string) {
+  return `${cur === "USD" ? "$" : "€"}${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 export default function ExportsPage() {
-  const [format, setFormat] = useState("csv");
   const [currency, setCurrency] = useState("all");
   const [expMonths, setExpMonths] = useState<string[]>([]);
   const [expYear, setExpYear] = useState("all");
   const [exporting, setExporting] = useState(false);
 
-  const [incomeFormat, setIncomeFormat] = useState("csv");
   const [incomeCurrency, setIncomeCurrency] = useState("all");
   const [incomeMonths, setIncomeMonths] = useState<string[]>([]);
   const [incomeYear, setIncomeYear] = useState("all");
@@ -109,41 +131,38 @@ export default function ExportsPage() {
       if (expYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(expYear));
       if (expMonths.length > 0) records = records.filter((r) => expMonths.includes(r.invoice_date?.slice(5, 7) || ""));
 
-      const headers = [
-        "Date", "Due Date", "Supplier", "Invoice #", "VAT Number",
-        "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"
-      ];
-      const rows = records.map((d: any) => [
+      const headers = ["Date", "Due Date", "Supplier", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"];
+      const rows = records.map((d) => [
         d.invoice_date || "", d.due_date || "", d.supplier_name || "", d.invoice_number || "",
-        d.vat_number || "", d.currency || "EUR", Number(d.net_amount || 0).toFixed(2),
-        Number(d.vat_amount || 0).toFixed(2), Number(d.total_amount || 0).toFixed(2), d.category || "",
+        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "",
       ]);
 
-      const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
-      const ext = format === "csv" ? "csv" : "xls";
-      const mime = format === "csv" ? "text/csv" : "application/vnd.ms-excel";
-      const parts: string[] = [];
-      if (currency !== "all") parts.push(currency);
-      if (expYear !== "all") parts.push(expYear);
-      if (expMonths.length > 0) parts.push(expMonths.map((v) => MONTHS.find((m) => m.value === v)?.label).join("-"));
-      const suffix = parts.length > 0 ? `-${parts.join("-")}` : "";
+      const totalNet = records.reduce((s, r) => s + Number(r.net_amount || 0), 0);
+      const totalVat = records.reduce((s, r) => s + Number(r.vat_amount || 0), 0);
+      const totalAmount = records.reduce((s, r) => s + Number(r.total_amount || 0), 0);
+      const cur = currency !== "all" ? currency : "EUR";
 
-      const blob = new Blob([csv], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `charmy-expenses${suffix}-export.${ext}`;
-      a.click();
-      URL.revokeObjectURL(url);
+      exportToPdf({
+        title: "Expense Report",
+        subtitle: buildSubtitle(expYear, expMonths, currency),
+        headers,
+        rows,
+        fileName: buildFileName("expenses", expYear, expMonths, currency),
+        summaryRows: [
+          { label: "NET TOTAL", value: fmtCurrency(totalNet, cur) },
+          { label: "VAT TOTAL", value: fmtCurrency(totalVat, cur) },
+          { label: "GRAND TOTAL", value: fmtCurrency(totalAmount, cur) },
+        ],
+      });
 
       await supabase.from("export_history").insert({
-        user_id: user.id, export_name: `Expenses${suffix} Export`, export_type: "expenses", format, row_count: rows.length,
+        user_id: user.id, export_name: `Expenses Export`, export_type: "expenses", format: "pdf", row_count: rows.length,
       });
 
       const docIds = records.filter((e) => e.document_id).map((e) => e.document_id);
       if (docIds.length > 0) await supabase.from("documents").update({ status: "exported" }).in("id", docIds);
 
-      toast.success(`${rows.length} records exported as ${format.toUpperCase()}`);
+      toast.success(`${rows.length} records exported as PDF`);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -161,41 +180,38 @@ export default function ExportsPage() {
       if (incomeYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(incomeYear));
       if (incomeMonths.length > 0) records = records.filter((r) => incomeMonths.includes(r.invoice_date?.slice(5, 7) || ""));
 
-      const headers = [
-        "Date", "Due Date", "Customer", "Invoice #", "VAT Number",
-        "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"
-      ];
-      const rows = records.map((d: any) => [
+      const headers = ["Date", "Due Date", "Customer", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"];
+      const rows = records.map((d) => [
         d.invoice_date || "", d.due_date || "", d.customer_name || "", d.invoice_number || "",
-        d.vat_number || "", d.currency || "EUR", Number(d.net_amount || 0).toFixed(2),
-        Number(d.vat_amount || 0).toFixed(2), Number(d.total_amount || 0).toFixed(2), d.category || "",
+        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "",
       ]);
 
-      const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
-      const ext = incomeFormat === "csv" ? "csv" : "xls";
-      const mime = incomeFormat === "csv" ? "text/csv" : "application/vnd.ms-excel";
-      const parts: string[] = [];
-      if (incomeCurrency !== "all") parts.push(incomeCurrency);
-      if (incomeYear !== "all") parts.push(incomeYear);
-      if (incomeMonths.length > 0) parts.push(incomeMonths.map((v) => MONTHS.find((m) => m.value === v)?.label).join("-"));
-      const suffix = parts.length > 0 ? `-${parts.join("-")}` : "";
+      const totalNet = records.reduce((s, r) => s + Number(r.net_amount || 0), 0);
+      const totalVat = records.reduce((s, r) => s + Number(r.vat_amount || 0), 0);
+      const totalAmount = records.reduce((s, r) => s + Number(r.total_amount || 0), 0);
+      const cur = incomeCurrency !== "all" ? incomeCurrency : "EUR";
 
-      const blob = new Blob([csv], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `charmy-income${suffix}-export.${ext}`;
-      a.click();
-      URL.revokeObjectURL(url);
+      exportToPdf({
+        title: "Income Report",
+        subtitle: buildSubtitle(incomeYear, incomeMonths, incomeCurrency),
+        headers,
+        rows,
+        fileName: buildFileName("income", incomeYear, incomeMonths, incomeCurrency),
+        summaryRows: [
+          { label: "NET TOTAL", value: fmtCurrency(totalNet, cur) },
+          { label: "VAT TOTAL", value: fmtCurrency(totalVat, cur) },
+          { label: "GRAND TOTAL", value: fmtCurrency(totalAmount, cur) },
+        ],
+      });
 
       await supabase.from("export_history").insert({
-        user_id: user.id, export_name: `Income${suffix} Export`, export_type: "income", format: incomeFormat, row_count: rows.length,
+        user_id: user.id, export_name: `Income Export`, export_type: "income", format: "pdf", row_count: rows.length,
       });
 
       const docIds = records.filter((r) => r.document_id).map((r) => r.document_id);
       if (docIds.length > 0) await supabase.from("documents").update({ status: "exported" }).in("id", docIds);
 
-      toast.success(`${rows.length} income records exported as ${incomeFormat.toUpperCase()}`);
+      toast.success(`${rows.length} income records exported as PDF`);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -243,20 +259,10 @@ export default function ExportsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Format</label>
-              <Select value={format} onValueChange={setFormat}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="excel">Excel</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <Button onClick={handleExport} className="w-full" disabled={exporting}>
             {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-            Export Expenses
+            Export as PDF
           </Button>
         </CardContent>
       </Card>
@@ -295,20 +301,10 @@ export default function ExportsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Format</label>
-              <Select value={incomeFormat} onValueChange={setIncomeFormat}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="excel">Excel</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <Button onClick={handleExportIncome} className="w-full" disabled={exportingIncome}>
             {exportingIncome ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-            Export Income
+            Export as PDF
           </Button>
         </CardContent>
       </Card>
