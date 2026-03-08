@@ -201,19 +201,28 @@ export default function AdminUsersPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>User Details</DialogTitle></DialogHeader>
           {selected && (
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { l: "Name", v: displayName(selected) },
-                { l: "Email", v: selected.email || "—" },
-                { l: "Role", v: (selected.role || "user").replace("_", " ") },
-                { l: "Status", v: selected.status || "active" },
-                { l: "Created", v: new Date(selected.created_at).toLocaleString() },
-              ].map((f) => (
-                <div key={f.l}>
-                  <p className="text-xs text-muted-foreground">{f.l}</p>
-                  <p className="text-sm font-medium capitalize">{f.v}</p>
-                </div>
-              ))}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { l: "Name", v: displayName(selected) },
+                  { l: "Email", v: selected.email || "—" },
+                  { l: "Role", v: (selected.role || "user").replace("_", " ") },
+                  { l: "Status", v: selected.status || "active" },
+                  { l: "Created", v: new Date(selected.created_at).toLocaleString() },
+                ].map((f) => (
+                  <div key={f.l}>
+                    <p className="text-xs text-muted-foreground">{f.l}</p>
+                    <p className="text-sm font-medium capitalize">{f.v}</p>
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => { setSelected(null); handleActAsUser(selected); }}
+              >
+                <UserCheck className="h-3.5 w-3.5 mr-2" /> Act as this user
+              </Button>
             </div>
           )}
         </DialogContent>
