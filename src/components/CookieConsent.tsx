@@ -36,7 +36,7 @@ export function CookieConsent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60]"
             onClick={handleReject}
           />
           <motion.div
@@ -44,7 +44,7 @@ export function CookieConsent() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50"
+            className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-[60]"
           >
           <div className="bg-card rounded-2xl p-5 shadow-xl border border-border">
             <div className="flex items-start gap-3">
