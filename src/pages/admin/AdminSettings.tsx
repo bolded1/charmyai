@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState, useRef, useCallback, useEffect } from "react";
+
 import { Upload, X, Sun, Moon, Check } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -237,10 +238,17 @@ export default function AdminSettingsPage() {
   const [welcomeEmail, setWelcomeEmail, weSaving] = useAutoSave("welcome-email", true);
   const [processingNotif, setProcessingNotif, pnSaving] = useAutoSave("processing-notif", true);
 
-  // System
-  const [maintenance, setMaintenance, mtSaving] = useAutoSave("maintenance", false);
-  const [newSignups, setNewSignups, nsSaving] = useAutoSave("new-signups", true);
-  const [debugLog, setDebugLog, dlSaving] = useAutoSave("debug-log", false);
+  // System (DB-backed)
+  const [maintenance, setMaintenance, mtSaving] = useDbAutoSave("maintenance", "false");
+  const [newSignups, setNewSignups, nsSaving] = useDbAutoSave("new-signups", "true");
+  const [debugLog, setDebugLog, dlSaving] = useDbAutoSave("debug-log", "false");
+
+  const systemQueryClient = useQueryClient();
+
+  // Invalidate system-settings cache when system toggles change
+  useEffect(() => {
+    systemQueryClient.invalidateQueries({ queryKey: ["system-settings"] });
+  }, [maintenance, newSignups, debugLog, systemQueryClient]);
 
   const anySaving = mfsSaving || mfSaving || pdlSaving || pulSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
@@ -390,21 +398,21 @@ export default function AdminSettingsPage() {
                   <p className="text-sm font-medium">Maintenance Mode</p>
                   <p className="text-xs text-muted-foreground">Disable the platform for all users except admins</p>
                 </div>
-                <Switch checked={maintenance} onCheckedChange={setMaintenance} />
+                <Switch checked={maintenance === "true"} onCheckedChange={(v) => setMaintenance(v ? "true" : "false")} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">New Signups</p>
                   <p className="text-xs text-muted-foreground">Allow new user registrations</p>
                 </div>
-                <Switch checked={newSignups} onCheckedChange={setNewSignups} />
+                <Switch checked={newSignups === "true"} onCheckedChange={(v) => setNewSignups(v ? "true" : "false")} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Debug Logging</p>
                   <p className="text-xs text-muted-foreground">Enable verbose logging for troubleshooting</p>
                 </div>
-                <Switch checked={debugLog} onCheckedChange={setDebugLog} />
+                <Switch checked={debugLog === "true"} onCheckedChange={(v) => setDebugLog(v ? "true" : "false")} />
               </div>
               <div className="space-y-2">
                 <Label>Platform Version</Label>

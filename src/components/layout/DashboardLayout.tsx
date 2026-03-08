@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles, AlertTriangle } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -26,6 +26,8 @@ import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 import { NPSWidget } from "@/components/NPSWidget";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const mobileNavItems = [
   { title: "Capture", url: "/app", icon: Upload },
@@ -54,6 +56,8 @@ export default function DashboardLayout() {
   const brandLogo = useBrandLogo();
   const { impersonating, stopImpersonating } = useImpersonation();
   const subscription = useSubscription();
+  const { data: systemSettings } = useSystemSettings();
+  const isAdmin = useIsAdmin();
 
   // Apply org accent color
   useEffect(() => {
@@ -72,6 +76,23 @@ export default function DashboardLayout() {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Maintenance mode: block non-admin users
+  if (systemSettings?.maintenance && isAdmin === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="text-center max-w-md space-y-4">
+          <div className="h-16 w-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto">
+            <AlertTriangle className="h-8 w-8 text-amber-600" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">Under Maintenance</h1>
+          <p className="text-sm text-muted-foreground">
+            The platform is currently undergoing maintenance. Please check back soon.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Subscription gate: if not subscribed and not on billing/settings page, redirect
