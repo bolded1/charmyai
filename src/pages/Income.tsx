@@ -349,27 +349,24 @@ export default function IncomePage() {
   return (
     <div className="max-w-6xl space-y-6">
       {/* Currency summary cards */}
-      <div className="grid sm:grid-cols-2 gap-5">
-        <div className="stat-card-emerald rounded-2xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-9 w-9 rounded-xl icon-bg-emerald flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-emerald" />
+      <div className={`grid gap-5 ${currencySummary.length === 1 ? 'grid-cols-1 max-w-md' : currencySummary.length === 2 ? 'sm:grid-cols-2' : currencySummary.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
+        {currencySummary.map((cs, i) => {
+          const style = cardStyles[i % cardStyles.length];
+          const [cardClass, iconClass, textClass] = style.split(" ");
+          const symbol = currencySymbols[cs.currency] || `${cs.currency} `;
+          return (
+            <div key={cs.currency} className={`${cardClass} rounded-2xl p-5`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`h-9 w-9 rounded-xl ${iconClass} flex items-center justify-center`}>
+                  <TrendingUp className={`h-4 w-4 ${textClass}`} />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">Income {cs.currency}</p>
+              </div>
+              <p className="text-2xl font-bold">{symbol}{cs.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-xs text-muted-foreground mt-1">{cs.count} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Income EUR</p>
-          </div>
-          <p className="text-2xl font-bold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
-        </div>
-        <div className="stat-card-amber rounded-2xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-9 w-9 rounded-xl icon-bg-amber flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-amber" />
-            </div>
-            <p className="text-sm font-medium text-muted-foreground">Income USD</p>
-          </div>
-          <p className="text-2xl font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
-        </div>
+          );
+        })}
       </div>
 
       {/* Upload Box */}
