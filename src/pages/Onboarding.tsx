@@ -170,7 +170,7 @@ export default function OnboardingPage() {
           <p className="text-sm text-muted-foreground">Step {step + 1} of {steps.length} — {steps[step].title}</p>
         </div>
 
-        <div className="surface-elevated rounded-xl p-6">
+        <div className="glass-auth rounded-2xl p-6">
           {step === 0 && (
             <div className="space-y-4">
               <div className="flex justify-center">

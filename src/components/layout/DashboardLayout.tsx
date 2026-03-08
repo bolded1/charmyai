@@ -207,7 +207,7 @@ export default function DashboardLayout() {
           </header>
 
           {/* Mobile navigation tab bar */}
-          <nav className="md:hidden border-b border-border bg-card overflow-x-auto scrollbar-hide relative">
+          <nav className="md:hidden border-b border-border/50 bg-card/70 backdrop-blur-xl overflow-x-auto scrollbar-hide relative">
             <div className="flex min-w-max px-1">
               {mobileNavItems.map((item) => {
                 const isActive = item.url === "/app"

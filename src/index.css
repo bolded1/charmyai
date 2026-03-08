@@ -247,8 +247,11 @@
   }
 
   .surface-elevated {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 2px 12px -4px hsl(var(--foreground) / 0.04), inset 0 1px 0 hsl(var(--card) / 0.4);
   }
 
   .surface-sunken {
@@ -256,8 +259,10 @@
   }
 
   .surface-overlay {
-    background-color: hsl(var(--popover));
-    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--popover) / 0.85);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border: 1px solid hsl(var(--border) / 0.4);
     box-shadow: var(--shadow-overlay);
   }
 

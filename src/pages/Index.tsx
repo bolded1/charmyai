@@ -216,7 +216,7 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="flex items-center gap-3 p-4 surface-elevated rounded-xl"
+                className="flex items-center gap-3 p-4 glass-card rounded-2xl hover:shadow-md transition-all duration-300"
               >
                 <div className="h-9 w-9 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
                   <b.icon className="h-4.5 w-4.5 text-primary-icon" />
