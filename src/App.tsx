@@ -51,6 +51,7 @@ import AdminDocumentStats from "./pages/admin/AdminDocumentStats";
 import AdminStorage from "./pages/admin/AdminStorage";
 import AdminLoginActivity from "./pages/admin/AdminLoginActivity";
 import AdminGDPR from "./pages/admin/AdminGDPR";
+import AdminFeedback from "./pages/admin/AdminFeedback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -122,6 +123,7 @@ const App = () => (
             <Route path="broadcast" element={<AdminBroadcast />} />
             <Route path="login-activity" element={<AdminLoginActivity />} />
             <Route path="gdpr" element={<AdminGDPR />} />
+            <Route path="feedback" element={<AdminFeedback />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 
