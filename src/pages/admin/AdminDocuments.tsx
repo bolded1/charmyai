@@ -243,7 +243,7 @@ export default function AdminDocumentsPage() {
                   { l: "Type", v: (selected.document_type || "—").replace("_", " ") },
                   { l: "Status", v: selected.status },
                   { l: "Total", v: selected.total_amount ? `€${selected.total_amount}` : "—" },
-                  { l: "Confidence", v: selected.confidence_score ? `${Math.round(selected.confidence_score * 100)}%` : "—" },
+                  { l: "Confidence", v: selected.confidence_score ? `${Math.round(selected.confidence_score)}%` : "—" },
                   { l: "Source", v: selected.source },
                   { l: "Created", v: new Date(selected.created_at).toLocaleString() },
                 ].map((f) => (
