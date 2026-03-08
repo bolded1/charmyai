@@ -43,7 +43,7 @@ export default function AdminUsagePage() {
                   <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
                   <YAxis tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
                   <Tooltip contentStyle={{ backgroundColor: "hsl(0,0%,100%)", border: "1px solid hsl(220,13%,91%)", borderRadius: "8px", fontSize: "12px" }} />
-                  <Bar dataKey="uploads" fill="hsl(160, 84%, 36%)" radius={[4, 4, 0, 0]} name="Uploads" />
+                  <Bar dataKey="uploads" fill="hsl(224, 64%, 33%)" radius={[4, 4, 0, 0]} name="Uploads" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -60,7 +60,7 @@ export default function AdminUsagePage() {
                   <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
                   <YAxis domain={[90, 100]} tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
                   <Tooltip contentStyle={{ backgroundColor: "hsl(0,0%,100%)", border: "1px solid hsl(220,13%,91%)", borderRadius: "8px", fontSize: "12px" }} />
-                  <Line type="monotone" dataKey="successRate" stroke="hsl(160, 84%, 36%)" strokeWidth={2} dot={{ r: 4 }} name="Success Rate" />
+                  <Line type="monotone" dataKey="successRate" stroke="hsl(224, 64%, 33%)" strokeWidth={2} dot={{ r: 4 }} name="Success Rate" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -79,7 +79,7 @@ export default function AdminUsagePage() {
                 <XAxis type="number" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
                 <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} stroke="hsl(220, 9%, 46%)" />
                 <Tooltip contentStyle={{ backgroundColor: "hsl(0,0%,100%)", border: "1px solid hsl(220,13%,91%)", borderRadius: "8px", fontSize: "12px" }} />
-                <Bar dataKey="uploaded" fill="hsl(160, 84%, 36%)" radius={[0, 4, 4, 0]} name="Uploaded" />
+                <Bar dataKey="uploaded" fill="hsl(224, 64%, 33%)" radius={[0, 4, 4, 0]} name="Uploaded" />
               </BarChart>
             </ResponsiveContainer>
           </div>
