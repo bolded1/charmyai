@@ -407,6 +407,64 @@ export function useUpdateIncome() {
   });
 }
 
+export function useBulkApproveDocuments() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (docs: DocumentRecord[]) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      for (const doc of docs) {
+        if (doc.status === "approved" || doc.status === "exported") continue;
+
+        await supabase
+          .from("documents")
+          .update({ status: "approved", updated_at: new Date().toISOString() })
+          .eq("id", doc.id);
+
+        await supabase.from("expense_records").insert({
+          user_id: user.id,
+          document_id: doc.id,
+          supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
+          invoice_number: doc.invoice_number,
+          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+          due_date: doc.due_date,
+          currency: doc.currency || "EUR",
+          net_amount: doc.net_amount || 0,
+          vat_amount: doc.vat_amount || 0,
+          total_amount: doc.total_amount || 0,
+          vat_number: doc.vat_number,
+          category: doc.category,
+        });
+      }
+    },
+    onSuccess: (_, docs) => {
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      toast.success(`${docs.length} document(s) approved`);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useBulkDeleteDocuments() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      for (const id of ids) {
+        await supabase.from("documents").delete().eq("id", id);
+      }
+    },
+    onSuccess: (_, ids) => {
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success(`${ids.length} document(s) deleted`);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 export function getDocumentFileUrl(filePath: string): string {
   const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
   return data.publicUrl;
