@@ -465,8 +465,10 @@ export default function ExpensesPage() {
                           </div>
                         </td>
                       </tr>
-                      {group.records.map((doc) => (
-                        <tr key={doc.id} className="border-b border-border-subtle last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
+                        <tr key={doc.id} className={cn("border-b border-border-subtle last:border-0 hover:bg-accent/40 transition-colors cursor-pointer", selectedIds.has(doc.id) && "bg-primary/5")} onClick={() => openEdit(doc)}>
+                          <td className="pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
+                            {doc.document_id && <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />}
+                          </td>
                           <td className="p-4 text-sm font-medium">{doc.supplier_name}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
