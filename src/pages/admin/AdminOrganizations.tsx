@@ -1,51 +1,100 @@
-import { useState } from "react";
-import { adminOrganizations, adminUsers, adminDocuments } from "@/lib/admin-mock-data";
-import type { AdminOrganization } from "@/lib/admin-mock-data";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Eye, Ban, Trash2, Building2, Users, FileText, CreditCard } from "lucide-react";
+import { Search, Eye, Building2, Loader2, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
-import { OverflowActions } from "@/components/ui/overflow-actions";
 import { toast } from "sonner";
 
-const planColors: Record<string, string> = {
-  starter: "bg-secondary text-secondary-foreground",
-  professional: "bg-primary/10 text-primary",
-  enterprise: "bg-accent text-accent-foreground",
-};
-
-const statusColors: Record<string, string> = {
-  active: "bg-primary/10 text-primary",
-  suspended: "bg-destructive/10 text-destructive",
-  trial: "bg-accent text-accent-foreground",
-};
+interface OrgRow {
+  id: string;
+  name: string;
+  owner_user_id: string;
+  created_at: string;
+  updated_at: string;
+  owner_email?: string;
+  user_count?: number;
+  doc_count?: number;
+}
 
 export default function AdminOrganizations() {
+  const [orgs, setOrgs] = useState<OrgRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [planFilter, setPlanFilter] = useState("all");
-  const [selected, setSelected] = useState<AdminOrganization | null>(null);
+  const [selected, setSelected] = useState<OrgRow | null>(null);
+  const [orgUsers, setOrgUsers] = useState<any[]>([]);
+  const [orgDocs, setOrgDocs] = useState<any[]>([]);
   const isMobile = useIsMobile();
 
-  const filtered = adminOrganizations.filter((org) => {
-    const matchesSearch = org.name.toLowerCase().includes(search.toLowerCase()) || org.owner.toLowerCase().includes(search.toLowerCase());
-    const matchesPlan = planFilter === "all" || org.plan === planFilter;
-    return matchesSearch && matchesPlan;
-  });
+  const fetchOrgs = async () => {
+    setLoading(true);
+    try {
+      const { data: orgsData, error } = await supabase
+        .from("organizations")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
 
-  const orgUsers = selected ? adminUsers.filter((u) => u.organizationId === selected.id) : [];
-  const orgDocs = selected ? adminDocuments.filter((d) => d.organization === selected?.name) : [];
+      // Enrich with owner email and counts
+      const enriched = await Promise.all(
+        (orgsData || []).map(async (org) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("user_id", org.owner_user_id)
+            .maybeSingle();
 
-  const getOrgActions = (org: AdminOrganization) => [
-    { label: "View Details", icon: <Eye className="h-3.5 w-3.5" />, onClick: () => setSelected(org) },
-    { label: org.status === "suspended" ? "Activate" : "Suspend", icon: <Ban className="h-3.5 w-3.5" />, onClick: () => toast.info(`${org.name} ${org.status === 'suspended' ? 'activated' : 'suspended'}`) },
-    { label: "Delete", icon: <Trash2 className="h-3.5 w-3.5" />, onClick: () => toast.error(`${org.name} deleted`), destructive: true },
-  ];
+          const { count: docCount } = await supabase
+            .from("documents")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", org.owner_user_id);
+
+          return {
+            ...org,
+            owner_email: profile?.email || "Unknown",
+            user_count: 1, // owner at minimum
+            doc_count: docCount || 0,
+          };
+        })
+      );
+      setOrgs(enriched);
+    } catch (err: any) {
+      toast.error("Failed to load organizations: " + (err.message || "Unknown error"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadOrgDetails = async (org: OrgRow) => {
+    setSelected(org);
+    // Load users (profiles linked to this org owner for now)
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", org.owner_user_id);
+    setOrgUsers(profiles || []);
+
+    // Load documents
+    const { data: docs } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("user_id", org.owner_user_id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setOrgDocs(docs || []);
+  };
+
+  useEffect(() => { fetchOrgs(); }, []);
+
+  const filtered = orgs.filter((org) =>
+    org.name.toLowerCase().includes(search.toLowerCase()) ||
+    (org.owner_email || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-4">
@@ -54,33 +103,33 @@ export default function AdminOrganizations() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search organizations..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <Select value={planFilter} onValueChange={setPlanFilter}>
-          <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="All Plans" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Plans</SelectItem>
-            <SelectItem value="starter">Starter</SelectItem>
-            <SelectItem value="professional">Professional</SelectItem>
-            <SelectItem value="enterprise">Enterprise</SelectItem>
-          </SelectContent>
-        </Select>
+        <Button variant="outline" size="sm" onClick={fetchOrgs} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Refresh
+        </Button>
       </div>
 
-      {isMobile ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            {orgs.length === 0 ? "No organizations found" : "No organizations match your search"}
+          </CardContent>
+        </Card>
+      ) : isMobile ? (
         <div className="space-y-2">
           {filtered.map((org) => (
             <MobileRecordCard
               key={org.id}
               title={org.name}
-              subtitle={org.owner}
-              badge={{ label: org.status, className: statusColors[org.status] }}
+              subtitle={org.owner_email || ""}
               fields={[
-                { label: "Plan", value: org.plan },
-                { label: "Users", value: String(org.users) },
-                { label: "Documents", value: String(org.documentsUploaded) },
-                { label: "Created", value: org.createdAt },
+                { label: "Documents", value: String(org.doc_count || 0) },
+                { label: "Created", value: new Date(org.created_at).toLocaleDateString() },
               ]}
-              onClick={() => setSelected(org)}
-              actions={<OverflowActions actions={getOrgActions(org)} />}
+              onClick={() => loadOrgDetails(org)}
             />
           ))}
         </div>
@@ -93,11 +142,8 @@ export default function AdminOrganizations() {
                   <tr className="border-b text-left">
                     <th className="p-3 text-xs font-medium text-muted-foreground">Organization</th>
                     <th className="p-3 text-xs font-medium text-muted-foreground">Owner</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Plan</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Users</th>
                     <th className="p-3 text-xs font-medium text-muted-foreground">Documents</th>
                     <th className="p-3 text-xs font-medium text-muted-foreground">Created</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
                     <th className="p-3 text-xs font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
@@ -110,24 +156,13 @@ export default function AdminOrganizations() {
                           <span className="text-sm font-medium">{org.name}</span>
                         </div>
                       </td>
-                      <td className="p-3 text-sm text-muted-foreground">{org.owner}</td>
-                      <td className="p-3"><Badge variant="secondary" className={`capitalize ${planColors[org.plan]}`}>{org.plan}</Badge></td>
-                      <td className="p-3 text-sm">{org.users}</td>
-                      <td className="p-3 text-sm">{org.documentsUploaded}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{org.createdAt}</td>
-                      <td className="p-3"><Badge variant="secondary" className={`capitalize ${statusColors[org.status]}`}>{org.status}</Badge></td>
+                      <td className="p-3 text-sm text-muted-foreground">{org.owner_email}</td>
+                      <td className="p-3 text-sm">{org.doc_count}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{new Date(org.created_at).toLocaleDateString()}</td>
                       <td className="p-3">
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(org)}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info(`${org.name} ${org.status === 'suspended' ? 'activated' : 'suspended'}`)}>
-                            <Ban className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => toast.error(`${org.name} deleted`)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadOrgDetails(org)}>
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -138,7 +173,6 @@ export default function AdminOrganizations() {
         </Card>
       )}
 
-      {/* Organization Detail Dialog */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -148,33 +182,25 @@ export default function AdminOrganizations() {
           </DialogHeader>
           {selected && (
             <Tabs defaultValue="info" className="mt-2">
-              <TabsList className={`grid w-full ${isMobile ? "grid-cols-2" : "grid-cols-4"}`}>
+              <TabsList className={`grid w-full ${isMobile ? "grid-cols-2" : "grid-cols-3"}`}>
                 <TabsTrigger value="info">Info</TabsTrigger>
                 <TabsTrigger value="users">Users ({orgUsers.length})</TabsTrigger>
                 <TabsTrigger value="documents">Docs ({orgDocs.length})</TabsTrigger>
-                <TabsTrigger value="billing">Billing</TabsTrigger>
               </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { l: "Owner", v: selected.owner },
-                    { l: "Email", v: selected.ownerEmail },
-                    { l: "Country", v: selected.country },
-                    { l: "VAT Number", v: selected.vatNumber || '—' },
-                    { l: "Created", v: selected.createdAt },
-                    { l: "Storage Used", v: `${(selected.storageUsedMB / 1024).toFixed(1)} GB` },
+                    { l: "Owner", v: selected.owner_email || "—" },
+                    { l: "Created", v: new Date(selected.created_at).toLocaleDateString() },
+                    { l: "Updated", v: new Date(selected.updated_at).toLocaleDateString() },
+                    { l: "Documents", v: String(selected.doc_count || 0) },
                   ].map((f) => (
                     <div key={f.l}>
                       <p className="text-xs text-muted-foreground">{f.l}</p>
                       <p className="text-sm font-medium">{f.v}</p>
                     </div>
                   ))}
-                </div>
-                <div className="grid grid-cols-3 gap-3 pt-2">
-                  <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold">{selected.users}</p><p className="text-xs text-muted-foreground">Users</p></CardContent></Card>
-                  <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold">{selected.documentsUploaded}</p><p className="text-xs text-muted-foreground">Uploaded</p></CardContent></Card>
-                  <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold">{selected.documentsProcessed}</p><p className="text-xs text-muted-foreground">Processed</p></CardContent></Card>
                 </div>
               </TabsContent>
 
@@ -183,10 +209,10 @@ export default function AdminOrganizations() {
                   {orgUsers.map((u) => (
                     <div key={u.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div>
-                        <p className="text-sm font-medium">{u.name}</p>
+                        <p className="text-sm font-medium">{u.full_name || u.first_name || u.email || "Unknown"}</p>
                         <p className="text-xs text-muted-foreground">{u.email}</p>
                       </div>
-                      <Badge variant="secondary" className="capitalize">{u.role}</Badge>
+                      <Badge variant="secondary">Owner</Badge>
                     </div>
                   ))}
                   {orgUsers.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No users found</p>}
@@ -198,22 +224,13 @@ export default function AdminOrganizations() {
                   {orgDocs.map((d) => (
                     <div key={d.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div>
-                        <p className="text-sm font-medium">{d.fileName}</p>
-                        <p className="text-xs text-muted-foreground">{d.user} · {new Date(d.uploadDate).toLocaleDateString()}</p>
+                        <p className="text-sm font-medium">{d.file_name}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleDateString()}</p>
                       </div>
-                      <Badge variant="secondary" className="capitalize">{d.status.replace('_', ' ')}</Badge>
+                      <Badge variant="secondary" className="capitalize">{d.status}</Badge>
                     </div>
                   ))}
                   {orgDocs.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No documents found</p>}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="billing" className="mt-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div><p className="text-xs text-muted-foreground">Plan</p><p className="text-sm font-medium capitalize">{selected.plan}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Status</p><Badge variant="secondary" className={`capitalize ${statusColors[selected.status]}`}>{selected.status}</Badge></div>
-                  <div><p className="text-xs text-muted-foreground">Billing Cycle</p><p className="text-sm font-medium capitalize">{selected.billingCycle}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Next Billing</p><p className="text-sm font-medium">{selected.nextBillingDate}</p></div>
                 </div>
               </TabsContent>
             </Tabs>
