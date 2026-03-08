@@ -132,11 +132,29 @@ export const aboutDefaults = {
 };
 
 export const contactDefaults = {
-  title: "Contact Us",
-  subtitle: "Have questions? We'd love to hear from you.",
+  heroBadge: "Get in Touch",
+  title: "Let's start a",
+  titleGradient: "conversation",
+  subtitle: "Have questions about Charmy? We'd love to hear from you. Our team typically responds within a few hours.",
+  cardEmailTitle: "Email",
   email: "hello@charmy.ai",
+  cardPhoneTitle: "Phone",
   phone: "+49 30 1234567",
+  cardOfficeTitle: "Office",
   office: "Berlin, Germany",
+  cardHoursTitle: "Hours",
+  hours: "Mon–Fri, 9–18 CET",
+  formSectionLabel: "Send a Message",
+  formTitle: "Tell us what",
+  formTitleGradient: "you need",
+  formDescription: "Whether you have a question about features, pricing, or anything else — our team is ready to help.",
+  responseTitle: "Fast Response Time",
+  responseDescription: "We typically respond within 2–4 hours during business hours. For urgent matters, reach out via phone.",
+  formDisclaimer: "By submitting this form, you agree to our Privacy Policy.",
+  ctaTitle: "Prefer to",
+  ctaTitleGradient: "try it yourself?",
+  ctaSubtitle: "Start processing documents in minutes with a 7-day free trial.",
+  ctaButton: "Start Free Trial",
 };
 
 export const privacyDefaults = {
