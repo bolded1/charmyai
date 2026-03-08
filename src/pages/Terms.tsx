@@ -14,16 +14,10 @@ const fadeUp = {
 export default function Terms() {
   const { content: c } = usePageContent("terms", termsDefaults);
 
-  const sections = [
-    { title: c.section1Title, body: c.section1Body },
-    { title: c.section2Title, body: c.section2Body },
-    { title: c.section3Title, body: c.section3Body },
-    { title: c.section4Title, body: c.section4Body },
-    { title: c.section5Title, body: c.section5Body },
-    { title: c.section6Title, body: c.section6Body },
-    { title: c.section7Title, body: c.section7Body },
-    { title: c.section8Title, body: c.section8Body },
-  ];
+  const sections = Array.from({ length: 12 }, (_, i) => ({
+    title: c[`section${i + 1}Title`],
+    body: c[`section${i + 1}Body`],
+  })).filter((s) => s.title);
 
   return (
     <div className="py-16 md:py-24">
@@ -33,8 +27,7 @@ export default function Terms() {
           <p className="text-muted-foreground">{c.lastUpdated}</p>
         </motion.div>
 
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
-          className="prose prose-sm max-w-none mb-8">
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1} className="mb-8">
           <p className="text-muted-foreground leading-relaxed">{c.intro}</p>
         </motion.div>
 
