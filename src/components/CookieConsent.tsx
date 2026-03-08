@@ -66,16 +66,15 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
               className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60]"
             />
             <motion.div
-              initial={{ y: 100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 100, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={`fixed z-[60] ${
+              className={`fixed z-[60] inset-0 m-auto ${
                 showPrivacy
-                  ? "inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full"
-                  : "bottom-4 left-4 right-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-sm"
+                  ? "w-[calc(100%-2rem)] h-fit max-w-lg"
+                  : "w-[calc(100%-2rem)] h-fit max-w-sm"
               }`}
-              layout
             >
               <div className="bg-card rounded-2xl shadow-xl border border-border flex flex-col max-h-[calc(100vh-2rem)] md:max-h-[80vh] overflow-hidden">
                 <AnimatePresence mode="wait">
