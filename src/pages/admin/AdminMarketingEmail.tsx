@@ -6,12 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Send, Eye, Loader2, Bold, Italic, Underline, Link, List, ListOrdered, AlignLeft, AlignCenter, Image, Type, Heading1, Heading2, Upload } from "lucide-react";
+import { Send, Eye, Loader2, Bold, Italic, Underline, Link, List, ListOrdered, AlignLeft, AlignCenter, Image, Type, Heading1, Heading2, Upload, Calendar as CalendarIcon } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import EmailTemplatesPanel from "@/components/admin/EmailTemplatesPanel";
+import EmailCampaignHistory from "@/components/admin/EmailCampaignHistory";
 
 export default function AdminMarketingEmail() {
   const [subject, setSubject] = useState("");
@@ -23,6 +30,14 @@ export default function AdminMarketingEmail() {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Segmentation
+  const [segment, setSegment] = useState("active");
+  const [roleFilter, setRoleFilter] = useState("all");
+
+  // Schedule
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>();
+  const [scheduleTime, setScheduleTime] = useState("");
 
   const execCommand = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -109,6 +124,15 @@ export default function AdminMarketingEmail() {
 </html>`;
   };
 
+  const handleLoadTemplate = (templateSubject: string, htmlBody: string) => {
+    setSubject(templateSubject);
+    // Extract content from the template HTML wrapper or use raw
+    const match = htmlBody.match(/<div class="content">([\s\S]*?)<\/div>\s*<\/div>\s*<div class="footer">/);
+    if (editorRef.current) {
+      editorRef.current.innerHTML = match ? match[1] : htmlBody;
+    }
+  };
+
   const handlePreview = () => {
     setPreviewHtml(getEditorHtml());
     setShowPreview(true);
@@ -141,7 +165,12 @@ export default function AdminMarketingEmail() {
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-marketing-email", {
-        body: { subject: subject.trim(), htmlBody: getEditorHtml() },
+        body: {
+          subject: subject.trim(),
+          htmlBody: getEditorHtml(),
+          segment,
+          roleFilter: roleFilter !== "all" ? roleFilter : undefined,
+        },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message);
       toast.success(`Email sent to ${data.sent} recipients!`);
@@ -156,12 +185,19 @@ export default function AdminMarketingEmail() {
     <div className="space-y-6 max-w-4xl">
       <div>
         <h1 className="text-xl font-bold text-foreground">Marketing Email</h1>
-        <p className="text-sm text-muted-foreground mt-1">Compose and send marketing emails to all active users via Mailgun.</p>
+        <p className="text-sm text-muted-foreground mt-1">Compose and send marketing emails to your users via Mailgun.</p>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Compose Email</CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="text-base">Compose Email</CardTitle>
+            <EmailTemplatesPanel
+              onLoad={handleLoadTemplate}
+              currentSubject={subject}
+              currentHtmlBody={getEditorHtml()}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -242,6 +278,99 @@ export default function AdminMarketingEmail() {
 
           <Separator />
 
+          {/* Audience Segmentation */}
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">Audience</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">User Status</Label>
+                <Select value={segment} onValueChange={setSegment}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active users only</SelectItem>
+                    <SelectItem value="inactive">Inactive users only</SelectItem>
+                    <SelectItem value="all_statuses">All users</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Role Filter</Label>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All roles</SelectItem>
+                    <SelectItem value="user">Users</SelectItem>
+                    <SelectItem value="admin">Admins</SelectItem>
+                    <SelectItem value="moderator">Moderators</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Schedule */}
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">Schedule (optional)</Label>
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[200px] justify-start text-left font-normal",
+                        !scheduleDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      {scheduleDate ? format(scheduleDate, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={scheduleDate}
+                      onSelect={setScheduleDate}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Time</Label>
+                <Input
+                  type="time"
+                  value={scheduleTime}
+                  onChange={(e) => setScheduleTime(e.target.value)}
+                  className="w-[140px]"
+                />
+              </div>
+              {(scheduleDate || scheduleTime) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setScheduleDate(undefined); setScheduleTime(""); }}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            {scheduleDate && (
+              <p className="text-xs text-muted-foreground">
+                ⏰ Email will be scheduled for {format(scheduleDate, "PPP")} {scheduleTime || "00:00"} (your local time). Scheduling saves the campaign but does not send immediately.
+              </p>
+            )}
+          </div>
+
+          <Separator />
+
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 space-y-2 w-full">
@@ -277,11 +406,14 @@ export default function AdminMarketingEmail() {
               className="bg-primary"
             >
               {sending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Send className="h-4 w-4 mr-1" />}
-              Send to All Users
+              {scheduleDate ? "Schedule Campaign" : "Send to All Users"}
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Campaign History */}
+      <EmailCampaignHistory />
 
       {/* Preview modal */}
       {showPreview && (
@@ -305,14 +437,21 @@ export default function AdminMarketingEmail() {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send to all active users?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {scheduleDate ? "Schedule this campaign?" : "Send to all matching users?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will send this marketing email to all active users. This action cannot be undone. Consider sending a test email first.
+              {scheduleDate
+                ? `This email will be scheduled for ${format(scheduleDate, "PPP")} ${scheduleTime || "00:00"}. You can cancel before it sends.`
+                : `This will send this marketing email to ${segment === "active" ? "active" : segment === "inactive" ? "inactive" : "all"} users${roleFilter !== "all" ? ` with role "${roleFilter}"` : ""}. This action cannot be undone.`
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSendAll}>Yes, send to all</AlertDialogAction>
+            <AlertDialogAction onClick={handleSendAll}>
+              {scheduleDate ? "Yes, schedule it" : "Yes, send to all"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -13,7 +13,6 @@ serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -40,7 +39,6 @@ serve(async (req) => {
     }
     const userId = claimsData.claims.sub;
 
-    // Check admin role
     const supabase = createClient(supabaseUrl, serviceKey);
     const { data: isAdmin } = await supabase.rpc("has_role", {
       _user_id: userId,
@@ -53,7 +51,7 @@ serve(async (req) => {
       });
     }
 
-    const { subject, htmlBody, testEmail } = await req.json();
+    const { subject, htmlBody, testEmail, segment, roleFilter } = await req.json();
     if (!subject || !htmlBody) {
       return new Response(JSON.stringify({ error: "subject and htmlBody required" }), {
         status: 400,
@@ -66,18 +64,38 @@ serve(async (req) => {
     if (!MAILGUN_API_KEY) throw new Error("MAILGUN_API_KEY not configured");
     if (!MAILGUN_DOMAIN) throw new Error("MAILGUN_DOMAIN not configured");
 
-    // If testEmail is provided, send only to that address
+    // Build recipient list based on segment/filters
     let recipients: string[] = [];
     if (testEmail) {
       recipients = [testEmail];
     } else {
-      // Fetch all active user emails
-      const { data: profiles, error: profileErr } = await supabase
-        .from("profiles")
-        .select("email, status")
-        .eq("status", "active");
+      let query = supabase.from("profiles").select("email, status, user_id");
+
+      // Segment filter
+      if (segment === "active" || !segment || segment === "all") {
+        query = query.eq("status", "active");
+      } else if (segment === "inactive") {
+        query = query.eq("status", "inactive");
+      }
+      // "all_statuses" = no status filter
+
+      const { data: profiles, error: profileErr } = await query;
       if (profileErr) throw profileErr;
-      recipients = (profiles || []).map((p) => p.email).filter(Boolean) as string[];
+
+      let filteredProfiles = (profiles || []).filter((p) => p.email);
+
+      // Role filter
+      if (roleFilter && roleFilter !== "all") {
+        const { data: roleUsers, error: roleErr } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", roleFilter);
+        if (roleErr) throw roleErr;
+        const roleUserIds = new Set((roleUsers || []).map((r) => r.user_id));
+        filteredProfiles = filteredProfiles.filter((p) => roleUserIds.has(p.user_id));
+      }
+
+      recipients = filteredProfiles.map((p) => p.email).filter(Boolean) as string[];
     }
 
     if (recipients.length === 0) {
@@ -87,8 +105,8 @@ serve(async (req) => {
       });
     }
 
-    // Send via Mailgun (batch using recipient-variables for efficiency)
-    const batchSize = 1000; // Mailgun limit per request
+    // Send via Mailgun
+    const batchSize = 1000;
     let totalSent = 0;
     let errors: string[] = [];
 
@@ -106,7 +124,6 @@ serve(async (req) => {
       form.append("html", htmlBody);
       form.append("recipient-variables", JSON.stringify(recipientVariables));
 
-      // Try both Mailgun regions (EU first, then US if auth/region mismatch)
       const endpoints = [
         `https://api.eu.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
         `https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
@@ -128,7 +145,7 @@ serve(async (req) => {
 
         const shouldTryNextEndpoint = idx === 0 && [401, 403, 404].includes(response.status);
         if (shouldTryNextEndpoint) {
-          await response.text(); // consume body before retry
+          await response.text();
           continue;
         }
 
@@ -146,6 +163,23 @@ serve(async (req) => {
         console.error("Mailgun send error:", response.status, errText);
         errors.push(`Batch ${i / batchSize + 1}: HTTP ${response.status} ${errText}`);
       }
+    }
+
+    // Log campaign (skip for test emails)
+    if (!testEmail) {
+      await supabase.from("email_campaigns").insert({
+        subject,
+        html_body: htmlBody,
+        segment: segment || "all",
+        role_filter: roleFilter || null,
+        status: totalSent > 0 ? "sent" : "failed",
+        recipient_count: recipients.length,
+        sent_count: totalSent,
+        error_count: errors.length,
+        errors: errors.length > 0 ? errors : [],
+        sent_by: userId,
+        sent_at: new Date().toISOString(),
+      });
     }
 
     const allFailed = totalSent === 0 && errors.length > 0;
