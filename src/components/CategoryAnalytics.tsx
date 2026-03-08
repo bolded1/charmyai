@@ -148,33 +148,6 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
         ))}
       </div>
 
-      {/* Spending by category bar chart */}
-      {categoryTotals.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              Spending by Category ({activeCurrency})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={categoryTotals.slice(0, 10)} layout="vertical" margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-                  <XAxis type="number" tickFormatter={(v) => formatAmount(v)} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }} />
-                  <Tooltip
-                    formatter={(value: number) => [formatAmount(value), "Total"]}
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
-                  />
-                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Monthly trends */}
       {monthlyTrends.categories.length > 0 && (
