@@ -89,14 +89,21 @@ serve(async (req) => {
       trialEnd: sub.trial_end,
     });
 
+    const trialEndDate = sub.trial_end
+      ? new Date(sub.trial_end * 1000).toISOString()
+      : null;
+    const periodEndDate = sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : null;
+
     return new Response(JSON.stringify({
       subscribed: isActive,
       plan: isActive ? "pro" : "free",
       status: sub.status,
       price_id: priceId,
       subscription_id: sub.id,
-      trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
-      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      trial_end: trialEndDate,
+      current_period_end: periodEndDate,
       cancel_at_period_end: sub.cancel_at_period_end,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
