@@ -520,6 +520,27 @@ export type Database = {
         }
         Relationships: []
       }
+      page_content: {
+        Row: {
+          content: Json
+          id: string
+          page_slug: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          id?: string
+          page_slug: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          id?: string
+          page_slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
