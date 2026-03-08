@@ -209,13 +209,13 @@ export default function DashboardLayout() {
           <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 md:hidden">
             <div className="flex items-center gap-2">
               {brandLogo ? (
-                <img src={brandLogo} alt="Logo" className="h-6 max-w-[4.5rem] object-contain" />
+                <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain" />
               ) : (
                 <Link to="/app" className="flex items-center gap-1.5">
-                  <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
-                    <FileText className="h-3 w-3 text-white" />
+                  <div className="h-7 w-7 rounded-md bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
+                    <FileText className="h-3.5 w-3.5 text-white" />
                   </div>
-                  <span className="font-bold text-xs text-gradient">Charmy</span>
+                  <span className="font-bold text-sm text-gradient">Charmy</span>
                 </Link>
               )}
             </div>
