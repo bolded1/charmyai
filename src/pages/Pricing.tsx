@@ -28,21 +28,14 @@ export default function PricingPage() {
     ? STRIPE_PLANS.pro.price_id_yearly
     : STRIPE_PLANS.pro.price_id_monthly;
 
-  const plans = [
-    {
-      key: "free", name: c.freeTitle, price: "€0", period: "/forever",
-      desc: c.freeDesc, features: STRIPE_PLANS.free.features,
-      current: subscription?.plan === "free",
-    },
-    {
-      key: "pro", name: c.proTitle,
-      price: billingCycle === "monthly" ? "€9.99" : "€99",
-      period: billingCycle === "monthly" ? "/month" : "/year",
-      desc: c.proDesc, features: STRIPE_PLANS.pro.features,
-      popular: true, current: subscription?.plan === "pro",
-      savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
-    },
-  ];
+  const plan = {
+    key: "pro", name: c.proTitle,
+    price: billingCycle === "monthly" ? "€9.99" : "€99",
+    period: billingCycle === "monthly" ? "/month" : "/year",
+    desc: c.proDesc, features: STRIPE_PLANS.pro.features,
+    current: subscription?.plan === "pro",
+    savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
+  };
 
   const faqs = [
     { q: c.faq1Q, a: c.faq1A },
