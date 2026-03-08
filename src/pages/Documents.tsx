@@ -265,10 +265,24 @@ export default function DocumentsPage() {
           </DialogHeader>
           {selected && (
             <div className="space-y-4">
+              {(selected as any).potential_duplicate_of && (
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2">
+                  <Copy className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-medium text-amber-700">Potential Duplicate Detected</p>
+                    <p className="text-xs text-amber-600/80 mt-0.5">
+                      This document matches an existing record with the same supplier, amount, or invoice number. Please review before approving.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {selected.validation_errors && Array.isArray(selected.validation_errors) && selected.validation_errors.length > 0 && (
                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 space-y-1">
                   <p className="text-xs font-medium text-destructive">Validation Issues:</p>
-                  {(selected.validation_errors as { field: string; message: string }[]).map((err, i) => (
+                  {(selected.validation_errors as { field: string; message: string }[])
+                    .filter(err => err.field !== "duplicate")
+                    .map((err, i) => (
                     <p key={i} className="text-xs text-destructive/80">• {err.message}</p>
                   ))}
                 </div>
