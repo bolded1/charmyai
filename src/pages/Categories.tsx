@@ -13,6 +13,9 @@ import {
   useAutoCategoryRules, useCreateAutoCategoryRule, useDeleteAutoCategoryRule,
 } from "@/hooks/useAutoCategoryRules";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import CategoryAnalytics from "@/components/CategoryAnalytics";
 
 export default function CategoriesPage() {
   const [newName, setNewName] = useState("");
