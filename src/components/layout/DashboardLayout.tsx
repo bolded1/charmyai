@@ -41,6 +41,7 @@ const mobileNavItems = [
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const pageTitle = getPageTitle(location.pathname);
   const { user, loading } = useAuth();
@@ -51,6 +52,7 @@ export default function DashboardLayout() {
   const isMobile = useIsMobile();
   const brandLogo = useBrandLogo();
   const { impersonating, stopImpersonating } = useImpersonation();
+  const subscription = useSubscription();
 
   // Apply org accent color
   useEffect(() => {
