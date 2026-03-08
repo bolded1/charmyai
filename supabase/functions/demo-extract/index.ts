@@ -56,6 +56,37 @@ serve(async (req) => {
       });
     }
 
+    // Idempotency: return cached result if already completed
+    if (demo.status === "completed" && demo.extracted_data) {
+      return new Response(
+        JSON.stringify({ success: true, extracted: demo.extracted_data }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // If already errored, don't retry automatically
+    if (demo.status === "error") {
+      return new Response(JSON.stringify({ error: "This demo upload previously failed" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Optimistic status lock: only proceed if status is still 'processing' (initial state)
+    const { data: lockResult, error: lockErr } = await supabase
+      .from("demo_uploads")
+      .update({ status: "extracting" })
+      .eq("id", demoUploadId)
+      .eq("status", "processing")
+      .select("id");
+
+    if (lockErr || !lockResult || lockResult.length === 0) {
+      return new Response(JSON.stringify({ error: "Upload is already being processed" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Download file from demo-uploads bucket
     const { data: fileData, error: fileErr } = await supabase.storage
       .from("demo-uploads")
