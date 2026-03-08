@@ -26,6 +26,7 @@ import Exports from "./pages/Exports";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import Support from "./pages/Support";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrganizations from "./pages/admin/AdminOrganizations";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="exports" element={<Exports />} />
             <Route path="team" element={<Team />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="support" element={<Support />} />
             <Route path="help" element={<Help />} />
           </Route>
 
