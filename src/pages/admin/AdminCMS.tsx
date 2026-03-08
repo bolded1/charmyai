@@ -146,48 +146,12 @@ const pages: PageConfig[] = [
       { key: "office", label: "Office Location", type: "input" },
     ],
   },
-  {
-    slug: "privacy",
-    label: "Privacy Policy",
-    defaults: privacyDefaults,
-    fields: [
-      { key: "title", label: "Page Title", type: "input" },
-      { key: "lastUpdated", label: "Last Updated Text", type: "input" },
-      { key: "intro", label: "Introduction", type: "textarea" },
-      ...Array.from({ length: 14 }, (_, i) => [
-        { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
-        { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
-      ]).flat(),
-    ],
-  },
-  {
-    slug: "terms",
-    label: "Terms of Service",
-    defaults: termsDefaults,
-    fields: [
-      { key: "title", label: "Page Title", type: "input" },
-      { key: "lastUpdated", label: "Last Updated Text", type: "input" },
-      { key: "intro", label: "Introduction", type: "textarea" },
-      ...Array.from({ length: 12 }, (_, i) => [
-        { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
-        { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
-      ]).flat(),
-    ],
-  },
-  {
-    slug: "acceptable-use",
-    label: "Acceptable Use",
-    defaults: acceptableUseDefaults,
-    fields: [
-      { key: "title", label: "Page Title", type: "input" },
-      { key: "lastUpdated", label: "Last Updated Text", type: "input" },
-      { key: "intro", label: "Introduction", type: "textarea" },
-      ...Array.from({ length: 10 }, (_, i) => [
-        { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
-        { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
-      ]).flat(),
-    ],
-  },
+];
+
+const legalPages = [
+  { slug: "privacy", label: "Privacy Policy", defaults: privacyDefaults },
+  { slug: "terms", label: "Terms of Service", defaults: termsDefaults },
+  { slug: "acceptable-use", label: "Acceptable Use", defaults: acceptableUseDefaults },
 ];
 
 function PageEditor({ config }: { config: PageConfig }) {
