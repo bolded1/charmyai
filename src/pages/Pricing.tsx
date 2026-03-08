@@ -28,21 +28,14 @@ export default function PricingPage() {
     ? STRIPE_PLANS.pro.price_id_yearly
     : STRIPE_PLANS.pro.price_id_monthly;
 
-  const plans = [
-    {
-      key: "free", name: c.freeTitle, price: "€0", period: "/forever",
-      desc: c.freeDesc, features: STRIPE_PLANS.free.features,
-      current: subscription?.plan === "free",
-    },
-    {
-      key: "pro", name: c.proTitle,
-      price: billingCycle === "monthly" ? "€9.99" : "€99",
-      period: billingCycle === "monthly" ? "/month" : "/year",
-      desc: c.proDesc, features: STRIPE_PLANS.pro.features,
-      popular: true, current: subscription?.plan === "pro",
-      savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
-    },
-  ];
+  const plan = {
+    key: "pro", name: c.proTitle,
+    price: billingCycle === "monthly" ? "€9.99" : "€99",
+    period: billingCycle === "monthly" ? "/month" : "/year",
+    desc: c.proDesc, features: STRIPE_PLANS.pro.features,
+    current: subscription?.plan === "pro",
+    savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
+  };
 
   const faqs = [
     { q: c.faq1Q, a: c.faq1A },
@@ -72,48 +65,33 @@ export default function PricingPage() {
       </section>
 
       <section className="pb-20">
-        <div className="container max-w-3xl">
-          <div className="grid md:grid-cols-2 gap-8">
-            {plans.map((plan) => (
-              <div key={plan.key} className={`surface-elevated rounded-xl p-8 flex flex-col ${plan.popular ? 'ring-2 ring-primary relative' : ''}`}>
-                {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">Most Popular</span>
-                )}
-                {plan.current && (
-                  <span className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">Your Plan</span>
-                )}
-                <h3 className="text-xl font-bold">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1 mb-6">{plan.desc}</p>
-                <div className="mb-1">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-sm text-muted-foreground">{plan.period}</span>
-                </div>
-                {plan.savings && <p className="text-xs text-primary font-medium mb-5">{plan.savings}</p>}
-                {!plan.savings && <div className="mb-5" />}
-                <ul className="space-y-3 mb-8 flex-1">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{f}
-                    </li>
-                  ))}
-                </ul>
-                {plan.key === "free" ? (
-                  plan.current ? (
-                    <Button className="w-full" variant="outline" disabled>Current Plan</Button>
-                  ) : (
-                    <Button className="w-full" variant="outline" asChild><Link to="/signup">Get Started Free</Link></Button>
-                  )
-                ) : (
-                  plan.current ? (
-                    <Button className="w-full" variant="outline" onClick={() => subscription?.openCustomerPortal()}>Manage Subscription</Button>
-                  ) : (
-                    <Button className="w-full" disabled={!!checkoutLoading} onClick={() => proPriceId && handleCheckout(proPriceId)}>
-                      {checkoutLoading === proPriceId ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : "Start 14-Day Free Trial"}
-                    </Button>
-                  )
-                )}
-              </div>
-            ))}
+        <div className="container max-w-md">
+          <div className="surface-elevated rounded-xl p-8 flex flex-col ring-2 ring-primary relative">
+            {plan.current && (
+              <span className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">Your Plan</span>
+            )}
+            <h3 className="text-xl font-bold">{plan.name}</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-6">{plan.desc}</p>
+            <div className="mb-1">
+              <span className="text-4xl font-bold">{plan.price}</span>
+              <span className="text-sm text-muted-foreground">{plan.period}</span>
+            </div>
+            {plan.savings && <p className="text-xs text-primary font-medium mb-2">{plan.savings}</p>}
+            <p className="text-xs text-muted-foreground mb-5">7-day free trial included</p>
+            <ul className="space-y-3 mb-8 flex-1">
+              {plan.features.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{f}
+                </li>
+              ))}
+            </ul>
+            {plan.current ? (
+              <Button className="w-full" variant="outline" onClick={() => subscription?.openCustomerPortal()}>Manage Subscription</Button>
+            ) : (
+              <Button className="w-full" disabled={!!checkoutLoading} onClick={() => proPriceId && handleCheckout(proPriceId)}>
+                {checkoutLoading === proPriceId ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : "Start 7-Day Free Trial"}
+              </Button>
+            )}
           </div>
         </div>
       </section>

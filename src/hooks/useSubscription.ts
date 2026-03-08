@@ -2,21 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const STRIPE_PLANS = {
-  free: {
-    name: "Free",
-    price_monthly: 0,
-    price_yearly: 0,
-    price_id_monthly: null,
-    price_id_yearly: null,
-    product_id: null,
-    features: [
-      "50 documents per month",
-      "AI data extraction",
-      "CSV export",
-      "1 user",
-      "Email support",
-    ],
-  },
   pro: {
     name: "Pro",
     price_monthly: 9.99,
@@ -25,21 +10,23 @@ export const STRIPE_PLANS = {
     price_id_yearly: "price_1T8XixBmkvUKJ0fuFUP1JDl7",
     product_id_monthly: "prod_U6lFbZZFmHhG8T",
     product_id_yearly: "prod_U6lFBZgYR4YdhA",
+    trial_days: 7,
     features: [
       "Unlimited documents",
-      "Everything in Free",
+      "AI data extraction",
       "Team access (up to 10 users)",
       "Priority support",
       "Email import",
       "Custom export templates",
       "Contacts management",
+      "CSV & Excel exports",
     ],
   },
 } as const;
 
 export interface SubscriptionState {
   subscribed: boolean;
-  plan: "free" | "pro";
+  plan: "pro" | "none";
   status: string | null;
   price_id: string | null;
   subscription_id: string | null;
@@ -52,7 +39,7 @@ export interface SubscriptionState {
 export function useSubscription() {
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
-    plan: "free",
+    plan: "none",
     status: null,
     price_id: null,
     subscription_id: null,
@@ -75,7 +62,7 @@ export function useSubscription() {
 
       setState({
         subscribed: data.subscribed ?? false,
-        plan: data.plan ?? "free",
+        plan: data.subscribed ? "pro" : "none",
         status: data.status ?? null,
         price_id: data.price_id ?? null,
         subscription_id: data.subscription_id ?? null,

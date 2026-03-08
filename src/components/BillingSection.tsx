@@ -54,7 +54,7 @@ export default function BillingSection() {
               </div>
               <div>
                 <h3 className="font-semibold">
-                  {sub.plan === "pro" ? "Pro" : "Free"} Plan
+                  Pro Plan
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
                   {sub.status === "trialing" && (
@@ -115,12 +115,12 @@ export default function BillingSection() {
         </CardContent>
       </Card>
 
-      {/* Upgrade section for free users */}
+      {/* Subscribe section for users without a subscription */}
       {!sub.subscribed && (
         <Card>
           <CardContent className="p-5">
-            <h3 className="font-semibold mb-1">Upgrade to Pro</h3>
-            <p className="text-sm text-muted-foreground mb-4">Get unlimited documents, team access, email import, and more. Start with a 14-day free trial.</p>
+            <h3 className="font-semibold mb-1">Subscribe to Pro</h3>
+            <p className="text-sm text-muted-foreground mb-4">Get unlimited documents, team access, email import, and more. Start with a 7-day free trial.</p>
             <ul className="space-y-2 mb-6">
               {STRIPE_PLANS.pro.features.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm">
@@ -134,7 +134,7 @@ export default function BillingSection() {
                 disabled={!!checkoutLoading}
               >
                 {checkoutLoading === STRIPE_PLANS.pro.price_id_monthly ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                €9.99/month — Start Trial
+                €9.99/month — Start 7-Day Trial
               </Button>
               <Button
                 variant="outline"
