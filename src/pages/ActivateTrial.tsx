@@ -282,6 +282,9 @@ export default function ActivateTrialPage() {
           <p className="text-center text-[11px] text-muted-foreground/70 mt-3">
             Cancel anytime during your trial. No charge until the trial ends.
           </p>
+          <p className="text-center text-[11px] text-muted-foreground/70 mt-1.5">
+            Your card details are processed securely by Stripe and are never stored on our servers.
+          </p>
         </div>
       </div>
     </div>
