@@ -334,6 +334,14 @@ export default function IncomePage() {
   const processFile = useCallback(
     async (file: File) => {
       if (!user) return;
+
+      // Enforce file size limit
+      const maxBytes = maxFileSizeMB * 1024 * 1024;
+      if (file.size > maxBytes) {
+        toast.error(`File "${file.name}" exceeds the ${maxFileSizeMB}MB limit.`);
+        return;
+      }
+
       const id = Math.random().toString(36).slice(2);
       setFiles((prev) => [{ id, name: file.name, size: formatSize(file.size), status: "uploading", progress: 20 }, ...prev]);
       try {
@@ -346,7 +354,7 @@ export default function IncomePage() {
         setFiles((prev) => prev.map((f) => f.id === id ? { ...f, status: "error", progress: 100, error: err.message } : f));
       }
     },
-    [user, uploadMutation]
+    [user, uploadMutation, maxFileSizeMB]
   );
 
   const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); Array.from(e.dataTransfer.files).forEach(processFile); };
