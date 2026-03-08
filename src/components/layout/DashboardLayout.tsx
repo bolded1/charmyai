@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles, AlertTriangle } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -26,6 +26,8 @@ import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 import { NPSWidget } from "@/components/NPSWidget";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const mobileNavItems = [
   { title: "Capture", url: "/app", icon: Upload },
