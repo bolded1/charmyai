@@ -57,23 +57,33 @@ serve(async (req) => {
       case "list_subscriptions": {
         const subs = await stripe.subscriptions.list({
           limit: 100,
-          expand: ["data.customer", "data.items.data.price.product"],
+          expand: ["data.customer", "data.items.data.price"],
         });
-        result = subs.data.map((sub: any) => ({
-          id: sub.id,
-          status: sub.status,
-          customer_email: sub.customer?.email || "Unknown",
-          customer_name: sub.customer?.name || sub.customer?.email || "Unknown",
-          customer_id: sub.customer?.id || sub.customer,
-          price_id: sub.items.data[0]?.price?.id,
-          product_name: sub.items.data[0]?.price?.product?.name || "Unknown",
-          amount: sub.items.data[0]?.price?.unit_amount,
-          currency: sub.items.data[0]?.price?.currency,
-          interval: sub.items.data[0]?.price?.recurring?.interval,
-          trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
-          current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
-          cancel_at_period_end: sub.cancel_at_period_end,
-          created: new Date(sub.created * 1000).toISOString(),
+        result = await Promise.all(subs.data.map(async (sub: any) => {
+          const price = sub.items.data[0]?.price;
+          let productName = "Unknown";
+          if (price?.product) {
+            try {
+              const product = await stripe.products.retrieve(typeof price.product === "string" ? price.product : price.product.id);
+              productName = product.name || "Unknown";
+            } catch { /* ignore */ }
+          }
+          return {
+            id: sub.id,
+            status: sub.status,
+            customer_email: sub.customer?.email || "Unknown",
+            customer_name: sub.customer?.name || sub.customer?.email || "Unknown",
+            customer_id: sub.customer?.id || sub.customer,
+            price_id: price?.id,
+            product_name: productName,
+            amount: price?.unit_amount,
+            currency: price?.currency,
+            interval: price?.recurring?.interval,
+            trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+            current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+            cancel_at_period_end: sub.cancel_at_period_end,
+            created: new Date(sub.created * 1000).toISOString(),
+          };
         }));
         logStep("Listed subscriptions", { count: result.length });
         break;
