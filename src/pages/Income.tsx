@@ -291,10 +291,19 @@ export default function IncomePage() {
     return groups;
   }, [filtered]);
 
-  const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
-  const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
-  const eurCount = filtered.filter((e) => e.currency === "EUR").length;
-  const usdCount = filtered.filter((e) => e.currency === "USD").length;
+  const currencySymbols: Record<string, string> = { EUR: "€", USD: "$", GBP: "£", CHF: "CHF ", JPY: "¥", CAD: "CA$", AUD: "A$", SEK: "kr ", NOK: "kr ", DKK: "kr " };
+  const cardStyles = ["stat-card-emerald icon-bg-emerald text-emerald", "stat-card-amber icon-bg-amber text-amber", "stat-card-blue icon-bg-blue text-primary", "stat-card-violet icon-bg-violet text-violet"];
+  const currencySummary = useMemo(() => {
+    const map = new Map<string, { total: number; count: number }>();
+    filtered.forEach((e) => {
+      const c = e.currency || "EUR";
+      const prev = map.get(c) || { total: 0, count: 0 };
+      map.set(c, { total: prev.total + Number(e.total_amount || 0), count: prev.count + 1 });
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([currency, data]) => ({ currency, ...data }));
+  }, [filtered]);
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
