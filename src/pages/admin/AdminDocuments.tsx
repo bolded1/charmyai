@@ -129,7 +129,7 @@ export default function AdminDocumentsPage() {
               fields={[
                 { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
                 { label: "Date", value: new Date(doc.created_at).toLocaleDateString() },
-                { label: "Confidence", value: doc.confidence_score ? `${Math.round(doc.confidence_score * 100)}%` : "—" },
+                { label: "Confidence", value: doc.confidence_score ? `${Math.round(doc.confidence_score)}%` : "—" },
               ]}
               onClick={() => openPreview(doc)}
             />
@@ -172,7 +172,7 @@ export default function AdminDocumentsPage() {
                         </Badge>
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">
-                        {doc.confidence_score ? `${Math.round(doc.confidence_score * 100)}%` : "—"}
+                        {doc.confidence_score ? `${Math.round(doc.confidence_score)}%` : "—"}
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</td>
                       <td className="p-3">
@@ -243,7 +243,7 @@ export default function AdminDocumentsPage() {
                   { l: "Type", v: (selected.document_type || "—").replace("_", " ") },
                   { l: "Status", v: selected.status },
                   { l: "Total", v: selected.total_amount ? `€${selected.total_amount}` : "—" },
-                  { l: "Confidence", v: selected.confidence_score ? `${Math.round(selected.confidence_score * 100)}%` : "—" },
+                  { l: "Confidence", v: selected.confidence_score ? `${Math.round(selected.confidence_score)}%` : "—" },
                   { l: "Source", v: selected.source },
                   { l: "Created", v: new Date(selected.created_at).toLocaleString() },
                 ].map((f) => (
@@ -253,7 +253,7 @@ export default function AdminDocumentsPage() {
                   </div>
                 ))}
               </div>
-              {selected.confidence_score && selected.confidence_score < 0.7 && (
+              {selected.confidence_score && selected.confidence_score < 70 && (
                 <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                   ⚠ Low confidence score. Manual review recommended.
                 </div>
