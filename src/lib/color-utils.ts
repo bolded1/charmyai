@@ -158,8 +158,6 @@ export function generateColorVariations(hex: string) {
 export function applyAccentColor(hex: string) {
   const root = document.documentElement;
   const vars = generateColorVariations(hex);
-  const isDark = root.classList.contains("dark");
-
   // Primary
   root.style.setProperty("--primary", vars.primary);
   root.style.setProperty("--primary-foreground", vars.primaryForeground);
@@ -167,24 +165,24 @@ export function applyAccentColor(hex: string) {
   root.style.setProperty("--ring", vars.focusRing);
 
   // Brand surfaces
-  root.style.setProperty("--brand-soft", isDark ? vars.softDark : vars.soft);
-  root.style.setProperty("--brand-border", isDark ? vars.borderDark : vars.border);
-  root.style.setProperty("--primary-icon", isDark ? vars.iconDark : vars.icon);
+  root.style.setProperty("--brand-soft", vars.soft);
+  root.style.setProperty("--brand-border", vars.border);
+  root.style.setProperty("--primary-icon", vars.icon);
 
   // Input & link
-  root.style.setProperty("--input-focus", isDark ? vars.linkDark : vars.inputFocus);
-  root.style.setProperty("--link-color", isDark ? vars.linkDark : vars.link);
+  root.style.setProperty("--input-focus", vars.inputFocus);
+  root.style.setProperty("--link-color", vars.link);
 
   // Info (tied to accent)
-  root.style.setProperty("--info", isDark ? vars.linkDark : vars.primary);
-  root.style.setProperty("--info-soft", isDark ? vars.softDark : vars.soft);
+  root.style.setProperty("--info", vars.primary);
+  root.style.setProperty("--info-soft", vars.soft);
 
   // Sidebar
   root.style.setProperty("--sidebar-primary", vars.primary);
   root.style.setProperty("--sidebar-primary-foreground", vars.primaryForeground);
   root.style.setProperty("--sidebar-ring", vars.primary);
-  root.style.setProperty("--sidebar-active-bg", isDark ? vars.sidebarActiveBgDark : vars.sidebarActiveBg);
-  root.style.setProperty("--sidebar-active-text", isDark ? vars.sidebarActiveTextDark : vars.sidebarActiveText);
+  root.style.setProperty("--sidebar-active-bg", vars.sidebarActiveBg);
+  root.style.setProperty("--sidebar-active-text", vars.sidebarActiveText);
 
   // Charts
   root.style.setProperty("--chart-1", vars.chart1);
