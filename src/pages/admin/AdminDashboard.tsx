@@ -26,7 +26,7 @@ const actionColors: Record<string, string> = {
   document_edited: "bg-secondary text-secondary-foreground",
 };
 
-const CHART_COLORS = ["hsl(217, 91%, 60%)", "hsl(220, 14%, 80%)"];
+const CHART_COLORS = ["hsl(224, 64%, 33%)", "hsl(220, 14%, 80%)"];
 
 const successRateData = [
   { name: "Success", value: adminDashboardStats.processingSuccessRate },
