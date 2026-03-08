@@ -6,7 +6,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3,
-  CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail,
+  CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
 } from "lucide-react";
 
 const navItems = [
@@ -21,6 +21,7 @@ const navItems = [
   { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },
   { title: "Page Content", url: "/admin/cms", icon: PenLine },
   { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
+  { title: "Broadcast", url: "/admin/broadcast", icon: Megaphone },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
 ];
 
