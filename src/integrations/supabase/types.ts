@@ -1068,7 +1068,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      feature_flags_public: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          enabled: boolean | null
+          id: string | null
+          key: string | null
+          name: string | null
+          segment: string | null
+          updated_at: string | null
+          user_ids: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string | null
+          key?: string | null
+          name?: string | null
+          segment?: string | null
+          updated_at?: string | null
+          user_ids?: never
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string | null
+          key?: string | null
+          name?: string | null
+          segment?: string | null
+          updated_at?: string | null
+          user_ids?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       find_duplicate_document: {
