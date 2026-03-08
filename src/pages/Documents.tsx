@@ -433,13 +433,13 @@ export default function DocumentsPage() {
                 </div>
               )}
 
-              {selected.validation_errors && Array.isArray(selected.validation_errors) && selected.validation_errors.length > 0 && (
+              {selected.validation_errors && Array.isArray(selected.validation_errors) && (selected.validation_errors as any[]).filter(e => e?.field !== "duplicate").length > 0 && (
                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 space-y-1">
                   <p className="text-xs font-medium text-destructive">Validation Issues:</p>
-                  {(selected.validation_errors as { field: string; message: string }[])
-                    .filter(err => err.field !== "duplicate")
+                  {(selected.validation_errors as any[])
+                    .filter(err => err?.field !== "duplicate")
                     .map((err, i) => (
-                    <p key={i} className="text-xs text-destructive/80">• {err.message}</p>
+                    <p key={i} className="text-xs text-destructive/80">• {err?.message || err?.field || JSON.stringify(err)}</p>
                   ))}
                 </div>
               )}
