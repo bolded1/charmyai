@@ -25,6 +25,7 @@ const recordsItems = [
 ];
 
 const systemItems = [
+  { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
   { title: "Support", url: "/app/support", icon: LifeBuoy },

@@ -112,6 +112,7 @@ const App = () => (
             <Route path="settings" element={<Settings />} />
             <Route path="support" element={<Support />} />
             <Route path="help" element={<Help />} />
+            <Route path="assistant" element={<Assistant />} />
           </Route>
 
           {/* Admin pages */}
