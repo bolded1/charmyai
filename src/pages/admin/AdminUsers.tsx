@@ -40,7 +40,7 @@ const roleColors: Record<string, string> = {
 
 function CreateUserDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (v: boolean) => void; onCreated: () => void }) {
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user" });
+  const [form, setForm] = useState({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user", company_name: "" });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
