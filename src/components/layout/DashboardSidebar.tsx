@@ -46,7 +46,7 @@ export function DashboardSidebar() {
   const renderGroup = (label: string, items: typeof financeItems) => (
     <SidebarGroup className="py-1">
       {showLabels && (
-        <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
+        <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
           {label}
         </SidebarGroupLabel>
       )}
