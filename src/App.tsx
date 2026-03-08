@@ -55,12 +55,12 @@ localStorage.removeItem("theme-mode");
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ImpersonationProvider>
+    <CookieConsentProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
-        <CookieConsent />
         <Routes>
           {/* Marketing pages */}
           <Route element={<MarketingLayout />}>
