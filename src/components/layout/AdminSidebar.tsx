@@ -7,6 +7,7 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
+  KeyRound, UserX,
 } from "lucide-react";
 
 const navItems = [
