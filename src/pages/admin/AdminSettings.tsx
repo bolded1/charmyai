@@ -242,6 +242,13 @@ export default function AdminSettingsPage() {
   const [newSignups, setNewSignups, nsSaving] = useDbAutoSave("new-signups", "true");
   const [debugLog, setDebugLog, dlSaving] = useDbAutoSave("debug-log", "false");
 
+  const systemQueryClient = useQueryClient();
+
+  // Invalidate system-settings cache when system toggles change
+  useEffect(() => {
+    systemQueryClient.invalidateQueries({ queryKey: ["system-settings"] });
+  }, [maintenance, newSignups, debugLog, systemQueryClient]);
+
   const anySaving = mfsSaving || mfSaving || pdlSaving || pulSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
     mtSaving || nsSaving || dlSaving;
