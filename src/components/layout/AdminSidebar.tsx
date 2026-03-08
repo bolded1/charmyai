@@ -185,7 +185,7 @@ export function AdminSidebar() {
             <SidebarMenuButton asChild className="text-foreground/80 hover:text-foreground hover:bg-muted/60 rounded-xl">
               <Link to="/app" className="text-foreground hover:text-foreground hover:bg-muted/60 rounded-xl">
                 <ArrowLeft className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                {!collapsed && <span className="text-[13.5px] font-semibold">Back to App</span>}
+                {!collapsed && <span className="text-[11.5px] font-semibold">Back to App</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
