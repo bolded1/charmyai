@@ -79,6 +79,7 @@ const App = () => (
             <Route path="exports" element={<Exports />} />
             <Route path="team" element={<Team />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="support" element={<Support />} />
             <Route path="help" element={<Help />} />
           </Route>
 
