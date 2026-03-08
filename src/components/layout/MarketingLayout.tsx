@@ -1,19 +1,36 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { label: "Features", to: "/features" },
-  { label: "Pricing", to: "/pricing" },
-  { label: "About", to: "/about" },
-  { label: "Contact", to: "/contact" },
+  { label: "Features", to: "/features", description: "See what Charmy can do" },
+  { label: "Pricing", to: "/pricing", description: "Plans that scale with you" },
+  { label: "About", to: "/about", description: "Our story and mission" },
+  { label: "Contact", to: "/contact", description: "Get in touch with us" },
 ];
 
 export default function MarketingLayout() {
   const brandLogo = useBrandLogo();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   return (
     <div className="marketing min-h-screen flex flex-col">
@@ -50,29 +67,101 @@ export default function MarketingLayout() {
             </Button>
           </div>
 
-          <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <button
+            className="md:hidden relative z-50 h-10 w-10 flex items-center justify-center rounded-xl hover:bg-accent transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          >
+            <AnimatePresence mode="wait">
+              {mobileOpen ? (
+                <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                  <X className="h-5 w-5" />
+                </motion.div>
+              ) : (
+                <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                  <Menu className="h-5 w-5" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
         </div>
-
-        {mobileOpen && (
-          <div className="md:hidden border-t bg-card p-4 space-y-3">
-            {navLinks.map((l) => (
-              <Link key={l.to} to={l.to} className="block text-sm text-muted-foreground py-2" onClick={() => setMobileOpen(false)}>
-                {l.label}
-              </Link>
-            ))}
-            <div className="flex gap-2 pt-2">
-              <Button variant="ghost" size="sm" asChild className="flex-1">
-                <Link to="/login">Sign In</Link>
-              </Button>
-              <Button size="sm" asChild className="flex-1">
-                <Link to="/signup">Start Free Trial</Link>
-              </Button>
-            </div>
-          </div>
-        )}
       </header>
+
+      {/* Mobile fullscreen menu overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 md:hidden"
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-background/95 backdrop-blur-xl" />
+
+            {/* Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.25, delay: 0.05 }}
+              className="relative pt-20 px-6 pb-8 flex flex-col h-full"
+            >
+              {/* Nav links */}
+              <nav className="space-y-1 flex-1">
+                {navLinks.map((l, i) => {
+                  const isActive = location.pathname === l.to;
+                  return (
+                    <motion.div
+                      key={l.to}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.25, delay: 0.08 + i * 0.05 }}
+                    >
+                      <Link
+                        to={l.to}
+                        className={`group flex items-center justify-between rounded-2xl px-4 py-4 transition-all ${
+                          isActive
+                            ? "bg-primary/8 border border-primary/15"
+                            : "hover:bg-accent/60"
+                        }`}
+                      >
+                        <div>
+                          <span className={`block text-base font-semibold ${isActive ? "text-primary" : "text-foreground"}`}>
+                            {l.label}
+                          </span>
+                          <span className="block text-xs text-muted-foreground mt-0.5">{l.description}</span>
+                        </div>
+                        <ChevronRight className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? "text-primary" : "text-muted-foreground/50"}`} />
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </nav>
+
+              {/* CTA buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
+                className="space-y-3 pt-6 border-t border-border/50"
+              >
+                <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
+                  <Link to="/signup">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Start Free Trial
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                </Button>
+                <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
+                  <Link to="/login">Sign In</Link>
+                </Button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main className="flex-1">
         <Outlet />
