@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Megaphone, Send, Clock, Users } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Megaphone, Send, Clock, Users, Calendar, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface BroadcastRecord {
@@ -19,6 +20,8 @@ interface BroadcastRecord {
   role_filter: string | null;
   sent_count: number;
   created_at: string;
+  scheduled_at: string | null;
+  status: string;
 }
 
 export default function AdminBroadcastPage() {
@@ -27,8 +30,10 @@ export default function AdminBroadcastPage() {
   const [link, setLink] = useState("");
   const [segment, setSegment] = useState("all");
   const [roleFilter, setRoleFilter] = useState("user");
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
   const [sending, setSending] = useState(false);
-  const [lastResult, setLastResult] = useState<{ sent: number } | null>(null);
   const [history, setHistory] = useState<BroadcastRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
@@ -66,8 +71,21 @@ export default function AdminBroadcastPage() {
       toast.error("Title and message are required");
       return;
     }
+
+    let scheduled_at: string | undefined;
+    if (isScheduled) {
+      if (!scheduledDate || !scheduledTime) {
+        toast.error("Please select a date and time for scheduling");
+        return;
+      }
+      scheduled_at = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+      if (new Date(scheduled_at) <= new Date()) {
+        toast.error("Scheduled time must be in the future");
+        return;
+      }
+    }
+
     setSending(true);
-    setLastResult(null);
     try {
       const res = await supabase.functions.invoke("admin-broadcast", {
         body: {
@@ -76,22 +94,42 @@ export default function AdminBroadcastPage() {
           link: link.trim() || undefined,
           segment,
           role_filter: segment === "role" ? roleFilter : undefined,
+          scheduled_at,
         },
       });
       if (res.error || res.data?.error) {
-        throw new Error(res.data?.error || res.error?.message || "Failed to send broadcast");
+        throw new Error(res.data?.error || res.error?.message || "Failed");
       }
-      setLastResult({ sent: res.data.sent });
-      toast.success(`Broadcast sent to ${res.data.sent} user(s)`);
-      setTitle("");
-      setBody("");
-      setLink("");
+      if (res.data.scheduled) {
+        toast.success(`Broadcast scheduled for ${new Date(scheduled_at!).toLocaleString()}`);
+      } else {
+        toast.success(`Broadcast sent to ${res.data.sent} user(s)`);
+      }
+      setTitle(""); setBody(""); setLink("");
+      setIsScheduled(false); setScheduledDate(""); setScheduledTime("");
       fetchHistory();
     } catch (err: any) {
       toast.error(err.message || "Failed to send broadcast");
     } finally {
       setSending(false);
     }
+  };
+
+  const cancelScheduled = async (id: string) => {
+    const { error } = await supabase.from("broadcast_history").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to cancel");
+      return;
+    }
+    setHistory((prev) => prev.filter((h) => h.id !== id));
+    toast.success("Scheduled broadcast cancelled");
+  };
+
+  const statusBadge = (status: string) => {
+    if (status === "sent") return <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary">Sent</Badge>;
+    if (status === "scheduled") return <Badge variant="secondary" className="text-[10px] bg-accent text-accent-foreground">Scheduled</Badge>;
+    if (status === "failed") return <Badge variant="destructive" className="text-[10px]">Failed</Badge>;
+    return <Badge variant="outline" className="text-[10px]">{status}</Badge>;
   };
 
   return (
@@ -102,8 +140,7 @@ export default function AdminBroadcastPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Megaphone className="h-4 w-4" />
-                New Broadcast
+                <Megaphone className="h-4 w-4" /> New Broadcast
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -148,15 +185,40 @@ export default function AdminBroadcastPage() {
                 <Input value={link} onChange={e => setLink(e.target.value)} placeholder="/app/documents" />
               </div>
 
-              <Button className="w-full" onClick={handleSend} disabled={sending || !title.trim() || !body.trim()}>
-                {sending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</> : <><Send className="h-4 w-4 mr-2" /> Send Broadcast</>}
-              </Button>
+              {/* Schedule toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs font-medium">Schedule for later</p>
+                    <p className="text-[10px] text-muted-foreground">Queue instead of sending now</p>
+                  </div>
+                </div>
+                <Switch checked={isScheduled} onCheckedChange={setIsScheduled} />
+              </div>
 
-              {lastResult && (
-                <div className="text-center py-2 rounded-lg bg-primary/5 border border-primary/10">
-                  <p className="text-sm font-medium text-primary">✓ Sent to {lastResult.sent} user(s)</p>
+              {isScheduled && (
+                <div className="flex gap-2">
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-[10px]">Date</Label>
+                    <Input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} min={new Date().toISOString().slice(0, 10)} />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-[10px]">Time</Label>
+                    <Input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
+                  </div>
                 </div>
               )}
+
+              <Button className="w-full" onClick={handleSend} disabled={sending || !title.trim() || !body.trim()}>
+                {sending ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {isScheduled ? "Scheduling..." : "Sending..."}</>
+                ) : isScheduled ? (
+                  <><Calendar className="h-4 w-4 mr-2" /> Schedule Broadcast</>
+                ) : (
+                  <><Send className="h-4 w-4 mr-2" /> Send Now</>
+                )}
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -166,40 +228,48 @@ export default function AdminBroadcastPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Clock className="h-4 w-4" />
-                Broadcast History
+                <Clock className="h-4 w-4" /> Broadcast History
               </CardTitle>
             </CardHeader>
             <CardContent>
               {loadingHistory ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
+                <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
               ) : history.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No broadcasts sent yet</p>
+                <p className="text-sm text-muted-foreground text-center py-8">No broadcasts yet</p>
               ) : (
                 <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
                   {history.map((item) => (
-                    <div key={item.id} className="p-3 rounded-lg border border-border bg-muted/20 space-y-1.5">
+                    <div key={item.id} className={`p-3 rounded-lg border space-y-1.5 ${item.status === "scheduled" ? "border-accent bg-accent/5" : "border-border bg-muted/20"}`}>
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium">{item.title}</p>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                          {new Date(item.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {statusBadge(item.status)}
+                          <p className="text-sm font-medium">{item.title}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {item.status === "scheduled" && (
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => cancelScheduled(item.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                            {item.status === "scheduled" && item.scheduled_at
+                              ? `Scheduled: ${new Date(item.scheduled_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`
+                              : new Date(item.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2">{item.body}</p>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="secondary" className="text-[10px] gap-1">
-                          <Users className="h-2.5 w-2.5" />
-                          {item.sent_count} delivered
-                        </Badge>
+                        {item.status === "sent" && (
+                          <Badge variant="secondary" className="text-[10px] gap-1">
+                            <Users className="h-2.5 w-2.5" /> {item.sent_count} delivered
+                          </Badge>
+                        )}
                         <Badge variant="outline" className="text-[10px] capitalize">
                           {segmentLabel(item.segment, item.role_filter)}
                         </Badge>
                         {item.link && (
-                          <Badge variant="outline" className="text-[10px] font-mono">
-                            {item.link}
-                          </Badge>
+                          <Badge variant="outline" className="text-[10px] font-mono">{item.link}</Badge>
                         )}
                       </div>
                     </div>
