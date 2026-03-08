@@ -251,32 +251,8 @@ export default function AdminSettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Subscription Pricing */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Subscription Pricing</CardTitle>
-                  <SaveIndicator saving={pmpSaving || pypSaving || tdSaving} />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Monthly Price (€)</Label>
-                    <Input type="number" step="0.01" value={proMonthlyPrice} onChange={(e) => setProMonthlyPrice(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Yearly Price (€)</Label>
-                    <Input type="number" step="0.01" value={proYearlyPrice} onChange={(e) => setProYearlyPrice(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Trial Period (days)</Label>
-                    <Input type="number" value={trialDays} onChange={(e) => setTrialDays(e.target.value)} />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">Note: To change actual billing amounts, update your Stripe products.</p>
-              </CardContent>
-            </Card>
+
+
 
             {/* Pro Plan Limits */}
             <Card>
