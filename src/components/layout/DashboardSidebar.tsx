@@ -90,8 +90,8 @@ export function DashboardSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-muted hover:text-sidebar-accent-foreground">
-              <LogOut className="h-3.5 w-3.5" />
-              {showLabels && <span>Sign Out</span>}
+              <LogOut className="h-3.5 w-3.5" strokeWidth={2.5} />
+              {showLabels && <span className="font-medium">Sign Out</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
