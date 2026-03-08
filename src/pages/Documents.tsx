@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2, Mail } from "lucide-react";
+import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2, Mail, Copy } from "lucide-react";
 import { useState } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -143,8 +143,12 @@ export default function DocumentsPage() {
               title={doc.file_name}
               subtitle={doc.supplier_name || doc.customer_name || undefined}
               badge={{
-                label: statusLabel(doc.status),
-                className: statusColors[doc.status] || "",
+                label: (doc as any).potential_duplicate_of
+                  ? "⚠ Duplicate"
+                  : statusLabel(doc.status),
+                className: (doc as any).potential_duplicate_of
+                  ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
+                  : statusColors[doc.status] || "",
               }}
               fields={[
                 { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
@@ -211,23 +215,30 @@ export default function DocumentsPage() {
                         )}
                       </td>
                       <td className="p-3">
-                        <Badge variant="secondary" className={statusColors[doc.status] || ""}>
-                          {doc.status === "needs_review" ? (
-                            <span className="flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3" /> needs review
-                            </span>
-                          ) : doc.status === "processing" ? (
-                            <span className="flex items-center gap-1">
-                              <Loader2 className="h-3 w-3 animate-spin" /> processing
-                            </span>
-                          ) : doc.status === "approved" ? (
-                            <span className="flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> approved
-                            </span>
-                          ) : (
-                            doc.status.replace("_", " ")
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="secondary" className={statusColors[doc.status] || ""}>
+                            {doc.status === "needs_review" ? (
+                              <span className="flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3" /> needs review
+                              </span>
+                            ) : doc.status === "processing" ? (
+                              <span className="flex items-center gap-1">
+                                <Loader2 className="h-3 w-3 animate-spin" /> processing
+                              </span>
+                            ) : doc.status === "approved" ? (
+                              <span className="flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> approved
+                              </span>
+                            ) : (
+                              doc.status.replace("_", " ")
+                            )}
+                          </Badge>
+                          {(doc as any).potential_duplicate_of && (
+                            <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/20">
+                              <Copy className="h-3 w-3 mr-1" /> duplicate
+                            </Badge>
                           )}
-                        </Badge>
+                        </div>
                       </td>
                       <td className="p-3" />
                     </tr>
@@ -254,10 +265,24 @@ export default function DocumentsPage() {
           </DialogHeader>
           {selected && (
             <div className="space-y-4">
+              {(selected as any).potential_duplicate_of && (
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2">
+                  <Copy className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-medium text-amber-700">Potential Duplicate Detected</p>
+                    <p className="text-xs text-amber-600/80 mt-0.5">
+                      This document matches an existing record with the same supplier, amount, or invoice number. Please review before approving.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {selected.validation_errors && Array.isArray(selected.validation_errors) && selected.validation_errors.length > 0 && (
                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 space-y-1">
                   <p className="text-xs font-medium text-destructive">Validation Issues:</p>
-                  {(selected.validation_errors as { field: string; message: string }[]).map((err, i) => (
+                  {(selected.validation_errors as { field: string; message: string }[])
+                    .filter(err => err.field !== "duplicate")
+                    .map((err, i) => (
                     <p key={i} className="text-xs text-destructive/80">• {err.message}</p>
                   ))}
                 </div>
