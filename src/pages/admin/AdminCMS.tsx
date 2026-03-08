@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import LegalPageEditor from "@/components/admin/LegalPageEditor";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
