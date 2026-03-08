@@ -535,11 +535,9 @@ export default function IncomePage() {
                 </tbody>
               </table>
             </div>
-          )
-                </tbody>
-              </table>
-            </div>
           )}
+        </CardContent>
+      </Card>
         </CardContent>
       </Card>
 
