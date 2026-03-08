@@ -59,6 +59,7 @@ import AdminSystemHealth from "./pages/admin/AdminSystemHealth";
 import AdminScheduledJobs from "./pages/admin/AdminScheduledJobs";
 import AdminAISettings from "./pages/admin/AdminAISettings";
 import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
+import Assistant from "./pages/Assistant";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -111,6 +112,7 @@ const App = () => (
             <Route path="settings" element={<Settings />} />
             <Route path="support" element={<Support />} />
             <Route path="help" element={<Help />} />
+            <Route path="assistant" element={<Assistant />} />
           </Route>
 
           {/* Admin pages */}
