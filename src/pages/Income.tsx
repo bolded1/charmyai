@@ -74,6 +74,8 @@ export default function IncomePage() {
   const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();
   const { downloadAsZip, downloading } = useBulkDownload();
+  const { data: org } = useOrganization();
+  const defaultCurrency = org?.default_currency || "EUR";
 
   const selectedRecord = income.find((e) => e.id === selectedId);
 
