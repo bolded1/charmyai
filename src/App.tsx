@@ -51,6 +51,7 @@ applyPersistedSettings();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ImpersonationProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
