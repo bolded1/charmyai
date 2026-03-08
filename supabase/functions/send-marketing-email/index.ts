@@ -61,8 +61,8 @@ serve(async (req) => {
       });
     }
 
-    const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY");
-    const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN");
+    const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY")?.trim();
+    const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")?.trim();
     if (!MAILGUN_API_KEY) throw new Error("MAILGUN_API_KEY not configured");
     if (!MAILGUN_DOMAIN) throw new Error("MAILGUN_DOMAIN not configured");
 
