@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
