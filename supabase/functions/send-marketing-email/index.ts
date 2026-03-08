@@ -144,18 +144,21 @@ serve(async (req) => {
       } else {
         const errText = await response.text();
         console.error("Mailgun send error:", response.status, errText);
-        errors.push(`Batch ${i / batchSize + 1}: ${errText}`);
+        errors.push(`Batch ${i / batchSize + 1}: HTTP ${response.status} ${errText}`);
       }
     }
 
+    const allFailed = totalSent === 0 && errors.length > 0;
+
     return new Response(
       JSON.stringify({
-        success: true,
+        success: !allFailed,
         sent: totalSent,
         total: recipients.length,
+        error: allFailed ? "Mailgun rejected the request. Check MAILGUN_API_KEY / MAILGUN_DOMAIN pairing." : undefined,
         errors: errors.length > 0 ? errors : undefined,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: allFailed ? 502 : 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("send-marketing-email error:", e);
