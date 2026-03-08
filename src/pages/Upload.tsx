@@ -172,7 +172,7 @@ export default function UploadPage() {
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            className={`relative px-5 py-6 md:px-8 md:py-8 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
+            className={`relative px-4 py-5 md:px-6 md:py-6 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
               dragOver || uploadPressed
                 ? "border-primary bg-primary/5 scale-[1.01] shadow-glow"
                 : "border-border hover:border-primary/50 hover:bg-accent/30"
@@ -182,22 +182,22 @@ export default function UploadPage() {
             onPointerUp={() => setUploadPressed(false)}
             onPointerLeave={() => setUploadPressed(false)}
           >
-            <div className={`mx-auto mb-2.5 md:mb-4 h-11 w-11 md:h-13 md:w-13 rounded-xl flex items-center justify-center transition-all ${
+            <div className={`mx-auto mb-2 h-10 w-10 md:h-11 md:w-11 rounded-xl flex items-center justify-center transition-all ${
               dragOver || uploadPressed ? "bg-hero-gradient shadow-lg shadow-primary/25" : "icon-bg-violet"
             }`}>
-              <UploadIcon className={`h-5 w-5 md:h-6 md:w-6 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
+              <UploadIcon className={`h-4.5 w-4.5 md:h-5 md:w-5 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
-            <h2 className="text-sm md:text-lg font-bold text-foreground mb-1">
+            <h2 className="text-sm md:text-base font-bold text-foreground mb-0.5">
               {dragOver ? "Drop files to upload" : "Upload Documents"}
             </h2>
-            <p className="text-xs text-muted-foreground mb-3 md:mb-4 max-w-md mx-auto">
+            <p className="text-[11px] text-muted-foreground mb-2.5 max-w-sm mx-auto">
               Drag and drop your invoices, receipts, or bills here.
             </p>
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg">PDF</Badge>
-              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg">PNG</Badge>
-              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg">JPG</Badge>
-              <span className="text-[10px] text-muted-foreground">Up to 20MB</span>
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-md">PDF</Badge>
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-md">PNG</Badge>
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-md">JPG</Badge>
+              <span className="text-[9px] text-muted-foreground">Up to 20MB</span>
             </div>
             <input
               id="file-input"
