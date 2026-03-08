@@ -80,7 +80,7 @@ export function DashboardSidebar() {
               <FileText className="h-3 w-3 text-white" />
             </div>
           )}
-          {showLabels && !brandLogo && <span className="font-bold text-[13px] text-gradient">Charmy</span>}
+          {showLabels && !brandLogo && <span className="font-bold text-xs text-gradient">Charmy</span>}
         </Link>
       </SidebarHeader>
       <SidebarContent className="px-1.5 pt-1">
