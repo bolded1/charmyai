@@ -113,7 +113,7 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="surface-elevated rounded-xl p-6 text-center"
+                className="glass-card rounded-2xl p-6 text-center hover:shadow-lg transition-all duration-300"
               >
                 <div className="h-12 w-12 rounded-xl bg-brand-soft flex items-center justify-center mx-auto mb-4">
                   <step.icon className="h-6 w-6 text-primary-icon" />
