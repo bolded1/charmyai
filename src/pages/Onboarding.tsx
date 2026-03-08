@@ -145,8 +145,10 @@ export default function OnboardingPage() {
     : (user?.email?.[0] || "U").toUpperCase();
 
   return (
-    <div className="marketing min-h-screen flex items-center justify-center p-4 surface-sunken">
-      <div className="w-full max-w-lg">
+    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+      <div className="w-full max-w-lg relative z-10">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 font-bold text-xl mb-4">
             {brandLogo ? (
