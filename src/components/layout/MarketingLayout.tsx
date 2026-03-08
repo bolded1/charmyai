@@ -4,6 +4,7 @@ import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight } from "lucide-re
 import { useState, useEffect } from "react";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCookieConsent } from "@/components/CookieConsent";
 
 const navLinks = [
   { label: "Features", to: "/features", description: "See what Charmy can do" },
@@ -16,6 +17,7 @@ export default function MarketingLayout() {
   const brandLogo = useBrandLogo();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { openPreferences } = useCookieConsent();
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -206,6 +208,7 @@ export default function MarketingLayout() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <Link to="/privacy" className="block hover:text-foreground">Privacy Policy</Link>
                 <Link to="/terms" className="block hover:text-foreground">Terms of Service</Link>
+                <button onClick={openPreferences} className="block hover:text-foreground text-left">Cookie Preferences</button>
               </div>
             </div>
           </div>

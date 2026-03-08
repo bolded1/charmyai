@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { CookieConsent } from "@/components/CookieConsent";
+import { CookieConsentProvider } from "@/components/CookieConsent";
 import MarketingLayout from "@/components/layout/MarketingLayout";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -55,12 +55,12 @@ localStorage.removeItem("theme-mode");
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ImpersonationProvider>
+    <CookieConsentProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
-        <CookieConsent />
         <Routes>
           {/* Marketing pages */}
           <Route element={<MarketingLayout />}>
@@ -115,6 +115,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </CookieConsentProvider>
     </ImpersonationProvider>
   </QueryClientProvider>
 );
