@@ -278,10 +278,19 @@ export default function ExpensesPage() {
     return groups;
   }, [filtered]);
 
-  const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
-  const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
-  const eurCount = filtered.filter((e) => e.currency === "EUR").length;
-  const usdCount = filtered.filter((e) => e.currency === "USD").length;
+  const currencySymbols: Record<string, string> = { EUR: "€", USD: "$", GBP: "£", CHF: "CHF ", JPY: "¥", CAD: "CA$", AUD: "A$", SEK: "kr ", NOK: "kr ", DKK: "kr " };
+  const cardStyles = ["stat-card-blue icon-bg-blue text-primary", "stat-card-violet icon-bg-violet text-violet", "stat-card-emerald icon-bg-emerald text-emerald", "stat-card-amber icon-bg-amber text-amber"];
+  const currencySummary = useMemo(() => {
+    const map = new Map<string, { total: number; count: number }>();
+    filtered.forEach((e) => {
+      const c = e.currency || "EUR";
+      const prev = map.get(c) || { total: 0, count: 0 };
+      map.set(c, { total: prev.total + Number(e.total_amount || 0), count: prev.count + 1 });
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([currency, data]) => ({ currency, ...data }));
+  }, [filtered]);
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
@@ -299,27 +308,24 @@ export default function ExpensesPage() {
   return (
     <div className="max-w-6xl space-y-6">
       {/* Currency summary cards */}
-      <div className="grid sm:grid-cols-2 gap-5">
-        <div className="stat-card-blue rounded-2xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-9 w-9 rounded-xl icon-bg-blue flex items-center justify-center">
-              <Receipt className="h-4 w-4 text-primary" />
+      <div className={`grid gap-5 ${currencySummary.length === 1 ? 'grid-cols-1 max-w-md' : currencySummary.length === 2 ? 'sm:grid-cols-2' : currencySummary.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
+        {currencySummary.map((cs, i) => {
+          const style = cardStyles[i % cardStyles.length];
+          const [cardClass, iconClass, textClass] = style.split(" ");
+          const symbol = currencySymbols[cs.currency] || `${cs.currency} `;
+          return (
+            <div key={cs.currency} className={`${cardClass} rounded-2xl p-5`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`h-9 w-9 rounded-xl ${iconClass} flex items-center justify-center`}>
+                  <Receipt className={`h-4 w-4 ${textClass}`} />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">Expenses {cs.currency}</p>
+              </div>
+              <p className="text-2xl font-bold">{symbol}{cs.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-xs text-muted-foreground mt-1">{cs.count} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Expenses EUR</p>
-          </div>
-          <p className="text-2xl font-bold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
-        </div>
-        <div className="stat-card-violet rounded-2xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-9 w-9 rounded-xl icon-bg-violet flex items-center justify-center">
-              <Receipt className="h-4 w-4 text-violet" />
-            </div>
-            <p className="text-sm font-medium text-muted-foreground">Expenses USD</p>
-          </div>
-          <p className="text-2xl font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
-        </div>
+          );
+        })}
       </div>
 
       {/* Filters row */}
