@@ -226,29 +226,51 @@ export default function DashboardLayout() {
           </header>
 
           {/* Mobile navigation tab bar */}
-          <nav className="md:hidden border-b border-border/40 bg-card/80 backdrop-blur-xl overflow-x-auto">
-            <div className="flex min-w-max px-1">
-              {mobileNavItems.map((item) => {
-                const isActive = item.url === "/app"
-                  ? location.pathname === "/app"
-                  : location.pathname.startsWith(item.url);
-                return (
-                  <Link
-                    key={item.url}
-                    to={item.url}
-                    className={`flex items-center gap-1.5 px-3 py-2.5 text-[13px] font-semibold whitespace-nowrap border-b-2 transition-colors ${
-                      isActive
-                        ? "border-primary text-primary"
-                        : "border-transparent text-foreground/80 hover:text-foreground"
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                    {item.title}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
+          <div className="md:hidden border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center">
+            <button
+              onClick={() => {
+                const el = document.getElementById("mobile-nav-scroll");
+                if (el) el.scrollBy({ left: -120, behavior: "smooth" });
+              }}
+              className="shrink-0 px-1.5 py-2.5 text-muted-foreground/60 hover:text-foreground transition-colors"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <nav id="mobile-nav-scroll" className="flex-1 overflow-x-auto scrollbar-hide">
+              <div className="flex min-w-max">
+                {mobileNavItems.map((item) => {
+                  const isActive = item.url === "/app"
+                    ? location.pathname === "/app"
+                    : location.pathname.startsWith(item.url);
+                  return (
+                    <Link
+                      key={item.url}
+                      to={item.url}
+                      className={`flex items-center gap-1.5 px-3 py-2.5 text-[13px] font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                        isActive
+                          ? "border-primary text-primary"
+                          : "border-transparent text-foreground/80 hover:text-foreground"
+                      }`}
+                    >
+                      <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                      {item.title}
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
+            <button
+              onClick={() => {
+                const el = document.getElementById("mobile-nav-scroll");
+                if (el) el.scrollBy({ left: 120, behavior: "smooth" });
+              }}
+              className="shrink-0 px-1.5 py-2.5 text-muted-foreground/60 hover:text-foreground transition-colors"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
 
           {/* Desktop header - hidden on mobile */}
           <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl items-center justify-between px-6 shrink-0 hidden md:flex">
