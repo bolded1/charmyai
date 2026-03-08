@@ -39,6 +39,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminDemoSettings from "./pages/admin/AdminDemoSettings";
 import AdminSupport from "./pages/admin/AdminSupport";
 import AdminCMS from "./pages/admin/AdminCMS";
+import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -98,6 +99,7 @@ const App = () => (
             <Route path="settings" element={<AdminSettings />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
             <Route path="cms" element={<AdminCMS />} />
+            <Route path="email-templates" element={<AdminEmailTemplates />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 

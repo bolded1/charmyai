@@ -18,11 +18,19 @@ import {
 interface RecoveryEmailProps {
   siteName: string
   confirmationUrl: string
+  heading?: string
+  bodyText?: string
+  buttonText?: string
+  footerText?: string
 }
 
 export const RecoveryEmail = ({
   siteName,
   confirmationUrl,
+  heading = 'Reset your password',
+  bodyText = 'We received a request to reset your password. Click the button below to choose a new one.',
+  buttonText = 'Reset Password',
+  footerText = "If you didn't request this, you can safely ignore this email — your password won't be changed.",
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -36,18 +44,16 @@ export const RecoveryEmail = ({
           </tr></table>
         </Section>
         <Hr style={divider} />
-        <Heading style={h1}>Reset your password</Heading>
-        <Text style={text}>
-          We received a request to reset your password. Click the button below to choose a new one.
-        </Text>
+        <Heading style={h1}>{heading}</Heading>
+        {bodyText.split('\n').filter(Boolean).map((line, i) => (
+          <Text key={i} style={text}>{line}</Text>
+        ))}
         <Section style={{ textAlign: 'center' as const, margin: '0 0 24px' }}>
           <Button style={button} href={confirmationUrl}>
-            Reset Password
+            {buttonText}
           </Button>
         </Section>
-        <Text style={footer}>
-          If you didn't request this, you can safely ignore this email — your password won't be changed.
-        </Text>
+        <Text style={footer}>{footerText}</Text>
       </Container>
     </Body>
   </Html>

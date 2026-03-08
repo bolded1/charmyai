@@ -21,6 +21,10 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  heading?: string
+  bodyText?: string
+  buttonText?: string
+  footerText?: string
 }
 
 export const SignupEmail = ({
@@ -28,6 +32,10 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
+  heading = 'Welcome to Charmy!',
+  bodyText,
+  buttonText = 'Verify Email',
+  footerText = "If you didn't create an account, you can safely ignore this email.",
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -41,23 +49,29 @@ export const SignupEmail = ({
           </tr></table>
         </Section>
         <Hr style={divider} />
-        <Heading style={h1}>Welcome to Charmy!</Heading>
-        <Text style={text}>
-          Thanks for signing up — you're just one step away from getting started.
-        </Text>
-        <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>{recipient}</Link>
-          ) by clicking the button below:
-        </Text>
+        <Heading style={h1}>{heading}</Heading>
+        {bodyText ? (
+          bodyText.split('\n').filter(Boolean).map((line, i) => (
+            <Text key={i} style={text}>{line}</Text>
+          ))
+        ) : (
+          <>
+            <Text style={text}>
+              Thanks for signing up — you're just one step away from getting started.
+            </Text>
+            <Text style={text}>
+              Please confirm your email address (
+              <Link href={`mailto:${recipient}`} style={link}>{recipient}</Link>
+              ) by clicking the button below:
+            </Text>
+          </>
+        )}
         <Section style={{ textAlign: 'center' as const, margin: '0 0 24px' }}>
           <Button style={button} href={confirmationUrl}>
-            Verify Email
+            {buttonText}
           </Button>
         </Section>
-        <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
-        </Text>
+        <Text style={footer}>{footerText}</Text>
       </Container>
     </Body>
   </Html>
