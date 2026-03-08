@@ -181,9 +181,9 @@ export default function UploadPage() {
             onPointerLeave={() => setUploadPressed(false)}
           >
             <div className={`mx-auto mb-3 md:mb-5 h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center transition-all ${
-              dragOver || uploadPressed ? "bg-hero-gradient shadow-lg shadow-primary/25" : "icon-bg-blue"
+              dragOver || uploadPressed ? "bg-hero-gradient shadow-lg shadow-primary/25" : "icon-bg-violet"
             }`}>
-              <UploadIcon className={`h-6 w-6 md:h-7 md:w-7 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-primary"}`} />
+              <UploadIcon className={`h-6 w-6 md:h-7 md:w-7 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
             <h2 className="text-base md:text-xl font-bold text-foreground mb-1 md:mb-2">
               {dragOver ? "Drop files to upload" : "Upload Documents"}
