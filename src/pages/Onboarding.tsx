@@ -145,26 +145,27 @@ export default function OnboardingPage() {
     : (user?.email?.[0] || "U").toUpperCase();
 
   return (
-    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+      <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+      <div className="absolute top-[30%] right-[5%] w-[300px] h-[300px] rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(172 66% 40% / 0.4), transparent 70%)' }} />
       <div className="w-full max-w-lg relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 font-bold text-xl mb-4">
+          <div className="inline-flex items-center gap-2.5 font-bold text-xl mb-4">
             {brandLogo ? (
               <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
             ) : (
               <>
-                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                <div className="h-11 w-11 rounded-2xl bg-hero-gradient flex items-center justify-center shadow-lg shadow-primary/25">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
-                Charmy
+                <span className="text-gradient text-2xl">Charmy</span>
               </>
             )}
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             {steps.map((_, i) => (
-              <div key={i} className={`h-1.5 w-10 rounded-full transition-colors ${i <= step ? 'bg-primary' : 'bg-border'}`} />
+              <div key={i} className={`h-1.5 w-10 rounded-full transition-all duration-300 ${i <= step ? 'bg-hero-gradient shadow-sm shadow-primary/20' : 'bg-border'}`} />
             ))}
           </div>
           <p className="text-sm text-muted-foreground">Step {step + 1} of {steps.length} — {steps[step].title}</p>

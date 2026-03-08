@@ -222,20 +222,26 @@ export default function ExpensesPage() {
     <div className="max-w-6xl space-y-6">
       {/* Currency summary cards */}
       <div className="grid sm:grid-cols-2 gap-5">
-        <Card>
-          <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground mb-1">Expenses EUR</p>
-            <p className="text-2xl font-semibold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground mb-1">Expenses USD</p>
-            <p className="text-2xl font-semibold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
-          </CardContent>
-        </Card>
+        <div className="stat-card-blue rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-9 w-9 rounded-xl icon-bg-blue flex items-center justify-center">
+              <Receipt className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Expenses EUR</p>
+          </div>
+          <p className="text-2xl font-bold">€{totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-xs text-muted-foreground mt-1">{eurCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
+        </div>
+        <div className="stat-card-violet rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-9 w-9 rounded-xl icon-bg-violet flex items-center justify-center">
+              <Receipt className="h-4 w-4 text-violet" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Expenses USD</p>
+          </div>
+          <p className="text-2xl font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-xs text-muted-foreground mt-1">{usdCount} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
+        </div>
       </div>
 
       {/* Filters row */}
