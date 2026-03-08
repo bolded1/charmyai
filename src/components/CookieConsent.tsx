@@ -25,7 +25,14 @@ export function CookieConsent() {
   };
 
   const handleAccept = () => dismiss("accepted");
-  const handleReject = () => dismiss("rejected");
+
+  const handleReject = () => {
+    // Clear all cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    dismiss("rejected");
+  };
 
   return (
     <AnimatePresence>
