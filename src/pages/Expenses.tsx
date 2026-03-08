@@ -511,7 +511,7 @@ export default function ExpensesPage() {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Invoice Date</Label>
-                  <Input className="h-8 text-sm [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer" type="date" value={editData.invoice_date} onChange={(e) => setEditData({ ...editData, invoice_date: e.target.value })} />
+                  <Input className="h-8 min-h-0 text-sm appearance-none [&::-webkit-date-and-time-value]:text-sm [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:h-3 [&::-webkit-calendar-picker-indicator]:w-3" type="date" value={editData.invoice_date} onChange={(e) => setEditData({ ...editData, invoice_date: e.target.value })} />
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Category</Label>
