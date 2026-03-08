@@ -189,13 +189,18 @@ export function useApproveDocument() {
 }
 
 export function useExpenseRecords() {
+  const { effectiveUserId } = useImpersonation();
   return useQuery({
-    queryKey: ["expenses"],
+    queryKey: ["expenses", effectiveUserId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("expense_records")
         .select("*")
         .order("invoice_date", { ascending: false });
+      if (effectiveUserId) {
+        query = query.eq("user_id", effectiveUserId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
