@@ -10,7 +10,9 @@ import {
   Heading,
   Html,
   Preview,
+  Section,
   Text,
+  Hr,
 } from 'npm:@react-email/components@0.0.22'
 
 interface RecoveryEmailProps {
@@ -24,20 +26,27 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Reset your Charmy password</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoSection}>
+          <table><tr>
+            <td style={logoMark}>✦</td>
+            <td style={logoText}>Charmy</td>
+          </tr></table>
+        </Section>
+        <Hr style={divider} />
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+          We received a request to reset your password. Click the button below to choose a new one.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Reset Password
-        </Button>
+        <Section style={{ textAlign: 'center' as const, margin: '0 0 24px' }}>
+          <Button style={button} href={confirmationUrl}>
+            Reset Password
+          </Button>
+        </Section>
         <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
+          If you didn't request this, you can safely ignore this email — your password won't be changed.
         </Text>
       </Container>
     </Body>
@@ -46,26 +55,13 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Inter, Arial, sans-serif' }
+const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
+const logoSection = { marginBottom: '8px' }
+const logoMark = { width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #1E3A8A, #2563EB)', color: '#ffffff', fontSize: '16px', textAlign: 'center' as const, verticalAlign: 'middle' as const, fontWeight: 'bold' as const }
+const logoText = { fontSize: '18px', fontWeight: 'bold' as const, color: '#0a0f1a', paddingLeft: '8px', verticalAlign: 'middle' as const }
+const divider = { borderColor: '#e5e7eb', margin: '16px 0 24px' }
+const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#0a0f1a', margin: '0 0 16px' }
+const text = { fontSize: '14px', color: '#6b7280', lineHeight: '1.6', margin: '0 0 20px' }
+const button = { backgroundColor: '#1E3A8A', color: '#ffffff', fontSize: '14px', fontWeight: '600' as const, borderRadius: '8px', padding: '12px 24px', textDecoration: 'none' }
+const footer = { fontSize: '12px', color: '#9ca3af', margin: '32px 0 0' }
