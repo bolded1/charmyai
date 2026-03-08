@@ -39,7 +39,7 @@ export interface SubscriptionState {
 export function useSubscription() {
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
-    plan: "free",
+    plan: "none",
     status: null,
     price_id: null,
     subscription_id: null,
