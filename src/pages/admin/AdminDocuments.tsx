@@ -129,7 +129,7 @@ export default function AdminDocumentsPage() {
               fields={[
                 { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
                 { label: "Date", value: new Date(doc.created_at).toLocaleDateString() },
-                { label: "Confidence", value: doc.confidence_score ? `${Math.round(doc.confidence_score * 100)}%` : "—" },
+                { label: "Confidence", value: doc.confidence_score ? `${Math.round(doc.confidence_score)}%` : "—" },
               ]}
               onClick={() => openPreview(doc)}
             />
