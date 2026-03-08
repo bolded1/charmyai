@@ -120,6 +120,9 @@ const App = () => (
             <Route path="revenue" element={<AdminRevenue />} />
             <Route path="audit" element={<AdminAuditLogs />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="feature-flags" element={<AdminFeatureFlags />} />
+            <Route path="system-health" element={<AdminSystemHealth />} />
+            <Route path="scheduled-jobs" element={<AdminScheduledJobs />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
             <Route path="cms" element={<AdminCMS />} />
             <Route path="email-templates" element={<AdminEmailTemplates />} />
