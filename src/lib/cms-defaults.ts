@@ -201,3 +201,29 @@ export const acceptableUseDefaults: Record<string, string> = {
   section10Title: "10. Changes to This Policy",
   section10Body: "We may update this Acceptable Use Policy from time to time. Material changes will be communicated via email or in-app notification at least 14 days before they take effect. Continued use of the platform after changes take effect constitutes acceptance of the updated policy.",
 };
+
+// --- Legal page helpers ---
+
+export type LegalSection = { title: string; body: string };
+
+/** Extract numbered sections from a legacy flat defaults object */
+export function extractLegalSections(obj: Record<string, string>): LegalSection[] {
+  const sections: LegalSection[] = [];
+  for (let i = 1; i <= 50; i++) {
+    const title = obj[`section${i}Title`];
+    const body = obj[`section${i}Body`] ?? "";
+    if (title) sections.push({ title, body });
+    else break;
+  }
+  return sections;
+}
+
+/** Convert a sections array back to flat numbered keys (for backward compat) */
+export function sectionsToFlat(sections: LegalSection[]): Record<string, string> {
+  const flat: Record<string, string> = {};
+  sections.forEach((s, i) => {
+    flat[`section${i + 1}Title`] = s.title;
+    flat[`section${i + 1}Body`] = s.body;
+  });
+  return flat;
+}
