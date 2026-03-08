@@ -285,6 +285,8 @@ export default function ExpensesPage() {
   const cardStyles = ["stat-card-blue icon-bg-blue text-primary", "stat-card-violet icon-bg-violet text-violet", "stat-card-emerald icon-bg-emerald text-emerald", "stat-card-amber icon-bg-amber text-amber"];
   const currencySummary = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
+    // Always include the default currency
+    map.set(defaultCurrency, { total: 0, count: 0 });
     filtered.forEach((e) => {
       const c = e.currency || "EUR";
       const prev = map.get(c) || { total: 0, count: 0 };
