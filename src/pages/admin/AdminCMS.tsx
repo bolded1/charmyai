@@ -14,6 +14,8 @@ import {
   pricingDefaults,
   aboutDefaults,
   contactDefaults,
+  privacyDefaults,
+  termsDefaults,
 } from "@/lib/cms-defaults";
 
 type PageConfig = {
