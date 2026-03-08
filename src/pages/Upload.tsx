@@ -11,9 +11,10 @@ import {
 import { useUploadDocument, useDocuments } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, startOfMonth } from "date-fns";
 import { useOrganization, getImportEmailAddress } from "@/hooks/useOrganization";
 import { toast } from "sonner";
+import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 
 interface UploadingFile {
   id: string;
@@ -35,7 +36,13 @@ export default function UploadPage() {
   const navigate = useNavigate();
   const { data: documents = [] } = useDocuments();
   const { data: orgData } = useOrganization();
+  const { data: limits } = usePlatformLimits();
   const importEmailAddress = orgData ? getImportEmailAddress(orgData.import_email_token) : null;
+
+  const maxFileSizeMB = limits?.maxFileSize ?? 20;
+  const maxFilesPerUpload = limits?.maxFilesPerUpload ?? 10;
+  const proDocsLimit = limits?.proDocsLimit ?? 999999;
+  const docsThisMonth = documents.filter((d) => new Date(d.created_at) >= startOfMonth(new Date())).length;
 
   const copyEmail = () => {
     if (importEmailAddress) {
@@ -59,6 +66,19 @@ export default function UploadPage() {
   const processFile = useCallback(
     async (file: File) => {
       if (!user) { navigate("/login"); return; }
+
+      // Enforce file size limit
+      const maxBytes = maxFileSizeMB * 1024 * 1024;
+      if (file.size > maxBytes) {
+        toast.error(`File "${file.name}" exceeds the ${maxFileSizeMB}MB limit.`);
+        return;
+      }
+
+      // Enforce monthly document limit
+      if (docsThisMonth >= proDocsLimit) {
+        toast.error(`Monthly document limit (${proDocsLimit}) reached. Contact your admin to increase it.`);
+        return;
+      }
 
       const id = Math.random().toString(36).slice(2);
       const entry: UploadingFile = {
@@ -91,11 +111,22 @@ export default function UploadPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    Array.from(e.dataTransfer.files).forEach(processFile);
+    const dropped = Array.from(e.dataTransfer.files);
+    if (dropped.length > maxFilesPerUpload) {
+      toast.error(`You can upload up to ${maxFilesPerUpload} files at a time.`);
+      return;
+    }
+    dropped.forEach(processFile);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    Array.from(e.target.files || []).forEach(processFile);
+    const selected = Array.from(e.target.files || []);
+    if (selected.length > maxFilesPerUpload) {
+      toast.error(`You can upload up to ${maxFilesPerUpload} files at a time.`);
+      e.target.value = "";
+      return;
+    }
+    selected.forEach(processFile);
     e.target.value = "";
   };
 

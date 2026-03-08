@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
+import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 
 const teamMembers = [
   { id: '1', name: 'John Doe', email: 'john@company.com', role: 'Owner', jobTitle: 'CEO', status: 'active', lastActive: '2026-03-07' },
@@ -26,9 +27,16 @@ function getInitials(name: string) {
 export default function TeamPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { data: limits } = usePlatformLimits();
+  const maxUsers = limits?.proUsersLimit ?? 10;
+  const atLimit = teamMembers.length >= maxUsers;
 
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
+    if (atLimit) {
+      toast.error(`Team member limit (${maxUsers}) reached. Contact your admin to increase it.`);
+      return;
+    }
     setDialogOpen(false);
     toast.success("Invitation sent!");
   };

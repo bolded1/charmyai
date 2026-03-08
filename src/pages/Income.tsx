@@ -14,6 +14,7 @@ import {
   Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Download, FileText, ExternalLink, Trash2, Archive,
 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect, Fragment } from "react";
+import { toast } from "sonner";
 import { useIncomeRecords, useUploadIncomeDocument, useUpdateIncome, useDeleteIncome } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,6 +22,7 @@ import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { useOrganization } from "@/hooks/useOrganization";
+import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -75,7 +77,9 @@ export default function IncomePage() {
   const deleteIncome = useDeleteIncome();
   const { downloadAsZip, downloading } = useBulkDownload();
   const { data: org } = useOrganization();
+  const { data: limits } = usePlatformLimits();
   const defaultCurrency = org?.default_currency || "EUR";
+  const maxFileSizeMB = limits?.maxFileSize ?? 20;
 
   const selectedRecord = income.find((e) => e.id === selectedId);
 
@@ -331,6 +335,14 @@ export default function IncomePage() {
   const processFile = useCallback(
     async (file: File) => {
       if (!user) return;
+
+      // Enforce file size limit
+      const maxBytes = maxFileSizeMB * 1024 * 1024;
+      if (file.size > maxBytes) {
+        toast.error(`File "${file.name}" exceeds the ${maxFileSizeMB}MB limit.`);
+        return;
+      }
+
       const id = Math.random().toString(36).slice(2);
       setFiles((prev) => [{ id, name: file.name, size: formatSize(file.size), status: "uploading", progress: 20 }, ...prev]);
       try {
@@ -343,7 +355,7 @@ export default function IncomePage() {
         setFiles((prev) => prev.map((f) => f.id === id ? { ...f, status: "error", progress: 100, error: err.message } : f));
       }
     },
-    [user, uploadMutation]
+    [user, uploadMutation, maxFileSizeMB]
   );
 
   const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); Array.from(e.dataTransfer.files).forEach(processFile); };
