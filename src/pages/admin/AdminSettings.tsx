@@ -53,6 +53,65 @@ function useAutoSave<T>(key: string, initialValue: T, delay = 800) {
   return [value, update, saving] as const;
 }
 
+// ── DB-backed auto-save hook (for limits stored in demo_settings) ──
+function useDbAutoSave(key: string, initialValue: string, delay = 800) {
+  const [value, setValue] = useState<string>(initialValue);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const pendingRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
+
+  // Load initial value from DB
+  useEffect(() => {
+    supabase
+      .from("demo_settings")
+      .select("value")
+      .eq("key", key)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value != null) {
+          const v = typeof data.value === "string" ? data.value : JSON.stringify(data.value);
+          setValue(v);
+        }
+        setLoaded(true);
+      });
+  }, [key]);
+
+  const update = useCallback((newValue: string) => {
+    setValue(newValue);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    pendingRef.current = newValue;
+    setSaving(true);
+    timerRef.current = setTimeout(async () => {
+      const { error } = await supabase
+        .from("demo_settings")
+        .upsert({ key, value: newValue }, { onConflict: "key" });
+      if (error) {
+        toast.error(`Failed to save ${key}`);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["platform-limits"] });
+      }
+      pendingRef.current = null;
+      setSaving(false);
+    }, delay);
+  }, [key, delay, queryClient]);
+
+  // Flush on unmount
+  useEffect(() => () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      if (pendingRef.current !== null) {
+        supabase
+          .from("demo_settings")
+          .upsert({ key, value: pendingRef.current }, { onConflict: "key" });
+      }
+    }
+  }, [key]);
+
+  return [value, update, saving, loaded] as const;
+}
+
 function SaveIndicator({ saving }: { saving: boolean }) {
   if (!saving) return null;
   return (
