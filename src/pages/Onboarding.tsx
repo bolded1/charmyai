@@ -28,6 +28,7 @@ const INDUSTRIES = [
   { value: "retail", label: "Retail & E-commerce" },
   { value: "healthcare", label: "Healthcare" },
   { value: "construction", label: "Construction" },
+  { value: "other", label: "Other" },
 ];
 
 const CURRENCIES = [
