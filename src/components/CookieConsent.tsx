@@ -18,15 +18,14 @@ export function CookieConsent() {
     }
   }, []);
 
-  const handleAccept = () => {
-    localStorage.setItem("cookie-consent", "accepted");
+  const dismiss = (choice: string) => {
+    localStorage.setItem("cookie-consent", choice);
+    document.body.style.overflow = "";
     setVisible(false);
   };
 
-  const handleReject = () => {
-    localStorage.setItem("cookie-consent", "rejected");
-    setVisible(false);
-  };
+  const handleAccept = () => dismiss("accepted");
+  const handleReject = () => dismiss("rejected");
 
   return (
     <AnimatePresence>
