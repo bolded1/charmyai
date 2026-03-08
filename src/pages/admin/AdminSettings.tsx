@@ -237,10 +237,10 @@ export default function AdminSettingsPage() {
   const [welcomeEmail, setWelcomeEmail, weSaving] = useAutoSave("welcome-email", true);
   const [processingNotif, setProcessingNotif, pnSaving] = useAutoSave("processing-notif", true);
 
-  // System
-  const [maintenance, setMaintenance, mtSaving] = useAutoSave("maintenance", false);
-  const [newSignups, setNewSignups, nsSaving] = useAutoSave("new-signups", true);
-  const [debugLog, setDebugLog, dlSaving] = useAutoSave("debug-log", false);
+  // System (DB-backed)
+  const [maintenance, setMaintenance, mtSaving] = useDbAutoSave("maintenance", "false");
+  const [newSignups, setNewSignups, nsSaving] = useDbAutoSave("new-signups", "true");
+  const [debugLog, setDebugLog, dlSaving] = useDbAutoSave("debug-log", "false");
 
   const anySaving = mfsSaving || mfSaving || pdlSaving || pulSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
