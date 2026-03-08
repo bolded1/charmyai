@@ -265,6 +265,7 @@ export default function IncomePage() {
     }
   };
 
+  const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
     const map = new Map<string, typeof filtered>();
     
