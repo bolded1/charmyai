@@ -81,17 +81,17 @@
     --chart-4:          172 66% 40%;
     --chart-5:          38 92% 50%;
 
-    --sidebar-background:         224 30% 95%;
-    --sidebar-foreground:         220 10% 40%;
+    --sidebar-background:         220 20% 98%;
+    --sidebar-foreground:         220 8% 45%;
     --sidebar-primary:            224 76% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             224 35% 90%;
+    --sidebar-accent:             224 30% 94%;
     --sidebar-accent-foreground:  220 20% 10%;
-    --sidebar-border:             224 20% 88%;
+    --sidebar-border:             220 13% 91%;
     --sidebar-ring:               224 76% 48%;
-    --sidebar-active-bg:          224 80% 93%;
+    --sidebar-active-bg:          224 80% 95%;
     --sidebar-active-text:        224 76% 38%;
-    --sidebar-muted:              220 8% 50%;
+    --sidebar-muted:              220 8% 55%;
 
     --radius: 0.75rem;
     --hero-gradient: linear-gradient(135deg, hsl(224, 76%, 48%), hsl(262, 83%, 58%));
