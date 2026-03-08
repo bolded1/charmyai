@@ -39,15 +39,15 @@ export default function MarketingLayout() {
       {/* Header */}
       <header className="sticky top-0 z-50 glass-effect">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
+          <Link to="/" className="flex items-center gap-1.5 font-bold text-base">
             {brandLogo ? (
-              <img src={brandLogo} alt="Charmy" className="h-8 max-w-[10rem] object-contain" />
+              <img src={brandLogo} alt="Charmy" className="h-6 max-w-[7rem] object-contain" />
             ) : (
               <>
-                <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-primary-foreground" />
+                <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center">
+                  <FileText className="h-3 w-3 text-primary-foreground" />
                 </div>
-                <span className="text-foreground">Charmy</span>
+                <span className="text-foreground text-sm">Charmy</span>
               </>
             )}
           </Link>
