@@ -200,6 +200,34 @@ export default function ExpensesPage() {
     });
   }, [expenses, search, currencyFilter, categoryFilter, dateRange]);
 
+  const groupedByMonth = useMemo(() => {
+    const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
+    const map = new Map<string, typeof filtered>();
+    
+    // Sort by date descending
+    const sorted = [...filtered].sort((a, b) => {
+      const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
+      const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
+      return db - da;
+    });
+
+    sorted.forEach((record) => {
+      const key = record.invoice_date
+        ? format(parseISO(record.invoice_date), "yyyy-MM")
+        : "no-date";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(record);
+    });
+
+    map.forEach((records, key) => {
+      const label = key === "no-date" ? "No Date" : format(parseISO(key + "-01"), "MMMM yyyy");
+      const total = records.reduce((s, e) => s + Number(e.total_amount || 0), 0);
+      groups.push({ key, label, records, total });
+    });
+
+    return groups;
+  }, [filtered]);
+
   const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
   const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
   const eurCount = filtered.filter((e) => e.currency === "EUR").length;
