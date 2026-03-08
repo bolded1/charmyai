@@ -234,6 +234,7 @@ export default function ExpensesPage() {
     setSelectedIds(new Set());
   };
 
+  const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
     const map = new Map<string, typeof filtered>();
     
