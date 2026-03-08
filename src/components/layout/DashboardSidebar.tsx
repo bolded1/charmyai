@@ -20,7 +20,7 @@ const financeItems = [
 const recordsItems = [
   { title: "Expenses", url: "/app/expenses", icon: Receipt },
   { title: "Income", url: "/app/income", icon: TrendingUp },
-  
+  { title: "Categories", url: "/app/categories", icon: Tag },
   { title: "Exports", url: "/app/exports", icon: Download },
 ];
 
