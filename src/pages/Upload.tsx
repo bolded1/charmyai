@@ -125,24 +125,20 @@ export default function UploadPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Scan Document - shown first on mobile/tablet, compact */}
-      <Card className="overflow-hidden lg:hidden">
+      <Card className="overflow-hidden border-0 lg:hidden">
         <CardContent className="p-0">
           <div
-            className="relative px-6 py-8 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg border-border hover:border-primary/50 hover:bg-accent/50"
+            className="relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl border-border hover:border-primary/50 hover:bg-accent/50"
             onClick={() => document.getElementById("camera-input")?.click()}
           >
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-muted">
-                <Camera className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div className="text-left">
-                <h2 className="text-base font-semibold text-foreground">Scan Document</h2>
-                <p className="text-xs text-muted-foreground">Capture with your camera</p>
-              </div>
+            <div className="mx-auto mb-3 md:mb-5 h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center bg-muted">
+              <Camera className="h-6 w-6 md:h-7 md:w-7 text-muted-foreground" />
             </div>
+            <h2 className="text-base md:text-xl font-bold text-foreground mb-1 md:mb-2">Scan Document</h2>
+            <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 max-w-md mx-auto">Capture with your camera</p>
             <div className="flex items-center justify-center gap-2">
-              <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Photo</Badge>
-              <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Auto-process</Badge>
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2.5 py-0.5 rounded-lg">Photo</Badge>
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2.5 py-0.5 rounded-lg">Auto-process</Badge>
             </div>
             <input
               id="camera-input"
