@@ -20,6 +20,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
+import ActivateTrial from "./pages/ActivateTrial";
+import BillingRequired from "./pages/BillingRequired";
 import AcceptableUse from "./pages/AcceptableUse";
 
 import Upload from "./pages/Upload";
@@ -90,6 +92,8 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/activate-trial" element={<ActivateTrial />} />
+          <Route path="/billing-required" element={<BillingRequired />} />
 
           {/* Dashboard pages */}
           <Route path="/app" element={<DashboardLayout />}>

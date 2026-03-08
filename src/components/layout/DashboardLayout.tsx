@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { Outlet, useLocation, Navigate, useSearchParams } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ const mobileNavItems = [
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const pageTitle = getPageTitle(location.pathname);
   const { user, loading } = useAuth();
@@ -50,6 +52,7 @@ export default function DashboardLayout() {
   const isMobile = useIsMobile();
   const brandLogo = useBrandLogo();
   const { impersonating, stopImpersonating } = useImpersonation();
+  const subscription = useSubscription();
 
   // Apply org accent color
   useEffect(() => {
@@ -68,6 +71,19 @@ export default function DashboardLayout() {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Subscription gate: if not subscribed and not on billing/settings page, redirect
+  const isBillingPage = location.pathname === "/app/settings" && searchParams.get("tab") === "billing";
+  if (!subscription.loading && !subscription.subscribed && !isBillingPage) {
+    // If they had a subscription before (expired/cancelled), show billing required
+    // Otherwise redirect to activate trial
+    if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing") {
+      return <Navigate to="/billing-required" replace />;
+    }
+    if (!subscription.status) {
+      return <Navigate to="/activate-trial" replace />;
+    }
   }
 
   const handleSignOut = async () => {
