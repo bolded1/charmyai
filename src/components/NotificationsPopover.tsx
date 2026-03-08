@@ -14,6 +14,7 @@ const ICON_MAP: Record<string, { icon: typeof FileText; className: string }> = {
   invoice_overdue: { icon: AlertTriangle, className: "text-destructive bg-destructive/10" },
   export_ready: { icon: Download, className: "text-info bg-info/10" },
   team_joined: { icon: Users2, className: "text-primary bg-primary/10" },
+  ticket_reply: { icon: MessageSquare, className: "text-primary bg-primary/10" },
 };
 
 function NotificationIcon({ type }: { type: string }) {
