@@ -232,6 +232,28 @@ serve(async (req) => {
       validationErrors.push({ field: "currency", message: `Unrecognized currency: ${extracted.currency}` });
     }
 
+    // Check for duplicate documents
+    let potentialDuplicateOf: string | null = null;
+    try {
+      const { data: dupResult } = await supabase.rpc("find_duplicate_document", {
+        _user_id: doc.user_id,
+        _document_id: documentId,
+        _supplier_name: extracted.supplier_name || null,
+        _invoice_number: extracted.invoice_number || null,
+        _invoice_date: extracted.invoice_date || null,
+        _total_amount: extracted.total_amount || null,
+      });
+      if (dupResult) {
+        potentialDuplicateOf = dupResult;
+        validationErrors.push({
+          field: "duplicate",
+          message: "This document appears to be a duplicate of an existing record.",
+        });
+      }
+    } catch (dupErr) {
+      console.error("Duplicate check error:", dupErr);
+    }
+
     // Fetch AI settings to determine auto-approve behavior
     let autoApprove = false;
     let confidenceThreshold = 85;
@@ -261,28 +283,6 @@ serve(async (req) => {
       newStatus = "approved";
     } else {
       newStatus = "needs_review";
-    }
-
-    // Check for duplicate documents
-    let potentialDuplicateOf: string | null = null;
-    try {
-      const { data: dupResult } = await supabase.rpc("find_duplicate_document", {
-        _user_id: doc.user_id,
-        _document_id: documentId,
-        _supplier_name: extracted.supplier_name || null,
-        _invoice_number: extracted.invoice_number || null,
-        _invoice_date: extracted.invoice_date || null,
-        _total_amount: extracted.total_amount || null,
-      });
-      if (dupResult) {
-        potentialDuplicateOf = dupResult;
-        validationErrors.push({
-          field: "duplicate",
-          message: "This document appears to be a duplicate of an existing record.",
-        });
-      }
-    } catch (dupErr) {
-      console.error("Duplicate check error:", dupErr);
     }
 
     // Apply auto-categorization rules
