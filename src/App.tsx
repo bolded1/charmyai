@@ -111,6 +111,7 @@ const App = () => (
             <Route path="demo-settings" element={<AdminDemoSettings />} />
             <Route path="cms" element={<AdminCMS />} />
             <Route path="email-templates" element={<AdminEmailTemplates />} />
+            <Route path="broadcast" element={<AdminBroadcast />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 
