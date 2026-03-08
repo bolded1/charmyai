@@ -155,12 +155,21 @@ export default function AdminSettingsPage() {
   const [confidenceThreshold, setConfidenceThreshold, confSaving] = useAutoSave("confidence-threshold", "70");
   const [autoApprove, setAutoApprove, autoAppSaving] = useAutoSave("auto-approve", false);
 
-  // Limits
+  // Limits & Upload
   const [maxFileSize, setMaxFileSize, mfsSaving] = useAutoSave("max-file-size", "20");
   const [maxFiles, setMaxFiles, mfSaving] = useAutoSave("max-files", "10");
-  const [starterDocs, setStarterDocs, sdSaving] = useAutoSave("starter-docs", "50");
-  const [proDocs, setProDocs, pdSaving] = useAutoSave("pro-docs", "500");
-  const [entDocs, setEntDocs, edSaving] = useAutoSave("ent-docs", "999999");
+
+  // Plan limits
+  const [freeDocsLimit, setFreeDocsLimit, fdlSaving] = useAutoSave("free-docs-limit", "50");
+  const [freeUsersLimit, setFreeUsersLimit, fulSaving] = useAutoSave("free-users-limit", "1");
+
+  const [proDocsLimit, setProDocsLimit, pdlSaving] = useAutoSave("pro-docs-limit", "999999");
+  const [proUsersLimit, setProUsersLimit, pulSaving] = useAutoSave("pro-users-limit", "10");
+
+  // Pricing
+  const [proMonthlyPrice, setProMonthlyPrice, pmpSaving] = useAutoSave("pro-monthly-price", "9.99");
+  const [proYearlyPrice, setProYearlyPrice, pypSaving] = useAutoSave("pro-yearly-price", "99");
+  const [trialDays, setTrialDays, tdSaving] = useAutoSave("trial-days", "14");
 
   // Email
   const [fromName, setFromName, fnSaving] = useAutoSave("from-name", "Charmy");
@@ -174,7 +183,8 @@ export default function AdminSettingsPage() {
   const [debugLog, setDebugLog, dlSaving] = useAutoSave("debug-log", false);
 
   const anySaving = aiSaving || aiModelSaving || confSaving || autoAppSaving ||
-    mfsSaving || mfSaving || sdSaving || pdSaving || edSaving ||
+    mfsSaving || mfSaving || fdlSaving || fulSaving || pdlSaving || pulSaving ||
+    pmpSaving || pypSaving || tdSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
     mtSaving || nsSaving || dlSaving;
 
@@ -253,48 +263,103 @@ export default function AdminSettingsPage() {
         </TabsContent>
 
         <TabsContent value="limits">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Default Limits</CardTitle>
-                <SaveIndicator saving={mfsSaving || mfSaving || sdSaving || pdSaving || edSaving} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Max File Size (MB)</Label>
-                  <Input type="number" value={maxFileSize} onChange={(e) => setMaxFileSize(e.target.value)} />
+          <div className="space-y-6">
+            {/* Upload Limits */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Upload Limits</CardTitle>
+                  <SaveIndicator saving={mfsSaving || mfSaving} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Max File Size (MB)</Label>
+                    <Input type="number" value={maxFileSize} onChange={(e) => setMaxFileSize(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Max Files Per Upload</Label>
+                    <Input type="number" value={maxFiles} onChange={(e) => setMaxFiles(e.target.value)} />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Max Files Per Upload</Label>
-                  <Input type="number" value={maxFiles} onChange={(e) => setMaxFiles(e.target.value)} />
+                  <Label>Supported File Types</Label>
+                  <div className="flex gap-2 flex-wrap">
+                    {["PDF", "PNG", "JPG", "JPEG"].map((t) => (
+                      <Badge key={t} variant="secondary">{t}</Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Supported File Types</Label>
-                <div className="flex gap-2 flex-wrap">
-                  {["PDF", "PNG", "JPG", "JPEG"].map((t) => (
-                    <Badge key={t} variant="secondary">{t}</Badge>
-                  ))}
+              </CardContent>
+            </Card>
+
+            {/* Pricing & Trial */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Pricing & Trial</CardTitle>
+                  <SaveIndicator saving={pmpSaving || pypSaving || tdSaving} />
                 </div>
-              </div>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Starter Docs/Mo</Label>
-                  <Input type="number" value={starterDocs} onChange={(e) => setStarterDocs(e.target.value)} />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Pro Monthly Price (€)</Label>
+                    <Input type="number" step="0.01" value={proMonthlyPrice} onChange={(e) => setProMonthlyPrice(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Pro Yearly Price (€)</Label>
+                    <Input type="number" step="0.01" value={proYearlyPrice} onChange={(e) => setProYearlyPrice(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Trial Days</Label>
+                    <Input type="number" value={trialDays} onChange={(e) => setTrialDays(e.target.value)} />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Pro Docs/Mo</Label>
-                  <Input type="number" value={proDocs} onChange={(e) => setProDocs(e.target.value)} />
+                <p className="text-xs text-muted-foreground">Note: Changing prices here updates the displayed values. To change actual Stripe pricing, update your Stripe products.</p>
+              </CardContent>
+            </Card>
+
+            {/* Plan Limits */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Plan Limits</CardTitle>
+                  <SaveIndicator saving={fdlSaving || fulSaving || pdlSaving || pulSaving} />
                 </div>
-                <div className="space-y-2">
-                  <Label>Enterprise Docs/Mo</Label>
-                  <Input type="number" value={entDocs} onChange={(e) => setEntDocs(e.target.value)} />
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Free Plan</h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Documents per Month</Label>
+                      <Input type="number" value={freeDocsLimit} onChange={(e) => setFreeDocsLimit(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Max Users</Label>
+                      <Input type="number" value={freeUsersLimit} onChange={(e) => setFreeUsersLimit(e.target.value)} />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Pro Plan</h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Documents per Month</Label>
+                      <Input type="number" value={proDocsLimit} onChange={(e) => setProDocsLimit(e.target.value)} />
+                      <p className="text-xs text-muted-foreground">Set to 999999 for unlimited</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Max Users</Label>
+                      <Input type="number" value={proUsersLimit} onChange={(e) => setProUsersLimit(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="email">
