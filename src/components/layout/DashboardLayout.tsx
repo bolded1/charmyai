@@ -233,7 +233,7 @@ export default function DashboardLayout() {
           </nav>
 
           {/* Desktop header - hidden on mobile */}
-          <header className="h-13 border-b border-border/40 bg-card/80 backdrop-blur-xl items-center justify-between px-6 shrink-0 hidden md:flex">
+          <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl items-center justify-between px-6 shrink-0 hidden md:flex">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <span className="text-sm font-semibold text-foreground">{pageTitle}</span>
