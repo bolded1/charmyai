@@ -69,8 +69,10 @@ export function useTicketMessages(ticketId: string | null) {
 }
 
 export async function uploadTicketAttachment(ticketId: string, file: File) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
   const ext = file.name.split(".").pop();
-  const path = `${ticketId}/${crypto.randomUUID()}.${ext}`;
+  const path = `${user.id}/${ticketId}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("ticket-attachments")
     .upload(path, file);
