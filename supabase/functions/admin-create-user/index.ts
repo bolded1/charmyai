@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, password, first_name, last_name, job_title, role } = await req.json();
+    const { email, password, first_name, last_name, job_title, role, company_name } = await req.json();
 
     if (!email || !password) {
       return new Response(JSON.stringify({ error: "Email and password are required" }), {
@@ -85,6 +85,13 @@ Deno.serve(async (req) => {
       full_name: [first_name, last_name].filter(Boolean).join(" ") || null,
       job_title: job_title || null,
     }).eq("user_id", userId);
+
+    // Update organization name if provided
+    if (company_name) {
+      await adminClient.from("organizations").update({
+        name: company_name,
+      }).eq("owner_user_id", userId);
+    }
 
     // Assign role if not default "user"
     if (role && role !== "user") {

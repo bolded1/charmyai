@@ -40,7 +40,7 @@ const roleColors: Record<string, string> = {
 
 function CreateUserDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (v: boolean) => void; onCreated: () => void }) {
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user" });
+  const [form, setForm] = useState({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user", company_name: "" });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +59,7 @@ function CreateUserDialog({ open, onOpenChange, onCreated }: { open: boolean; on
         throw new Error(res.data?.error || res.error?.message || "Failed to create user");
       }
       toast.success("User account created successfully");
-      setForm({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user" });
+      setForm({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user", company_name: "" });
       onOpenChange(false);
       onCreated();
     } catch (err: any) {
@@ -91,6 +91,10 @@ function CreateUserDialog({ open, onOpenChange, onCreated }: { open: boolean; on
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Password *</Label>
             <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" required minLength={6} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Company Name</Label>
+            <Input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} placeholder="e.g. Acme Inc." />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Job Title</Label>
