@@ -116,6 +116,7 @@ function getPageTitle(path: string): string {
     '/admin/gdpr': 'GDPR / Data',
     '/admin/document-stats': 'Doc Processing',
     '/admin/feedback': 'User Feedback',
+    '/admin/ai-settings': 'AI Settings',
   };
   return map[path] || 'Admin';
 }

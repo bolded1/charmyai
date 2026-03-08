@@ -57,6 +57,7 @@ import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags";
 import AdminSystemHealth from "./pages/admin/AdminSystemHealth";
 import AdminScheduledJobs from "./pages/admin/AdminScheduledJobs";
+import AdminAISettings from "./pages/admin/AdminAISettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -124,6 +125,7 @@ const App = () => (
             <Route path="revenue" element={<AdminRevenue />} />
             <Route path="audit" element={<AdminAuditLogs />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="ai-settings" element={<AdminAISettings />} />
             <Route path="feature-flags" element={<AdminFeatureFlags />} />
             <Route path="system-health" element={<AdminSystemHealth />} />
             <Route path="scheduled-jobs" element={<AdminScheduledJobs />} />
