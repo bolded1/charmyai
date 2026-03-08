@@ -9,7 +9,7 @@ import { ChevronRight } from "lucide-react";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
-  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock,
+  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain,
 } from "lucide-react";
 
 const navGroups = [
