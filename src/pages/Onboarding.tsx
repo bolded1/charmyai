@@ -80,6 +80,7 @@ export default function OnboardingPage() {
   // Step 2 state
   const [orgName, setOrgName] = useState("");
   const [industry, setIndustry] = useState("technology");
+  const [customIndustry, setCustomIndustry] = useState("");
   const [country, setCountry] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
   const [currency, setCurrency] = useState("EUR");
