@@ -25,7 +25,7 @@ export function useFeatureFlags() {
 
     const fetch = async () => {
       const { data } = await supabase
-        .from("feature_flags")
+        .from("feature_flags_public" as any)
         .select("key, enabled, segment, user_ids");
       const parsed = (data || []).map((f: any) => ({
         key: f.key,
