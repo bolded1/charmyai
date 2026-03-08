@@ -62,7 +62,7 @@ export function useSubscription() {
 
       setState({
         subscribed: data.subscribed ?? false,
-        plan: data.plan ?? "free",
+        plan: data.subscribed ? "pro" : "none",
         status: data.status ?? null,
         price_id: data.price_id ?? null,
         subscription_id: data.subscription_id ?? null,
