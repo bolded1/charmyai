@@ -19,6 +19,13 @@ const KEYS_MAP: Record<string, keyof SystemSettings> = {
   "debug-log": "debugLog",
 };
 
+function toBool(val: unknown): boolean | null {
+  if (typeof val === "boolean") return val;
+  if (val === "true" || val === true) return true;
+  if (val === "false" || val === false) return false;
+  return null;
+}
+
 export function useSystemSettings() {
   return useQuery({
     queryKey: ["system-settings"],
@@ -35,14 +42,9 @@ export function useSystemSettings() {
       data?.forEach((row) => {
         const field = KEYS_MAP[row.key];
         if (field) {
-          // Value is stored as JSON, could be boolean or string "true"/"false"
-          const val = row.value;
-          if (typeof val === "boolean") {
-            (settings as any)[field] = val;
-          } else if (val === "true") {
-            (settings as any)[field] = true;
-          } else if (val === "false") {
-            (settings as any)[field] = false;
+          const parsed = toBool(row.value);
+          if (parsed !== null) {
+            (settings as any)[field] = parsed;
           }
         }
       });
