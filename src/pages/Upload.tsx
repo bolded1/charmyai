@@ -36,7 +36,13 @@ export default function UploadPage() {
   const navigate = useNavigate();
   const { data: documents = [] } = useDocuments();
   const { data: orgData } = useOrganization();
+  const { data: limits } = usePlatformLimits();
   const importEmailAddress = orgData ? getImportEmailAddress(orgData.import_email_token) : null;
+
+  const maxFileSizeMB = limits?.maxFileSize ?? 20;
+  const maxFilesPerUpload = limits?.maxFilesPerUpload ?? 10;
+  const proDocsLimit = limits?.proDocsLimit ?? 999999;
+  const docsThisMonth = documents.filter((d) => new Date(d.created_at) >= startOfMonth(new Date())).length;
 
   const copyEmail = () => {
     if (importEmailAddress) {
