@@ -136,7 +136,7 @@ export default function DashboardLayout() {
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          <DropdownMenuItem className="px-3 min-h-[40px]">
+          <DropdownMenuItem className="px-3 min-h-[40px]" onClick={() => navigate("/app/help")}>
             <HelpCircle className="h-3.5 w-3.5 mr-2" />
             <span className="text-[13px]">Help & Documentation</span>
           </DropdownMenuItem>
