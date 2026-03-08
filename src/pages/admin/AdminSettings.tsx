@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, X, Sun, Moon, Check } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ── Auto-save hook with debounce ──
 function useAutoSave<T>(key: string, initialValue: T, delay = 800) {
