@@ -73,6 +73,19 @@ export default function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
+  // Subscription gate: if not subscribed and not on billing/settings page, redirect
+  const isBillingPage = location.pathname === "/app/settings" && searchParams.get("tab") === "billing";
+  if (!subscription.loading && !subscription.subscribed && !isBillingPage) {
+    // If they had a subscription before (expired/cancelled), show billing required
+    // Otherwise redirect to activate trial
+    if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing") {
+      return <Navigate to="/billing-required" replace />;
+    }
+    if (!subscription.status) {
+      return <Navigate to="/activate-trial" replace />;
+    }
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
