@@ -46,6 +46,7 @@ import AdminSupport from "./pages/admin/AdminSupport";
 import AdminCMS from "./pages/admin/AdminCMS";
 import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminBroadcast from "./pages/admin/AdminBroadcast";
+import AdminRevenue from "./pages/admin/AdminRevenue";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -106,6 +107,7 @@ const App = () => (
             <Route path="documents" element={<AdminDocuments />} />
             <Route path="usage" element={<AdminUsage />} />
             <Route path="subscriptions" element={<AdminSubscriptions />} />
+            <Route path="revenue" element={<AdminRevenue />} />
             <Route path="audit" element={<AdminAuditLogs />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
