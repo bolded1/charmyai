@@ -67,6 +67,19 @@ export default function UploadPage() {
     async (file: File) => {
       if (!user) { navigate("/login"); return; }
 
+      // Enforce file size limit
+      const maxBytes = maxFileSizeMB * 1024 * 1024;
+      if (file.size > maxBytes) {
+        toast.error(`File "${file.name}" exceeds the ${maxFileSizeMB}MB limit.`);
+        return;
+      }
+
+      // Enforce monthly document limit
+      if (docsThisMonth >= proDocsLimit) {
+        toast.error(`Monthly document limit (${proDocsLimit}) reached. Contact your admin to increase it.`);
+        return;
+      }
+
       const id = Math.random().toString(36).slice(2);
       const entry: UploadingFile = {
         id,
