@@ -412,7 +412,7 @@ export default function AdminSettingsPage() {
                   <p className="text-sm font-medium">Debug Logging</p>
                   <p className="text-xs text-muted-foreground">Enable verbose logging for troubleshooting</p>
                 </div>
-                <Switch checked={debugLog} onCheckedChange={setDebugLog} />
+                <Switch checked={debugLog === "true"} onCheckedChange={(v) => setDebugLog(v ? "true" : "false")} />
               </div>
               <div className="space-y-2">
                 <Label>Platform Version</Label>
