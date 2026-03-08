@@ -51,6 +51,8 @@ export default function ExpensesPage() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
