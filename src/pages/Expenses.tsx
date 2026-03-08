@@ -8,7 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2, Archive } from "lucide-react";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -16,8 +17,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
+import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
@@ -48,11 +51,14 @@ export default function ExpensesPage() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
+  const { downloadAsZip, downloading } = useBulkDownload();
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
+
 
   // Load file preview when opening dialog
   useEffect(() => {
@@ -199,6 +205,34 @@ export default function ExpensesPage() {
       return matchesSearch && matchesCurrency && matchesCategory && matchesDate;
     });
   }, [expenses, search, currencyFilter, categoryFilter, dateRange]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const selectableCount = filtered.filter((e) => e.document_id).length;
+
+  const toggleSelectAll = () => {
+    const withDocs = filtered.filter((e) => e.document_id);
+    if (selectedIds.size === withDocs.length && withDocs.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(withDocs.map((e) => e.id)));
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    const docIds = filtered
+      .filter((e) => selectedIds.has(e.id) && e.document_id)
+      .map((e) => e.document_id as string);
+    if (docIds.length === 0) return;
+    await downloadAsZip(docIds, "expenses-invoices");
+    setSelectedIds(new Set());
+  };
 
   const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
@@ -369,19 +403,29 @@ export default function ExpensesPage() {
                     </span>
                   </div>
                   {group.records.map((doc) => (
-                    <MobileRecordCard
-                      key={doc.id}
-                      title={doc.supplier_name}
-                      subtitle={doc.invoice_number || undefined}
-                      badge={{ label: doc.category || "—" }}
-                      fields={[
-                        { label: "Date", value: doc.invoice_date },
-                        { label: "Currency", value: doc.currency },
-                        { label: "Net", value: Number(doc.net_amount).toFixed(2) },
-                        { label: "Total", value: Number(doc.total_amount).toFixed(2) },
-                      ]}
-                      onClick={() => openEdit(doc)}
-                    />
+                    <div key={doc.id} className="flex items-start gap-2">
+                      {doc.document_id && (
+                        <Checkbox
+                          checked={selectedIds.has(doc.id)}
+                          onCheckedChange={() => toggleSelect(doc.id)}
+                          className="mt-4 shrink-0"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <MobileRecordCard
+                          title={doc.supplier_name}
+                          subtitle={doc.invoice_number || undefined}
+                          badge={{ label: doc.category || "—" }}
+                          fields={[
+                            { label: "Date", value: doc.invoice_date },
+                            { label: "Currency", value: doc.currency },
+                            { label: "Net", value: Number(doc.net_amount).toFixed(2) },
+                            { label: "Total", value: Number(doc.total_amount).toFixed(2) },
+                          ]}
+                          onClick={() => openEdit(doc)}
+                        />
+                      </div>
+                    </div>
                   ))}
                 </div>
               ))}
@@ -390,7 +434,13 @@ export default function ExpensesPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
+                 <tr className="border-b border-border">
+                    <th className="pl-4 pr-1 w-10">
+                      <Checkbox
+                        checked={selectableCount > 0 && selectedIds.size === selectableCount}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Supplier</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Date</th>
@@ -406,7 +456,7 @@ export default function ExpensesPage() {
                   {groupedByMonth.map((group) => (
                     <Fragment key={group.key}>
                       <tr className="bg-accent/30">
-                        <td colSpan={9} className="px-4 py-2.5">
+                        <td colSpan={10} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">{group.label}</span>
                             <span className="text-xs font-semibold tabular-nums text-muted-foreground">
@@ -416,7 +466,10 @@ export default function ExpensesPage() {
                         </td>
                       </tr>
                       {group.records.map((doc) => (
-                        <tr key={doc.id} className="border-b border-border-subtle last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
+                        <tr key={doc.id} className={cn("border-b border-border-subtle last:border-0 hover:bg-accent/40 transition-colors cursor-pointer", selectedIds.has(doc.id) && "bg-primary/5")} onClick={() => openEdit(doc)}>
+                          <td className="pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
+                            {doc.document_id && <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />}
+                          </td>
                           <td className="p-4 text-sm font-medium">{doc.supplier_name}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
@@ -441,7 +494,27 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
+      {/* Bulk Download Bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-card border border-border shadow-lg rounded-xl px-5 py-3"
+          >
+            <span className="text-sm font-medium">{selectedIds.size} selected</span>
+            <Button size="sm" onClick={handleBulkDownload} disabled={downloading}>
+              {downloading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Archive className="h-4 w-4 mr-1" />}
+              Download ZIP
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              <X className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Dialog open={!!selectedId} onOpenChange={() => closeEdit()}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
