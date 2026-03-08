@@ -229,48 +229,8 @@ export default function AdminSettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="ai">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">AI Processing Configuration</CardTitle>
-                <SaveIndicator saving={aiSaving || aiModelSaving || confSaving || autoAppSaving} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">AI Document Processing</p>
-                  <p className="text-xs text-muted-foreground">Enable or disable AI extraction globally</p>
-                </div>
-                <Switch checked={aiEnabled} onCheckedChange={setAiEnabled} />
-              </div>
-              <div className="space-y-2">
-                <Label>AI Model</Label>
-                <Select value={aiModel} onValueChange={setAiModel}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gemini-flash">Gemini 3 Flash (Fast)</SelectItem>
-                    <SelectItem value="gemini-pro">Gemini 2.5 Pro (Accurate)</SelectItem>
-                    <SelectItem value="gpt5-mini">GPT-5 Mini (Balanced)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Confidence Threshold (%)</Label>
-                <Input type="number" value={confidenceThreshold} onChange={(e) => setConfidenceThreshold(e.target.value)} />
-                <p className="text-xs text-muted-foreground">Documents below this threshold will be flagged for manual review</p>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Auto-Approve High Confidence</p>
-                  <p className="text-xs text-muted-foreground">Automatically approve documents with 95%+ confidence</p>
-                </div>
-                <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+
+
 
         <TabsContent value="limits">
           <div className="space-y-6">
