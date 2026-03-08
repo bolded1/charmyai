@@ -1,7 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, FileText, AlertTriangle, Check, Download, Users2, X } from "lucide-react";
+import { Bell, FileText, AlertTriangle, Check, Download, Users2, MessageSquare, X } from "lucide-react";
 import { useNotifications, type Notification } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
