@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Search, MessageSquare, Clock, CheckCircle2, AlertCircle, Send } from "lucide-react";
+import { Loader2, Search, MessageSquare, Clock, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { TicketConversation } from "@/components/support/TicketConversation";
 
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   open: { label: "Open", icon: AlertCircle, color: "bg-amber-100 text-amber-700 border-amber-200" },
@@ -30,7 +29,6 @@ export default function AdminSupportPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
-  const [reply, setReply] = useState("");
   const [newStatus, setNewStatus] = useState("");
 
   const { data: tickets = [], isLoading } = useQuery({
@@ -41,8 +39,6 @@ export default function AdminSupportPage() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-
-      // Enrich with user email
       const enriched = await Promise.all(
         (data as any[]).map(async (ticket) => {
           const { data: profile } = await supabase
@@ -61,35 +57,23 @@ export default function AdminSupportPage() {
     },
   });
 
-  const replyMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedTicket) return;
-      const updates: any = { updated_at: new Date().toISOString() };
-      if (reply.trim()) {
-        updates.admin_reply = reply.trim();
-        updates.replied_at = new Date().toISOString();
-      }
-      if (newStatus) updates.status = newStatus;
-
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
         .from("support_tickets" as any)
-        .update(updates)
-        .eq("id", selectedTicket.id);
+        .update({ status, updated_at: new Date().toISOString() } as any)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
-      setReply("");
-      setNewStatus("");
-      setSelectedTicket(null);
-      toast.success("Ticket updated");
+      toast.success("Status updated");
     },
     onError: (err: any) => toast.error(err.message),
   });
 
   const filtered = tickets.filter((t: any) => {
-    const matchesSearch =
-      !search ||
+    const matchesSearch = !search ||
       t.subject?.toLowerCase().includes(search.toLowerCase()) ||
       t.user_email?.toLowerCase().includes(search.toLowerCase()) ||
       t.user_name?.toLowerCase().includes(search.toLowerCase());
@@ -99,6 +83,63 @@ export default function AdminSupportPage() {
 
   const openCount = tickets.filter((t: any) => t.status === "open").length;
   const inProgressCount = tickets.filter((t: any) => t.status === "in_progress").length;
+
+  // Detail view with conversation
+  if (selectedTicket) {
+    const status = statusConfig[selectedTicket.status] || statusConfig.open;
+    const StatusIcon = status.icon;
+    return (
+      <div className="flex flex-col h-[calc(100vh-8rem)]">
+        {/* Header */}
+        <div className="flex items-center gap-3 pb-4 border-b border-border shrink-0">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedTicket(null)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-bold truncate">{selectedTicket.subject}</h2>
+              <Badge variant="outline" className={`text-[10px] capitalize ${priorityColors[selectedTicket.priority] || ""}`}>
+                {selectedTicket.priority}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              From: {selectedTicket.user_name} ({selectedTicket.user_email}) · {new Date(selectedTicket.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Select
+              value={newStatus || selectedTicket.status}
+              onValueChange={(val) => {
+                setNewStatus(val);
+                updateStatus.mutate({ id: selectedTicket.id, status: val });
+                setSelectedTicket({ ...selectedTicket, status: val });
+              }}
+            >
+              <SelectTrigger className="w-[140px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Original message */}
+        <div className="px-4 py-3 bg-muted/30 border-b border-border text-sm shrink-0">
+          <p className="text-[10px] font-medium text-muted-foreground mb-1">Original message from user</p>
+          <p className="whitespace-pre-wrap text-sm">{selectedTicket.message}</p>
+        </div>
+
+        <div className="flex-1 min-h-0">
+          <TicketConversation ticketId={selectedTicket.id} senderRole="admin" ticketStatus={selectedTicket.status} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -141,12 +182,11 @@ export default function AdminSupportPage() {
           {filtered.map((ticket: any) => {
             const status = statusConfig[ticket.status] || statusConfig.open;
             const StatusIcon = status.icon;
-
             return (
               <Card
                 key={ticket.id}
                 className="cursor-pointer hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200"
-                onClick={() => { setSelectedTicket(ticket); setNewStatus(ticket.status); setReply(ticket.admin_reply || ""); }}
+                onClick={() => { setSelectedTicket(ticket); setNewStatus(ticket.status); }}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -164,77 +204,11 @@ export default function AdminSupportPage() {
                         {ticket.user_name} · {ticket.user_email} · {new Date(ticket.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
-                    {ticket.admin_reply && <Badge variant="secondary" className="text-[10px] shrink-0">Replied</Badge>}
                   </div>
                 </CardContent>
               </Card>
             );
           })}
-        </div>
-      )}
-
-      {/* Reply dialog */}
-      {selectedTicket && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setSelectedTicket(null)}>
-          <div className="bg-card rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-bold">{selectedTicket.subject}</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    From: {selectedTicket.user_name} ({selectedTicket.user_email})
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(selectedTicket.created_at).toLocaleString()}
-                  </p>
-                </div>
-                <Badge variant="outline" className={`capitalize ${priorityColors[selectedTicket.priority] || ""}`}>
-                  {selectedTicket.priority}
-                </Badge>
-              </div>
-
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">User message</p>
-                <p className="text-sm whitespace-pre-wrap bg-muted/50 rounded-lg p-3">{selectedTicket.message}</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-medium">Status</label>
-                <Select value={newStatus} onValueChange={setNewStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-medium">Reply</label>
-                <Textarea
-                  placeholder="Write your reply..."
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  rows={4}
-                  maxLength={5000}
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setSelectedTicket(null)}>Cancel</Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => replyMutation.mutate()}
-                  disabled={replyMutation.isPending}
-                >
-                  {replyMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                  Update Ticket
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>

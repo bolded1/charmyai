@@ -2,15 +2,16 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, MessageSquare, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Plus, MessageSquare, Clock, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { TicketConversation } from "@/components/support/TicketConversation";
 
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   open: { label: "Open", icon: AlertCircle, color: "bg-amber-100 text-amber-700 border-amber-200" },
@@ -33,7 +34,7 @@ export default function SupportPage() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [priority, setPriority] = useState("normal");
-  const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["support-tickets"],
@@ -74,9 +75,47 @@ export default function SupportPage() {
     return <div className="text-center py-12 text-muted-foreground">Please log in to access support.</div>;
   }
 
+  // Ticket detail / conversation view
+  if (selectedTicket) {
+    const status = statusConfig[selectedTicket.status] || statusConfig.open;
+    const StatusIcon = status.icon;
+    return (
+      <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-8rem)]">
+        <div className="flex items-center gap-3 pb-4 border-b border-border shrink-0">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedTicket(null)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-bold truncate">{selectedTicket.subject}</h2>
+              <Badge variant="outline" className={`text-[10px] ${status.color}`}>
+                <StatusIcon className="h-3 w-3 mr-1" />{status.label}
+              </Badge>
+              <Badge variant="outline" className={`text-[10px] capitalize ${priorityColors[selectedTicket.priority] || ""}`}>
+                {selectedTicket.priority}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Opened {new Date(selectedTicket.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </p>
+          </div>
+        </div>
+
+        {/* Original message */}
+        <div className="px-4 py-3 bg-muted/30 border-b border-border text-sm shrink-0">
+          <p className="text-[10px] font-medium text-muted-foreground mb-1">Original message</p>
+          <p className="whitespace-pre-wrap text-sm">{selectedTicket.message}</p>
+        </div>
+
+        <div className="flex-1 min-h-0">
+          <TicketConversation ticketId={selectedTicket.id} senderRole="user" ticketStatus={selectedTicket.status} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">Support</h1>
@@ -84,23 +123,14 @@ export default function SupportPage() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" /> New Ticket
-            </Button>
+            <Button><Plus className="h-4 w-4 mr-2" /> New Ticket</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Submit a Support Ticket</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>Submit a Support Ticket</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Subject</label>
-                <Input
-                  placeholder="Brief description of your issue"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  maxLength={200}
-                />
+                <Input placeholder="Brief description of your issue" value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={200} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Priority</label>
@@ -116,20 +146,10 @@ export default function SupportPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Message</label>
-                <Textarea
-                  placeholder="Describe your issue in detail..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={5}
-                  maxLength={2000}
-                />
+                <Textarea placeholder="Describe your issue in detail..." value={message} onChange={(e) => setMessage(e.target.value)} rows={5} maxLength={2000} />
                 <p className="text-xs text-muted-foreground text-right">{message.length}/2000</p>
               </div>
-              <Button
-                className="w-full"
-                onClick={() => createTicket.mutate()}
-                disabled={!subject.trim() || !message.trim() || createTicket.isPending}
-              >
+              <Button className="w-full" onClick={() => createTicket.mutate()} disabled={!subject.trim() || !message.trim() || createTicket.isPending}>
                 {createTicket.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <MessageSquare className="h-4 w-4 mr-2" />}
                 Submit Ticket
               </Button>
@@ -138,11 +158,8 @@ export default function SupportPage() {
         </Dialog>
       </div>
 
-      {/* Tickets list */}
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        </div>
+        <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
       ) : tickets.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -156,13 +173,11 @@ export default function SupportPage() {
           {tickets.map((ticket: any) => {
             const status = statusConfig[ticket.status] || statusConfig.open;
             const StatusIcon = status.icon;
-            const isExpanded = expandedTicket === ticket.id;
-
             return (
               <Card
                 key={ticket.id}
-                className={`cursor-pointer transition-all duration-200 ${isExpanded ? "shadow-md" : "hover:shadow-sm hover:-translate-y-0.5"}`}
-                onClick={() => setExpandedTicket(isExpanded ? null : ticket.id)}
+                className="cursor-pointer transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5"
+                onClick={() => setSelectedTicket(ticket)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -170,8 +185,7 @@ export default function SupportPage() {
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3 className="text-sm font-semibold truncate">{ticket.subject}</h3>
                         <Badge variant="outline" className={`text-[10px] ${status.color}`}>
-                          <StatusIcon className="h-3 w-3 mr-1" />
-                          {status.label}
+                          <StatusIcon className="h-3 w-3 mr-1" />{status.label}
                         </Badge>
                         <Badge variant="outline" className={`text-[10px] capitalize ${priorityColors[ticket.priority] || ""}`}>
                           {ticket.priority}
@@ -181,34 +195,7 @@ export default function SupportPage() {
                         {new Date(ticket.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
-                    {ticket.admin_reply && (
-                      <Badge variant="secondary" className="text-[10px] shrink-0">
-                        Replied
-                      </Badge>
-                    )}
                   </div>
-
-                  {isExpanded && (
-                    <div className="mt-4 space-y-3 border-t border-border/50 pt-3">
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Your message</p>
-                        <p className="text-sm whitespace-pre-wrap bg-muted/50 rounded-lg p-3">{ticket.message}</p>
-                      </div>
-                      {ticket.admin_reply && (
-                        <div>
-                          <p className="text-xs font-medium text-primary mb-1">Admin reply</p>
-                          <p className="text-sm whitespace-pre-wrap bg-primary/5 border border-primary/10 rounded-lg p-3">
-                            {ticket.admin_reply}
-                          </p>
-                          {ticket.replied_at && (
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              Replied {new Date(ticket.replied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             );
