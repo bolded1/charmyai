@@ -24,6 +24,7 @@ import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
+import { NPSWidget } from "@/components/NPSWidget";
 
 const mobileNavItems = [
   { title: "Capture", url: "/app", icon: Upload },
