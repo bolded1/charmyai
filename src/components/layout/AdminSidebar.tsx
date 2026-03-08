@@ -58,6 +58,7 @@ const navGroups = [
     label: "System & Ops",
     items: [
       { title: "System Health", url: "/admin/system-health", icon: HeartPulse },
+      { title: "AI Settings", url: "/admin/ai-settings", icon: Brain },
       { title: "Feature Flags", url: "/admin/feature-flags", icon: ToggleLeft },
       { title: "Scheduled Jobs", url: "/admin/scheduled-jobs", icon: Clock },
       { title: "Audit Logs", url: "/admin/audit", icon: ScrollText },

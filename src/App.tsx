@@ -125,6 +125,7 @@ const App = () => (
             <Route path="revenue" element={<AdminRevenue />} />
             <Route path="audit" element={<AdminAuditLogs />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="ai-settings" element={<AdminAISettings />} />
             <Route path="feature-flags" element={<AdminFeatureFlags />} />
             <Route path="system-health" element={<AdminSystemHealth />} />
             <Route path="scheduled-jobs" element={<AdminScheduledJobs />} />
