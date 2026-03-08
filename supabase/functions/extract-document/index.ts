@@ -365,6 +365,48 @@ serve(async (req) => {
       });
     }
 
+    // Auto-create expense/income record when approved
+    if (newStatus === "approved") {
+      try {
+        const docType = extracted.document_type || "expense_invoice";
+        if (docType === "expense_invoice" || docType === "receipt") {
+          await supabase.from("expense_records").insert({
+            user_id: doc.user_id,
+            document_id: documentId,
+            supplier_name: extracted.supplier_name || "Unknown",
+            invoice_number: extracted.invoice_number || null,
+            invoice_date: extracted.invoice_date || new Date().toISOString().split("T")[0],
+            due_date: extracted.due_date || null,
+            currency: extracted.currency || "EUR",
+            net_amount: extracted.net_amount || 0,
+            vat_amount: extracted.vat_amount || 0,
+            total_amount: extracted.total_amount || 0,
+            vat_number: extracted.vat_number || null,
+            category: finalCategory,
+          });
+          console.log("Auto-created expense record for document:", documentId);
+        } else if (docType === "sales_invoice") {
+          await supabase.from("income_records").insert({
+            user_id: doc.user_id,
+            document_id: documentId,
+            customer_name: extracted.customer_name || "Unknown",
+            invoice_number: extracted.invoice_number || null,
+            invoice_date: extracted.invoice_date || new Date().toISOString().split("T")[0],
+            due_date: extracted.due_date || null,
+            currency: extracted.currency || "EUR",
+            net_amount: extracted.net_amount || 0,
+            vat_amount: extracted.vat_amount || 0,
+            total_amount: extracted.total_amount || 0,
+            vat_number: extracted.vat_number || null,
+            category: finalCategory,
+          });
+          console.log("Auto-created income record for document:", documentId);
+        }
+      } catch (recordErr) {
+        console.error("Auto-create record error:", recordErr);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
