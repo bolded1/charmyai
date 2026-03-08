@@ -234,6 +234,24 @@ function parseMimeAttachments(mimeBody: string): { name: string; contentType: st
   return results;
 }
 
+async function verifyMailgunSignature(apiKey: string, timestamp: string, token: string, sig: string): Promise<boolean> {
+  if (!timestamp || !token || !sig) return false;
+  // Reject if timestamp is older than 5 minutes
+  const ts = parseInt(timestamp, 10);
+  if (isNaN(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false;
+  const value = timestamp + token;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(apiKey),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
+  const expected = Array.from(new Uint8Array(mac)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return expected === sig;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -256,6 +274,24 @@ serve(async (req) => {
     const timestamp = formData.get("timestamp") as string || "";
     const token = formData.get("token") as string || "";
     const signature = formData.get("signature") as string || "";
+
+    // Verify Mailgun webhook signature
+    const mailgunApiKeyRaw = Deno.env.get("MAILGUN_API_KEY");
+    const webhookSigningKey = Deno.env.get("MAILGUN_WEBHOOK_SIGNING_KEY") || mailgunApiKeyRaw;
+    if (webhookSigningKey) {
+      const normalizedKey = normalizeMailgunApiKey(webhookSigningKey);
+      if (normalizedKey) {
+        const valid = await verifyMailgunSignature(normalizedKey, timestamp, token, signature);
+        if (!valid) {
+          console.error("Invalid Mailgun webhook signature");
+          return new Response(JSON.stringify({ error: "Invalid signature" }), {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+    }
+
     const signedFields: MailgunSignedFields = {
       timestamp: timestamp || undefined,
       token: token || undefined,
