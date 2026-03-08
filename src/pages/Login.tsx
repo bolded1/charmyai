@@ -29,15 +29,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="marketing min-h-screen flex items-center justify-center p-4 surface-sunken">
-      <div className="w-full max-w-sm">
+    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
+      {/* Decorative blurred orbs */}
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+
+      <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl mb-2">
             {brandLogo ? (
               <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
             ) : (
               <>
-                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center shadow-lg">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
                 Charmy
@@ -47,7 +51,7 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="surface-elevated rounded-xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} />

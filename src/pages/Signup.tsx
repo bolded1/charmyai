@@ -36,21 +36,23 @@ export default function SignupPage() {
 
   if (emailSent) {
     return (
-      <div className="marketing min-h-screen flex items-center justify-center p-4 surface-sunken">
-        <div className="w-full max-w-sm text-center">
+      <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+        <div className="w-full max-w-sm text-center relative z-10">
           <div className="mb-6">
             {brandLogo ? (
               <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain mx-auto" />
             ) : (
               <div className="inline-flex items-center gap-2 font-bold text-xl">
-                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center shadow-lg">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
                 Charmy
               </div>
             )}
           </div>
-          <div className="surface-elevated rounded-xl p-6 space-y-3">
+          <div className="glass-auth rounded-2xl p-6 space-y-3">
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
               <FileText className="h-6 w-6 text-primary" />
             </div>
@@ -69,15 +71,17 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="marketing min-h-screen flex items-center justify-center p-4 surface-sunken">
-      <div className="w-full max-w-sm">
+    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+      <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl mb-2">
             {brandLogo ? (
               <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
             ) : (
               <>
-                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center shadow-lg">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
                 Charmy
@@ -87,7 +91,7 @@ export default function SignupPage() {
           <p className="text-sm text-muted-foreground">Start your free trial</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="surface-elevated rounded-xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Work Email</Label>
             <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} />

@@ -113,7 +113,7 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="surface-elevated rounded-xl p-6 text-center"
+                className="glass-card rounded-2xl p-6 text-center hover:shadow-lg transition-all duration-300"
               >
                 <div className="h-12 w-12 rounded-xl bg-brand-soft flex items-center justify-center mx-auto mb-4">
                   <step.icon className="h-6 w-6 text-primary-icon" />
@@ -154,7 +154,7 @@ export default function HomePage() {
             viewport={{ once: true }}
             variants={fadeUp}
             custom={1}
-            className="surface-elevated rounded-xl border border-border p-6 md:p-8"
+            className="glass-card rounded-2xl p-6 md:p-8"
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {[
@@ -216,7 +216,7 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="flex items-center gap-3 p-4 surface-elevated rounded-xl"
+                className="flex items-center gap-3 p-4 glass-card rounded-2xl hover:shadow-md transition-all duration-300"
               >
                 <div className="h-9 w-9 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
                   <b.icon className="h-4.5 w-4.5 text-primary-icon" />

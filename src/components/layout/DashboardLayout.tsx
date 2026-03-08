@@ -187,7 +187,7 @@ export default function DashboardLayout() {
             </div>
           )}
           {/* Mobile header with logo + profile */}
-          <header className="h-12 border-b border-border bg-card flex items-center justify-between px-3 shrink-0 md:hidden">
+          <header className="h-12 border-b border-border/50 bg-card/70 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden">
             <div className="flex items-center gap-2">
               {brandLogo ? (
                 <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain" />
@@ -207,7 +207,7 @@ export default function DashboardLayout() {
           </header>
 
           {/* Mobile navigation tab bar */}
-          <nav className="md:hidden border-b border-border bg-card overflow-x-auto scrollbar-hide relative">
+          <nav className="md:hidden border-b border-border/50 bg-card/70 backdrop-blur-xl overflow-x-auto scrollbar-hide relative">
             <div className="flex min-w-max px-1">
               {mobileNavItems.map((item) => {
                 const isActive = item.url === "/app"
@@ -234,7 +234,7 @@ export default function DashboardLayout() {
           </nav>
 
           {/* Desktop header - hidden on mobile */}
-          <header className="h-12 border-b border-border bg-card items-center justify-between px-6 shrink-0 hidden md:flex">
+          <header className="h-12 border-b border-border/50 bg-card/70 backdrop-blur-xl items-center justify-between px-6 shrink-0 hidden md:flex">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <span className="text-sm font-medium text-foreground">{pageTitle}</span>

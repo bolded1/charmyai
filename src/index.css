@@ -247,8 +247,11 @@
   }
 
   .surface-elevated {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 2px 12px -4px hsl(var(--foreground) / 0.04), inset 0 1px 0 hsl(var(--card) / 0.4);
   }
 
   .surface-sunken {
@@ -256,15 +259,42 @@
   }
 
   .surface-overlay {
-    background-color: hsl(var(--popover));
-    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--popover) / 0.85);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border: 1px solid hsl(var(--border) / 0.4);
     box-shadow: var(--shadow-overlay);
   }
 
   .glass-effect {
-    background-color: hsl(var(--card) / 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 4px 24px -4px hsl(var(--foreground) / 0.04), inset 0 1px 0 hsl(var(--card) / 0.6);
+  }
+
+  .glass-card {
+    background-color: hsl(var(--card) / 0.65);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border: 1px solid hsl(var(--border) / 0.4);
+    box-shadow: 0 8px 32px -8px hsl(var(--foreground) / 0.06), inset 0 1px 0 hsl(var(--card) / 0.5);
+  }
+
+  .glass-subtle {
+    background-color: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  .glass-auth {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.75), hsl(var(--card) / 0.55));
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow: 0 16px 48px -12px hsl(var(--foreground) / 0.1), inset 0 1px 0 hsl(var(--card) / 0.6);
   }
 
   .bg-success-soft { background-color: hsl(var(--success-soft)); }
