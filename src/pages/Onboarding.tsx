@@ -244,6 +244,14 @@ export default function OnboardingPage() {
                     </button>
                   ))}
                 </div>
+                {industry === "other" && (
+                  <Input
+                    placeholder="Enter your industry..."
+                    value={customIndustry}
+                    onChange={(e) => setCustomIndustry(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
               </div>
 
               {/* Country with search */}
