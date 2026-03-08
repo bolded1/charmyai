@@ -253,7 +253,25 @@ serve(async (req) => {
       console.error("Auto-category rule error:", ruleErr);
     }
 
-    // Update document with extracted data
+    // Auto-create category in expense_categories if it doesn't exist
+    if (finalCategory) {
+      try {
+        const { data: existingCats } = await supabase
+          .from("expense_categories")
+          .select("id")
+          .eq("user_id", doc.user_id)
+          .ilike("name", finalCategory);
+
+        if (!existingCats || existingCats.length === 0) {
+          await supabase
+            .from("expense_categories")
+            .insert({ user_id: doc.user_id, name: finalCategory });
+          console.log("Auto-created category:", finalCategory);
+        }
+      } catch (catErr) {
+        console.error("Auto-create category error:", catErr);
+      }
+    }
     const { error: updateErr } = await supabase
       .from("documents")
       .update({
