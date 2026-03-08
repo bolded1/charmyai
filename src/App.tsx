@@ -39,6 +39,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminDemoSettings from "./pages/admin/AdminDemoSettings";
 import AdminSupport from "./pages/admin/AdminSupport";
 import AdminCMS from "./pages/admin/AdminCMS";
+import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
