@@ -215,23 +215,30 @@ export default function DocumentsPage() {
                         )}
                       </td>
                       <td className="p-3">
-                        <Badge variant="secondary" className={statusColors[doc.status] || ""}>
-                          {doc.status === "needs_review" ? (
-                            <span className="flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3" /> needs review
-                            </span>
-                          ) : doc.status === "processing" ? (
-                            <span className="flex items-center gap-1">
-                              <Loader2 className="h-3 w-3 animate-spin" /> processing
-                            </span>
-                          ) : doc.status === "approved" ? (
-                            <span className="flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> approved
-                            </span>
-                          ) : (
-                            doc.status.replace("_", " ")
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="secondary" className={statusColors[doc.status] || ""}>
+                            {doc.status === "needs_review" ? (
+                              <span className="flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3" /> needs review
+                              </span>
+                            ) : doc.status === "processing" ? (
+                              <span className="flex items-center gap-1">
+                                <Loader2 className="h-3 w-3 animate-spin" /> processing
+                              </span>
+                            ) : doc.status === "approved" ? (
+                              <span className="flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> approved
+                              </span>
+                            ) : (
+                              doc.status.replace("_", " ")
+                            )}
+                          </Badge>
+                          {(doc as any).potential_duplicate_of && (
+                            <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/20">
+                              <Copy className="h-3 w-3 mr-1" /> duplicate
+                            </Badge>
                           )}
-                        </Badge>
+                        </div>
                       </td>
                       <td className="p-3" />
                     </tr>
