@@ -50,31 +50,32 @@ export default function AdminDocumentsPage() {
 
   useEffect(() => { fetchDocs(); }, []);
 
-  const getSignedUrl = async (filePath: string) => {
+  const getFileBlob = async (filePath: string, mimeType: string): Promise<string | null> => {
     const { data, error } = await supabase.storage
       .from("documents")
-      .createSignedUrl(filePath, 3600);
-    if (error) return null;
-    return data.signedUrl;
+      .download(filePath);
+    if (error || !data) return null;
+    const blob = new Blob([data], { type: mimeType });
+    return URL.createObjectURL(blob);
   };
 
   const openPreview = async (doc: any) => {
     setSelected(doc);
     setFileUrl(null);
     setFileLoading(true);
-    const url = await getSignedUrl(doc.file_path);
+    const url = await getFileBlob(doc.file_path, doc.file_type);
     setFileUrl(url);
     setFileLoading(false);
   };
 
   const handleDownload = async (doc: any) => {
-    const url = await getSignedUrl(doc.file_path);
+    const url = await getFileBlob(doc.file_path, doc.file_type);
     if (!url) { toast.error("Could not generate download link"); return; }
     const a = document.createElement("a");
     a.href = url;
     a.download = doc.file_name;
-    a.target = "_blank";
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const filtered = docs.filter((d) => {
