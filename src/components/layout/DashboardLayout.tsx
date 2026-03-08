@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X } from "lucide-react";
+import { Loader2, User, Building2, Palette, UsersRound, HelpCircle, Keyboard, LogOut, Upload, Camera, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -32,6 +32,8 @@ const mobileNavItems = [
   { title: "Income", url: "/app/income", icon: TrendingUp },
   { title: "Exports", url: "/app/exports", icon: Download },
   { title: "Team", url: "/app/team", icon: UsersRound },
+  { title: "Help", url: "/app/help", icon: HelpCircle },
+  { title: "Support", url: "/app/support", icon: LifeBuoy },
   { title: "Settings", url: "/app/settings", icon: Settings },
 ];
 
