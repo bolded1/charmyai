@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Upload, FileText, Receipt, TrendingUp, Download, UsersRound, Settings,
@@ -176,6 +177,7 @@ const categories = [...new Set(helpArticles.map((a) => a.category))];
 export default function Help() {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const filtered = helpArticles.filter(
     (a) =>
@@ -337,13 +339,17 @@ export default function Help() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="glass-card rounded-2xl p-6 text-center"
+        className="glass-card rounded-2xl p-6 text-center cursor-pointer hover:shadow-md transition-shadow"
+        onClick={() => navigate("/app/support")}
       >
         <Zap className="h-8 w-8 text-primary mx-auto mb-2" />
         <h3 className="font-semibold mb-1">Still need help?</h3>
         <p className="text-sm text-muted-foreground">
           Contact our support team and we'll get back to you within 24 hours.
         </p>
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-primary mt-3">
+          Go to Support <ArrowRight className="h-3.5 w-3.5" />
+        </span>
       </motion.div>
     </div>
   );
