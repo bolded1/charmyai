@@ -5,7 +5,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation, Link } from "react-router-dom";
 import {
-  LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity,
+  LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
 } from "lucide-react";
 
