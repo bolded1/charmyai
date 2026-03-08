@@ -26,7 +26,7 @@ export const STRIPE_PLANS = {
 
 export interface SubscriptionState {
   subscribed: boolean;
-  plan: "free" | "pro";
+  plan: "pro" | "none";
   status: string | null;
   price_id: string | null;
   subscription_id: string | null;
