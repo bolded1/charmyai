@@ -456,7 +456,7 @@ export default function ExpensesPage() {
                   {groupedByMonth.map((group) => (
                     <Fragment key={group.key}>
                       <tr className="bg-accent/30">
-                        <td colSpan={9} className="px-4 py-2.5">
+                        <td colSpan={10} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">{group.label}</span>
                             <span className="text-xs font-semibold tabular-nums text-muted-foreground">
