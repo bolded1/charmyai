@@ -142,6 +142,7 @@ export type Database = {
           invoice_number: string | null
           net_amount: number | null
           ocr_text: string | null
+          potential_duplicate_of: string | null
           source: string
           status: string
           supplier_name: string | null
@@ -172,6 +173,7 @@ export type Database = {
           invoice_number?: string | null
           net_amount?: number | null
           ocr_text?: string | null
+          potential_duplicate_of?: string | null
           source?: string
           status?: string
           supplier_name?: string | null
@@ -202,6 +204,7 @@ export type Database = {
           invoice_number?: string | null
           net_amount?: number | null
           ocr_text?: string | null
+          potential_duplicate_of?: string | null
           source?: string
           status?: string
           supplier_name?: string | null
@@ -219,6 +222,13 @@ export type Database = {
             columns: ["email_import_id"]
             isOneToOne: false
             referencedRelation: "email_imports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_potential_duplicate_of_fkey"
+            columns: ["potential_duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
         ]
@@ -654,6 +664,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_duplicate_document: {
+        Args: {
+          _document_id: string
+          _invoice_date: string
+          _invoice_number: string
+          _supplier_name: string
+          _total_amount: number
+          _user_id: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
