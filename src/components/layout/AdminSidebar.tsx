@@ -28,6 +28,7 @@ const navItems = [
   { title: "Broadcast", url: "/admin/broadcast", icon: Megaphone },
   { title: "Login Activity", url: "/admin/login-activity", icon: KeyRound },
   { title: "GDPR / Data", url: "/admin/gdpr", icon: UserX },
+  { title: "User Feedback", url: "/admin/feedback", icon: MessageSquareHeart },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
 ];
 

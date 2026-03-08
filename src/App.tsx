@@ -123,6 +123,7 @@ const App = () => (
             <Route path="broadcast" element={<AdminBroadcast />} />
             <Route path="login-activity" element={<AdminLoginActivity />} />
             <Route path="gdpr" element={<AdminGDPR />} />
+            <Route path="feedback" element={<AdminFeedback />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 
