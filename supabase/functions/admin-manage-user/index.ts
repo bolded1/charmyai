@@ -162,6 +162,30 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "bulk_notify": {
+        const { user_ids, title, body: notifyBody } = body;
+        if (!user_ids || !title || !notifyBody) {
+          return new Response(JSON.stringify({ error: "user_ids, title, and body are required" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const notifications = user_ids.map((uid: string) => ({
+          user_id: uid,
+          type: "announcement",
+          title,
+          body: notifyBody,
+        }));
+
+        const { error: insertError } = await adminClient.from("notifications").insert(notifications);
+        if (insertError) throw insertError;
+
+        return new Response(JSON.stringify({ success: true, sent: notifications.length }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,
