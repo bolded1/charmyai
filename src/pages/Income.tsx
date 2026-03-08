@@ -534,6 +534,12 @@ export default function IncomePage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
+                    <th className="pl-4 pr-1 w-10">
+                      <Checkbox
+                        checked={selectableCount > 0 && selectedIds.size === selectableCount}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Customer</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Date</th>
@@ -548,7 +554,7 @@ export default function IncomePage() {
                   {groupedByMonth.map((group) => (
                     <Fragment key={group.key}>
                       <tr className="bg-accent/30">
-                        <td colSpan={8} className="px-4 py-2.5">
+                        <td colSpan={9} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">{group.label}</span>
                             <span className="text-xs font-semibold tabular-nums text-muted-foreground">
@@ -558,7 +564,10 @@ export default function IncomePage() {
                         </td>
                       </tr>
                       {group.records.map((doc) => (
-                        <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
+                        <tr key={doc.id} className={cn("border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer", selectedIds.has(doc.id) && "bg-primary/5")} onClick={() => openEdit(doc)}>
+                          <td className="pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
+                            {doc.document_id && <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />}
+                          </td>
                           <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
