@@ -164,7 +164,7 @@ export function AdminSidebar() {
                             <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-bold border border-primary/15 shadow-sm" : "text-foreground hover:text-foreground hover:bg-muted/60"}>
                               <NavLink to={item.url} end={item.url === "/admin"} className="rounded-xl">
                                 <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                                <span className="text-[13.5px] font-semibold">{item.title}</span>
+                                <span className="text-[11.5px] font-semibold">{item.title}</span>
                               </NavLink>
                             </SidebarMenuButton>
                           </SidebarMenuItem>
