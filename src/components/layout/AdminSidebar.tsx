@@ -6,7 +6,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3,
-  CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles,
+  CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine,
 } from "lucide-react";
 
 const navItems = [
