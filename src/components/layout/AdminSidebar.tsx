@@ -181,10 +181,10 @@ export function AdminSidebar() {
       <SidebarFooter className="p-3 border-t border-border/40">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-xl">
+            <SidebarMenuButton asChild className="text-foreground/80 hover:text-foreground hover:bg-muted/60 rounded-xl">
               <Link to="/app">
                 <ArrowLeft className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                {!collapsed && <span className="text-[13px]">Back to App</span>}
+                {!collapsed && <span className="text-sm font-medium">Back to App</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
