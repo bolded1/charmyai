@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye, Loader2, RefreshCw } from "lucide-react";
+import { Search, Eye, Loader2, RefreshCw, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
+import { useNavigate } from "react-router-dom";
 
 interface UserRow {
   id: string;
