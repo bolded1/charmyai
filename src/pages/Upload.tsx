@@ -170,7 +170,7 @@ export default function UploadPage() {
                 <Mail className="h-5 w-5 text-violet" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold mb-0.5">Import via Email</h3>
+                <h3 className="text-sm font-bold mb-0.5">Import Expenses via Email</h3>
                 <p className="text-xs text-muted-foreground mb-2.5">
                   Forward invoices to this address and they'll be automatically processed.
                 </p>
