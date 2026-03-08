@@ -2,31 +2,15 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, FileText, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Building2, Users, FileText, CheckCircle2, AlertCircle, Loader2, TrendingUp, ArrowUpRight } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 
-const actionColors: Record<string, string> = {
-  document_uploaded: "bg-accent text-accent-foreground",
-  document_processed: "bg-primary/10 text-primary",
-  document_approved: "bg-primary/10 text-primary",
-  document_failed: "bg-destructive/10 text-destructive",
-  export_generated: "bg-secondary text-secondary-foreground",
-  user_login: "bg-accent text-accent-foreground",
-  user_signup: "bg-accent text-accent-foreground",
-  settings_updated: "bg-secondary text-secondary-foreground",
-};
-
-const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--muted))"];
+const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--border))"];
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalOrgs: 0,
-    totalUsers: 0,
-    totalDocs: 0,
-    totalProcessed: 0,
-    awaitingReview: 0,
-    failedDocs: 0,
+    totalOrgs: 0, totalUsers: 0, totalDocs: 0, totalProcessed: 0, awaitingReview: 0, failedDocs: 0,
   });
   const [recentLogs, setRecentLogs] = useState<any[]>([]);
   const [dailyData, setDailyData] = useState<any[]>([]);
@@ -36,7 +20,6 @@ export default function AdminDashboard() {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        // Counts in parallel
         const [orgsRes, usersRes, docsRes, processedRes, reviewRes, failedRes, logsRes] = await Promise.all([
           supabase.from("organizations").select("id", { count: "exact", head: true }),
           supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -48,20 +31,14 @@ export default function AdminDashboard() {
         ]);
 
         setStats({
-          totalOrgs: orgsRes.count || 0,
-          totalUsers: usersRes.count || 0,
-          totalDocs: docsRes.count || 0,
-          totalProcessed: processedRes.count || 0,
-          awaitingReview: reviewRes.count || 0,
-          failedDocs: failedRes.count || 0,
+          totalOrgs: orgsRes.count || 0, totalUsers: usersRes.count || 0,
+          totalDocs: docsRes.count || 0, totalProcessed: processedRes.count || 0,
+          awaitingReview: reviewRes.count || 0, failedDocs: failedRes.count || 0,
         });
-
         setRecentLogs(logsRes.data || []);
 
-        // Daily data (7 days)
         const { data: docs } = await supabase
-          .from("documents")
-          .select("created_at, status")
+          .from("documents").select("created_at, status")
           .gte("created_at", new Date(Date.now() - 7 * 86400000).toISOString());
 
         const dayMap = new Map<string, { processed: number; failed: number }>();
@@ -79,7 +56,6 @@ export default function AdminDashboard() {
         });
         setDailyData(Array.from(dayMap.entries()).map(([date, vals]) => ({ date, ...vals })));
 
-        // Org activity
         const { data: orgs } = await supabase.from("organizations").select("id, name, owner_user_id");
         const orgCounts = await Promise.all(
           (orgs || []).slice(0, 6).map(async (org) => {
@@ -99,8 +75,8 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -112,74 +88,119 @@ export default function AdminDashboard() {
   ];
 
   const statCards = [
-    { label: "Organizations", value: stats.totalOrgs, icon: Building2 },
-    { label: "Users", value: stats.totalUsers, icon: Users },
-    { label: "Documents", value: stats.totalDocs.toLocaleString(), icon: FileText },
-    { label: "Processed", value: stats.totalProcessed.toLocaleString(), icon: CheckCircle2 },
-    { label: "Awaiting Review", value: stats.awaitingReview, icon: AlertCircle },
-    { label: "Failed", value: stats.failedDocs, icon: AlertCircle },
+    { label: "Organizations", value: stats.totalOrgs, icon: Building2, color: "from-primary to-[hsl(var(--violet))]", iconBg: "bg-primary/10 text-primary" },
+    { label: "Total Users", value: stats.totalUsers, icon: Users, color: "from-[hsl(var(--violet))] to-[hsl(var(--rose))]", iconBg: "bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" },
+    { label: "Documents", value: stats.totalDocs.toLocaleString(), icon: FileText, color: "from-[hsl(var(--teal))] to-[hsl(var(--emerald))]", iconBg: "bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]" },
+    { label: "Processed", value: stats.totalProcessed.toLocaleString(), icon: CheckCircle2, color: "from-[hsl(var(--emerald))] to-[hsl(var(--teal))]", iconBg: "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]" },
+    { label: "Awaiting Review", value: stats.awaitingReview, icon: AlertCircle, color: "from-[hsl(var(--amber))] to-[hsl(var(--rose))]", iconBg: "bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))]" },
+    { label: "Failed", value: stats.failedDocs, icon: AlertCircle, color: "from-[hsl(var(--rose))] to-destructive", iconBg: "bg-[hsl(var(--rose-soft))] text-[hsl(var(--rose))]" },
   ];
 
   return (
     <div className="space-y-6">
+      {/* Welcome banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-[hsl(var(--violet))] to-[hsl(var(--rose))] p-6 text-primary-foreground">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
+        <div className="relative z-10">
+          <h2 className="text-xl font-bold">Welcome back, Admin</h2>
+          <p className="text-sm text-primary-foreground/80 mt-1">Here's what's happening across your platform today.</p>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((s) => (
-          <Card key={s.label}>
+          <Card key={s.label} className="group relative overflow-hidden border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">{s.label}</span>
-                <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center">
-                  <s.icon className="h-4 w-4 text-accent-foreground" />
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium text-muted-foreground">{s.label}</span>
+                <div className={`h-10 w-10 rounded-xl ${s.iconBg} flex items-center justify-center transition-transform group-hover:scale-110`}>
+                  <s.icon className="h-4.5 w-4.5" style={{ strokeWidth: 2 }} />
                 </div>
               </div>
-              <div className="text-2xl font-bold">{s.value}</div>
+              <div className="text-3xl font-bold tracking-tight text-foreground">{s.value}</div>
+              <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                <ArrowUpRight className="h-3 w-3 text-[hsl(var(--emerald))]" />
+                <span className="text-[hsl(var(--emerald))]">Last 7 days</span>
+              </div>
             </CardContent>
+            <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${s.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
           </Card>
         ))}
       </div>
 
       {/* Charts Row */}
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 border-border/40">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Documents Processed (7 Days)</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Document Activity</CardTitle>
+              <Badge variant="outline" className="text-xs text-muted-foreground border-border/60">Last 7 days</Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip />
-                  <Bar dataKey="processed" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Processed" />
-                  <Bar dataKey="failed" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name="Failed" />
-                </BarChart>
+                <AreaChart data={dailyData}>
+                  <defs>
+                    <linearGradient id="colorProcessed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "12px",
+                      boxShadow: "0 8px 32px hsl(var(--foreground) / 0.08)",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Area type="monotone" dataKey="processed" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#colorProcessed)" name="Processed" />
+                  <Area type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2.5} fill="url(#colorFailed)" name="Failed" />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/40">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Success Rate</CardTitle>
+            <CardTitle className="text-base font-semibold">Success Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-48 flex items-center justify-center">
+            <div className="h-48 flex items-center justify-center relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={successRateData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} dataKey="value" startAngle={90} endAngle={-270}>
+                  <Pie data={successRateData} cx="50%" cy="50%" innerRadius={55} outerRadius={75} dataKey="value" startAngle={90} endAngle={-270} strokeWidth={0}>
                     {successRateData.map((_, index) => (
                       <Cell key={index} fill={CHART_COLORS[index]} />
                     ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center flex-col">
+                <span className="text-3xl font-bold text-foreground">{successRate}%</span>
+                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Success</p>
+              </div>
             </div>
-            <div className="text-center -mt-4">
-              <span className="text-3xl font-bold">{successRate}%</span>
-              <p className="text-xs text-muted-foreground">Success rate</p>
+            <div className="flex justify-center gap-4 mt-2">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                Processed
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="h-2.5 w-2.5 rounded-full bg-border" />
+                Other
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -187,27 +208,33 @@ export default function AdminDashboard() {
 
       {/* Bottom Row */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="border-border/40">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Active Organizations</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Top Organizations</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             {orgActivity.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No organizations yet</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No organizations yet</p>
             ) : (
-              <div className="space-y-3">
-                {orgActivity.map((org) => (
-                  <div key={org.name} className="flex items-center justify-between">
-                    <span className="text-sm truncate">{org.name}</span>
-                    <div className="flex items-center gap-3">
-                      <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div className="space-y-4">
+                {orgActivity.map((org, idx) => (
+                  <div key={org.name} className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary/10 to-[hsl(var(--violet-soft))] flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-foreground truncate block">{org.name}</span>
+                      <div className="mt-1.5 h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary rounded-full"
+                          className="h-full bg-gradient-to-r from-primary to-[hsl(var(--violet))] rounded-full transition-all duration-500"
                           style={{ width: `${orgActivity[0].documents > 0 ? (org.documents / orgActivity[0].documents) * 100 : 0}%` }}
                         />
                       </div>
-                      <span className="text-xs text-muted-foreground w-12 text-right">{org.documents}</span>
                     </div>
+                    <span className="text-sm font-semibold text-foreground w-10 text-right">{org.documents}</span>
                   </div>
                 ))}
               </div>
@@ -215,26 +242,31 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/40">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Activity</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
+              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">Live</Badge>
+            </div>
           </CardHeader>
           <CardContent>
             {recentLogs.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No activity yet</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No activity yet</p>
             ) : (
               <div className="space-y-3">
-                {recentLogs.map((entry) => (
-                  <div key={entry.id} className="flex items-start gap-3">
-                    <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm">{entry.details || entry.action.replace(/_/g, " ")}</span>
-                        <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 capitalize ${actionColors[entry.action] || "bg-secondary text-secondary-foreground"}`}>
-                          {entry.action.replace(/_/g, " ")}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{entry.user_email || "System"} · {new Date(entry.created_at).toLocaleString()}</p>
+                {recentLogs.map((entry, idx) => (
+                  <div key={entry.id} className="flex items-start gap-3 group">
+                    <div className="relative mt-1">
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors ring-4 ring-primary/10" />
+                      {idx < recentLogs.length - 1 && (
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-px h-6 bg-border/60" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1 pb-1">
+                      <p className="text-sm font-medium text-foreground">{entry.details || entry.action.replace(/_/g, " ")}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {entry.user_email || "System"} · {new Date(entry.created_at).toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))}
