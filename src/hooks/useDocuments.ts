@@ -208,13 +208,18 @@ export function useExpenseRecords() {
 }
 
 export function useIncomeRecords() {
+  const { effectiveUserId } = useImpersonation();
   return useQuery({
-    queryKey: ["income"],
+    queryKey: ["income", effectiveUserId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("income_records")
         .select("*")
         .order("invoice_date", { ascending: false });
+      if (effectiveUserId) {
+        query = query.eq("user_id", effectiveUserId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
