@@ -28,7 +28,7 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Check rate limiting via demo_settings
+    // Check if demo is enabled
     const { data: rateSetting } = await supabase
       .from("demo_settings")
       .select("value")
@@ -38,6 +38,36 @@ serve(async (req) => {
     if (!rateSetting || rateSetting.value !== true) {
       return new Response(JSON.stringify({ error: "Demo is currently disabled" }), {
         status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Enforce per-session rate limiting using max_uploads_per_day from demo_settings
+    const { data: maxSetting } = await supabase
+      .from("demo_settings")
+      .select("value")
+      .eq("key", "max_uploads_per_day")
+      .single();
+
+    const maxUploadsPerDay = typeof maxSetting?.value === "number" ? maxSetting.value : 50;
+
+    // Get the requesting IP from headers for rate limiting
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+                     req.headers.get("x-real-ip") || "unknown";
+
+    // Count today's uploads for this IP address
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
+    const { count: todayCount, error: countErr } = await supabase
+      .from("demo_uploads")
+      .select("id", { count: "exact", head: true })
+      .eq("ip_address", clientIp)
+      .gte("created_at", todayStart.toISOString());
+
+    if (!countErr && todayCount !== null && todayCount >= maxUploadsPerDay) {
+      return new Response(JSON.stringify({ error: "Daily demo limit reached. Please try again tomorrow." }), {
+        status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
