@@ -253,7 +253,7 @@ export default function AdminDocumentsPage() {
                   </div>
                 ))}
               </div>
-              {selected.confidence_score && selected.confidence_score < 0.7 && (
+              {selected.confidence_score && selected.confidence_score < 70 && (
                 <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                   ⚠ Low confidence score. Manual review recommended.
                 </div>
