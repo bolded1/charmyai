@@ -11,3 +11,5 @@ project_id = "vhaursnvaadhxxwefxez"
     verify_jwt = false
   [functions.inbound-email]
     verify_jwt = false
+  [functions.admin-create-user]
+    verify_jwt = false
