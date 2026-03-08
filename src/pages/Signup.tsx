@@ -11,7 +11,8 @@ import { useBrandLogo } from "@/hooks/useBrandLogo";
 export default function SignupPage() {
   const brandLogo = useBrandLogo();
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } },
+      options: { data: { first_name: firstName, last_name: lastName } },
     });
     setLoading(false);
     if (error) {
