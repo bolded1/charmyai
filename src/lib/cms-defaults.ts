@@ -31,8 +31,8 @@ export const homepageDefaults = {
   benefit6: "Enterprise-grade security",
   ctaTitle: "Upload invoices. Forward emails.",
   ctaTitleFaded: "Charmy extracts the data.",
-  ctaSubtitle: "Start processing documents in minutes. No credit card required.",
-  ctaButton: "Start Free Trial",
+  ctaSubtitle: "Start processing documents in minutes. 7-day free trial included.",
+  ctaButton: "Start 7-Day Trial",
 };
 
 export const featuresDefaults = {
