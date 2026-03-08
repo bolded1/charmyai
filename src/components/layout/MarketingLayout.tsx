@@ -17,6 +17,7 @@ export default function MarketingLayout() {
   const brandLogo = useBrandLogo();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { openPreferences } = useCookieConsent();
 
   // Close mobile menu on route change
   useEffect(() => {
