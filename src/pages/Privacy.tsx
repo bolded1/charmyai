@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { usePageContent } from "@/hooks/usePageContent";
-import { privacyDefaults } from "@/lib/cms-defaults";
+import { privacyDefaults, extractLegalSections } from "@/lib/cms-defaults";
+import { useMemo } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -14,10 +15,16 @@ const fadeUp = {
 export default function Privacy() {
   const { content: c } = usePageContent("privacy", privacyDefaults);
 
-  const sections = Array.from({ length: 14 }, (_, i) => ({
-    title: c[`section${i + 1}Title`],
-    body: c[`section${i + 1}Body`],
-  })).filter((s) => s.title);
+  const sections = useMemo(() => {
+    // Support dynamic sections array saved by admin, fall back to flat keys
+    if (c.sections) {
+      try {
+        const parsed = JSON.parse(c.sections as string);
+        if (Array.isArray(parsed)) return parsed.filter((s: any) => s.title);
+      } catch {}
+    }
+    return extractLegalSections(c as Record<string, string>);
+  }, [c]);
 
   return (
     <div className="py-16 md:py-24">
@@ -32,7 +39,7 @@ export default function Privacy() {
         </motion.div>
 
         <div className="space-y-8">
-          {sections.map((section, i) => (
+          {sections.map((section: any, i: number) => (
             <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}>
               <h2 className="text-lg font-bold mb-2">{section.title}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{section.body}</p>
