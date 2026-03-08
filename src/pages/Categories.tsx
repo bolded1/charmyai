@@ -137,7 +137,7 @@ export default function CategoriesPage() {
                         autoFocus
                       />
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSaveEdit} disabled={updateCategory.isPending}>
-                        <Check className="h-4 w-4 text-green-600" />
+                        <Check className="h-4 w-4 text-primary" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingId(null)}>
                         <X className="h-4 w-4" />
