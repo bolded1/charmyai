@@ -109,10 +109,10 @@ export function AdminSidebar() {
               <SidebarGroup key={group.label} className="py-0.5">
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-semibold border border-primary/15 shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}>
+                    <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-semibold border border-primary/15 shadow-sm" : "text-foreground/80 hover:text-foreground hover:bg-muted/60"}>
                       <NavLink to={item.url} end={item.url === "/admin"} className="rounded-xl">
                         <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                        {!collapsed && <span className="text-[13px]">{item.title}</span>}
+                        {!collapsed && <span className="text-sm font-medium">{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -130,7 +130,7 @@ export function AdminSidebar() {
                       const active = location.pathname.startsWith(item.url) && (item.url !== "/admin" || location.pathname === "/admin");
                       return (
                         <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary" : "text-muted-foreground"}>
+                          <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary" : "text-foreground/80"}>
                             <NavLink to={item.url} end={item.url === "/admin"}>
                               <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
                             </NavLink>
@@ -160,10 +160,10 @@ export function AdminSidebar() {
                         const active = location.pathname.startsWith(item.url) && (item.url !== "/admin" || location.pathname === "/admin");
                         return (
                           <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-semibold border border-primary/15 shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}>
+                            <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-semibold border border-primary/15 shadow-sm" : "text-foreground/80 hover:text-foreground hover:bg-muted/60"}>
                               <NavLink to={item.url} end={item.url === "/admin"} className="rounded-xl">
                                 <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                                <span className="text-[13px]">{item.title}</span>
+                                <span className="text-sm font-medium">{item.title}</span>
                               </NavLink>
                             </SidebarMenuButton>
                           </SidebarMenuItem>
@@ -181,10 +181,10 @@ export function AdminSidebar() {
       <SidebarFooter className="p-3 border-t border-border/40">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-xl">
+            <SidebarMenuButton asChild className="text-foreground/80 hover:text-foreground hover:bg-muted/60 rounded-xl">
               <Link to="/app">
                 <ArrowLeft className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                {!collapsed && <span className="text-[13px]">Back to App</span>}
+                {!collapsed && <span className="text-sm font-medium">Back to App</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
