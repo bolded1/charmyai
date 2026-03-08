@@ -168,10 +168,8 @@ export default function AdminSettingsPage() {
   const [proDocsLimit, setProDocsLimit, pdlSaving] = useAutoSave("pro-docs-limit", "999999");
   const [proUsersLimit, setProUsersLimit, pulSaving] = useAutoSave("pro-users-limit", "10");
 
-  // Pricing
-  const [proMonthlyPrice, setProMonthlyPrice, pmpSaving] = useAutoSave("pro-monthly-price", "9.99");
-  const [proYearlyPrice, setProYearlyPrice, pypSaving] = useAutoSave("pro-yearly-price", "99");
-  const [trialDays, setTrialDays, tdSaving] = useAutoSave("trial-days", "7");
+
+
 
   // Email
   const [fromName, setFromName, fnSaving] = useAutoSave("from-name", "Charmy");
