@@ -209,9 +209,8 @@ export default function AdminSettingsPage() {
       </div>
 
       <Tabs defaultValue="branding" className="space-y-6">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="branding">Branding</TabsTrigger>
-          <TabsTrigger value="ai">AI Processing</TabsTrigger>
           <TabsTrigger value="limits">Limits</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="system">System</TabsTrigger>
