@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
+import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 
 const teamMembers = [
   { id: '1', name: 'John Doe', email: 'john@company.com', role: 'Owner', jobTitle: 'CEO', status: 'active', lastActive: '2026-03-07' },
