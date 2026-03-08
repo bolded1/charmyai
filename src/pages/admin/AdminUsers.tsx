@@ -59,7 +59,7 @@ function CreateUserDialog({ open, onOpenChange, onCreated }: { open: boolean; on
         throw new Error(res.data?.error || res.error?.message || "Failed to create user");
       }
       toast.success("User account created successfully");
-      setForm({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user" });
+      setForm({ email: "", password: "", first_name: "", last_name: "", job_title: "", role: "user", company_name: "" });
       onOpenChange(false);
       onCreated();
     } catch (err: any) {
