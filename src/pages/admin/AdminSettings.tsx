@@ -155,12 +155,21 @@ export default function AdminSettingsPage() {
   const [confidenceThreshold, setConfidenceThreshold, confSaving] = useAutoSave("confidence-threshold", "70");
   const [autoApprove, setAutoApprove, autoAppSaving] = useAutoSave("auto-approve", false);
 
-  // Limits
+  // Limits & Upload
   const [maxFileSize, setMaxFileSize, mfsSaving] = useAutoSave("max-file-size", "20");
   const [maxFiles, setMaxFiles, mfSaving] = useAutoSave("max-files", "10");
-  const [starterDocs, setStarterDocs, sdSaving] = useAutoSave("starter-docs", "50");
-  const [proDocs, setProDocs, pdSaving] = useAutoSave("pro-docs", "500");
-  const [entDocs, setEntDocs, edSaving] = useAutoSave("ent-docs", "999999");
+
+  // Plan limits
+  const [freeDocsLimit, setFreeDocsLimit, fdlSaving] = useAutoSave("free-docs-limit", "50");
+  const [freeUsersLimit, setFreeUsersLimit, fulSaving] = useAutoSave("free-users-limit", "1");
+
+  const [proDocsLimit, setProDocsLimit, pdlSaving] = useAutoSave("pro-docs-limit", "999999");
+  const [proUsersLimit, setProUsersLimit, pulSaving] = useAutoSave("pro-users-limit", "10");
+
+  // Pricing
+  const [proMonthlyPrice, setProMonthlyPrice, pmpSaving] = useAutoSave("pro-monthly-price", "9.99");
+  const [proYearlyPrice, setProYearlyPrice, pypSaving] = useAutoSave("pro-yearly-price", "99");
+  const [trialDays, setTrialDays, tdSaving] = useAutoSave("trial-days", "14");
 
   // Email
   const [fromName, setFromName, fnSaving] = useAutoSave("from-name", "Charmy");
