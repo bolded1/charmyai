@@ -220,13 +220,13 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
 }
 
 export default function AdminSettingsPage() {
-  // Limits & Upload
-  const [maxFileSize, setMaxFileSize, mfsSaving] = useAutoSave("max-file-size", "20");
-  const [maxFiles, setMaxFiles, mfSaving] = useAutoSave("max-files", "10");
+  // Limits & Upload (DB-backed)
+  const [maxFileSize, setMaxFileSize, mfsSaving] = useDbAutoSave("max-file-size", "20");
+  const [maxFiles, setMaxFiles, mfSaving] = useDbAutoSave("max-files", "10");
 
-  // Pro Plan
-  const [proDocsLimit, setProDocsLimit, pdlSaving] = useAutoSave("pro-docs-limit", "999999");
-  const [proUsersLimit, setProUsersLimit, pulSaving] = useAutoSave("pro-users-limit", "10");
+  // Pro Plan (DB-backed)
+  const [proDocsLimit, setProDocsLimit, pdlSaving] = useDbAutoSave("pro-docs-limit", "999999");
+  const [proUsersLimit, setProUsersLimit, pulSaving] = useDbAutoSave("pro-users-limit", "10");
 
 
 
