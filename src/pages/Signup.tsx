@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Mail, UserX } from "lucide-react";
+import { FileText, Mail, UserX, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
@@ -16,7 +16,16 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const { data: systemSettings } = useSystemSettings();
+  const { data: systemSettings, isLoading: settingsLoading } = useSystemSettings();
+
+  // Show loader while system settings are loading
+  if (settingsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   // Block signups if disabled by admin
   if (systemSettings && !systemSettings.newSignups) {
