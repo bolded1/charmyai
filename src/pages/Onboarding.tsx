@@ -305,7 +305,7 @@ export default function OnboardingPage() {
               {/* Currency & VAT */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Default Currency</Label>
+                  <Label>Default Currency *</Label>
                   <Select value={currency} onValueChange={setCurrency}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
