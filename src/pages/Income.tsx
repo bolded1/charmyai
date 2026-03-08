@@ -12,13 +12,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Download, FileText, ExternalLink, Trash2,
 } from "lucide-react";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, Fragment } from "react";
 import { useIncomeRecords, useUploadIncomeDocument, useUpdateIncome, useDeleteIncome } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
@@ -214,6 +214,33 @@ export default function IncomePage() {
       return matchesSearch && matchesCurrency && matchesCategory && matchesDate;
     });
   }, [income, search, currencyFilter, categoryFilter, dateRange]);
+
+  const groupedByMonth = useMemo(() => {
+    const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
+    const map = new Map<string, typeof filtered>();
+    
+    const sorted = [...filtered].sort((a, b) => {
+      const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
+      const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
+      return db - da;
+    });
+
+    sorted.forEach((record) => {
+      const key = record.invoice_date
+        ? format(parseISO(record.invoice_date), "yyyy-MM")
+        : "no-date";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(record);
+    });
+
+    map.forEach((records, key) => {
+      const label = key === "no-date" ? "No Date" : format(parseISO(key + "-01"), "MMMM yyyy");
+      const total = records.reduce((s, e) => s + Number(e.total_amount || 0), 0);
+      groups.push({ key, label, records, total });
+    });
+
+    return groups;
+  }, [filtered]);
 
   const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
   const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
@@ -433,20 +460,30 @@ export default function IncomePage() {
               No income records found for the selected filters.
             </div>
           ) : isMobile ? (
-            <div className="p-2 space-y-2">
-              {filtered.map((doc) => (
-                <MobileRecordCard
-                  key={doc.id}
-                  title={doc.customer_name}
-                  subtitle={doc.invoice_number || undefined}
-                  fields={[
-                    { label: "Date", value: doc.invoice_date },
-                    { label: "Currency", value: doc.currency },
-                    { label: "Net", value: Number(doc.net_amount).toFixed(2) },
-                    { label: "Total", value: Number(doc.total_amount).toFixed(2) },
-                  ]}
-                  onClick={() => openEdit(doc)}
-                />
+            <div className="p-2 space-y-1">
+              {groupedByMonth.map((group) => (
+                <div key={group.key}>
+                  <div className="flex items-center justify-between px-3 py-2.5 bg-accent/40 rounded-lg mb-1 mt-1 first:mt-0">
+                    <span className="text-xs font-bold text-foreground">{group.label}</span>
+                    <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {group.records.map((doc) => (
+                    <MobileRecordCard
+                      key={doc.id}
+                      title={doc.customer_name}
+                      subtitle={doc.invoice_number || undefined}
+                      fields={[
+                        { label: "Date", value: doc.invoice_date },
+                        { label: "Currency", value: doc.currency },
+                        { label: "Net", value: Number(doc.net_amount).toFixed(2) },
+                        { label: "Total", value: Number(doc.total_amount).toFixed(2) },
+                      ]}
+                      onClick={() => openEdit(doc)}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
           ) : (
@@ -465,21 +502,35 @@ export default function IncomePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((doc) => (
-                    <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
-                      <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
-                      <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
-                      <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
-                      <td className="p-4 text-sm font-medium text-right tabular-nums">{Number(doc.total_amount).toFixed(2)}</td>
-                      <td className="p-4">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEdit(doc); }}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
-                    </tr>
+                  {groupedByMonth.map((group) => (
+                    <Fragment key={group.key}>
+                      <tr className="bg-accent/30">
+                        <td colSpan={8} className="px-4 py-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-foreground">{group.label}</span>
+                            <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                              {group.records.length} records · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                      {group.records.map((doc) => (
+                        <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
+                          <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
+                          <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
+                          <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
+                          <td className="p-4 text-sm font-medium text-right tabular-nums">{Number(doc.total_amount).toFixed(2)}</td>
+                          <td className="p-4">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEdit(doc); }}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
@@ -487,6 +538,7 @@ export default function IncomePage() {
           )}
         </CardContent>
       </Card>
+
 
       {/* Edit Dialog */}
       <Dialog open={!!selectedId} onOpenChange={() => closeEdit()}>

@@ -9,14 +9,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Fragment } from "react";
 import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
@@ -199,6 +199,34 @@ export default function ExpensesPage() {
       return matchesSearch && matchesCurrency && matchesCategory && matchesDate;
     });
   }, [expenses, search, currencyFilter, categoryFilter, dateRange]);
+
+  const groupedByMonth = useMemo(() => {
+    const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
+    const map = new Map<string, typeof filtered>();
+    
+    // Sort by date descending
+    const sorted = [...filtered].sort((a, b) => {
+      const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
+      const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
+      return db - da;
+    });
+
+    sorted.forEach((record) => {
+      const key = record.invoice_date
+        ? format(parseISO(record.invoice_date), "yyyy-MM")
+        : "no-date";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(record);
+    });
+
+    map.forEach((records, key) => {
+      const label = key === "no-date" ? "No Date" : format(parseISO(key + "-01"), "MMMM yyyy");
+      const total = records.reduce((s, e) => s + Number(e.total_amount || 0), 0);
+      groups.push({ key, label, records, total });
+    });
+
+    return groups;
+  }, [filtered]);
 
   const totalEur = filtered.filter((e) => e.currency === "EUR").reduce((s, e) => s + Number(e.total_amount || 0), 0);
   const totalUsd = filtered.filter((e) => e.currency === "USD").reduce((s, e) => s + Number(e.total_amount || 0), 0);
