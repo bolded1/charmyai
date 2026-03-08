@@ -130,11 +130,20 @@ export default function UploadPage() {
       <Card className="overflow-hidden border-0 lg:hidden">
         <CardContent className="p-0">
           <div
-            className="relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl border-border hover:border-primary/50 hover:bg-accent/50"
+            className={`relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
+              scanPressed
+                ? "border-primary bg-primary/5 shadow-glow"
+                : "border-border hover:border-primary/50 hover:bg-accent/50"
+            }`}
             onClick={() => document.getElementById("camera-input")?.click()}
+            onPointerDown={() => setScanPressed(true)}
+            onPointerUp={() => setScanPressed(false)}
+            onPointerLeave={() => setScanPressed(false)}
           >
-            <div className="mx-auto mb-3 md:mb-5 h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center bg-muted">
-              <Camera className="h-6 w-6 md:h-7 md:w-7 text-muted-foreground" />
+            <div className={`mx-auto mb-3 md:mb-5 h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center transition-all ${
+              scanPressed ? "bg-gradient-sunset shadow-lg shadow-primary/25" : "icon-bg-violet"
+            }`}>
+              <Camera className={`h-6 w-6 md:h-7 md:w-7 transition-colors ${scanPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: scanPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
             <h2 className="text-base md:text-xl font-bold text-foreground mb-1 md:mb-2">Scan Document</h2>
             <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 max-w-md mx-auto">Capture with your camera</p>
