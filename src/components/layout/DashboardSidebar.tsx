@@ -56,8 +56,8 @@ export function DashboardSidebar() {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                 <NavLink to={item.url} end={item.url === '/app'}>
-                  <item.icon className="h-3.5 w-3.5" />
-                  {showLabels && <span>{item.title}</span>}
+                  <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  {showLabels && <span className="font-medium">{item.title}</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
