@@ -51,6 +51,8 @@ export default function ExpensesPage() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
@@ -214,14 +216,13 @@ export default function ExpensesPage() {
     });
   };
 
-  const selectableCount = filtered.filter((e) => e.document_id).length;
+  const selectableCount = filtered.length;
 
   const toggleSelectAll = () => {
-    const withDocs = filtered.filter((e) => e.document_id);
-    if (selectedIds.size === withDocs.length && withDocs.length > 0) {
+    if (selectedIds.size === filtered.length && filtered.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(withDocs.map((e) => e.id)));
+      setSelectedIds(new Set(filtered.map((e) => e.id)));
     }
   };
 
@@ -232,6 +233,21 @@ export default function ExpensesPage() {
     if (docIds.length === 0) return;
     await downloadAsZip(docIds, "expenses-invoices");
     setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteExpense.mutateAsync(id);
+      }
+      setSelectedIds(new Set());
+      setBulkDeleteConfirm(false);
+    } catch {
+      // error handled by mutation
+    } finally {
+      setBulkDeleting(false);
+    }
   };
 
   const groupedByMonth = useMemo(() => {
@@ -404,13 +420,11 @@ export default function ExpensesPage() {
                   </div>
                   {group.records.map((doc) => (
                     <div key={doc.id} className="flex items-start gap-2">
-                      {doc.document_id && (
-                        <Checkbox
-                          checked={selectedIds.has(doc.id)}
-                          onCheckedChange={() => toggleSelect(doc.id)}
-                          className="mt-4 shrink-0"
-                        />
-                      )}
+                      <Checkbox
+                        checked={selectedIds.has(doc.id)}
+                        onCheckedChange={() => toggleSelect(doc.id)}
+                        className="mt-4 shrink-0"
+                      />
                       <div className="flex-1">
                         <MobileRecordCard
                           title={doc.supplier_name}
@@ -468,7 +482,7 @@ export default function ExpensesPage() {
                       {group.records.map((doc) => (
                         <tr key={doc.id} className={cn("border-b border-border-subtle last:border-0 hover:bg-accent/40 transition-colors cursor-pointer", selectedIds.has(doc.id) && "bg-primary/5")} onClick={() => openEdit(doc)}>
                           <td className="pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
-                            {doc.document_id && <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />}
+                            <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />
                           </td>
                           <td className="p-4 text-sm font-medium">{doc.supplier_name}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
@@ -494,7 +508,7 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Bulk Download Bar */}
+      {/* Bulk Action Bar */}
       <AnimatePresence>
         {selectedIds.size > 0 && (
           <motion.div
@@ -508,12 +522,35 @@ export default function ExpensesPage() {
               {downloading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Archive className="h-4 w-4 mr-1" />}
               Download ZIP
             </Button>
+            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
+            </Button>
             <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
               <X className="h-4 w-4" />
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} expense{selectedIds.size > 1 ? "s" : ""}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the selected expense records. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} disabled={bulkDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={!!selectedId} onOpenChange={() => closeEdit()}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
