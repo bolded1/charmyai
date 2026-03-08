@@ -60,7 +60,7 @@ export default function AdminUsagePage() {
                   <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
                   <YAxis domain={[90, 100]} tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
                   <Tooltip contentStyle={{ backgroundColor: "hsl(0,0%,100%)", border: "1px solid hsl(220,13%,91%)", borderRadius: "8px", fontSize: "12px" }} />
-                  <Line type="monotone" dataKey="successRate" stroke="hsl(160, 84%, 36%)" strokeWidth={2} dot={{ r: 4 }} name="Success Rate" />
+                  <Line type="monotone" dataKey="successRate" stroke="hsl(224, 64%, 33%)" strokeWidth={2} dot={{ r: 4 }} name="Success Rate" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
