@@ -78,16 +78,22 @@ export function AdminSidebar() {
   const location = useLocation();
 
   return (
-    <Sidebar collapsible="icon" className="border-r-destructive/10">
-      <SidebarHeader className="p-4">
-        <Link to="/admin" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-            <Shield className="h-4 w-4 text-destructive" />
+    <Sidebar collapsible="icon" className="border-r border-border/40 bg-card">
+      <SidebarHeader className="p-4 pb-3">
+        <Link to="/admin" className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(var(--violet))] flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+            <Shield className="h-4 w-4 text-primary-foreground" />
           </div>
-          {!collapsed && <span className="font-bold text-sidebar-accent-foreground">Admin Panel</span>}
+          {!collapsed && (
+            <div>
+              <span className="font-bold text-sm text-foreground tracking-tight">Admin</span>
+              <p className="text-[10px] text-muted-foreground -mt-0.5">Control Panel</p>
+            </div>
+          )}
         </Link>
       </SidebarHeader>
-      <SidebarContent>
+
+      <SidebarContent className="px-2">
         {navGroups.map((group) => {
           const isGroupActive = group.items.some(
             (item) => item.url === "/admin"
@@ -95,17 +101,17 @@ export function AdminSidebar() {
               : location.pathname.startsWith(item.url)
           );
 
-          // Single-item groups don't need collapsible
           if (group.items.length === 1) {
             const item = group.items[0];
+            const active = item.url === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.url);
             return (
-              <SidebarGroup key={group.label}>
+              <SidebarGroup key={group.label} className="py-0.5">
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={item.url === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.url)}>
-                      <NavLink to={item.url} end={item.url === "/admin"}>
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{item.title}</span>}
+                    <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-semibold border border-primary/15 shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}>
+                      <NavLink to={item.url} end={item.url === "/admin"} className="rounded-xl">
+                        <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
+                        {!collapsed && <span className="text-[13px]">{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -116,18 +122,21 @@ export function AdminSidebar() {
 
           if (collapsed) {
             return (
-              <SidebarGroup key={group.label}>
+              <SidebarGroup key={group.label} className="py-0.5">
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {group.items.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild isActive={location.pathname.startsWith(item.url) && (item.url !== "/admin" || location.pathname === "/admin")}>
-                          <NavLink to={item.url} end={item.url === "/admin"}>
-                            <item.icon className="h-4 w-4" />
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
+                    {group.items.map((item) => {
+                      const active = location.pathname.startsWith(item.url) && (item.url !== "/admin" || location.pathname === "/admin");
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary" : "text-muted-foreground"}>
+                            <NavLink to={item.url} end={item.url === "/admin"}>
+                              <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
@@ -136,26 +145,29 @@ export function AdminSidebar() {
 
           return (
             <Collapsible key={group.label} defaultOpen={isGroupActive} className="group/collapsible">
-              <SidebarGroup>
+              <SidebarGroup className="py-0.5">
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="cursor-pointer hover:text-foreground transition-colors flex items-center justify-between pr-2">
+                  <SidebarGroupLabel className="cursor-pointer hover:text-foreground transition-colors flex items-center justify-between pr-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70 mb-0.5">
                     <span>{group.label}</span>
-                    <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                    <ChevronRight className="h-3 w-3 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarGroupContent>
                     <SidebarMenu>
-                      {group.items.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild isActive={location.pathname.startsWith(item.url) && (item.url !== "/admin" || location.pathname === "/admin")}>
-                            <NavLink to={item.url} end={item.url === "/admin"}>
-                              <item.icon className="h-4 w-4" />
-                              <span>{item.title}</span>
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
+                      {group.items.map((item) => {
+                        const active = location.pathname.startsWith(item.url) && (item.url !== "/admin" || location.pathname === "/admin");
+                        return (
+                          <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary font-semibold border border-primary/15 shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}>
+                              <NavLink to={item.url} end={item.url === "/admin"} className="rounded-xl">
+                                <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
+                                <span className="text-[13px]">{item.title}</span>
+                              </NavLink>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
                     </SidebarMenu>
                   </SidebarGroupContent>
                 </CollapsibleContent>
@@ -164,13 +176,14 @@ export function AdminSidebar() {
           );
         })}
       </SidebarContent>
-      <SidebarFooter className="p-4">
+
+      <SidebarFooter className="p-3 border-t border-border/40">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton asChild className="text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-xl">
               <Link to="/app">
-                <ArrowLeft className="h-4 w-4" />
-                {!collapsed && <span>Back to App</span>}
+                <ArrowLeft className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
+                {!collapsed && <span className="text-[13px]">Back to App</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
