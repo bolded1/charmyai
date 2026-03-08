@@ -133,7 +133,7 @@ export default function UploadPage() {
             className={`relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
               scanPressed
                 ? "border-primary bg-primary/5 shadow-glow"
-                : "border-border hover:border-primary/50 hover:bg-accent/50"
+                : "border-border hover:border-primary/50 hover:bg-accent/30"
             }`}
             onClick={() => document.getElementById("camera-input")?.click()}
             onPointerDown={() => setScanPressed(true)}
