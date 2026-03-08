@@ -434,7 +434,13 @@ export default function ExpensesPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
+                 <tr className="border-b border-border">
+                    <th className="pl-4 pr-1 w-10">
+                      <Checkbox
+                        checked={selectableCount > 0 && selectedIds.size === selectableCount}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Supplier</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Date</th>
