@@ -95,6 +95,7 @@ const App = () => (
             <Route path="audit" element={<AdminAuditLogs />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
+            <Route path="cms" element={<AdminCMS />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 
