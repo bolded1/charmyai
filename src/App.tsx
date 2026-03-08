@@ -92,6 +92,8 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/activate-trial" element={<ActivateTrial />} />
+          <Route path="/billing-required" element={<BillingRequired />} />
 
           {/* Dashboard pages */}
           <Route path="/app" element={<DashboardLayout />}>
