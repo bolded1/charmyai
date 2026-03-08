@@ -7,6 +7,8 @@ import {
   Search, Filter, Edit3, Zap, Shield, BarChart3,
   UserPlus, Activity,
 } from "lucide-react";
+import { usePageContent } from "@/hooks/usePageContent";
+import { featuresDefaults } from "@/lib/cms-defaults";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -31,14 +33,8 @@ function FeatureSection({ title, description, capabilities, visual, reversed, in
     <section className={`py-20 ${index % 2 === 1 ? "surface-sunken" : ""}`}>
       <div className="container max-w-5xl">
         <div className={`grid md:grid-cols-2 gap-12 lg:gap-16 items-center ${reversed ? "md:[direction:rtl]" : ""}`}>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={0}
-            className={reversed ? "md:[direction:ltr]" : ""}
-          >
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
+            className={reversed ? "md:[direction:ltr]" : ""}>
             <h2 className="text-2xl md:text-3xl font-bold mb-4">{title}</h2>
             <p className="text-muted-foreground mb-6 leading-relaxed">{description}</p>
             <ul className="space-y-3">
@@ -52,15 +48,8 @@ function FeatureSection({ title, description, capabilities, visual, reversed, in
               ))}
             </ul>
           </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={1}
-            className={reversed ? "md:[direction:ltr]" : ""}
-          >
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
+            className={reversed ? "md:[direction:ltr]" : ""}>
             {visual}
           </motion.div>
         </div>
@@ -78,11 +67,12 @@ function VisualCard({ children, className = "" }: { children: React.ReactNode; c
 }
 
 export default function FeaturesPage() {
+  const { content: c } = usePageContent("features", featuresDefaults);
+
   const features: Omit<FeatureSectionProps, "index">[] = [
     {
-      title: "Capture invoices and receipts instantly",
-      description:
-        "Upload invoices, receipts, and supplier bills directly to Charmy. Drag and drop files or upload multiple documents at once.",
+      title: c.feature1Title,
+      description: c.feature1Desc,
       capabilities: [
         { icon: Upload, text: "Drag and drop document uploads" },
         { icon: FileText, text: "Bulk upload multiple invoices" },
@@ -111,9 +101,8 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: "Import invoices automatically from email",
-      description:
-        "Forward invoices and expense receipts directly to Charmy. The system automatically imports attachments and processes them.",
+      title: c.feature2Title,
+      description: c.feature2Desc,
       capabilities: [
         { icon: Inbox, text: "Dedicated email address for your workspace" },
         { icon: Mail, text: "Forward supplier invoices directly" },
@@ -141,11 +130,7 @@ export default function FeaturesPage() {
                 <div key={email.subject} className="p-3 rounded-lg bg-accent/30 border border-border/40">
                   <p className="text-[11px] text-muted-foreground">{email.from}</p>
                   <p className="text-xs font-medium mt-0.5">{email.subject}</p>
-                  <span className={`inline-block mt-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                    email.status === "Imported"
-                      ? "bg-brand-soft text-primary"
-                      : "bg-accent text-muted-foreground"
-                  }`}>
+                  <span className={`inline-block mt-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full ${email.status === "Imported" ? "bg-brand-soft text-primary" : "bg-accent text-muted-foreground"}`}>
                     {email.status}
                   </span>
                 </div>
@@ -156,9 +141,8 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: "AI extracts financial data automatically",
-      description:
-        "Charmy reads invoices and receipts and extracts the key accounting fields in seconds. Review and confirm the extracted information instantly.",
+      title: c.feature3Title,
+      description: c.feature3Desc,
       capabilities: [
         { icon: Brain, text: "Supplier name and details" },
         { icon: FileText, text: "Invoice number and dates" },
@@ -167,9 +151,7 @@ export default function FeaturesPage() {
       ],
       visual: (
         <VisualCard>
-          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3">
-            Extracted Fields
-          </div>
+          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Extracted Fields</div>
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: "Supplier", value: "CloudTech GmbH" },
@@ -193,9 +175,8 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: "Review documents quickly",
-      description:
-        "Charmy provides a clean review interface where you can verify extracted data while viewing the original invoice. Process many invoices quickly.",
+      title: c.feature4Title,
+      description: c.feature4Desc,
       capabilities: [
         { icon: Eye, text: "Side-by-side document preview" },
         { icon: Edit3, text: "Editable extracted fields" },
@@ -222,23 +203,18 @@ export default function FeaturesPage() {
               ].map((f) => (
                 <div key={f.label}>
                   <div className="text-[10px] text-muted-foreground">{f.label}</div>
-                  <div className="text-xs font-medium mt-0.5 p-1.5 rounded bg-accent/50 border border-border/40">
-                    {f.value}
-                  </div>
+                  <div className="text-xs font-medium mt-0.5 p-1.5 rounded bg-accent/50 border border-border/40">{f.value}</div>
                 </div>
               ))}
-              <Button size="sm" className="w-full mt-3 text-xs">
-                Approve
-              </Button>
+              <Button size="sm" className="w-full mt-3 text-xs">Approve</Button>
             </div>
           </div>
         </VisualCard>
       ),
     },
     {
-      title: "Keep financial documents organized",
-      description:
-        "All invoices and receipts are stored in a structured workspace. Search, filter, and manage your entire document history.",
+      title: c.feature5Title,
+      description: c.feature5Desc,
       capabilities: [
         { icon: Search, text: "Search documents instantly" },
         { icon: Filter, text: "Filter by supplier, date, amount, or status" },
@@ -269,11 +245,7 @@ export default function FeaturesPage() {
                   <p className="text-[10px] text-muted-foreground">{doc.num}</p>
                 </div>
                 <span className="text-xs font-semibold tabular-nums">{doc.amount}</span>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                  doc.status === "Approved"
-                    ? "bg-brand-soft text-primary"
-                    : "bg-accent text-muted-foreground"
-                }`}>
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${doc.status === "Approved" ? "bg-brand-soft text-primary" : "bg-accent text-muted-foreground"}`}>
                   {doc.status}
                 </span>
               </div>
@@ -283,9 +255,8 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: "Export clean accounting data",
-      description:
-        "Once documents are processed, Charmy converts them into structured accounting data that can be exported instantly. Send clean data to your accountant.",
+      title: c.feature6Title,
+      description: c.feature6Desc,
       capabilities: [
         { icon: Download, text: "CSV exports" },
         { icon: FileText, text: "Excel exports" },
@@ -295,9 +266,7 @@ export default function FeaturesPage() {
       reversed: true,
       visual: (
         <VisualCard>
-          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">
-            Export Options
-          </div>
+          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Export Options</div>
           <div className="space-y-3">
             {[
               { format: "CSV", desc: "Comma-separated values", icon: FileText },
@@ -312,9 +281,7 @@ export default function FeaturesPage() {
                   <p className="text-xs font-medium">{exp.format}</p>
                   <p className="text-[10px] text-muted-foreground">{exp.desc}</p>
                 </div>
-                <Button variant="outline" size="sm" className="text-[10px] h-7 px-3">
-                  Export
-                </Button>
+                <Button variant="outline" size="sm" className="text-[10px] h-7 px-3">Export</Button>
               </div>
             ))}
           </div>
@@ -322,9 +289,8 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: "Collaborate with your finance team",
-      description:
-        "Invite team members and work together on reviewing financial documents. Role-based access keeps your data secure.",
+      title: c.feature7Title,
+      description: c.feature7Desc,
       capabilities: [
         { icon: Users, text: "Multiple users" },
         { icon: Shield, text: "Role-based access" },
@@ -333,9 +299,7 @@ export default function FeaturesPage() {
       ],
       visual: (
         <VisualCard>
-          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">
-            Team Members
-          </div>
+          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Team Members</div>
           <div className="space-y-2.5">
             {[
               { name: "Maria Schmidt", role: "Admin", initials: "MS" },
@@ -343,9 +307,7 @@ export default function FeaturesPage() {
               { name: "Anna Klein", role: "Member", initials: "AK" },
             ].map((member) => (
               <div key={member.name} className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40">
-                <div className="h-8 w-8 rounded-full bg-brand-soft flex items-center justify-center text-xs font-semibold text-primary">
-                  {member.initials}
-                </div>
+                <div className="h-8 w-8 rounded-full bg-brand-soft flex items-center justify-center text-xs font-semibold text-primary">{member.initials}</div>
                 <div className="flex-1">
                   <p className="text-xs font-medium">{member.name}</p>
                   <p className="text-[10px] text-muted-foreground">{member.role}</p>
@@ -360,40 +322,21 @@ export default function FeaturesPage() {
 
   return (
     <div>
-      {/* Hero */}
       <section className="py-20 md:py-28">
         <div className="container text-center max-w-3xl">
-          <motion.h1
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={0}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5"
-          >
-            Everything Charmy can do for your{" "}
-            <span className="text-gradient">invoices and expenses</span>
+          <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={0}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5">
+            {c.heroTitle}{" "}
+            <span className="text-gradient">{c.heroTitleGradient}</span>
           </motion.h1>
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={1}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8"
-          >
-            Upload documents or forward invoices by email. Charmy extracts
-            financial data automatically and prepares it for accounting.
+          <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={1}
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            {c.heroSubtitle}
           </motion.p>
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={2}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3"
-          >
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button size="lg" asChild className="text-base px-8">
-              <Link to="/signup">
-                Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="text-base px-8">
               <Link to="/#demo">Try the Demo</Link>
@@ -402,33 +345,19 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Feature Sections */}
       {features.map((feature, i) => (
-        <FeatureSection key={feature.title} {...feature} index={i} />
+        <FeatureSection key={i} {...feature} index={i} />
       ))}
 
-      {/* Final CTA */}
       <section className="py-20 bg-hero-gradient">
         <div className="container text-center max-w-2xl">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">
-            Stop typing invoice data manually
-          </h2>
-          <p className="text-primary-foreground/75 mb-8 max-w-lg mx-auto">
-            Upload documents or forward invoices by email and let Charmy extract
-            the financial data automatically.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">{c.ctaTitle}</h2>
+          <p className="text-primary-foreground/75 mb-8 max-w-lg mx-auto">{c.ctaSubtitle}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button size="lg" variant="secondary" asChild className="text-base px-8">
-              <Link to="/signup">
-                Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10 text-base px-8"
-              asChild
-            >
+            <Button size="lg" variant="ghost" className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10 text-base px-8" asChild>
               <Link to="/#demo">Try the Demo</Link>
             </Button>
           </div>

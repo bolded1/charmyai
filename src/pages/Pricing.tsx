@@ -5,6 +5,8 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { useSubscription, STRIPE_PLANS } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { usePageContent } from "@/hooks/usePageContent";
+import { pricingDefaults } from "@/lib/cms-defaults";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
@@ -12,20 +14,14 @@ export default function PricingPage() {
   const subscription = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { content: c } = usePageContent("pricing", pricingDefaults);
 
   const handleCheckout = async (priceId: string) => {
-    if (!user) {
-      navigate("/signup");
-      return;
-    }
+    if (!user) { navigate("/signup"); return; }
     setCheckoutLoading(priceId);
-    try {
-      await subscription?.startCheckout(priceId);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to start checkout");
-    } finally {
-      setCheckoutLoading(null);
-    }
+    try { await subscription?.startCheckout(priceId); }
+    catch (err: any) { toast.error(err.message || "Failed to start checkout"); }
+    finally { setCheckoutLoading(null); }
   };
 
   const proPriceId = billingCycle === "yearly"
@@ -34,46 +30,41 @@ export default function PricingPage() {
 
   const plans = [
     {
-      key: "free",
-      name: "Free",
-      price: "€0",
-      period: "/forever",
-      desc: "Perfect for freelancers and individuals getting started.",
-      features: STRIPE_PLANS.free.features,
+      key: "free", name: c.freeTitle, price: "€0", period: "/forever",
+      desc: c.freeDesc, features: STRIPE_PLANS.free.features,
       current: subscription?.plan === "free",
     },
     {
-      key: "pro",
-      name: "Pro",
+      key: "pro", name: c.proTitle,
       price: billingCycle === "monthly" ? "€9.99" : "€99",
       period: billingCycle === "monthly" ? "/month" : "/year",
-      desc: "For growing teams that need more power and collaboration.",
-      features: STRIPE_PLANS.pro.features,
-      popular: true,
-      current: subscription?.plan === "pro",
+      desc: c.proDesc, features: STRIPE_PLANS.pro.features,
+      popular: true, current: subscription?.plan === "pro",
       savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
     },
+  ];
+
+  const faqs = [
+    { q: c.faq1Q, a: c.faq1A },
+    { q: c.faq2Q, a: c.faq2A },
+    { q: c.faq3Q, a: c.faq3A },
+    { q: c.faq4Q, a: c.faq4A },
+    { q: c.faq5Q, a: c.faq5A },
   ];
 
   return (
     <div>
       <section className="py-20">
         <div className="container max-w-4xl text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-lg text-muted-foreground mb-8">Start free. Upgrade as you grow. 14-day free trial on all paid plans.</p>
-
-          {/* Billing toggle */}
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{c.heroTitle}</h1>
+          <p className="text-lg text-muted-foreground mb-8">{c.heroSubtitle}</p>
           <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-muted">
-            <button
-              onClick={() => setBillingCycle("monthly")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
-            >
+            <button onClick={() => setBillingCycle("monthly")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}>
               Monthly
             </button>
-            <button
-              onClick={() => setBillingCycle("yearly")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
-            >
+            <button onClick={() => setBillingCycle("yearly")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}>
               Yearly <span className="text-xs text-primary ml-1">Save 17%</span>
             </button>
           </div>
@@ -86,14 +77,10 @@ export default function PricingPage() {
             {plans.map((plan) => (
               <div key={plan.key} className={`surface-elevated rounded-xl p-8 flex flex-col ${plan.popular ? 'ring-2 ring-primary relative' : ''}`}>
                 {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                    Most Popular
-                  </span>
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">Most Popular</span>
                 )}
                 {plan.current && (
-                  <span className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
-                    Your Plan
-                  </span>
+                  <span className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">Your Plan</span>
                 )}
                 <h3 className="text-xl font-bold">{plan.name}</h3>
                 <p className="text-sm text-muted-foreground mt-1 mb-6">{plan.desc}</p>
@@ -114,26 +101,14 @@ export default function PricingPage() {
                   plan.current ? (
                     <Button className="w-full" variant="outline" disabled>Current Plan</Button>
                   ) : (
-                    <Button className="w-full" variant="outline" asChild>
-                      <Link to="/signup">Get Started Free</Link>
-                    </Button>
+                    <Button className="w-full" variant="outline" asChild><Link to="/signup">Get Started Free</Link></Button>
                   )
                 ) : (
                   plan.current ? (
-                    <Button className="w-full" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
-                      Manage Subscription
-                    </Button>
+                    <Button className="w-full" variant="outline" onClick={() => subscription?.openCustomerPortal()}>Manage Subscription</Button>
                   ) : (
-                    <Button
-                      className="w-full"
-                      disabled={!!checkoutLoading}
-                      onClick={() => proPriceId && handleCheckout(proPriceId)}
-                    >
-                      {checkoutLoading === proPriceId ? (
-                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</>
-                      ) : (
-                        "Start 14-Day Free Trial"
-                      )}
+                    <Button className="w-full" disabled={!!checkoutLoading} onClick={() => proPriceId && handleCheckout(proPriceId)}>
+                      {checkoutLoading === proPriceId ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : "Start 14-Day Free Trial"}
                     </Button>
                   )
                 )}
@@ -145,15 +120,9 @@ export default function PricingPage() {
 
       <section className="py-16 border-t">
         <div className="container max-w-3xl text-center">
-          <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-bold mb-4">{c.faqTitle}</h2>
           <div className="text-left space-y-6 mt-8">
-            {[
-              { q: "Can I switch plans later?", a: "Yes, you can upgrade or downgrade at any time. Changes take effect immediately with prorated billing." },
-              { q: "What happens after my trial ends?", a: "After your 14-day trial, you'll be charged automatically. You can cancel anytime before the trial ends." },
-              { q: "What document formats are supported?", a: "We support PDF, PNG, and JPG files. Scanned documents work too." },
-              { q: "Is my data secure?", a: "Yes. All documents are encrypted at rest and in transit. We never share your data." },
-              { q: "Do I need a credit card for the trial?", a: "Yes, a credit card is required to start the trial, but you won't be charged until the trial period ends." },
-            ].map((faq) => (
+            {faqs.map((faq) => (
               <div key={faq.q} className="surface-elevated rounded-lg p-5">
                 <h4 className="font-semibold text-sm">{faq.q}</h4>
                 <p className="text-sm text-muted-foreground mt-1">{faq.a}</p>

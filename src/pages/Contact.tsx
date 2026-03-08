@@ -5,9 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { usePageContent } from "@/hooks/usePageContent";
+import { contactDefaults } from "@/lib/cms-defaults";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
+  const { content: c } = usePageContent("contact", contactDefaults);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,25 +25,23 @@ export default function ContactPage() {
     <div>
       <section className="py-20">
         <div className="container max-w-4xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">Contact Us</h1>
-          <p className="text-lg text-muted-foreground text-center mb-12">
-            Have questions? We'd love to hear from you.
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">{c.title}</h1>
+          <p className="text-lg text-muted-foreground text-center mb-12">{c.subtitle}</p>
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="space-y-6">
               {[
-                { icon: Mail, title: "Email", detail: "hello@charmy.ai" },
-                { icon: Phone, title: "Phone", detail: "+49 30 1234567" },
-                { icon: MapPin, title: "Office", detail: "Berlin, Germany" },
-              ].map((c) => (
-                <div key={c.title} className="flex items-start gap-3">
+                { icon: Mail, title: "Email", detail: c.email },
+                { icon: Phone, title: "Phone", detail: c.phone },
+                { icon: MapPin, title: "Office", detail: c.office },
+              ].map((item) => (
+                <div key={item.title} className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                    <c.icon className="h-5 w-5 text-accent-foreground" />
+                    <item.icon className="h-5 w-5 text-accent-foreground" />
                   </div>
                   <div>
-                    <div className="font-semibold text-sm">{c.title}</div>
-                    <div className="text-sm text-muted-foreground">{c.detail}</div>
+                    <div className="font-semibold text-sm">{item.title}</div>
+                    <div className="text-sm text-muted-foreground">{item.detail}</div>
                   </div>
                 </div>
               ))}
