@@ -154,7 +154,7 @@ export default function HomePage() {
             viewport={{ once: true }}
             variants={fadeUp}
             custom={1}
-            className="surface-elevated rounded-xl border border-border p-6 md:p-8"
+            className="glass-card rounded-2xl p-6 md:p-8"
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {[
