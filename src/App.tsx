@@ -25,6 +25,7 @@ import Categories from "./pages/Categories";
 import Exports from "./pages/Exports";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
+import Help from "./pages/Help";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrganizations from "./pages/admin/AdminOrganizations";
 import AdminUsers from "./pages/admin/AdminUsers";
