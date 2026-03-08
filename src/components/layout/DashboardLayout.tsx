@@ -248,6 +248,7 @@ export default function DashboardLayout() {
 
           <main className={`flex-1 min-h-0 overflow-auto surface-sunken ${layoutSettings.compactView ? "p-3 md:p-4" : "p-4 md:p-8"}`}>
             <Outlet />
+            <NPSWidget />
           </main>
 
           {/* Sticky Upload FAB for mobile */}
