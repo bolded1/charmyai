@@ -175,8 +175,8 @@ export default function DashboardLayout() {
     </DropdownMenu>
   );
 
-  // Show sticky upload FAB on document-heavy pages on mobile
-  const showFab = isMobile && ["/app/documents", "/app/expenses", "/app/income"].includes(location.pathname);
+
+
 
   return (
     <SidebarProvider>
