@@ -21,6 +21,8 @@ export default function AdminMarketingEmail() {
   const [previewHtml, setPreviewHtml] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   const execCommand = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -32,9 +34,44 @@ export default function AdminMarketingEmail() {
     if (url) execCommand("createLink", url);
   };
 
-  const handleInsertImage = () => {
+  const handleInsertImageUrl = () => {
     const url = prompt("Enter image URL:");
     if (url) execCommand("insertImage", url);
+  };
+
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("email-images")
+        .upload(path, file, { contentType: file.type });
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from("email-images")
+        .getPublicUrl(path);
+
+      execCommand("insertImage", urlData.publicUrl);
+      toast.success("Image inserted!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const getEditorHtml = () => {
