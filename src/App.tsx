@@ -55,6 +55,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* Marketing pages */}
           <Route element={<MarketingLayout />}>
