@@ -177,6 +177,7 @@ const categories = [...new Set(helpArticles.map((a) => a.category))];
 export default function Help() {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const filtered = helpArticles.filter(
     (a) =>
