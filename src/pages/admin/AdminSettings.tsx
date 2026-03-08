@@ -398,7 +398,7 @@ export default function AdminSettingsPage() {
                   <p className="text-sm font-medium">Maintenance Mode</p>
                   <p className="text-xs text-muted-foreground">Disable the platform for all users except admins</p>
                 </div>
-                <Switch checked={maintenance} onCheckedChange={setMaintenance} />
+                <Switch checked={maintenance === "true"} onCheckedChange={(v) => setMaintenance(v ? "true" : "false")} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
