@@ -25,19 +25,26 @@ export function CookieConsent() {
   };
 
   const handleAccept = () => dismiss("accepted");
-  const handleReject = () => dismiss("rejected");
+
+  const handleReject = () => {
+    // Clear all cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    dismiss("rejected");
+  };
 
   return (
     <AnimatePresence>
       {visible && (
         <>
           {/* Backdrop overlay */}
+          {/* Backdrop - no click dismiss, must choose */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60]"
-            onClick={handleReject}
           />
           <motion.div
             initial={{ y: 100, opacity: 0 }}
@@ -68,12 +75,6 @@ export function CookieConsent() {
                   </Button>
                 </div>
               </div>
-              <button
-                onClick={handleReject}
-                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-              >
-                <X className="h-4 w-4" />
-              </button>
             </div>
           </div>
           </motion.div>
