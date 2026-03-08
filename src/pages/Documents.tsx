@@ -4,16 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, Search, Filter, Eye, Loader2, AlertTriangle, CheckCircle2, Mail, Copy } from "lucide-react";
-import { useState } from "react";
-import { useDocuments, useUpdateDocument, useApproveDocument, type DocumentRecord } from "@/hooks/useDocuments";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
-import { OverflowActions } from "@/components/ui/overflow-actions";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 const statusColors: Record<string, string> = {
   processing: "bg-muted text-muted-foreground",
@@ -27,12 +29,16 @@ export default function DocumentsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
   const [editData, setEditData] = useState<Partial<DocumentRecord>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
   const { data: documents = [], isLoading } = useDocuments(statusFilter);
   const updateDoc = useUpdateDocument();
   const approveDoc = useApproveDocument();
+  const bulkApprove = useBulkApproveDocuments();
+  const bulkDelete = useBulkDeleteDocuments();
 
   const filtered = documents.filter((d) => {
     const matchesSearch =
@@ -41,6 +47,53 @@ export default function DocumentsPage() {
       (d.customer_name || "").toLowerCase().includes(search.toLowerCase());
     return matchesSearch;
   });
+
+  const allSelected = filtered.length > 0 && filtered.every((d) => selectedIds.has(d.id));
+  const someSelected = selectedIds.size > 0;
+
+  const selectedDocs = useMemo(
+    () => filtered.filter((d) => selectedIds.has(d.id)),
+    [filtered, selectedIds]
+  );
+
+  const approvableCount = selectedDocs.filter(
+    (d) => d.status !== "approved" && d.status !== "exported" && d.status !== "processing"
+  ).length;
+
+  const toggleSelect = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((d) => d.id)));
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkApprove = async () => {
+    const toApprove = selectedDocs.filter(
+      (d) => d.status !== "approved" && d.status !== "exported" && d.status !== "processing"
+    );
+    if (toApprove.length === 0) return;
+    await bulkApprove.mutateAsync(toApprove);
+    clearSelection();
+  };
+
+  const handleBulkDelete = async () => {
+    await bulkDelete.mutateAsync(Array.from(selectedIds));
+    clearSelection();
+    setDeleteConfirmOpen(false);
+  };
 
   const openReview = (doc: DocumentRecord) => {
     setSelected(doc);
@@ -124,6 +177,58 @@ export default function DocumentsPage() {
         </Select>
       </div>
 
+      {/* Bulk Actions Bar */}
+      <AnimatePresence>
+        {someSelected && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/15"
+          >
+            <span className="text-sm font-semibold text-primary">
+              {selectedIds.size} selected
+            </span>
+            <div className="flex-1" />
+            {approvableCount > 0 && (
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 text-xs gap-1.5 rounded-lg"
+                onClick={handleBulkApprove}
+                disabled={bulkApprove.isPending}
+              >
+                {bulkApprove.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <CheckCheck className="h-3.5 w-3.5" />
+                )}
+                Approve {approvableCount}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="destructive"
+              className="h-8 text-xs gap-1.5 rounded-lg"
+              onClick={() => setDeleteConfirmOpen(true)}
+              disabled={bulkDelete.isPending}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 text-xs rounded-lg"
+              onClick={clearSelection}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -138,29 +243,38 @@ export default function DocumentsPage() {
         /* Mobile card view */
         <div className="space-y-2">
           {filtered.map((doc) => (
-            <MobileRecordCard
-              key={doc.id}
-              title={doc.file_name}
-              subtitle={doc.supplier_name || doc.customer_name || undefined}
-              badge={{
-                label: (doc as any).potential_duplicate_of
-                  ? "⚠ Duplicate"
-                  : statusLabel(doc.status),
-                className: (doc as any).potential_duplicate_of
-                  ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
-                  : statusColors[doc.status] || "",
-              }}
-              fields={[
-                { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
-                { label: "Date", value: doc.invoice_date || "—" },
-                { label: "Amount", value: doc.total_amount && Number(doc.total_amount) > 0
-                  ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
-                  : "—"
-                },
-                { label: "Source", value: (doc as any).source === "email_import" ? "Email" : "Upload" },
-              ]}
-              onClick={() => openReview(doc)}
-            />
+            <div key={doc.id} className="flex items-start gap-2">
+              <div className="pt-3 pl-1">
+                <Checkbox
+                  checked={selectedIds.has(doc.id)}
+                  onCheckedChange={() => toggleSelect(doc.id)}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <MobileRecordCard
+                  title={doc.file_name}
+                  subtitle={doc.supplier_name || doc.customer_name || undefined}
+                  badge={{
+                    label: (doc as any).potential_duplicate_of
+                      ? "⚠ Duplicate"
+                      : statusLabel(doc.status),
+                    className: (doc as any).potential_duplicate_of
+                      ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
+                      : statusColors[doc.status] || "",
+                  }}
+                  fields={[
+                    { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
+                    { label: "Date", value: doc.invoice_date || "—" },
+                    { label: "Amount", value: doc.total_amount && Number(doc.total_amount) > 0
+                      ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
+                      : "—"
+                    },
+                    { label: "Source", value: (doc as any).source === "email_import" ? "Email" : "Upload" },
+                  ]}
+                  onClick={() => openReview(doc)}
+                />
+              </div>
+            </div>
           ))}
         </div>
       ) : (
@@ -171,6 +285,12 @@ export default function DocumentsPage() {
               <table className="w-full">
                  <thead>
                    <tr className="border-b text-left">
+                     <th className="p-3 w-10">
+                       <Checkbox
+                         checked={allSelected}
+                         onCheckedChange={toggleSelectAll}
+                       />
+                     </th>
                      <th className="p-3 text-xs font-medium text-muted-foreground">Document</th>
                      <th className="p-3 text-xs font-medium text-muted-foreground">Source</th>
                      <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
@@ -178,12 +298,23 @@ export default function DocumentsPage() {
                      <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
                      <th className="p-3 text-xs font-medium text-muted-foreground">Amount</th>
                      <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground"></th>
                    </tr>
                  </thead>
                 <tbody>
                   {filtered.map((doc) => (
-                    <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => openReview(doc)}>
+                    <tr
+                      key={doc.id}
+                      className={`border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer ${
+                        selectedIds.has(doc.id) ? "bg-primary/5" : ""
+                      }`}
+                      onClick={() => openReview(doc)}
+                    >
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.has(doc.id)}
+                          onCheckedChange={() => toggleSelect(doc.id)}
+                        />
+                      </td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -209,7 +340,7 @@ export default function DocumentsPage() {
                           ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
                           : "—"}
                         {(doc as any).extracted_data?.discount_amount != null && (doc as any).extracted_data.discount_amount !== 0 && (
-                          <span className="block text-xs text-green-600 font-normal">
+                          <span className="block text-xs text-emerald font-normal">
                             Discount: -{(doc.currency || "EUR")} {Math.abs((doc as any).extracted_data.discount_amount).toFixed(2)}
                           </span>
                         )}
@@ -240,7 +371,6 @@ export default function DocumentsPage() {
                           )}
                         </div>
                       </td>
-                      <td className="p-3" />
                     </tr>
                   ))}
                 </tbody>
@@ -249,6 +379,32 @@ export default function DocumentsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} document(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the selected documents and their associated files. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDelete.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-1" />
+              )}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Review Dialog */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
