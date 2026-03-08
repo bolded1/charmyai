@@ -86,6 +86,13 @@ Deno.serve(async (req) => {
       job_title: job_title || null,
     }).eq("user_id", userId);
 
+    // Update organization name if provided
+    if (company_name) {
+      await adminClient.from("organizations").update({
+        name: company_name,
+      }).eq("owner_user_id", userId);
+    }
+
     // Assign role if not default "user"
     if (role && role !== "user") {
       await adminClient.from("user_roles").insert({
