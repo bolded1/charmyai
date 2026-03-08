@@ -19,12 +19,20 @@ interface InviteEmailProps {
   siteName: string
   siteUrl: string
   confirmationUrl: string
+  heading?: string
+  bodyText?: string
+  buttonText?: string
+  footerText?: string
 }
 
 export const InviteEmail = ({
   siteName,
   siteUrl,
   confirmationUrl,
+  heading = "You've been invited",
+  bodyText = 'Someone invited you to join Charmy. Click the button below to accept and create your account.',
+  buttonText = 'Accept Invitation',
+  footerText = "If you weren't expecting this invitation, you can safely ignore this email.",
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -38,18 +46,16 @@ export const InviteEmail = ({
           </tr></table>
         </Section>
         <Hr style={divider} />
-        <Heading style={h1}>You've been invited</Heading>
-        <Text style={text}>
-          Someone invited you to join Charmy. Click the button below to accept and create your account.
-        </Text>
+        <Heading style={h1}>{heading}</Heading>
+        {bodyText.split('\n').filter(Boolean).map((line, i) => (
+          <Text key={i} style={text}>{line}</Text>
+        ))}
         <Section style={{ textAlign: 'center' as const, margin: '0 0 24px' }}>
           <Button style={button} href={confirmationUrl}>
-            Accept Invitation
+            {buttonText}
           </Button>
         </Section>
-        <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this email.
-        </Text>
+        <Text style={footer}>{footerText}</Text>
       </Container>
     </Body>
   </Html>

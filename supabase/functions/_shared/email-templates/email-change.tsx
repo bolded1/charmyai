@@ -21,6 +21,10 @@ interface EmailChangeEmailProps {
   email: string
   newEmail: string
   confirmationUrl: string
+  heading?: string
+  bodyText?: string
+  buttonText?: string
+  footerText?: string
 }
 
 export const EmailChangeEmail = ({
@@ -28,6 +32,10 @@ export const EmailChangeEmail = ({
   email,
   newEmail,
   confirmationUrl,
+  heading = 'Confirm your email change',
+  bodyText,
+  buttonText = 'Confirm Email Change',
+  footerText = "If you didn't request this change, please secure your account immediately.",
 }: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -41,21 +49,25 @@ export const EmailChangeEmail = ({
           </tr></table>
         </Section>
         <Hr style={divider} />
-        <Heading style={h1}>Confirm your email change</Heading>
-        <Text style={text}>
-          You requested to change your email from{' '}
-          <Link href={`mailto:${email}`} style={link}>{email}</Link>{' '}
-          to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
-        </Text>
+        <Heading style={h1}>{heading}</Heading>
+        {bodyText ? (
+          bodyText.split('\n').filter(Boolean).map((line, i) => (
+            <Text key={i} style={text}>{line}</Text>
+          ))
+        ) : (
+          <Text style={text}>
+            You requested to change your email from{' '}
+            <Link href={`mailto:${email}`} style={link}>{email}</Link>{' '}
+            to{' '}
+            <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
+          </Text>
+        )}
         <Section style={{ textAlign: 'center' as const, margin: '0 0 24px' }}>
           <Button style={button} href={confirmationUrl}>
-            Confirm Email Change
+            {buttonText}
           </Button>
         </Section>
-        <Text style={footer}>
-          If you didn't request this change, please secure your account immediately.
-        </Text>
+        <Text style={footer}>{footerText}</Text>
       </Container>
     </Body>
   </Html>

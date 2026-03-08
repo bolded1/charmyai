@@ -20,6 +20,7 @@ const navItems = [
   { title: "System Settings", url: "/admin/settings", icon: Cog },
   { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },
   { title: "Page Content", url: "/admin/cms", icon: PenLine },
+  { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
 ];
 

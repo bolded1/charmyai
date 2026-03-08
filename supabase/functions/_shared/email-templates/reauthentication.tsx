@@ -16,9 +16,17 @@ import {
 
 interface ReauthenticationEmailProps {
   token: string
+  heading?: string
+  bodyText?: string
+  footerText?: string
 }
 
-export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
+export const ReauthenticationEmail = ({
+  token,
+  heading = 'Verification code',
+  bodyText = 'Use the code below to confirm your identity:',
+  footerText = "This code will expire shortly. If you didn't request this, you can safely ignore it.",
+}: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your Charmy verification code</Preview>
@@ -31,12 +39,10 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
           </tr></table>
         </Section>
         <Hr style={divider} />
-        <Heading style={h1}>Verification code</Heading>
-        <Text style={text}>Use the code below to confirm your identity:</Text>
+        <Heading style={h1}>{heading}</Heading>
+        <Text style={text}>{bodyText}</Text>
         <Text style={codeStyle}>{token}</Text>
-        <Text style={footer}>
-          This code will expire shortly. If you didn't request this, you can safely ignore it.
-        </Text>
+        <Text style={footer}>{footerText}</Text>
       </Container>
     </Body>
   </Html>

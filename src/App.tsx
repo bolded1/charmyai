@@ -99,6 +99,7 @@ const App = () => (
             <Route path="settings" element={<AdminSettings />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
             <Route path="cms" element={<AdminCMS />} />
+            <Route path="email-templates" element={<AdminEmailTemplates />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 

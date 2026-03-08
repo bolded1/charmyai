@@ -18,11 +18,19 @@ import {
 interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
+  heading?: string
+  bodyText?: string
+  buttonText?: string
+  footerText?: string
 }
 
 export const MagicLinkEmail = ({
   siteName,
   confirmationUrl,
+  heading = 'Your login link',
+  bodyText = 'Click the button below to sign in to Charmy. This link will expire shortly.',
+  buttonText = 'Sign In',
+  footerText = "If you didn't request this link, you can safely ignore this email.",
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -36,18 +44,16 @@ export const MagicLinkEmail = ({
           </tr></table>
         </Section>
         <Hr style={divider} />
-        <Heading style={h1}>Your login link</Heading>
-        <Text style={text}>
-          Click the button below to sign in to Charmy. This link will expire shortly.
-        </Text>
+        <Heading style={h1}>{heading}</Heading>
+        {bodyText.split('\n').filter(Boolean).map((line, i) => (
+          <Text key={i} style={text}>{line}</Text>
+        ))}
         <Section style={{ textAlign: 'center' as const, margin: '0 0 24px' }}>
           <Button style={button} href={confirmationUrl}>
-            Sign In
+            {buttonText}
           </Button>
         </Section>
-        <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
-        </Text>
+        <Text style={footer}>{footerText}</Text>
       </Container>
     </Body>
   </Html>
