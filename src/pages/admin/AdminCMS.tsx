@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Plus, Trash2, GripVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -17,6 +17,8 @@ import {
   privacyDefaults,
   termsDefaults,
   acceptableUseDefaults,
+  extractLegalSections,
+  type LegalSection,
 } from "@/lib/cms-defaults";
 
 type PageConfig = {
