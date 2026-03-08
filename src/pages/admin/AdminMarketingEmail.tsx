@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, ChangeEvent } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Send, Eye, Loader2, Bold, Italic, Underline, Link, List, ListOrdered, AlignLeft, AlignCenter, Image, Type, Heading1, Heading2 } from "lucide-react";
+import { Send, Eye, Loader2, Bold, Italic, Underline, Link, List, ListOrdered, AlignLeft, AlignCenter, Image, Type, Heading1, Heading2, Upload } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -21,6 +21,8 @@ export default function AdminMarketingEmail() {
   const [previewHtml, setPreviewHtml] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   const execCommand = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -32,9 +34,44 @@ export default function AdminMarketingEmail() {
     if (url) execCommand("createLink", url);
   };
 
-  const handleInsertImage = () => {
+  const handleInsertImageUrl = () => {
     const url = prompt("Enter image URL:");
     if (url) execCommand("insertImage", url);
+  };
+
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("email-images")
+        .upload(path, file, { contentType: file.type });
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from("email-images")
+        .getPublicUrl(path);
+
+      execCommand("insertImage", urlData.publicUrl);
+      toast.success("Image inserted!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const getEditorHtml = () => {
@@ -179,9 +216,19 @@ export default function AdminMarketingEmail() {
               <Toggle size="sm" onPressedChange={handleInsertLink} aria-label="Insert Link">
                 <Link className="h-3.5 w-3.5" />
               </Toggle>
-              <Toggle size="sm" onPressedChange={handleInsertImage} aria-label="Insert Image">
+              <Toggle size="sm" onPressedChange={handleInsertImageUrl} aria-label="Insert Image URL">
                 <Image className="h-3.5 w-3.5" />
               </Toggle>
+              <Toggle size="sm" onPressedChange={() => fileInputRef.current?.click()} aria-label="Upload Image" disabled={uploading}>
+                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              </Toggle>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
             </div>
             {/* Editor */}
             <div
