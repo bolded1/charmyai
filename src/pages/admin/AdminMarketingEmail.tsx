@@ -216,9 +216,19 @@ export default function AdminMarketingEmail() {
               <Toggle size="sm" onPressedChange={handleInsertLink} aria-label="Insert Link">
                 <Link className="h-3.5 w-3.5" />
               </Toggle>
-              <Toggle size="sm" onPressedChange={handleInsertImage} aria-label="Insert Image">
+              <Toggle size="sm" onPressedChange={handleInsertImageUrl} aria-label="Insert Image URL">
                 <Image className="h-3.5 w-3.5" />
               </Toggle>
+              <Toggle size="sm" onPressedChange={() => fileInputRef.current?.click()} aria-label="Upload Image" disabled={uploading}>
+                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              </Toggle>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
             </div>
             {/* Editor */}
             <div
