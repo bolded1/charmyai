@@ -183,7 +183,8 @@ export default function AdminSettingsPage() {
   const [debugLog, setDebugLog, dlSaving] = useAutoSave("debug-log", false);
 
   const anySaving = aiSaving || aiModelSaving || confSaving || autoAppSaving ||
-    mfsSaving || mfSaving || sdSaving || pdSaving || edSaving ||
+    mfsSaving || mfSaving || fdlSaving || fulSaving || pdlSaving || pulSaving ||
+    pmpSaving || pypSaving || tdSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
     mtSaving || nsSaving || dlSaving;
 
