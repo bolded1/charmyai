@@ -169,10 +169,10 @@ export function DemoUploader() {
               onDragLeave={handleDragLeave}
               onClick={() => !isProcessing && fileInputRef.current?.click()}
               className={`
-                relative rounded-xl border-2 border-dashed p-8 md:p-10 text-center cursor-pointer
+                relative rounded-2xl border-2 border-dashed p-8 md:p-10 text-center cursor-pointer
                 transition-all duration-200 group
                 ${isDragging
-                  ? "border-primary bg-brand-soft scale-[1.01]"
+                  ? "border-primary bg-brand-soft scale-[1.01] shadow-glow"
                   : "border-border hover:border-primary/50 hover:bg-brand-soft/30"
                 }
                 ${isProcessing ? "pointer-events-none opacity-80" : ""}
