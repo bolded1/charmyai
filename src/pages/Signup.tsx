@@ -100,7 +100,7 @@ export default function SignupPage() {
               </>
             )}
           </Link>
-          <p className="text-sm text-muted-foreground mt-3">Start your free trial</p>
+          <p className="text-sm text-muted-foreground mt-3">Start your 7-day free trial</p>
         </div>
 
         <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-7 space-y-5">

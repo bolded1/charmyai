@@ -61,7 +61,7 @@ serve(async (req) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       subscription_data: {
-        trial_period_days: 14,
+        trial_period_days: 7,
       },
       success_url: `${origin}/app/settings?tab=billing&checkout=success`,
       cancel_url: `${origin}/app/settings?tab=billing&checkout=cancelled`,

@@ -68,22 +68,20 @@ export const featuresDefaults = {
 
 export const pricingDefaults = {
   heroTitle: "Simple, Transparent Pricing",
-  heroSubtitle: "Start free. Upgrade as you grow. 14-day free trial on all paid plans.",
-  freeTitle: "Free",
-  freeDesc: "Perfect for freelancers and individuals getting started.",
+  heroSubtitle: "One powerful plan with a 7-day free trial. No hidden fees.",
   proTitle: "Pro",
-  proDesc: "For growing teams that need more power and collaboration.",
+  proDesc: "Everything you need to process invoices and manage expenses effortlessly.",
   faqTitle: "Frequently Asked Questions",
-  faq1Q: "Can I switch plans later?",
-  faq1A: "Yes, you can upgrade or downgrade at any time. Changes take effect immediately with prorated billing.",
+  faq1Q: "Can I switch between monthly and yearly?",
+  faq1A: "Yes, you can switch at any time. Changes take effect immediately with prorated billing.",
   faq2Q: "What happens after my trial ends?",
-  faq2A: "After your 14-day trial, you'll be charged automatically. You can cancel anytime before the trial ends.",
+  faq2A: "After your 7-day trial, you'll be charged automatically. You can cancel anytime before the trial ends.",
   faq3Q: "What document formats are supported?",
   faq3A: "We support PDF, PNG, and JPG files. Scanned documents work too.",
   faq4Q: "Is my data secure?",
   faq4A: "Yes. All documents are encrypted at rest and in transit. We never share your data.",
   faq5Q: "Do I need a credit card for the trial?",
-  faq5A: "Yes, a credit card is required to start the trial, but you won't be charged until the trial period ends.",
+  faq5A: "Yes, a credit card is required to start the trial, but you won't be charged until the 7-day trial period ends.",
 };
 
 export const aboutDefaults = {

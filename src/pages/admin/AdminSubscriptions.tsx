@@ -51,7 +51,7 @@ export default function AdminSubscriptionsPage() {
   const [extendTrialDialog, setExtendTrialDialog] = useState<StripeSub | null>(null);
   const [grantFreeDialog, setGrantFreeDialog] = useState(false);
   const [grantFreeEmail, setGrantFreeEmail] = useState("");
-  const [trialDays, setTrialDays] = useState("14");
+  const [trialDays, setTrialDays] = useState("7");
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchSubs = async () => {
