@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { FileText, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { logAuditEvent } from "@/lib/audit-log-client";
 
 export default function SignupPage() {
   const brandLogo = useBrandLogo();
@@ -14,12 +15,11 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -27,10 +27,20 @@ export default function SignupPage() {
       },
     });
     setLoading(false);
+
     if (error) {
       toast.error(error.message);
       return;
     }
+
+    await logAuditEvent({
+      action: "user_signup",
+      userId: data.user?.id,
+      userEmail: data.user?.email ?? email,
+      details: "Signup submitted",
+      metadata: { source: "signup_page" },
+    });
+
     setEmailSent(true);
   };
 
@@ -118,3 +128,4 @@ export default function SignupPage() {
     </div>
   );
 }
+
