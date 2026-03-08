@@ -93,6 +93,10 @@ function CreateUserDialog({ open, onOpenChange, onCreated }: { open: boolean; on
             <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" required minLength={6} />
           </div>
           <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Company Name</Label>
+            <Input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} placeholder="e.g. Acme Inc." />
+          </div>
+          <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Job Title</Label>
             <Input value={form.job_title} onChange={e => setForm(f => ({ ...f, job_title: e.target.value }))} placeholder="e.g. Finance Manager" />
           </div>
