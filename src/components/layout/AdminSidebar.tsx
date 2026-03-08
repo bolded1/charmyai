@@ -5,7 +5,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation, Link } from "react-router-dom";
 import {
-  LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp,
+  LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
 } from "lucide-react";
 
@@ -14,6 +14,7 @@ const navItems = [
   { title: "Organizations", url: "/admin/organizations", icon: Building2 },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Documents", url: "/admin/documents", icon: FileText },
+  { title: "Doc Processing", url: "/admin/document-stats", icon: Activity },
   { title: "Usage & Activity", url: "/admin/usage", icon: BarChart3 },
   { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
   { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
