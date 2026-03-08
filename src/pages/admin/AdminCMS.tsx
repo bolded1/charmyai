@@ -261,11 +261,23 @@ export default function AdminCMS() {
               {p.label}
             </TabsTrigger>
           ))}
+          {legalPages.map((p) => (
+            <TabsTrigger key={p.slug} value={p.slug}>
+              {p.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         {pages.map((p) => (
           <TabsContent key={p.slug} value={p.slug}>
             <div className="surface-elevated rounded-xl border p-6 mt-4">
               <PageEditor config={p} />
+            </div>
+          </TabsContent>
+        ))}
+        {legalPages.map((p) => (
+          <TabsContent key={p.slug} value={p.slug}>
+            <div className="surface-elevated rounded-xl border p-6 mt-4">
+              <LegalPageEditor config={p} />
             </div>
           </TabsContent>
         ))}
