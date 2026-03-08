@@ -219,11 +219,10 @@ export default function ExpensesPage() {
   const selectableCount = filtered.filter((e) => e.document_id).length;
 
   const toggleSelectAll = () => {
-    const withDocs = filtered.filter((e) => e.document_id);
-    if (selectedIds.size === withDocs.length && withDocs.length > 0) {
+    if (selectedIds.size === filtered.length && filtered.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(withDocs.map((e) => e.id)));
+      setSelectedIds(new Set(filtered.map((e) => e.id)));
     }
   };
 
