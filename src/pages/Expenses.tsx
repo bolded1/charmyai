@@ -236,7 +236,21 @@ export default function ExpensesPage() {
     setSelectedIds(new Set());
   };
 
-  const groupedByMonth = useMemo(() => {
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteExpense.mutateAsync(id);
+      }
+      setSelectedIds(new Set());
+      setBulkDeleteConfirm(false);
+    } catch {
+      // error handled by mutation
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
     const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
     const map = new Map<string, typeof filtered>();
     
