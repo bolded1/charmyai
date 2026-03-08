@@ -243,7 +243,7 @@ export default function DashboardLayout() {
             </div>
           </header>
 
-          <main className={`flex-1 overflow-auto surface-sunken ${layoutSettings.compactView ? "p-3 md:p-4" : "p-4 md:p-8"}`}>
+          <main className={`flex-1 min-h-0 overflow-auto surface-sunken ${layoutSettings.compactView ? "p-3 md:p-4" : "p-4 md:p-8"}`}>
             <Outlet />
           </main>
 
