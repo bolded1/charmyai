@@ -3,16 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText } from "lucide-react";
+import { FileText, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function LoginPage() {
   const brandLogo = useBrandLogo();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +65,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-              <span className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</span>
+              <button type="button" onClick={() => { setForgotOpen(true); setForgotSent(false); setForgotEmail(email); }} className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</button>
             </div>
             <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 rounded-xl" />
           </div>
@@ -74,6 +79,41 @@ export default function LoginPage() {
           <Link to="/signup" className="text-primary font-semibold hover:underline">Start Free Trial</Link>
         </p>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reset your password</DialogTitle>
+          </DialogHeader>
+          {forgotSent ? (
+            <div className="text-center space-y-3 py-2">
+              <div className="h-12 w-12 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
+                <Mail className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground">We've sent a reset link to <span className="font-semibold text-foreground">{forgotEmail}</span>. Check your inbox.</p>
+            </div>
+          ) : (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setForgotLoading(true);
+              const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+                redirectTo: `${window.location.origin}/reset-password`,
+              });
+              setForgotLoading(false);
+              if (error) { toast.error(error.message); return; }
+              setForgotSent(true);
+            }} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="forgot-email" className="text-xs font-medium">Email</Label>
+                <Input id="forgot-email" type="email" placeholder="you@company.com" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="h-10 rounded-xl" />
+              </div>
+              <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity" disabled={forgotLoading}>
+                {forgotLoading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
