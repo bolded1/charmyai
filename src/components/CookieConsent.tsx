@@ -72,8 +72,8 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className={`fixed z-[60] ${
                 showPrivacy
-                  ? "inset-4 md:inset-auto md:bottom-6 md:right-6 md:left-6 lg:left-auto lg:max-w-lg"
-                  : "bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm"
+                  ? "inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full"
+                  : "bottom-4 left-4 right-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-sm"
               }`}
               layout
             >
