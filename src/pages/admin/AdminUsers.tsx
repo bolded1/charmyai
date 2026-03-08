@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Loader2, RefreshCw, UserCheck, Plus, Pencil, ShieldCheck, Bell, Ban, X } from "lucide-react";
+import { Search, Loader2, RefreshCw, UserCheck, Plus, Pencil, ShieldCheck, Bell, Ban, X, Download } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
@@ -217,6 +217,24 @@ export default function AdminUsersPage() {
         </Button>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4 mr-1" /> Create User
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const emails = users.map(u => u.email).filter(Boolean).join("\n");
+            const blob = new Blob([emails], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `user-emails-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success(`Exported ${users.filter(u => u.email).length} emails`);
+          }}
+          disabled={users.length === 0}
+        >
+          <Download className="h-4 w-4 mr-1" /> Export Emails
         </Button>
       </div>
 
