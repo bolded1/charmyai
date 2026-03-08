@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Upload, FileText, Receipt, TrendingUp, Download, UsersRound, Settings,
