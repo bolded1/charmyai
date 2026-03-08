@@ -14,6 +14,7 @@ const navItems = [
   { title: "Organizations", url: "/admin/organizations", icon: Building2 },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Documents", url: "/admin/documents", icon: FileText },
+  { title: "Doc Processing", url: "/admin/document-stats", icon: Activity },
   { title: "Usage & Activity", url: "/admin/usage", icon: BarChart3 },
   { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
   { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
