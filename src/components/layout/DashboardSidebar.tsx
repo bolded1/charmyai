@@ -27,6 +27,7 @@ const recordsItems = [
 const systemItems = [
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
+  { title: "Help", url: "/app/help", icon: HelpCircle },
 ];
 
 export function DashboardSidebar() {

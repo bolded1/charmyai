@@ -78,6 +78,7 @@ const App = () => (
             <Route path="exports" element={<Exports />} />
             <Route path="team" element={<Team />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="help" element={<Help />} />
           </Route>
 
           {/* Admin pages */}
