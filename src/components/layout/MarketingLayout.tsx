@@ -198,6 +198,7 @@ export default function MarketingLayout() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <Link to="/about" className="block hover:text-foreground">About</Link>
                 <Link to="/contact" className="block hover:text-foreground">Contact</Link>
+                <Link to="/help" className="block hover:text-foreground">Help & Docs</Link>
               </div>
             </div>
             <div>
