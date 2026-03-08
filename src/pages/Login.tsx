@@ -29,48 +29,49 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
-      {/* Decorative blurred orbs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      {/* Colorful gradient orbs */}
+      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+      <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+      <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(172 66% 40% / 0.4), transparent 70%)' }} />
 
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl mb-2">
+          <Link to="/" className="inline-flex items-center gap-2.5 font-bold text-xl mb-2">
             {brandLogo ? (
               <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
             ) : (
               <>
-                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center shadow-lg">
+                <div className="h-11 w-11 rounded-2xl bg-hero-gradient flex items-center justify-center shadow-lg shadow-primary/25">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
-                Charmy
+                <span className="text-gradient text-2xl">Charmy</span>
               </>
             )}
           </Link>
-          <p className="text-sm text-muted-foreground">Sign in to your account</p>
+          <p className="text-sm text-muted-foreground mt-3">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-7 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Label htmlFor="email" className="text-xs font-medium">Email</Label>
+            <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <span className="text-xs text-primary cursor-pointer">Forgot password?</span>
+              <Label htmlFor="password" className="text-xs font-medium">Password</Label>
+              <span className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</span>
             </div>
-            <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 rounded-xl" />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity shadow-lg shadow-primary/20" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-5">
           Don't have an account?{" "}
-          <Link to="/signup" className="text-primary font-medium">Start Free Trial</Link>
+          <Link to="/signup" className="text-primary font-semibold hover:underline">Start Free Trial</Link>
         </p>
       </div>
     </div>
