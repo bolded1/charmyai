@@ -76,7 +76,9 @@ export default function IncomePage() {
   const deleteIncome = useDeleteIncome();
   const { downloadAsZip, downloading } = useBulkDownload();
   const { data: org } = useOrganization();
+  const { data: limits } = usePlatformLimits();
   const defaultCurrency = org?.default_currency || "EUR";
+  const maxFileSizeMB = limits?.maxFileSize ?? 20;
 
   const selectedRecord = income.find((e) => e.id === selectedId);
 
