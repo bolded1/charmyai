@@ -16,6 +16,7 @@ import {
   contactDefaults,
   privacyDefaults,
   termsDefaults,
+  acceptableUseDefaults,
 } from "@/lib/cms-defaults";
 
 type PageConfig = {
