@@ -187,16 +187,16 @@ export default function DashboardLayout() {
             </div>
           )}
           {/* Mobile header with logo + profile */}
-          <header className="h-12 border-b border-border/50 bg-card/70 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden">
+          <header className="h-13 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden">
             <div className="flex items-center gap-2">
               {brandLogo ? (
                 <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain" />
               ) : (
                 <Link to="/app" className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0">
-                    <FileText className="h-3 w-3 text-white" />
+                  <div className="h-7 w-7 rounded-lg bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
+                    <FileText className="h-3.5 w-3.5 text-white" />
                   </div>
-                  <span className="font-semibold text-sm text-foreground">Charmy</span>
+                  <span className="font-bold text-sm text-gradient">Charmy</span>
                 </Link>
               )}
             </div>
