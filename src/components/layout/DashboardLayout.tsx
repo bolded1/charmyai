@@ -187,7 +187,7 @@ export default function DashboardLayout() {
             </div>
           )}
           {/* Mobile header with logo + profile */}
-          <header className="h-13 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden">
+          <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 md:hidden">
             <div className="flex items-center gap-2">
               {brandLogo ? (
                 <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain" />
@@ -233,7 +233,7 @@ export default function DashboardLayout() {
           </nav>
 
           {/* Desktop header - hidden on mobile */}
-          <header className="h-13 border-b border-border/40 bg-card/80 backdrop-blur-xl items-center justify-between px-6 shrink-0 hidden md:flex">
+          <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl items-center justify-between px-6 shrink-0 hidden md:flex">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <span className="text-sm font-semibold text-foreground">{pageTitle}</span>
