@@ -107,7 +107,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
                             </div>
                           ))}
                         </div>
-                      </ScrollArea>
+                      </div>
                       <div className="flex items-center gap-2 p-4 border-t border-border shrink-0">
                         <Button size="sm" className="rounded-lg text-xs h-8 px-4 flex-1" onClick={handleAccept}>
                           Accept All
