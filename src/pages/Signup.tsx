@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,16 +24,52 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName } },
+      options: {
+        data: { first_name: firstName, last_name: lastName },
+        emailRedirectTo: window.location.origin + "/onboarding",
+      },
     });
     setLoading(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Account created!");
-    navigate("/onboarding");
+    setEmailSent(true);
   };
+
+  if (emailSent) {
+    return (
+      <div className="marketing min-h-screen flex items-center justify-center p-4 surface-sunken">
+        <div className="w-full max-w-sm text-center">
+          <div className="mb-6">
+            {brandLogo ? (
+              <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain mx-auto" />
+            ) : (
+              <div className="inline-flex items-center gap-2 font-bold text-xl">
+                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
+                </div>
+                Charmy
+              </div>
+            )}
+          </div>
+          <div className="surface-elevated rounded-xl p-6 space-y-3">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <FileText className="h-6 w-6 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold">Check your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We've sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click the link to verify your account and get started.
+            </p>
+          </div>
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Already verified?{" "}
+            <Link to="/login" className="text-primary font-medium">Sign In</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="marketing min-h-screen flex items-center justify-center p-4 surface-sunken">
