@@ -54,7 +54,7 @@ export default function BillingSection() {
               </div>
               <div>
                 <h3 className="font-semibold">
-                  {sub.plan === "pro" ? "Pro" : "Free"} Plan
+                  Pro Plan
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
                   {sub.status === "trialing" && (
