@@ -90,9 +90,11 @@ export type Database = {
           id: string
           link: string | null
           role_filter: string | null
+          scheduled_at: string | null
           segment: string
           sent_by: string | null
           sent_count: number
+          status: string
           title: string
         }
         Insert: {
@@ -101,9 +103,11 @@ export type Database = {
           id?: string
           link?: string | null
           role_filter?: string | null
+          scheduled_at?: string | null
           segment?: string
           sent_by?: string | null
           sent_count?: number
+          status?: string
           title: string
         }
         Update: {
@@ -112,9 +116,11 @@ export type Database = {
           id?: string
           link?: string | null
           role_filter?: string | null
+          scheduled_at?: string | null
           segment?: string
           sent_by?: string | null
           sent_count?: number
+          status?: string
           title?: string
         }
         Relationships: []
