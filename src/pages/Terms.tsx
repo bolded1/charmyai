@@ -16,9 +16,10 @@ export default function Terms() {
   const { content: c } = usePageContent("terms", termsDefaults);
 
   const sections = useMemo(() => {
-    if (c.sections) {
+    const raw = c as Record<string, any>;
+    if (raw.sections) {
       try {
-        const parsed = JSON.parse(c.sections as string);
+        const parsed = JSON.parse(raw.sections as string);
         if (Array.isArray(parsed)) return parsed.filter((s: any) => s.title);
       } catch {}
     }

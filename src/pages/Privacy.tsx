@@ -17,9 +17,10 @@ export default function Privacy() {
 
   const sections = useMemo(() => {
     // Support dynamic sections array saved by admin, fall back to flat keys
-    if (c.sections) {
+    const raw = c as Record<string, any>;
+    if (raw.sections) {
       try {
-        const parsed = JSON.parse(c.sections as string);
+        const parsed = JSON.parse(raw.sections as string);
         if (Array.isArray(parsed)) return parsed.filter((s: any) => s.title);
       } catch {}
     }
