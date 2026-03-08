@@ -60,6 +60,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <CookieConsent />
         <Routes>
           {/* Marketing pages */}
           <Route element={<MarketingLayout />}>
