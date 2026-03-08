@@ -405,7 +405,7 @@ export default function AdminSettingsPage() {
                   <p className="text-sm font-medium">New Signups</p>
                   <p className="text-xs text-muted-foreground">Allow new user registrations</p>
                 </div>
-                <Switch checked={newSignups} onCheckedChange={setNewSignups} />
+                <Switch checked={newSignups === "true"} onCheckedChange={(v) => setNewSignups(v ? "true" : "false")} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
