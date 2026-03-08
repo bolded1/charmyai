@@ -59,6 +59,8 @@ export default function ExpensesPage() {
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
   const { downloadAsZip, downloading } = useBulkDownload();
+  const { data: org } = useOrganization();
+  const defaultCurrency = org?.default_currency || "EUR";
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
