@@ -4,6 +4,7 @@ import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight } from "lucide-re
 import { useState, useEffect } from "react";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCookieConsent } from "@/components/CookieConsent";
 
 const navLinks = [
   { label: "Features", to: "/features", description: "See what Charmy can do" },
