@@ -232,9 +232,36 @@ serve(async (req) => {
       validationErrors.push({ field: "currency", message: `Unrecognized currency: ${extracted.currency}` });
     }
 
-    const newStatus = validationErrors.length > 0 || (extracted.confidence && extracted.confidence < 80)
-      ? "needs_review"
-      : "needs_review"; // Always needs_review so user can approve
+    // Fetch AI settings to determine auto-approve behavior
+    let autoApprove = false;
+    let confidenceThreshold = 85;
+    try {
+      const { data: aiSettingsRow } = await supabase
+        .from("demo_settings")
+        .select("value")
+        .eq("key", "ai_settings")
+        .single();
+      if (aiSettingsRow?.value) {
+        const settings = aiSettingsRow.value as Record<string, unknown>;
+        if (settings.autoApproveHighConfidence === true) autoApprove = true;
+        if (typeof settings.confidenceThreshold === "number") confidenceThreshold = settings.confidenceThreshold;
+      }
+    } catch (settingsErr) {
+      console.error("Failed to load AI settings:", settingsErr);
+    }
+
+    const confidence = extracted.confidence ?? 0;
+    const hasDuplicate = potentialDuplicateOf !== null;
+    const hasValidationIssues = validationErrors.length > 0;
+
+    let newStatus: string;
+    if (hasValidationIssues || confidence < confidenceThreshold) {
+      newStatus = "needs_review";
+    } else if (autoApprove && confidence >= confidenceThreshold && !hasDuplicate) {
+      newStatus = "approved";
+    } else {
+      newStatus = "needs_review";
+    }
 
     // Check for duplicate documents
     let potentialDuplicateOf: string | null = null;
