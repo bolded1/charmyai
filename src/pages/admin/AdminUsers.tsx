@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Loader2, RefreshCw, UserCheck, Plus, Pencil, ShieldCheck, Bell, Ban, X } from "lucide-react";
+import { Search, Loader2, RefreshCw, UserCheck, Plus, Pencil, ShieldCheck, Bell, Ban, X, Download } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
