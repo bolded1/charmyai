@@ -61,7 +61,7 @@ export default function AdminAISettings() {
         .eq("key", "ai_settings")
         .single();
       if (error && error.code !== "PGRST116") throw error;
-      return data?.value as AISettings | null;
+      return data?.value as unknown as AISettings | null;
     },
   });
 
