@@ -291,9 +291,13 @@ export default function ExpensesPage() {
       map.set(c, { total: prev.total + Number(e.total_amount || 0), count: prev.count + 1 });
     });
     return Array.from(map.entries())
-      .sort((a, b) => b[1].total - a[1].total)
+      .sort((a, b) => {
+        if (a[0] === defaultCurrency) return -1;
+        if (b[0] === defaultCurrency) return 1;
+        return b[1].total - a[1].total;
+      })
       .map(([currency, data]) => ({ currency, ...data }));
-  }, [filtered]);
+  }, [filtered, defaultCurrency]);
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
