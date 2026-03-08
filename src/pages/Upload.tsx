@@ -11,9 +11,10 @@ import {
 import { useUploadDocument, useDocuments } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, startOfMonth } from "date-fns";
 import { useOrganization, getImportEmailAddress } from "@/hooks/useOrganization";
 import { toast } from "sonner";
+import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 
 interface UploadingFile {
   id: string;
