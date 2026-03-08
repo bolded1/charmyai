@@ -7,50 +7,62 @@
 @layer base {
   :root {
     /* ═══════════════════════════════════════════
-       MINIMAL LIGHT THEME — App default (blue)
+       VIBRANT LIGHT THEME — Modern & Colorful
     ═══════════════════════════════════════════ */
 
-    --background:      0 0% 98%;
-    --background-page: 0 0% 98%;
+    --background:      220 20% 97%;
+    --background-page: 220 20% 97%;
     --card:            0 0% 100%;
     --popover:         0 0% 100%;
 
-    --surface-sunken:   0 0% 97%;
+    --surface-sunken:   220 15% 95%;
     --surface-elevated: 0 0% 100%;
-    --surface-hover:    0 0% 96%;
+    --surface-hover:    220 15% 96%;
     --overlay:          220 20% 10%;
 
     --foreground:         220 20% 10%;
     --card-foreground:    220 20% 10%;
     --popover-foreground: 220 20% 10%;
     --text-secondary:     220 10% 40%;
-    --muted-foreground:   220 8% 50%;
+    --muted-foreground:   220 8% 46%;
     --text-on-primary:    0 0% 100%;
 
-    --primary:            224 64% 33%;
+    --primary:            224 76% 48%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover:      224 64% 26%;
-    --brand-soft:         214 80% 97%;
-    --brand-border:       224 40% 80%;
-    --primary-icon:       217 72% 53%;
-    --ring:               224 64% 33%;
+    --primary-hover:      224 76% 40%;
+    --brand-soft:         224 80% 96%;
+    --brand-border:       224 50% 82%;
+    --primary-icon:       224 72% 53%;
+    --ring:               224 76% 48%;
 
-    --secondary:            220 10% 96%;
+    /* Colorful accent palette */
+    --violet:         262 83% 58%;
+    --violet-soft:    262 70% 95%;
+    --teal:           172 66% 40%;
+    --teal-soft:      172 50% 94%;
+    --amber:          38 92% 50%;
+    --amber-soft:     38 80% 94%;
+    --rose:           350 75% 55%;
+    --rose-soft:      350 65% 95%;
+    --emerald:        152 60% 38%;
+    --emerald-soft:   152 50% 94%;
+
+    --secondary:            220 14% 96%;
     --secondary-foreground: 220 20% 10%;
-    --muted:                220 10% 96%;
-    --accent:               220 10% 95%;
+    --muted:                220 14% 96%;
+    --accent:               224 30% 94%;
     --accent-foreground:    220 20% 10%;
 
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:        220 10% 90%;
-    --border-subtle:  220 10% 93%;
-    --border-strong:  220 10% 82%;
-    --input:          220 10% 90%;
+    --border:        220 13% 90%;
+    --border-subtle:  220 13% 93%;
+    --border-strong:  220 13% 82%;
+    --input:          220 13% 90%;
 
     --success:       152 60% 34%;
-    --success-soft:  152 40% 94%;
+    --success-soft:  152 50% 94%;
     --warning:       38 90% 50%;
     --warning-soft:  38 80% 95%;
     --danger:        0 72% 51%;
@@ -59,149 +71,162 @@
     --info-soft:     217 80% 96%;
 
     --input-bg:         0 0% 100%;
-    --input-focus:      224 64% 33%;
-    --table-row-hover:  0 0% 98%;
-    --link-color:       224 64% 33%;
+    --input-focus:      224 76% 48%;
+    --table-row-hover:  224 30% 97%;
+    --link-color:       224 76% 48%;
 
-    --chart-1:          224 64% 33%;
-    --chart-2:          269 45% 55%;
-    --chart-3:          344 40% 50%;
-    --chart-4:          64 35% 55%;
-    --chart-5:          144 30% 50%;
+    --chart-1:          224 76% 48%;
+    --chart-2:          262 83% 58%;
+    --chart-3:          350 75% 55%;
+    --chart-4:          172 66% 40%;
+    --chart-5:          38 92% 50%;
 
-    --sidebar-background:         220 15% 97%;
+    --sidebar-background:         220 20% 98%;
     --sidebar-foreground:         220 8% 45%;
-    --sidebar-primary:            224 64% 33%;
+    --sidebar-primary:            224 76% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             220 10% 93%;
+    --sidebar-accent:             224 30% 94%;
     --sidebar-accent-foreground:  220 20% 10%;
-    --sidebar-border:             220 10% 90%;
-    --sidebar-ring:               224 64% 33%;
-    --sidebar-active-bg:          214 80% 95%;
-    --sidebar-active-text:        224 64% 28%;
-    --sidebar-muted:              220 8% 60%;
+    --sidebar-border:             220 13% 91%;
+    --sidebar-ring:               224 76% 48%;
+    --sidebar-active-bg:          224 80% 95%;
+    --sidebar-active-text:        224 76% 38%;
+    --sidebar-muted:              220 8% 55%;
 
-    --radius: 0.5rem;
-    --hero-gradient: linear-gradient(135deg, hsl(224, 64%, 33%), hsl(217, 72%, 40%));
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-    --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.05);
-    --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.06);
-    --shadow-overlay: 0 8px 24px -4px rgb(0 0 0 / 0.08);
+    --radius: 0.75rem;
+    --hero-gradient: linear-gradient(135deg, hsl(224, 76%, 48%), hsl(262, 83%, 58%));
+    --gradient-warm: linear-gradient(135deg, hsl(350, 75%, 55%), hsl(38, 92%, 55%));
+    --gradient-cool: linear-gradient(135deg, hsl(172, 66%, 40%), hsl(224, 76%, 48%));
+    --gradient-sunset: linear-gradient(135deg, hsl(262, 83%, 58%), hsl(350, 75%, 55%));
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.02);
+    --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+    --shadow-lg: 0 8px 20px -4px rgb(0 0 0 / 0.08), 0 4px 8px -4px rgb(0 0 0 / 0.04);
+    --shadow-overlay: 0 16px 40px -8px rgb(0 0 0 / 0.12), 0 4px 12px -4px rgb(0 0 0 / 0.06);
+    --shadow-glow: 0 0 20px -4px hsl(224 76% 48% / 0.15);
   }
 
   .dark {
     /* ═══════════════════════════════════════════
-       PREMIUM DARK THEME — Layered, calm, modern
-       Warm-tinted dark surfaces avoid pure black.
-       Subtle blue undertone for fintech feel.
+       VIBRANT DARK THEME — Rich, layered, colorful
     ═══════════════════════════════════════════ */
 
-    --background:      224 18% 10%;
-    --background-page: 224 16% 11%;
-    --card:            224 14% 14%;
-    --popover:         224 13% 16%;
+    --background:      224 22% 8%;
+    --background-page: 224 20% 9%;
+    --card:            224 18% 12%;
+    --popover:         224 16% 14%;
 
-    --surface-sunken:   224 18% 9%;
-    --surface-elevated: 224 13% 16%;
-    --surface-hover:    224 12% 18%;
-    --overlay:          224 22% 5%;
+    --surface-sunken:   224 22% 7%;
+    --surface-elevated: 224 16% 14%;
+    --surface-hover:    224 15% 16%;
+    --overlay:          224 25% 4%;
 
-    --foreground:         210 20% 93%;
-    --card-foreground:    210 20% 93%;
-    --popover-foreground: 210 20% 93%;
+    --foreground:         210 25% 95%;
+    --card-foreground:    210 25% 95%;
+    --popover-foreground: 210 25% 95%;
     --text-secondary:     215 14% 65%;
-    --muted-foreground:   215 10% 50%;
+    --muted-foreground:   215 10% 48%;
     --text-on-primary:    0 0% 100%;
 
-    --primary:            217 72% 56%;
+    --primary:            224 80% 62%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover:      217 72% 48%;
-    --brand-soft:         224 28% 16%;
-    --brand-border:       224 30% 28%;
-    --primary-icon:       217 60% 62%;
-    --ring:               217 72% 56%;
+    --primary-hover:      224 80% 54%;
+    --brand-soft:         224 35% 16%;
+    --brand-border:       224 35% 28%;
+    --primary-icon:       224 65% 68%;
+    --ring:               224 80% 62%;
 
-    --secondary:            224 14% 18%;
-    --secondary-foreground: 210 20% 93%;
-    --muted:                224 14% 18%;
-    --accent:               224 12% 17%;
-    --accent-foreground:    210 20% 93%;
+    --violet:         262 70% 68%;
+    --violet-soft:    262 35% 16%;
+    --teal:           172 50% 50%;
+    --teal-soft:      172 30% 14%;
+    --amber:          38 70% 58%;
+    --amber-soft:     38 35% 14%;
+    --rose:           350 60% 62%;
+    --rose-soft:      350 35% 15%;
+    --emerald:        152 48% 50%;
+    --emerald-soft:   152 25% 14%;
 
-    --destructive:            0 50% 52%;
+    --secondary:            224 18% 16%;
+    --secondary-foreground: 210 25% 95%;
+    --muted:                224 18% 16%;
+    --accent:               224 16% 15%;
+    --accent-foreground:    210 25% 95%;
+
+    --destructive:            0 55% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:        224 12% 21%;
-    --border-subtle:  224 12% 18%;
-    --border-strong:  224 12% 28%;
-    --input:          224 12% 21%;
+    --border:        224 14% 19%;
+    --border-subtle:  224 14% 16%;
+    --border-strong:  224 14% 26%;
+    --input:          224 14% 19%;
 
     --success:       152 48% 46%;
-    --success-soft:  152 25% 15%;
+    --success-soft:  152 25% 14%;
     --warning:       38 65% 56%;
-    --warning-soft:  38 40% 15%;
+    --warning-soft:  38 40% 14%;
     --danger:        0 50% 52%;
-    --danger-soft:   0 35% 15%;
+    --danger-soft:   0 35% 14%;
     --info:          217 65% 60%;
-    --info-soft:     217 40% 15%;
+    --info-soft:     217 40% 14%;
 
-    --input-bg:         224 16% 12%;
-    --input-focus:      217 72% 56%;
-    --table-row-hover:  224 12% 16%;
-    --link-color:       217 60% 62%;
+    --input-bg:         224 20% 10%;
+    --input-focus:      224 80% 62%;
+    --table-row-hover:  224 14% 14%;
+    --link-color:       224 65% 68%;
 
-    --chart-1:          217 65% 58%;
-    --chart-2:          262 40% 58%;
-    --chart-3:          340 35% 55%;
-    --chart-4:          55 35% 55%;
-    --chart-5:          140 30% 52%;
+    --chart-1:          224 80% 62%;
+    --chart-2:          262 70% 68%;
+    --chart-3:          350 60% 62%;
+    --chart-4:          172 50% 50%;
+    --chart-5:          38 70% 58%;
 
-    --sidebar-background:         224 20% 8%;
-    --sidebar-foreground:         215 12% 52%;
-    --sidebar-primary:            217 72% 56%;
+    --sidebar-background:         224 24% 7%;
+    --sidebar-foreground:         215 12% 50%;
+    --sidebar-primary:            224 80% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             224 16% 13%;
-    --sidebar-accent-foreground:  210 16% 88%;
-    --sidebar-border:             224 14% 16%;
-    --sidebar-ring:               217 72% 56%;
-    --sidebar-active-bg:          224 22% 14%;
-    --sidebar-active-text:        217 58% 68%;
+    --sidebar-accent:             224 20% 12%;
+    --sidebar-accent-foreground:  210 20% 90%;
+    --sidebar-border:             224 18% 14%;
+    --sidebar-ring:               224 80% 62%;
+    --sidebar-active-bg:          224 30% 14%;
+    --sidebar-active-text:        224 65% 72%;
     --sidebar-muted:              215 10% 40%;
 
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.15), 0 0 0 1px rgb(255 255 255 / 0.02);
-    --shadow-md: 0 2px 8px -1px rgb(0 0 0 / 0.25), 0 0 0 1px rgb(255 255 255 / 0.02);
-    --shadow-lg: 0 4px 16px -2px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.02);
-    --shadow-overlay: 0 8px 30px -4px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.04);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.2), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-md: 0 4px 10px -2px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-overlay: 0 16px 40px -8px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.04);
+    --shadow-glow: 0 0 24px -4px hsl(224 80% 62% / 0.2);
   }
 
   /* ═══════════════════════════════════════════
-     MARKETING WEBSITE — Blue brand palette
-     Scoped to .marketing wrapper only
+     MARKETING — Same vibrant brand palette
   ═══════════════════════════════════════════ */
 
   .marketing {
-    --primary:            224 64% 33%;
+    --primary:            224 76% 48%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover:      224 64% 26%;
-    --brand-soft:         214 80% 97%;
-    --brand-border:       224 40% 80%;
-    --primary-icon:       217 72% 53%;
-    --ring:               224 64% 33%;
-    --hero-gradient: linear-gradient(135deg, hsl(224, 64%, 33%), hsl(217, 72%, 40%));
-    --link-color:         224 64% 33%;
-    --input-focus:        224 64% 33%;
+    --primary-hover:      224 76% 40%;
+    --brand-soft:         224 80% 96%;
+    --brand-border:       224 50% 82%;
+    --primary-icon:       224 72% 53%;
+    --ring:               224 76% 48%;
+    --hero-gradient: linear-gradient(135deg, hsl(224, 76%, 48%), hsl(262, 83%, 58%));
+    --link-color:         224 76% 48%;
+    --input-focus:        224 76% 48%;
   }
 
   .dark .marketing {
-    --primary:            217 72% 60%;
+    --primary:            224 80% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover:      217 72% 52%;
-    --brand-soft:         224 30% 15%;
-    --brand-border:       224 35% 28%;
-    --primary-icon:       217 65% 68%;
-    --ring:               217 72% 60%;
-    --hero-gradient: linear-gradient(135deg, hsl(224, 55%, 40%), hsl(217, 65%, 50%));
-    --link-color:         217 65% 65%;
-    --input-focus:        217 72% 60%;
+    --primary-hover:      224 80% 56%;
+    --brand-soft:         224 35% 15%;
+    --brand-border:       224 40% 28%;
+    --primary-icon:       224 70% 72%;
+    --ring:               224 80% 65%;
+    --hero-gradient: linear-gradient(135deg, hsl(224, 60%, 45%), hsl(262, 65%, 55%));
+    --link-color:         224 70% 68%;
+    --input-focus:        224 80% 65%;
   }
 }
 
@@ -242,8 +267,30 @@
     background-image: var(--hero-gradient);
   }
 
+  .text-gradient-warm {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-warm);
+  }
+
+  .text-gradient-cool {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-cool);
+  }
+
   .bg-hero-gradient {
     background-image: var(--hero-gradient);
+  }
+
+  .bg-gradient-warm {
+    background-image: var(--gradient-warm);
+  }
+
+  .bg-gradient-cool {
+    background-image: var(--gradient-cool);
+  }
+
+  .bg-gradient-sunset {
+    background-image: var(--gradient-sunset);
   }
 
   .surface-elevated {
@@ -321,6 +368,39 @@
   .shadow-theme-sm { box-shadow: var(--shadow-sm); }
   .shadow-theme-md { box-shadow: var(--shadow-md); }
   .shadow-theme-lg { box-shadow: var(--shadow-lg); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+
+  /* Colorful icon backgrounds */
+  .icon-bg-blue { background: linear-gradient(135deg, hsl(224 76% 48% / 0.15), hsl(224 76% 48% / 0.05)); }
+  .icon-bg-violet { background: linear-gradient(135deg, hsl(var(--violet) / 0.15), hsl(var(--violet) / 0.05)); }
+  .icon-bg-teal { background: linear-gradient(135deg, hsl(var(--teal) / 0.15), hsl(var(--teal) / 0.05)); }
+  .icon-bg-amber { background: linear-gradient(135deg, hsl(var(--amber) / 0.15), hsl(var(--amber) / 0.05)); }
+  .icon-bg-rose { background: linear-gradient(135deg, hsl(var(--rose) / 0.15), hsl(var(--rose) / 0.05)); }
+  .icon-bg-emerald { background: linear-gradient(135deg, hsl(var(--emerald) / 0.15), hsl(var(--emerald) / 0.05)); }
+
+  .text-violet { color: hsl(var(--violet)); }
+  .text-teal { color: hsl(var(--teal)); }
+  .text-amber { color: hsl(var(--amber)); }
+  .text-rose { color: hsl(var(--rose)); }
+  .text-emerald { color: hsl(var(--emerald)); }
+
+  /* Gradient stat cards */
+  .stat-card-blue {
+    background: linear-gradient(135deg, hsl(224 76% 48% / 0.08), hsl(262 83% 58% / 0.04));
+    border: 1px solid hsl(224 76% 48% / 0.12);
+  }
+  .stat-card-emerald {
+    background: linear-gradient(135deg, hsl(152 60% 38% / 0.08), hsl(172 66% 40% / 0.04));
+    border: 1px solid hsl(152 60% 38% / 0.12);
+  }
+  .stat-card-violet {
+    background: linear-gradient(135deg, hsl(262 83% 58% / 0.08), hsl(224 76% 48% / 0.04));
+    border: 1px solid hsl(262 83% 58% / 0.12);
+  }
+  .stat-card-amber {
+    background: linear-gradient(135deg, hsl(38 92% 50% / 0.08), hsl(350 75% 55% / 0.04));
+    border: 1px solid hsl(38 92% 50% / 0.12);
+  }
 }
 
 /* Hide scrollbar but keep scroll functionality */

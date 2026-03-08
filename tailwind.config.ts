@@ -93,6 +93,26 @@ export default {
           "5": "hsl(var(--chart-5))",
         },
         link: "hsl(var(--link-color))",
+        violet: {
+          DEFAULT: "hsl(var(--violet))",
+          soft: "hsl(var(--violet-soft))",
+        },
+        teal: {
+          DEFAULT: "hsl(var(--teal))",
+          soft: "hsl(var(--teal-soft))",
+        },
+        amber: {
+          DEFAULT: "hsl(var(--amber))",
+          soft: "hsl(var(--amber-soft))",
+        },
+        rose: {
+          DEFAULT: "hsl(var(--rose))",
+          soft: "hsl(var(--rose-soft))",
+        },
+        emerald: {
+          DEFAULT: "hsl(var(--emerald))",
+          soft: "hsl(var(--emerald-soft))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

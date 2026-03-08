@@ -157,34 +157,34 @@ export default function UploadPage() {
       </Card>
 
       {/* Upload Area */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-0">
         <CardContent className="p-0">
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            className={`relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-lg ${
+            className={`relative px-6 py-8 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl ${
               dragOver
-                ? "border-primary bg-primary/5 scale-[1.01]"
-                : "border-border hover:border-primary/50 hover:bg-accent/50"
+                ? "border-primary bg-primary/5 scale-[1.01] shadow-glow"
+                : "border-border hover:border-primary/50 hover:bg-accent/30"
             }`}
             onClick={() => document.getElementById("file-input")?.click()}
           >
-            <div className={`mx-auto mb-3 md:mb-5 h-12 w-12 md:h-14 md:w-14 rounded-2xl flex items-center justify-center transition-colors ${
-              dragOver ? "bg-primary/10" : "bg-muted"
+            <div className={`mx-auto mb-3 md:mb-5 h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center transition-all ${
+              dragOver ? "bg-hero-gradient shadow-lg shadow-primary/25" : "icon-bg-blue"
             }`}>
-              <UploadIcon className={`h-5 w-5 md:h-6 md:w-6 transition-colors ${dragOver ? "text-primary" : "text-muted-foreground"}`} />
+              <UploadIcon className={`h-6 w-6 md:h-7 md:w-7 transition-colors ${dragOver ? "text-white" : "text-primary"}`} />
             </div>
-            <h2 className="text-base md:text-xl font-semibold text-foreground mb-1 md:mb-2">
+            <h2 className="text-base md:text-xl font-bold text-foreground mb-1 md:mb-2">
               {dragOver ? "Drop files to upload" : "Upload Documents"}
             </h2>
             <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 max-w-md mx-auto">
               Drag and drop your invoices, receipts, or bills here.
             </p>
             <div className="flex items-center justify-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-[10px] md:text-xs px-2 py-0.5">PDF</Badge>
-              <Badge variant="secondary" className="text-[10px] md:text-xs px-2 py-0.5">PNG</Badge>
-              <Badge variant="secondary" className="text-[10px] md:text-xs px-2 py-0.5">JPG</Badge>
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2.5 py-0.5 rounded-lg">PDF</Badge>
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2.5 py-0.5 rounded-lg">PNG</Badge>
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-2.5 py-0.5 rounded-lg">JPG</Badge>
               <span className="text-[10px] md:text-xs text-muted-foreground">Up to 20MB</span>
             </div>
             <input
@@ -201,22 +201,22 @@ export default function UploadPage() {
 
       {/* Email Import Address */}
       {importEmailAddress && (
-        <Card>
+        <Card className="border-0 stat-card-violet">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Mail className="h-5 w-5 text-primary" />
+              <div className="h-10 w-10 rounded-xl icon-bg-violet flex items-center justify-center shrink-0">
+                <Mail className="h-5 w-5 text-violet" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold mb-0.5">Import via Email</h3>
+                <h3 className="text-sm font-bold mb-0.5">Import via Email</h3>
                 <p className="text-xs text-muted-foreground mb-2.5">
                   Forward invoices to this address and they'll be automatically processed.
                 </p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs bg-muted px-3 py-2 rounded-md font-mono truncate border border-border/50">
+                  <code className="flex-1 text-xs bg-card/80 backdrop-blur-sm px-3 py-2 rounded-lg font-mono truncate border border-border/40">
                     {importEmailAddress}
                   </code>
-                  <Button variant="outline" size="sm" className="shrink-0 h-8 gap-1.5" onClick={copyEmail}>
+                  <Button variant="outline" size="sm" className="shrink-0 h-8 gap-1.5 rounded-lg" onClick={copyEmail}>
                     {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     {copied ? "Copied" : "Copy"}
                   </Button>

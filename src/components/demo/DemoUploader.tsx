@@ -152,7 +152,7 @@ export function DemoUploader() {
       <section className="pb-16">
         <div className="container max-w-xl">
           {/* Demo Card */}
-          <div className="surface-elevated rounded-2xl border border-border p-6 md:p-8">
+          <div className="glass-card rounded-2xl p-6 md:p-8">
             <div className="text-center mb-5">
               <h2 className="text-lg font-semibold mb-1">
                 Try Charmy — No Account Needed
@@ -169,10 +169,10 @@ export function DemoUploader() {
               onDragLeave={handleDragLeave}
               onClick={() => !isProcessing && fileInputRef.current?.click()}
               className={`
-                relative rounded-xl border-2 border-dashed p-8 md:p-10 text-center cursor-pointer
+                relative rounded-2xl border-2 border-dashed p-8 md:p-10 text-center cursor-pointer
                 transition-all duration-200 group
                 ${isDragging
-                  ? "border-primary bg-brand-soft scale-[1.01]"
+                  ? "border-primary bg-brand-soft scale-[1.01] shadow-glow"
                   : "border-border hover:border-primary/50 hover:bg-brand-soft/30"
                 }
                 ${isProcessing ? "pointer-events-none opacity-80" : ""}
@@ -211,7 +211,7 @@ export function DemoUploader() {
                     exit={{ opacity: 0 }}
                     className="flex flex-col items-center gap-3"
                   >
-                    <div className="h-12 w-12 rounded-2xl bg-accent flex items-center justify-center group-hover:bg-brand-soft transition-colors">
+                    <div className="h-14 w-14 rounded-2xl icon-bg-blue flex items-center justify-center group-hover:bg-hero-gradient transition-all duration-300">
                       <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div>

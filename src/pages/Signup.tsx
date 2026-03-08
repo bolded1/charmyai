@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText } from "lucide-react";
+import { FileText, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
@@ -36,34 +36,34 @@ export default function SignupPage() {
 
   if (emailSent) {
     return (
-      <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+      <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+        <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
         <div className="w-full max-w-sm text-center relative z-10">
           <div className="mb-6">
             {brandLogo ? (
               <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain mx-auto" />
             ) : (
-              <div className="inline-flex items-center gap-2 font-bold text-xl">
-                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center shadow-lg">
+              <div className="inline-flex items-center gap-2.5 font-bold text-xl">
+                <div className="h-11 w-11 rounded-2xl bg-hero-gradient flex items-center justify-center shadow-lg shadow-primary/25">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
-                Charmy
+                <span className="text-gradient text-2xl">Charmy</span>
               </div>
             )}
           </div>
-          <div className="glass-auth rounded-2xl p-6 space-y-3">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <FileText className="h-6 w-6 text-primary" />
+          <div className="glass-auth rounded-2xl p-7 space-y-4">
+            <div className="h-14 w-14 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
+              <Mail className="h-7 w-7 text-primary-foreground" />
             </div>
-            <h2 className="text-lg font-semibold">Check your email</h2>
+            <h2 className="text-lg font-bold">Check your email</h2>
             <p className="text-sm text-muted-foreground">
-              We've sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click the link to verify your account and get started.
+              We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>. Click the link to verify your account and get started.
             </p>
           </div>
-          <p className="text-center text-sm text-muted-foreground mt-4">
+          <p className="text-center text-sm text-muted-foreground mt-5">
             Already verified?{" "}
-            <Link to="/login" className="text-primary font-medium">Sign In</Link>
+            <Link to="/login" className="text-primary font-semibold hover:underline">Sign In</Link>
           </p>
         </div>
       </div>
@@ -71,36 +71,38 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--background)))' }}>
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)' }} />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }} />
+    <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+      <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+      <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(350 75% 55% / 0.3), transparent 70%)' }} />
+
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl mb-2">
+          <Link to="/" className="inline-flex items-center gap-2.5 font-bold text-xl mb-2">
             {brandLogo ? (
               <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain" />
             ) : (
               <>
-                <div className="h-10 w-10 rounded-xl bg-hero-gradient flex items-center justify-center shadow-lg">
+                <div className="h-11 w-11 rounded-2xl bg-hero-gradient flex items-center justify-center shadow-lg shadow-primary/25">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
-                Charmy
+                <span className="text-gradient text-2xl">Charmy</span>
               </>
             )}
           </Link>
-          <p className="text-sm text-muted-foreground">Start your free trial</p>
+          <p className="text-sm text-muted-foreground mt-3">Start your free trial</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-7 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email">Work Email</Label>
-            <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Label htmlFor="email" className="text-xs font-medium">Work Email</Label>
+            <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Label htmlFor="password" className="text-xs font-medium">Password</Label>
+            <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 rounded-xl" />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity shadow-lg shadow-primary/20" disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}
           </Button>
           <p className="text-xs text-center text-muted-foreground">
@@ -108,9 +110,9 @@ export default function SignupPage() {
           </p>
         </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-5">
           Already have an account?{" "}
-          <Link to="/login" className="text-primary font-medium">Sign In</Link>
+          <Link to="/login" className="text-primary font-semibold hover:underline">Sign In</Link>
         </p>
       </div>
     </div>
