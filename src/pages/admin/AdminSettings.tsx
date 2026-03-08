@@ -160,27 +160,18 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
 }
 
 export default function AdminSettingsPage() {
-  // AI settings
-  const [aiEnabled, setAiEnabled, aiSaving] = useAutoSave("ai-enabled", true);
-  const [aiModel, setAiModel, aiModelSaving] = useAutoSave("ai-model", "gemini-flash");
-  const [confidenceThreshold, setConfidenceThreshold, confSaving] = useAutoSave("confidence-threshold", "70");
-  const [autoApprove, setAutoApprove, autoAppSaving] = useAutoSave("auto-approve", false);
-
   // Limits & Upload
   const [maxFileSize, setMaxFileSize, mfsSaving] = useAutoSave("max-file-size", "20");
   const [maxFiles, setMaxFiles, mfSaving] = useAutoSave("max-files", "10");
 
-  // Plan limits
-  const [freeDocsLimit, setFreeDocsLimit, fdlSaving] = useAutoSave("free-docs-limit", "50");
-  const [freeUsersLimit, setFreeUsersLimit, fulSaving] = useAutoSave("free-users-limit", "1");
-
+  // Pro Plan
   const [proDocsLimit, setProDocsLimit, pdlSaving] = useAutoSave("pro-docs-limit", "999999");
   const [proUsersLimit, setProUsersLimit, pulSaving] = useAutoSave("pro-users-limit", "10");
 
   // Pricing
   const [proMonthlyPrice, setProMonthlyPrice, pmpSaving] = useAutoSave("pro-monthly-price", "9.99");
   const [proYearlyPrice, setProYearlyPrice, pypSaving] = useAutoSave("pro-yearly-price", "99");
-  const [trialDays, setTrialDays, tdSaving] = useAutoSave("trial-days", "14");
+  const [trialDays, setTrialDays, tdSaving] = useAutoSave("trial-days", "7");
 
   // Email
   const [fromName, setFromName, fnSaving] = useAutoSave("from-name", "Charmy");
@@ -193,8 +184,7 @@ export default function AdminSettingsPage() {
   const [newSignups, setNewSignups, nsSaving] = useAutoSave("new-signups", true);
   const [debugLog, setDebugLog, dlSaving] = useAutoSave("debug-log", false);
 
-  const anySaving = aiSaving || aiModelSaving || confSaving || autoAppSaving ||
-    mfsSaving || mfSaving || fdlSaving || fulSaving || pdlSaving || pulSaving ||
+  const anySaving = mfsSaving || mfSaving || pdlSaving || pulSaving ||
     pmpSaving || pypSaving || tdSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
     mtSaving || nsSaving || dlSaving;
