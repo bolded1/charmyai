@@ -160,27 +160,18 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
 }
 
 export default function AdminSettingsPage() {
-  // AI settings
-  const [aiEnabled, setAiEnabled, aiSaving] = useAutoSave("ai-enabled", true);
-  const [aiModel, setAiModel, aiModelSaving] = useAutoSave("ai-model", "gemini-flash");
-  const [confidenceThreshold, setConfidenceThreshold, confSaving] = useAutoSave("confidence-threshold", "70");
-  const [autoApprove, setAutoApprove, autoAppSaving] = useAutoSave("auto-approve", false);
-
   // Limits & Upload
   const [maxFileSize, setMaxFileSize, mfsSaving] = useAutoSave("max-file-size", "20");
   const [maxFiles, setMaxFiles, mfSaving] = useAutoSave("max-files", "10");
 
-  // Plan limits
-  const [freeDocsLimit, setFreeDocsLimit, fdlSaving] = useAutoSave("free-docs-limit", "50");
-  const [freeUsersLimit, setFreeUsersLimit, fulSaving] = useAutoSave("free-users-limit", "1");
-
+  // Pro Plan
   const [proDocsLimit, setProDocsLimit, pdlSaving] = useAutoSave("pro-docs-limit", "999999");
   const [proUsersLimit, setProUsersLimit, pulSaving] = useAutoSave("pro-users-limit", "10");
 
   // Pricing
   const [proMonthlyPrice, setProMonthlyPrice, pmpSaving] = useAutoSave("pro-monthly-price", "9.99");
   const [proYearlyPrice, setProYearlyPrice, pypSaving] = useAutoSave("pro-yearly-price", "99");
-  const [trialDays, setTrialDays, tdSaving] = useAutoSave("trial-days", "14");
+  const [trialDays, setTrialDays, tdSaving] = useAutoSave("trial-days", "7");
 
   // Email
   const [fromName, setFromName, fnSaving] = useAutoSave("from-name", "Charmy");
@@ -193,8 +184,7 @@ export default function AdminSettingsPage() {
   const [newSignups, setNewSignups, nsSaving] = useAutoSave("new-signups", true);
   const [debugLog, setDebugLog, dlSaving] = useAutoSave("debug-log", false);
 
-  const anySaving = aiSaving || aiModelSaving || confSaving || autoAppSaving ||
-    mfsSaving || mfSaving || fdlSaving || fulSaving || pdlSaving || pulSaving ||
+  const anySaving = mfsSaving || mfSaving || pdlSaving || pulSaving ||
     pmpSaving || pypSaving || tdSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
     mtSaving || nsSaving || dlSaving;
@@ -264,67 +254,51 @@ export default function AdminSettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Pricing & Trial */}
+            {/* Subscription Pricing */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Pricing & Trial</CardTitle>
+                  <CardTitle className="text-base">Subscription Pricing</CardTitle>
                   <SaveIndicator saving={pmpSaving || pypSaving || tdSaving} />
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Pro Monthly Price (€)</Label>
+                    <Label>Monthly Price (€)</Label>
                     <Input type="number" step="0.01" value={proMonthlyPrice} onChange={(e) => setProMonthlyPrice(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Pro Yearly Price (€)</Label>
+                    <Label>Yearly Price (€)</Label>
                     <Input type="number" step="0.01" value={proYearlyPrice} onChange={(e) => setProYearlyPrice(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Trial Days</Label>
+                    <Label>Trial Period (days)</Label>
                     <Input type="number" value={trialDays} onChange={(e) => setTrialDays(e.target.value)} />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">Note: Changing prices here updates the displayed values. To change actual Stripe pricing, update your Stripe products.</p>
+                <p className="text-xs text-muted-foreground">Note: To change actual billing amounts, update your Stripe products.</p>
               </CardContent>
             </Card>
 
-            {/* Plan Limits */}
+            {/* Pro Plan Limits */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Plan Limits</CardTitle>
-                  <SaveIndicator saving={fdlSaving || fulSaving || pdlSaving || pulSaving} />
+                  <CardTitle className="text-base">Pro Plan Limits</CardTitle>
+                  <SaveIndicator saving={pdlSaving || pulSaving} />
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Free Plan</h4>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Documents per Month</Label>
-                      <Input type="number" value={freeDocsLimit} onChange={(e) => setFreeDocsLimit(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Max Users</Label>
-                      <Input type="number" value={freeUsersLimit} onChange={(e) => setFreeUsersLimit(e.target.value)} />
-                    </div>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Documents per Month</Label>
+                    <Input type="number" value={proDocsLimit} onChange={(e) => setProDocsLimit(e.target.value)} />
+                    <p className="text-xs text-muted-foreground">Set to 999999 for unlimited</p>
                   </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Pro Plan</h4>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Documents per Month</Label>
-                      <Input type="number" value={proDocsLimit} onChange={(e) => setProDocsLimit(e.target.value)} />
-                      <p className="text-xs text-muted-foreground">Set to 999999 for unlimited</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Max Users</Label>
-                      <Input type="number" value={proUsersLimit} onChange={(e) => setProUsersLimit(e.target.value)} />
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Max Team Members</Label>
+                    <Input type="number" value={proUsersLimit} onChange={(e) => setProUsersLimit(e.target.value)} />
                   </div>
                 </div>
               </CardContent>
