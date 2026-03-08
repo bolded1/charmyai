@@ -156,7 +156,7 @@ serve(async (req) => {
         const sub = await stripe.subscriptions.create({
           customer: customerId,
           items: [{ price: "price_1T8XiYBmkvUKJ0fulbvWmmQN" }],
-          coupon: coupon.id,
+          discounts: [{ coupon: coupon.id }],
         });
 
         result = { success: true, message: "Free plan granted", subscriptionId: sub.id };
