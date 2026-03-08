@@ -120,6 +120,8 @@ const App = () => (
             <Route path="cms" element={<AdminCMS />} />
             <Route path="email-templates" element={<AdminEmailTemplates />} />
             <Route path="broadcast" element={<AdminBroadcast />} />
+            <Route path="login-activity" element={<AdminLoginActivity />} />
+            <Route path="gdpr" element={<AdminGDPR />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 

@@ -26,6 +26,8 @@ const navItems = [
   { title: "Page Content", url: "/admin/cms", icon: PenLine },
   { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
   { title: "Broadcast", url: "/admin/broadcast", icon: Megaphone },
+  { title: "Login Activity", url: "/admin/login-activity", icon: KeyRound },
+  { title: "GDPR / Data", url: "/admin/gdpr", icon: UserX },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
 ];
 

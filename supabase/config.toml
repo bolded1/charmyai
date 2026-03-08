@@ -21,3 +21,7 @@ project_id = "vhaursnvaadhxxwefxez"
     verify_jwt = false
   [functions.admin-storage-stats]
     verify_jwt = false
+  [functions.admin-login-activity]
+    verify_jwt = false
+  [functions.admin-gdpr]
+    verify_jwt = false
