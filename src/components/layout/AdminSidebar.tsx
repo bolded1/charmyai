@@ -149,7 +149,7 @@ export function AdminSidebar() {
             <Collapsible key={group.label} defaultOpen={isGroupActive} className="group/collapsible">
               <SidebarGroup className="py-0.5">
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="cursor-pointer hover:text-foreground transition-colors flex items-center justify-between pr-2 text-[13.5px] font-semibold tracking-normal text-foreground mb-0.5">
+                  <SidebarGroupLabel className="cursor-pointer hover:text-foreground transition-colors flex items-center justify-between pr-2 text-[11px] font-semibold tracking-normal text-foreground mb-0.5">
                     <span>{group.label}</span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarGroupLabel>
