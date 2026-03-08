@@ -161,7 +161,7 @@ export default function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="h-[100dvh] flex w-full bg-background overflow-hidden">
         {/* Desktop sidebar - hidden on mobile */}
         <div className="hidden md:block">
           <DashboardSidebar />
