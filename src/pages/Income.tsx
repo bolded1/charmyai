@@ -460,20 +460,30 @@ export default function IncomePage() {
               No income records found for the selected filters.
             </div>
           ) : isMobile ? (
-            <div className="p-2 space-y-2">
-              {filtered.map((doc) => (
-                <MobileRecordCard
-                  key={doc.id}
-                  title={doc.customer_name}
-                  subtitle={doc.invoice_number || undefined}
-                  fields={[
-                    { label: "Date", value: doc.invoice_date },
-                    { label: "Currency", value: doc.currency },
-                    { label: "Net", value: Number(doc.net_amount).toFixed(2) },
-                    { label: "Total", value: Number(doc.total_amount).toFixed(2) },
-                  ]}
-                  onClick={() => openEdit(doc)}
-                />
+            <div className="p-2 space-y-1">
+              {groupedByMonth.map((group) => (
+                <div key={group.key}>
+                  <div className="flex items-center justify-between px-3 py-2.5 bg-accent/40 rounded-lg mb-1 mt-1 first:mt-0">
+                    <span className="text-xs font-bold text-foreground">{group.label}</span>
+                    <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {group.records.map((doc) => (
+                    <MobileRecordCard
+                      key={doc.id}
+                      title={doc.customer_name}
+                      subtitle={doc.invoice_number || undefined}
+                      fields={[
+                        { label: "Date", value: doc.invoice_date },
+                        { label: "Currency", value: doc.currency },
+                        { label: "Net", value: Number(doc.net_amount).toFixed(2) },
+                        { label: "Total", value: Number(doc.total_amount).toFixed(2) },
+                      ]}
+                      onClick={() => openEdit(doc)}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
           ) : (
@@ -492,22 +502,40 @@ export default function IncomePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((doc) => (
-                    <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
-                      <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
-                      <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
-                      <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
-                      <td className="p-4 text-sm font-medium text-right tabular-nums">{Number(doc.total_amount).toFixed(2)}</td>
-                      <td className="p-4">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEdit(doc); }}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
-                    </tr>
+                  {groupedByMonth.map((group) => (
+                    <Fragment key={group.key}>
+                      <tr className="bg-accent/30">
+                        <td colSpan={8} className="px-4 py-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-foreground">{group.label}</span>
+                            <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                              {group.records.length} records · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                      {group.records.map((doc) => (
+                        <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer" onClick={() => openEdit(doc)}>
+                          <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
+                          <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
+                          <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
+                          <td className="p-4 text-sm font-medium text-right tabular-nums">{Number(doc.total_amount).toFixed(2)}</td>
+                          <td className="p-4">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEdit(doc); }}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </Fragment>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          )
                 </tbody>
               </table>
             </div>
