@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,8 +7,10 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Brain, Zap, FileText, ImageIcon, TrendingUp, AlertTriangle, CheckCircle2, Settings2 } from "lucide-react";
+import { Brain, Zap, FileText, ImageIcon, TrendingUp, AlertTriangle, CheckCircle2, Settings2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const modelOptions = [
   { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash", description: "Fast & balanced – best for most workloads", speed: "Fast", quality: "High" },
@@ -25,22 +27,97 @@ const usageStats = {
   needsReview: 22,
 };
 
-export default function AdminAISettings() {
-  const [pdfModel, setPdfModel] = useState("gemini-2.5-flash");
-  const [imageModel, setImageModel] = useState("gpt-5-mini");
-  const [confidenceThreshold, setConfidenceThreshold] = useState([85]);
-  const [autoCategorizationEnabled, setAutoCategorizationEnabled] = useState(true);
-  const [autoCategorizeOnUpload, setAutoCategorizeOnUpload] = useState(true);
-  const [duplicateDetection, setDuplicateDetection] = useState(true);
-  const [autoApproveHighConfidence, setAutoApproveHighConfidence] = useState(false);
-  const [saving, setSaving] = useState(false);
+interface AISettings {
+  pdfModel: string;
+  imageModel: string;
+  confidenceThreshold: number;
+  autoCategorizationEnabled: boolean;
+  autoCategorizeOnUpload: boolean;
+  duplicateDetection: boolean;
+  autoApproveHighConfidence: boolean;
+}
 
-  const handleSave = async () => {
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    toast.success("AI settings saved successfully");
+const defaultSettings: AISettings = {
+  pdfModel: "gemini-2.5-flash",
+  imageModel: "gpt-5-mini",
+  confidenceThreshold: 85,
+  autoCategorizationEnabled: true,
+  autoCategorizeOnUpload: true,
+  duplicateDetection: true,
+  autoApproveHighConfidence: false,
+};
+
+export default function AdminAISettings() {
+  const queryClient = useQueryClient();
+  const [localSettings, setLocalSettings] = useState<AISettings>(defaultSettings);
+
+  // Fetch settings from demo_settings table
+  const { data: savedSettings, isLoading } = useQuery({
+    queryKey: ["ai-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("demo_settings")
+        .select("value")
+        .eq("key", "ai_settings")
+        .single();
+      if (error && error.code !== "PGRST116") throw error;
+      return data?.value as AISettings | null;
+    },
+  });
+
+  // Initialize local state from DB
+  useEffect(() => {
+    if (savedSettings) {
+      setLocalSettings({ ...defaultSettings, ...savedSettings });
+    }
+  }, [savedSettings]);
+
+  // Save mutation
+  const saveMutation = useMutation({
+    mutationFn: async (settings: AISettings) => {
+      const { data: existing } = await supabase
+        .from("demo_settings")
+        .select("id")
+        .eq("key", "ai_settings")
+        .single();
+
+      if (existing) {
+        const { error } = await supabase
+          .from("demo_settings")
+          .update({ value: settings as any, updated_at: new Date().toISOString() })
+          .eq("key", "ai_settings");
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("demo_settings")
+          .insert({ key: "ai_settings", value: settings as any });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ai-settings"] });
+      toast.success("AI settings saved successfully");
+    },
+    onError: (err: any) => {
+      toast.error("Failed to save settings: " + (err.message || "Unknown error"));
+    },
+  });
+
+  const handleSave = () => {
+    saveMutation.mutate(localSettings);
   };
+
+  const updateSetting = <K extends keyof AISettings>(key: K, value: AISettings[K]) => {
+    setLocalSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -53,8 +130,8 @@ export default function AdminAISettings() {
           </h2>
           <p className="text-muted-foreground mt-1">Configure document extraction models, thresholds, and automation rules.</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="rounded-xl">
-          {saving ? "Saving…" : "Save Changes"}
+        <Button onClick={handleSave} disabled={saveMutation.isPending} className="rounded-xl">
+          {saveMutation.isPending ? "Saving…" : "Save Changes"}
         </Button>
       </div>
 
@@ -96,7 +173,7 @@ export default function AdminAISettings() {
                 <FileText className="h-4 w-4 text-red-500" />
                 PDF Documents
               </Label>
-              <Select value={pdfModel} onValueChange={setPdfModel}>
+              <Select value={localSettings.pdfModel} onValueChange={(v) => updateSetting("pdfModel", v)}>
                 <SelectTrigger className="rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
@@ -112,7 +189,7 @@ export default function AdminAISettings() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {modelOptions.find((m) => m.value === pdfModel)?.description}
+                {modelOptions.find((m) => m.value === localSettings.pdfModel)?.description}
               </p>
             </div>
 
@@ -122,7 +199,7 @@ export default function AdminAISettings() {
                 <ImageIcon className="h-4 w-4 text-blue-500" />
                 Images (JPEG, PNG)
               </Label>
-              <Select value={imageModel} onValueChange={setImageModel}>
+              <Select value={localSettings.imageModel} onValueChange={(v) => updateSetting("imageModel", v)}>
                 <SelectTrigger className="rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
@@ -138,7 +215,7 @@ export default function AdminAISettings() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {modelOptions.find((m) => m.value === imageModel)?.description}
+                {modelOptions.find((m) => m.value === localSettings.imageModel)?.description}
               </p>
             </div>
           </div>
@@ -158,18 +235,18 @@ export default function AdminAISettings() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold">Confidence Threshold</Label>
-              <Badge variant="outline" className="text-sm font-mono">{confidenceThreshold[0]}%</Badge>
+              <Badge variant="outline" className="text-sm font-mono">{localSettings.confidenceThreshold}%</Badge>
             </div>
             <Slider
-              value={confidenceThreshold}
-              onValueChange={setConfidenceThreshold}
+              value={[localSettings.confidenceThreshold]}
+              onValueChange={(v) => updateSetting("confidenceThreshold", v[0])}
               min={50}
               max={99}
               step={1}
               className="w-full"
             />
             <p className="text-xs text-muted-foreground">
-              Documents with confidence below {confidenceThreshold[0]}% will be flagged for manual review.
+              Documents with confidence below {localSettings.confidenceThreshold}% will be flagged for manual review.
             </p>
           </div>
 
@@ -182,7 +259,10 @@ export default function AdminAISettings() {
                 Automatically approve documents scoring above the threshold.
               </p>
             </div>
-            <Switch checked={autoApproveHighConfidence} onCheckedChange={setAutoApproveHighConfidence} />
+            <Switch
+              checked={localSettings.autoApproveHighConfidence}
+              onCheckedChange={(v) => updateSetting("autoApproveHighConfidence", v)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -204,7 +284,10 @@ export default function AdminAISettings() {
                 Automatically assign categories based on extraction results and rules.
               </p>
             </div>
-            <Switch checked={autoCategorizationEnabled} onCheckedChange={setAutoCategorizationEnabled} />
+            <Switch
+              checked={localSettings.autoCategorizationEnabled}
+              onCheckedChange={(v) => updateSetting("autoCategorizationEnabled", v)}
+            />
           </div>
 
           <Separator />
@@ -216,7 +299,10 @@ export default function AdminAISettings() {
                 Apply category rules immediately when a document is uploaded.
               </p>
             </div>
-            <Switch checked={autoCategorizeOnUpload} onCheckedChange={setAutoCategorizeOnUpload} />
+            <Switch
+              checked={localSettings.autoCategorizeOnUpload}
+              onCheckedChange={(v) => updateSetting("autoCategorizeOnUpload", v)}
+            />
           </div>
 
           <Separator />
@@ -228,7 +314,10 @@ export default function AdminAISettings() {
                 Flag potential duplicate documents based on invoice number, date, and amount.
               </p>
             </div>
-            <Switch checked={duplicateDetection} onCheckedChange={setDuplicateDetection} />
+            <Switch
+              checked={localSettings.duplicateDetection}
+              onCheckedChange={(v) => updateSetting("duplicateDetection", v)}
+            />
           </div>
         </CardContent>
       </Card>
