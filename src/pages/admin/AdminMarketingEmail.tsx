@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Send, Eye, Loader2, Bold, Italic, Underline, Link, List, ListOrdered, AlignLeft, AlignCenter, Image, Type, Heading1, Heading2 } from "lucide-react";
+import { Send, Eye, Loader2, Bold, Italic, Underline, Link, List, ListOrdered, AlignLeft, AlignCenter, Image, Type, Heading1, Heading2, Upload } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
