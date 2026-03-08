@@ -247,7 +247,7 @@ export default function UploadPage() {
               <UploadIcon className={`h-4.5 w-4.5 md:h-5 md:w-5 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
             <h2 className="text-sm md:text-base font-bold text-foreground mb-0.5">
-              {dragOver ? "Drop files to upload" : "Upload Documents"}
+              {dragOver ? "Drop files to upload" : "Upload Expense Documents"}
             </h2>
             <p className="text-[11px] text-muted-foreground mb-2.5 max-w-sm mx-auto">
               Drag and drop your invoices, receipts, or bills here.
