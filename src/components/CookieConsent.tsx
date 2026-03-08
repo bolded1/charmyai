@@ -46,7 +46,7 @@ export function CookieConsent() {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50"
           >
-          <div className="glass-card-elevated rounded-2xl p-5 shadow-xl border border-border/50">
+          <div className="bg-card rounded-2xl p-5 shadow-xl border border-border">
             <div className="flex items-start gap-3">
               <div className="h-10 w-10 rounded-xl icon-bg-amber flex items-center justify-center shrink-0">
                 <Cookie className="h-5 w-5 text-amber" />
