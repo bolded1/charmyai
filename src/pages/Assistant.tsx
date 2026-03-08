@@ -186,7 +186,7 @@ export default function Assistant() {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 min-h-0 px-4" ref={scrollRef}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-16 space-y-6">
             <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
