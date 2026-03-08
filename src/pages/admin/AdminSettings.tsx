@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState, useRef, useCallback, useEffect } from "react";
-import { usePlatformLimits } from "@/hooks/usePlatformLimits";
+
 import { Upload, X, Sun, Moon, Check } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
