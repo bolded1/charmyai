@@ -172,7 +172,7 @@ export default function AdminDocumentsPage() {
                         </Badge>
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">
-                        {doc.confidence_score ? `${Math.round(doc.confidence_score * 100)}%` : "—"}
+                        {doc.confidence_score ? `${Math.round(doc.confidence_score)}%` : "—"}
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</td>
                       <td className="p-3">
