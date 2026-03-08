@@ -152,7 +152,7 @@ export function DemoUploader() {
       <section className="pb-16">
         <div className="container max-w-xl">
           {/* Demo Card */}
-          <div className="surface-elevated rounded-2xl border border-border p-6 md:p-8">
+          <div className="glass-card rounded-2xl p-6 md:p-8">
             <div className="text-center mb-5">
               <h2 className="text-lg font-semibold mb-1">
                 Try Charmy — No Account Needed
