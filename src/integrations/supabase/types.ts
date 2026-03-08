@@ -465,6 +465,42 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          key: string
+          name: string
+          segment: string
+          updated_at: string
+          user_ids: Json | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key: string
+          name: string
+          segment?: string
+          updated_at?: string
+          user_ids?: Json | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key?: string
+          name?: string
+          segment?: string
+          updated_at?: string
+          user_ids?: Json | null
+        }
+        Relationships: []
+      }
       income_records: {
         Row: {
           category: string | null
@@ -520,6 +556,44 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_run_history: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          job_id: string
+          metadata: Json | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_id: string
+          metadata?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_id?: string
+          metadata?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_run_history_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_jobs"
             referencedColumns: ["id"]
           },
         ]
@@ -665,6 +739,45 @@ export type Database = {
           timezone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      scheduled_jobs: {
+        Row: {
+          created_at: string
+          cron_expression: string
+          description: string | null
+          enabled: boolean
+          function_name: string
+          id: string
+          last_run_at: string | null
+          last_status: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cron_expression?: string
+          description?: string | null
+          enabled?: boolean
+          function_name: string
+          id?: string
+          last_run_at?: string | null
+          last_status?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cron_expression?: string
+          description?: string | null
+          enabled?: boolean
+          function_name?: string
+          id?: string
+          last_run_at?: string | null
+          last_status?: string | null
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }

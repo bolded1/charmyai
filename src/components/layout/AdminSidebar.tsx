@@ -7,7 +7,7 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
-  KeyRound, UserX, MessageSquareHeart,
+  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock,
 } from "lucide-react";
 
 const navItems = [
@@ -22,6 +22,9 @@ const navItems = [
   { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
   { title: "Audit Logs", url: "/admin/audit", icon: ScrollText },
   { title: "System Settings", url: "/admin/settings", icon: Cog },
+  { title: "Feature Flags", url: "/admin/feature-flags", icon: ToggleLeft },
+  { title: "System Health", url: "/admin/system-health", icon: HeartPulse },
+  { title: "Scheduled Jobs", url: "/admin/scheduled-jobs", icon: Clock },
   { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },
   { title: "Page Content", url: "/admin/cms", icon: PenLine },
   { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
