@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import LegalPageEditor from "@/components/admin/LegalPageEditor";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Plus, Trash2, GripVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -17,6 +18,8 @@ import {
   privacyDefaults,
   termsDefaults,
   acceptableUseDefaults,
+  extractLegalSections,
+  type LegalSection,
 } from "@/lib/cms-defaults";
 
 type PageConfig = {
@@ -144,48 +147,12 @@ const pages: PageConfig[] = [
       { key: "office", label: "Office Location", type: "input" },
     ],
   },
-  {
-    slug: "privacy",
-    label: "Privacy Policy",
-    defaults: privacyDefaults,
-    fields: [
-      { key: "title", label: "Page Title", type: "input" },
-      { key: "lastUpdated", label: "Last Updated Text", type: "input" },
-      { key: "intro", label: "Introduction", type: "textarea" },
-      ...Array.from({ length: 14 }, (_, i) => [
-        { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
-        { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
-      ]).flat(),
-    ],
-  },
-  {
-    slug: "terms",
-    label: "Terms of Service",
-    defaults: termsDefaults,
-    fields: [
-      { key: "title", label: "Page Title", type: "input" },
-      { key: "lastUpdated", label: "Last Updated Text", type: "input" },
-      { key: "intro", label: "Introduction", type: "textarea" },
-      ...Array.from({ length: 12 }, (_, i) => [
-        { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
-        { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
-      ]).flat(),
-    ],
-  },
-  {
-    slug: "acceptable-use",
-    label: "Acceptable Use",
-    defaults: acceptableUseDefaults,
-    fields: [
-      { key: "title", label: "Page Title", type: "input" },
-      { key: "lastUpdated", label: "Last Updated Text", type: "input" },
-      { key: "intro", label: "Introduction", type: "textarea" },
-      ...Array.from({ length: 10 }, (_, i) => [
-        { key: `section${i + 1}Title`, label: `Section ${i + 1} Title`, type: "input" as const },
-        { key: `section${i + 1}Body`, label: `Section ${i + 1} Body`, type: "textarea" as const },
-      ]).flat(),
-    ],
-  },
+];
+
+const legalPages = [
+  { slug: "privacy", label: "Privacy Policy", defaults: privacyDefaults },
+  { slug: "terms", label: "Terms of Service", defaults: termsDefaults },
+  { slug: "acceptable-use", label: "Acceptable Use", defaults: acceptableUseDefaults },
 ];
 
 function PageEditor({ config }: { config: PageConfig }) {
@@ -295,11 +262,23 @@ export default function AdminCMS() {
               {p.label}
             </TabsTrigger>
           ))}
+          {legalPages.map((p) => (
+            <TabsTrigger key={p.slug} value={p.slug}>
+              {p.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         {pages.map((p) => (
           <TabsContent key={p.slug} value={p.slug}>
             <div className="surface-elevated rounded-xl border p-6 mt-4">
               <PageEditor config={p} />
+            </div>
+          </TabsContent>
+        ))}
+        {legalPages.map((p) => (
+          <TabsContent key={p.slug} value={p.slug}>
+            <div className="surface-elevated rounded-xl border p-6 mt-4">
+              <LegalPageEditor config={p} />
             </div>
           </TabsContent>
         ))}

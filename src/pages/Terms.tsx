@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { usePageContent } from "@/hooks/usePageContent";
-import { termsDefaults } from "@/lib/cms-defaults";
+import { termsDefaults, extractLegalSections } from "@/lib/cms-defaults";
+import { useMemo } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -14,10 +15,16 @@ const fadeUp = {
 export default function Terms() {
   const { content: c } = usePageContent("terms", termsDefaults);
 
-  const sections = Array.from({ length: 12 }, (_, i) => ({
-    title: c[`section${i + 1}Title`],
-    body: c[`section${i + 1}Body`],
-  })).filter((s) => s.title);
+  const sections = useMemo(() => {
+    const raw = c as Record<string, any>;
+    if (raw.sections) {
+      try {
+        const parsed = JSON.parse(raw.sections as string);
+        if (Array.isArray(parsed)) return parsed.filter((s: any) => s.title);
+      } catch {}
+    }
+    return extractLegalSections(c as Record<string, string>);
+  }, [c]);
 
   return (
     <div className="py-16 md:py-24">
@@ -32,7 +39,7 @@ export default function Terms() {
         </motion.div>
 
         <div className="space-y-8">
-          {sections.map((section, i) => (
+          {sections.map((section: any, i: number) => (
             <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}>
               <h2 className="text-lg font-bold mb-2">{section.title}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{section.body}</p>
