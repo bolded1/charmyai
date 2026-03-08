@@ -122,9 +122,13 @@ export default function OnboardingPage() {
         toast.error("Company name is required.");
         return;
       }
+      if (!currency) {
+        toast.error("Default currency is required.");
+        return;
+      }
       if (org) {
         try {
-          await updateOrg.mutateAsync({ id: org.id, name: orgName.trim() });
+          await updateOrg.mutateAsync({ id: org.id, name: orgName.trim(), default_currency: currency });
         } catch {
           toast.error("Failed to update organization.");
           return;
