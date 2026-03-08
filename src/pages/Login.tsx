@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { logAuditEvent } from "@/lib/audit-log-client";
 
 export default function LoginPage() {
   const brandLogo = useBrandLogo();
@@ -23,12 +24,28 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
+
     if (error) {
+      await logAuditEvent({
+        action: "user_login_failed",
+        userEmail: email,
+        details: error.message,
+        metadata: { source: "login_page" },
+      });
       toast.error(error.message);
       return;
     }
+
+    await logAuditEvent({
+      action: "user_login",
+      userId: data.user?.id,
+      userEmail: data.user?.email ?? email,
+      details: "Password login succeeded",
+      metadata: { source: "login_page" },
+    });
+
     toast.success("Welcome back!");
     navigate("/app");
   };
@@ -101,6 +118,14 @@ export default function LoginPage() {
               });
               setForgotLoading(false);
               if (error) { toast.error(error.message); return; }
+
+              await logAuditEvent({
+                action: "password_reset",
+                userEmail: forgotEmail,
+                details: "Password reset email sent",
+                metadata: { source: "forgot_password_dialog" },
+              });
+
               setForgotSent(true);
             }} className="space-y-4">
               <div className="space-y-2">
@@ -117,3 +142,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
