@@ -6,7 +6,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Upload, FileText, Receipt, TrendingUp,
-  Download, UsersRound, Settings, LogOut,
+  Download, UsersRound, Settings, LogOut, HelpCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
@@ -27,6 +27,7 @@ const recordsItems = [
 const systemItems = [
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
+  { title: "Help", url: "/app/help", icon: HelpCircle },
 ];
 
 export function DashboardSidebar() {
