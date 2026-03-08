@@ -59,6 +59,36 @@ export default function ExpensesPage() {
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const withDocs = filtered.filter((e) => e.document_id);
+    if (selectedIds.size === withDocs.length && withDocs.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(withDocs.map((e) => e.id)));
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    const docIds = filtered
+      .filter((e) => selectedIds.has(e.id) && e.document_id)
+      .map((e) => e.document_id as string);
+    if (docIds.length === 0) {
+      return;
+    }
+    await downloadAsZip(docIds, "expenses-invoices");
+    setSelectedIds(new Set());
+  };
+
+  const selectableCount = filtered.filter((e) => e.document_id).length;
+
   // Load file preview when opening dialog
   useEffect(() => {
     if (!selectedExpense?.document_id) {
