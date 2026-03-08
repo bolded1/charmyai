@@ -511,7 +511,7 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Bulk Download Bar */}
+      {/* Bulk Action Bar */}
       <AnimatePresence>
         {selectedIds.size > 0 && (
           <motion.div
@@ -525,12 +525,35 @@ export default function ExpensesPage() {
               {downloading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Archive className="h-4 w-4 mr-1" />}
               Download ZIP
             </Button>
+            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
+            </Button>
             <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
               <X className="h-4 w-4" />
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} expense{selectedIds.size > 1 ? "s" : ""}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the selected expense records. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} disabled={bulkDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={!!selectedId} onOpenChange={() => closeEdit()}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
