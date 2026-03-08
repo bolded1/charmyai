@@ -38,6 +38,21 @@ export default function CategoriesPage() {
   const createRule = useCreateAutoCategoryRule();
   const deleteRule = useDeleteAutoCategoryRule();
 
+  // Fetch expense records for analytics
+  const { data: expenses = [], isLoading: expensesLoading } = useQuery({
+    queryKey: ["expense-records-for-analytics", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("expense_records")
+        .select("category, currency, total_amount, invoice_date")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
   const handleCreate = async () => {
     if (!newName.trim()) return;
     try {
