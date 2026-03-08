@@ -11,6 +11,7 @@ export interface Organization {
   logo_dark: string | null;
   app_icon: string | null;
   primary_color: string | null;
+  default_currency: string;
   created_at: string;
   updated_at: string;
 }
@@ -59,7 +60,7 @@ export function useUpdateOrganization() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (updates: { id: string; name?: string; logo_light?: string | null; logo_dark?: string | null; app_icon?: string | null; primary_color?: string | null }) => {
+    mutationFn: async (updates: { id: string; name?: string; logo_light?: string | null; logo_dark?: string | null; app_icon?: string | null; primary_color?: string | null; default_currency?: string }) => {
       const { id, ...fields } = updates;
       const { data, error } = await supabase
         .from("organizations")

@@ -18,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
+import { useOrganization } from "@/hooks/useOrganization";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,6 +59,8 @@ export default function ExpensesPage() {
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
   const { downloadAsZip, downloading } = useBulkDownload();
+  const { data: org } = useOrganization();
+  const defaultCurrency = org?.default_currency || "EUR";
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
@@ -288,9 +291,13 @@ export default function ExpensesPage() {
       map.set(c, { total: prev.total + Number(e.total_amount || 0), count: prev.count + 1 });
     });
     return Array.from(map.entries())
-      .sort((a, b) => b[1].total - a[1].total)
+      .sort((a, b) => {
+        if (a[0] === defaultCurrency) return -1;
+        if (b[0] === defaultCurrency) return 1;
+        return b[1].total - a[1].total;
+      })
       .map(([currency, data]) => ({ currency, ...data }));
-  }, [filtered]);
+  }, [filtered, defaultCurrency]);
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 

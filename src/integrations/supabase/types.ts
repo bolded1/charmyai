@@ -792,6 +792,7 @@ export type Database = {
         Row: {
           app_icon: string | null
           created_at: string
+          default_currency: string
           id: string
           import_email_token: string
           logo_dark: string | null
@@ -804,6 +805,7 @@ export type Database = {
         Insert: {
           app_icon?: string | null
           created_at?: string
+          default_currency?: string
           id?: string
           import_email_token?: string
           logo_dark?: string | null
@@ -816,6 +818,7 @@ export type Database = {
         Update: {
           app_icon?: string | null
           created_at?: string
+          default_currency?: string
           id?: string
           import_email_token?: string
           logo_dark?: string | null
