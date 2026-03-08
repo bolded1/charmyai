@@ -152,10 +152,14 @@ export function DemoUploader() {
       <section className="pb-16">
         <div className="container max-w-xl">
           {/* Demo Card */}
-          <div className="glass-card rounded-2xl p-6 md:p-8">
-            <div className="text-center mb-5">
+          <div className="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden">
+            {/* Decorative gradient blobs */}
+            <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.8), transparent 70%)' }} />
+            <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--violet) / 0.6), transparent 70%)' }} />
+
+            <div className="text-center mb-5 relative z-10">
               <h2 className="text-lg font-semibold mb-1">
-                Try Charmy — No Account Needed
+                Try Charmy — <span className="text-gradient">No Account Needed</span>
               </h2>
               <p className="text-sm text-muted-foreground">
                 Upload an invoice or receipt and see how Charmy extracts financial data instantly.
@@ -170,10 +174,10 @@ export function DemoUploader() {
               onClick={() => !isProcessing && fileInputRef.current?.click()}
               className={`
                 relative rounded-2xl border-2 border-dashed p-8 md:p-10 text-center cursor-pointer
-                transition-all duration-200 group
+                transition-all duration-300 group z-10
                 ${isDragging
-                  ? "border-primary bg-primary/5 scale-[1.01] shadow-glow"
-                  : "border-border hover:border-primary/50 hover:bg-accent/30"
+                  ? "border-primary bg-primary/8 scale-[1.02] shadow-glow"
+                  : "border-primary/30 hover:border-primary/60 hover:bg-primary/5 hover:shadow-md"
                 }
                 ${isProcessing ? "pointer-events-none opacity-80" : ""}
               `}
@@ -211,8 +215,8 @@ export function DemoUploader() {
                     exit={{ opacity: 0 }}
                     className="flex flex-col items-center gap-3"
                   >
-                    <div className="h-14 w-14 rounded-2xl icon-bg-blue flex items-center justify-center group-hover:bg-hero-gradient transition-all duration-300">
-                      <Upload className="h-6 w-6 text-muted-foreground group-hover:text-white transition-colors" />
+                    <div className="h-14 w-14 rounded-2xl bg-hero-gradient flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-110 transition-all duration-300">
+                      <Upload className="h-6 w-6 text-primary-foreground transition-colors" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">
