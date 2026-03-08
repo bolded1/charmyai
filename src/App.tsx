@@ -58,6 +58,7 @@ import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags";
 import AdminSystemHealth from "./pages/admin/AdminSystemHealth";
 import AdminScheduledJobs from "./pages/admin/AdminScheduledJobs";
 import AdminAISettings from "./pages/admin/AdminAISettings";
+import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -136,6 +137,7 @@ const App = () => (
             <Route path="login-activity" element={<AdminLoginActivity />} />
             <Route path="gdpr" element={<AdminGDPR />} />
             <Route path="feedback" element={<AdminFeedback />} />
+            <Route path="marketing-email" element={<AdminMarketingEmail />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 

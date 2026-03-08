@@ -9,7 +9,7 @@ import { ChevronRight } from "lucide-react";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
-  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain,
+  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain, MailPlus,
 } from "lucide-react";
 
 const navGroups = [
@@ -52,6 +52,7 @@ const navGroups = [
       { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
       { title: "Broadcast", url: "/admin/broadcast", icon: Megaphone },
       { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },
+      { title: "Marketing Email", url: "/admin/marketing-email", icon: MailPlus },
     ],
   },
   {
