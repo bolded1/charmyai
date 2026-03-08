@@ -69,7 +69,7 @@ export function DashboardSidebar() {
   );
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="none">
       <SidebarHeader className="px-3 py-4">
         <Link to="/app" className="flex items-center gap-2.5">
           {brandLogo ? (
