@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const { user } = useAuth();
-  const subscription = user ? useSubscription() : null;
+  const subscription = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const navigate = useNavigate();
 
