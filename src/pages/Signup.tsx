@@ -66,6 +66,10 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (systemSettings && !systemSettings.newSignups) {
+      toast.error("New registrations are currently disabled.");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
