@@ -115,6 +115,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </CookieConsentProvider>
     </ImpersonationProvider>
   </QueryClientProvider>
 );
