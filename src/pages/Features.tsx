@@ -336,7 +336,7 @@ export default function FeaturesPage() {
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2}
             className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button size="lg" asChild className="text-base px-8">
-              <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/signup">Start 7-Day Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="text-base px-8">
               <Link to="/#demo">Try the Demo</Link>
