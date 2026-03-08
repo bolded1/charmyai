@@ -65,7 +65,7 @@ export function MobileRecordCard({ title, subtitle, fields, badge, onClick, acti
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">{title}</p>
+            <p className="text-sm font-medium break-words">{title}</p>
             {subtitle && <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
