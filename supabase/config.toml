@@ -17,3 +17,5 @@ project_id = "vhaursnvaadhxxwefxez"
     verify_jwt = false
   [functions.admin-broadcast]
     verify_jwt = false
+  [functions.admin-revenue-stats]
+    verify_jwt = false
