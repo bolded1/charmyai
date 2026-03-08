@@ -56,6 +56,8 @@ export default function DashboardLayout() {
   const brandLogo = useBrandLogo();
   const { impersonating, stopImpersonating } = useImpersonation();
   const subscription = useSubscription();
+  const { data: systemSettings } = useSystemSettings();
+  const isAdmin = useIsAdmin();
 
   // Apply org accent color
   useEffect(() => {
@@ -74,6 +76,23 @@ export default function DashboardLayout() {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Maintenance mode: block non-admin users
+  if (systemSettings?.maintenance && isAdmin === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="text-center max-w-md space-y-4">
+          <div className="h-16 w-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto">
+            <AlertTriangle className="h-8 w-8 text-amber-600" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">Under Maintenance</h1>
+          <p className="text-sm text-muted-foreground">
+            The platform is currently undergoing maintenance. Please check back soon.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Subscription gate: if not subscribed and not on billing/settings page, redirect
