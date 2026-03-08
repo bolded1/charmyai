@@ -136,6 +136,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 14px;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
 
   h1 {
