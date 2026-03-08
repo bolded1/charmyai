@@ -26,6 +26,8 @@ interface UploadingFile {
 export default function UploadPage() {
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [scanPressed, setScanPressed] = useState(false);
+  const [uploadPressed, setUploadPressed] = useState(false);
   const [copied, setCopied] = useState(false);
   const uploadMutation = useUploadDocument();
   const { user } = useAuth();
