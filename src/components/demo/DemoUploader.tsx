@@ -172,8 +172,8 @@ export function DemoUploader() {
                 relative rounded-2xl border-2 border-dashed p-8 md:p-10 text-center cursor-pointer
                 transition-all duration-200 group
                 ${isDragging
-                  ? "border-primary bg-brand-soft scale-[1.01] shadow-glow"
-                  : "border-border hover:border-primary/50 hover:bg-brand-soft/30"
+                  ? "border-primary bg-primary/5 scale-[1.01] shadow-glow"
+                  : "border-border hover:border-primary/50 hover:bg-accent/30"
                 }
                 ${isProcessing ? "pointer-events-none opacity-80" : ""}
               `}
