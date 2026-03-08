@@ -25,12 +25,10 @@ export function useExpenseCategories() {
 
 export function useCreateExpenseCategory() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (name: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-
       const { data, error } = await supabase
         .from("expense_categories")
         .insert({ user_id: user.id, name: name.trim() })
@@ -46,15 +44,36 @@ export function useCreateExpenseCategory() {
       queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
       toast.success("Category created");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useUpdateExpenseCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { data, error } = await supabase
+        .from("expense_categories")
+        .update({ name: name.trim() })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) {
+        if (error.code === "23505") throw new Error("Category already exists");
+        throw error;
+      }
+      return data as ExpenseCategory;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
+      toast.success("Category updated");
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 }
 
 export function useDeleteExpenseCategory() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -67,8 +86,6 @@ export function useDeleteExpenseCategory() {
       queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
       toast.success("Category deleted");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
+    onError: (err: Error) => toast.error(err.message),
   });
 }

@@ -53,6 +53,36 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_category_rules: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          match_field: string
+          match_type: string
+          match_value: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          match_field?: string
+          match_type?: string
+          match_value: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          match_field?: string
+          match_type?: string
+          match_value?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       demo_settings: {
         Row: {
           id: string

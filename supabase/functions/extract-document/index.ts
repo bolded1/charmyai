@@ -225,6 +225,34 @@ serve(async (req) => {
       console.error("Duplicate check error:", dupErr);
     }
 
+    // Apply auto-categorization rules
+    let finalCategory = extracted.category || null;
+    try {
+      const { data: rules } = await supabase
+        .from("auto_category_rules")
+        .select("*")
+        .eq("user_id", doc.user_id);
+
+      if (rules && rules.length > 0) {
+        for (const rule of rules) {
+          const fieldValue = (extracted[rule.match_field] || "").toLowerCase().trim();
+          const matchValue = rule.match_value.toLowerCase().trim();
+          let matched = false;
+
+          if (rule.match_type === "contains") matched = fieldValue.includes(matchValue);
+          else if (rule.match_type === "starts_with") matched = fieldValue.startsWith(matchValue);
+          else if (rule.match_type === "equals") matched = fieldValue === matchValue;
+
+          if (matched) {
+            finalCategory = rule.category;
+            break;
+          }
+        }
+      }
+    } catch (ruleErr) {
+      console.error("Auto-category rule error:", ruleErr);
+    }
+
     // Update document with extracted data
     const { error: updateErr } = await supabase
       .from("documents")
@@ -240,7 +268,7 @@ serve(async (req) => {
         vat_amount: extracted.vat_amount || 0,
         total_amount: extracted.total_amount || 0,
         vat_number: extracted.vat_number || null,
-        category: extracted.category || null,
+        category: finalCategory,
         status: newStatus,
         ocr_text: extracted.ocr_text || null,
         extracted_data: extracted,
