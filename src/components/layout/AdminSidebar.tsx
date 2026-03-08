@@ -130,7 +130,7 @@ export function AdminSidebar() {
                       const active = location.pathname.startsWith(item.url) && (item.url !== "/admin" || location.pathname === "/admin");
                       return (
                         <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary" : "text-foreground/80"}>
+                          <SidebarMenuButton asChild isActive={active} className={active ? "bg-primary/10 text-primary" : "text-foreground"}>
                             <NavLink to={item.url} end={item.url === "/admin"}>
                               <item.icon className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
                             </NavLink>
