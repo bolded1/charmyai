@@ -16,6 +16,44 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailSent, setEmailSent] = useState(false);
+  const { data: systemSettings } = useSystemSettings();
+
+  // Block signups if disabled by admin
+  if (systemSettings && !systemSettings.newSignups) {
+    return (
+      <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+        <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+        <div className="w-full max-w-sm text-center relative z-10">
+          <div className="mb-6">
+            {brandLogo ? (
+              <img src={brandLogo} alt="Charmy" className="h-10 max-w-[10rem] object-contain mx-auto" />
+            ) : (
+              <div className="inline-flex items-center gap-2.5 font-bold text-xl">
+                <div className="h-11 w-11 rounded-2xl bg-hero-gradient flex items-center justify-center shadow-lg shadow-primary/25">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="text-gradient text-2xl">Charmy</span>
+              </div>
+            )}
+          </div>
+          <div className="glass-auth rounded-2xl p-7 space-y-4">
+            <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mx-auto">
+              <UserX className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <h2 className="text-lg font-bold">Signups Closed</h2>
+            <p className="text-sm text-muted-foreground">
+              New registrations are currently disabled. Please check back later or contact support.
+            </p>
+          </div>
+          <p className="text-center text-sm text-muted-foreground mt-5">
+            Already have an account?{" "}
+            <Link to="/login" className="text-primary font-semibold hover:underline">Sign In</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
