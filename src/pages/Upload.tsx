@@ -129,6 +129,34 @@ export default function UploadPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Onboarding Checklist */}
       <OnboardingChecklist />
+
+      {/* Email Import Address */}
+      {importEmailAddress && (
+        <Card className="border-0 stat-card-violet">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl icon-bg-violet flex items-center justify-center shrink-0">
+                <Mail className="h-5 w-5 text-violet" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold mb-0.5">Import via Email</h3>
+                <p className="text-xs text-muted-foreground mb-2.5">
+                  Forward invoices to this address and they'll be automatically processed.
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-xs bg-card/80 backdrop-blur-sm px-3 py-2 rounded-lg font-mono truncate border border-border/40">
+                    {importEmailAddress}
+                  </code>
+                  <Button variant="outline" size="sm" className="shrink-0 h-8 gap-1.5 rounded-lg" onClick={copyEmail}>
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       <Card className="overflow-hidden border-0 lg:hidden">
         <CardContent className="p-0">
           <div
@@ -211,33 +239,7 @@ export default function UploadPage() {
         </CardContent>
       </Card>
 
-      {/* Email Import Address */}
-      {importEmailAddress && (
-        <Card className="border-0 stat-card-violet">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-xl icon-bg-violet flex items-center justify-center shrink-0">
-                <Mail className="h-5 w-5 text-violet" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold mb-0.5">Import via Email</h3>
-                <p className="text-xs text-muted-foreground mb-2.5">
-                  Forward invoices to this address and they'll be automatically processed.
-                </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs bg-card/80 backdrop-blur-sm px-3 py-2 rounded-lg font-mono truncate border border-border/40">
-                    {importEmailAddress}
-                  </code>
-                  <Button variant="outline" size="sm" className="shrink-0 h-8 gap-1.5 rounded-lg" onClick={copyEmail}>
-                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
 
       {files.length > 0 && (
         <Card className="cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate("/app/documents")}>
