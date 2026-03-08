@@ -61,8 +61,8 @@ serve(async (req) => {
       });
     }
 
-    const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY");
-    const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN");
+    const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY")?.trim();
+    const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")?.trim();
     if (!MAILGUN_API_KEY) throw new Error("MAILGUN_API_KEY not configured");
     if (!MAILGUN_DOMAIN) throw new Error("MAILGUN_DOMAIN not configured");
 
@@ -106,30 +106,37 @@ serve(async (req) => {
       form.append("html", htmlBody);
       form.append("recipient-variables", JSON.stringify(recipientVariables));
 
-      // Try EU endpoint first, fallback to US
-      let response = await fetch(
+      // Try both Mailgun regions (EU first, then US if auth/region mismatch)
+      const endpoints = [
         `https://api.eu.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
-        {
+        `https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
+      ];
+
+      let response: Response | null = null;
+
+      for (let idx = 0; idx < endpoints.length; idx++) {
+        const endpoint = endpoints[idx];
+        response = await fetch(endpoint, {
           method: "POST",
           headers: {
             Authorization: `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`,
           },
           body: form,
-        }
-      );
+        });
 
-      if (!response.ok && response.status === 404) {
-        // Fallback to US endpoint
-        response = await fetch(
-          `https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`,
-            },
-            body: form,
-          }
-        );
+        if (response.ok) break;
+
+        const shouldTryNextEndpoint = idx === 0 && [401, 403, 404].includes(response.status);
+        if (shouldTryNextEndpoint) {
+          await response.text(); // consume body before retry
+          continue;
+        }
+
+        break;
+      }
+
+      if (!response) {
+        throw new Error("Mailgun request failed before getting a response");
       }
 
       if (response.ok) {
