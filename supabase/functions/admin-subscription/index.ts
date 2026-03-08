@@ -68,6 +68,14 @@ serve(async (req) => {
               productName = product.name || "Unknown";
             } catch { /* ignore */ }
           }
+
+          let trialEnd = null;
+          try { if (sub.trial_end) trialEnd = new Date(sub.trial_end * 1000).toISOString(); } catch { /* ignore */ }
+          let periodEnd = null;
+          try { if (sub.current_period_end) periodEnd = new Date(sub.current_period_end * 1000).toISOString(); } catch { /* ignore */ }
+          let created = null;
+          try { if (sub.created) created = new Date(sub.created * 1000).toISOString(); } catch { /* ignore */ }
+
           return {
             id: sub.id,
             status: sub.status,
@@ -79,10 +87,10 @@ serve(async (req) => {
             amount: price?.unit_amount,
             currency: price?.currency,
             interval: price?.recurring?.interval,
-            trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
-            current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+            trial_end: trialEnd,
+            current_period_end: periodEnd,
             cancel_at_period_end: sub.cancel_at_period_end,
-            created: new Date(sub.created * 1000).toISOString(),
+            created,
           };
         }));
         logStep("Listed subscriptions", { count: result.length });
