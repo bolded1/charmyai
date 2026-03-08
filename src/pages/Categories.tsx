@@ -106,7 +106,7 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl mx-auto">
       {/* Analytics Section */}
       <CategoryAnalytics expenses={expenses} isLoading={expensesLoading} />
       {/* Categories Card */}
