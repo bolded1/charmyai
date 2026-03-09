@@ -257,12 +257,25 @@ export function useIncomeRecords() {
   return useQuery({
     queryKey: ["income", effectiveUserId],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = effectiveUserId || user?.id;
+      if (!uid) return [];
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", uid)
+        .maybeSingle();
+
       let query = supabase
         .from("income_records")
         .select("*")
         .order("invoice_date", { ascending: false });
       if (effectiveUserId) {
         query = query.eq("user_id", effectiveUserId);
+      }
+      if (profile?.active_organization_id) {
+        query = query.eq("organization_id", profile.active_organization_id);
       }
       const { data, error } = await query;
       if (error) throw error;
