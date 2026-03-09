@@ -62,6 +62,7 @@ import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
 import Assistant from "./pages/Assistant";
 import NotFound from "./pages/NotFound";
 import { useDynamicPwaManifest } from "./hooks/useDynamicPwaManifest";
+import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
 
 const queryClient = new QueryClient();
 
