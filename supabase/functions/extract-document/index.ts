@@ -40,6 +40,19 @@ serve(async (req) => {
       });
     }
     const userId = claimsData.claims.sub;
+    const userEmail = claimsData.claims.email as string;
+
+    // Billing entitlement check
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (stripeKey && userEmail) {
+      const entitlement = await checkBillingEntitlement(userEmail, stripeKey);
+      if (!entitlement.valid) {
+        return new Response(JSON.stringify({ error: "Active subscription required to process documents." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     const { documentId } = await req.json();
     if (!documentId) {
