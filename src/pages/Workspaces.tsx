@@ -603,6 +603,9 @@ export default function WorkspacesPage() {
                               <Button variant="ghost" size="sm" className="flex-1 h-7 text-[11px]" onClick={() => handleOpenWorkspace(ws)}>
                                 <ArrowRight className="h-3 w-3 mr-1" /> Open
                               </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={() => openInviteDialog(ws)} title="Invite Client">
+                                <UserPlus className="h-3 w-3" />
+                              </Button>
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(ws)}>
                                 <Pencil className="h-3 w-3" />
                               </Button>
