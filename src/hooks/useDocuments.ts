@@ -181,9 +181,17 @@ export function useApproveDocument() {
 
       if (updateErr) throw updateErr;
 
+      // Get active workspace for the expense record
+      const { data: approverProfile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       // Create expense record for all approved documents
       const { error } = await supabase.from("expense_records").insert({
         user_id: user.id,
+        organization_id: approverProfile?.active_organization_id || null,
         document_id: doc.id,
         supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
         invoice_number: doc.invoice_number,
