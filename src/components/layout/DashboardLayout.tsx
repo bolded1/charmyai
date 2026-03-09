@@ -262,7 +262,7 @@ export default function DashboardLayout() {
               </button>
             </div>
 
-            <main className={`flex-1 min-h-0 surface-sunken ${location.pathname === "/app/assistant" ? "overflow-hidden p-0" : `overflow-auto ${layoutSettings.compactView ? "p-3 md:p-4" : "p-4 md:p-8"}`}`}>
+            <main className={`flex-1 min-h-0 surface-sunken ${location.pathname === "/app/assistant" ? "overflow-hidden p-0" : `overflow-auto scrollbar-thin ${layoutSettings.compactView ? "p-3 md:p-5" : "p-4 md:p-8"}`}`}>
               <Outlet />
               <NPSWidget />
             </main>
