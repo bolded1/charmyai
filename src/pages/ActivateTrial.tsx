@@ -377,31 +377,43 @@ export default function ActivateTrialPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
-              <Input
-                placeholder="John Smith"
-                value={billingName}
-                onChange={(e) => setBillingName(e.target.value)}
-              />
-            </div>
+            {cardRequired && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
+                  <Input
+                    placeholder="John Smith"
+                    value={billingName}
+                    onChange={(e) => setBillingName(e.target.value)}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Billing Address (optional)</Label>
-              <Input
-                placeholder="123 Main St, Berlin"
-                value={billingAddress}
-                onChange={(e) => setBillingAddress(e.target.value)}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Billing Address (optional)</Label>
+                  <Input
+                    placeholder="123 Main St, Berlin"
+                    value={billingAddress}
+                    onChange={(e) => setBillingAddress(e.target.value)}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Card Details</Label>
-              <div
-                id="stripe-card-element"
-                className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Card Details</Label>
+                  <div
+                    id="stripe-card-element"
+                    className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
+                  />
+                </div>
+              </>
+            )}
+
+            {!cardRequired && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+                <CheckCircle2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                <p className="text-sm font-medium text-foreground">No payment method required</p>
+                <p className="text-xs text-muted-foreground mt-1">Your promo code grants free access — no card needed.</p>
+              </div>
+            )}
 
             {setupError && (
               <p className="text-sm text-destructive">{setupError}</p>
@@ -411,14 +423,16 @@ export default function ActivateTrialPage() {
               type="submit"
               className="w-full"
               size="lg"
-              disabled={submitting || !stripe || !clientSecret}
+              disabled={submitting || (cardRequired && (!stripe || !clientSecret))}
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
+              ) : cardRequired ? (
                 <CreditCard className="h-4 w-4 mr-2" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 mr-2" />
               )}
-              Start Free Trial
+              {cardRequired ? "Start Free Trial" : "Activate Free Access"}
             </Button>
           </form>
 
