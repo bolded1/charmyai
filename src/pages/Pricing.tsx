@@ -194,23 +194,51 @@ export default function PricingPage() {
           <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
             <h2 className="text-3xl font-bold">Frequently Asked Questions</h2>
           </motion.div>
-          <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full glass-card rounded-xl p-5 text-left group transition-all hover:shadow-md">
-                  <div className="flex items-center justify-between gap-4">
-                    <h4 className="font-semibold text-sm">{faq.q}</h4>
-                    <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-200 ${openFaq === i ? "rotate-180" : ""}`} />
-                  </div>
-                  {openFaq === i && (
-                    <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                      {faq.a}
-                    </motion.p>
-                  )}
-                </button>
-              </motion.div>
-            ))}
-          </div>
+      {/* FAQ */}
+      <section className="py-20 md:py-28 border-t border-border/50">
+        <div className="container max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-5">
+              <HelpCircle className="h-3.5 w-3.5" />
+              Common Questions
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              Frequently Asked <span className="text-gradient">Questions</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Everything you need to know about pricing, billing, and your free trial.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`faq-${i}`}
+                  className="border-b border-border/50 last:border-b-0"
+                >
+                  <AccordionTrigger className="text-left text-[15px] font-semibold py-5 hover:no-underline hover:text-primary transition-colors [&[data-state=open]]:text-primary">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed text-sm pb-5">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </motion.div>
         </div>
       </section>
 
