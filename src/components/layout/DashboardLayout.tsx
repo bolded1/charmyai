@@ -99,16 +99,13 @@ export default function DashboardLayout() {
   }
 
   // Subscription gate — fail-closed: block access unless explicitly entitled
-  const isBillingPage = location.pathname === "/app/settings" && searchParams.get("tab") === "billing";
-  if (!isBillingPage) {
-    if (!subscription.subscribed) {
-      // Has a Stripe status but it's not valid (expired, canceled, past_due, incomplete, unpaid, etc.)
-      if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing" && subscription.status !== "promo_active") {
-        return <Navigate to="/billing-required" replace />;
-      }
-      // No subscription status at all — needs to activate trial
-      return <Navigate to="/activate-trial" replace />;
+  if (!subscription.subscribed) {
+    // Has a Stripe status but it's not valid (expired, canceled, past_due, incomplete, unpaid, etc.)
+    if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing" && subscription.status !== "promo_active") {
+      return <Navigate to="/billing-required" replace />;
     }
+    // No subscription status at all — needs to activate trial
+    return <Navigate to="/activate-trial" replace />;
   }
 
   const handleSignOut = async () => {
