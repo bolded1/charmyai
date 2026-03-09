@@ -521,10 +521,6 @@ export default function WorkspacesPage() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search workspaces..." className="pl-8 h-8 text-xs" />
-            </div>
             <div className="flex border border-border rounded-md">
               <button onClick={() => setViewMode("grid")} className={`p-1.5 transition-colors ${viewMode === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 <LayoutGrid className="h-3.5 w-3.5" />
