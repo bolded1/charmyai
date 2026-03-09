@@ -23,6 +23,7 @@ const navGroups = [
     label: "Users & Access",
     items: [
       { title: "Organizations", url: "/admin/organizations", icon: Building2 },
+      { title: "Firm Accounts", url: "/admin/firm-accounts", icon: Briefcase },
       { title: "Users", url: "/admin/users", icon: Users },
       { title: "Login Activity", url: "/admin/login-activity", icon: KeyRound },
       { title: "GDPR / Data", url: "/admin/gdpr", icon: UserX },
