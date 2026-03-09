@@ -30,6 +30,24 @@ export default function ActivateTrialPage() {
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
+
+  // Check if user already has an active subscription — redirect to app
+  useEffect(() => {
+    if (!user) return;
+    const checkExisting = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("check-subscription");
+        if (!error && data?.subscribed) {
+          setAlreadySubscribed(true);
+          navigate("/app", { replace: true });
+        }
+      } catch {
+        // fail-open here since this is just a convenience redirect
+      }
+    };
+    checkExisting();
+  }, [user, navigate]);
 
   // Load Stripe.js
   useEffect(() => {
