@@ -37,6 +37,17 @@ export function useDocuments(statusFilter?: string) {
   return useQuery({
     queryKey: ["documents", statusFilter, effectiveUserId],
     queryFn: async () => {
+      // Get user's active workspace
+      const { data: { user } } = await supabase.auth.getUser();
+      const targetUserId = effectiveUserId || user?.id;
+      if (!targetUserId) return [];
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", effectiveUserId || user!.id)
+        .maybeSingle();
+
       let query = supabase
         .from("documents")
         .select("*")
@@ -44,6 +55,11 @@ export function useDocuments(statusFilter?: string) {
 
       if (effectiveUserId) {
         query = query.eq("user_id", effectiveUserId);
+      }
+
+      // Filter by active workspace if set
+      if (profile?.active_organization_id) {
+        query = query.eq("organization_id", profile.active_organization_id);
       }
 
       if (statusFilter && statusFilter !== "all") {
