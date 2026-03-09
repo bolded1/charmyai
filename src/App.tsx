@@ -163,6 +163,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
     </CookieConsentProvider>
+    </WorkspaceProvider>
     </ImpersonationProvider>
   </QueryClientProvider>
 );
