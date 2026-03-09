@@ -5,6 +5,7 @@ import {
   Upload, Mail, Search, ClipboardCheck, Download,
   ArrowRight, CheckCircle2, FileText, Clock, Receipt,
   FolderOpen, ChevronRight, Sparkles, Zap, Shield,
+  Smartphone, Monitor, Share, Plus, MoreVertical,
 } from "lucide-react";
 import { DemoUploader } from "@/components/demo/DemoUploader";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -159,7 +160,143 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ Final CTA ═══ */}
+      {/* ═══ Install as App ═══ */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
+        <div className="container max-w-5xl relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-5">
+              <Smartphone className="h-3.5 w-3.5" />
+              Progressive Web App
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              Install Charmy on <span className="text-gradient">Any Device</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              No app store needed. Add Charmy to your home screen or desktop for instant access, offline support, and a native app experience.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            {/* Chrome / Edge */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
+              className="glass-card rounded-2xl p-6 text-center group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="h-14 w-14 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto mb-5 shadow-lg shadow-primary/20"
+              >
+                <Monitor className="h-7 w-7 text-white" />
+              </motion.div>
+              <h3 className="text-sm font-bold mb-2">Chrome / Edge</h3>
+              <div className="space-y-2.5 text-left">
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-primary">1</span>
+                  </div>
+                  <span>Click the <strong className="text-foreground">install icon</strong> in the address bar</span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-primary">2</span>
+                  </div>
+                  <span>Click <strong className="text-foreground">"Install"</strong> in the prompt</span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-primary">3</span>
+                  </div>
+                  <span>Charmy opens as a <strong className="text-foreground">standalone app</strong></span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* iOS Safari */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}
+              className="glass-card rounded-2xl p-6 text-center group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                className="h-14 w-14 rounded-2xl bg-gradient-cool flex items-center justify-center mx-auto mb-5 shadow-lg shadow-teal/20"
+              >
+                <Smartphone className="h-7 w-7 text-white" />
+              </motion.div>
+              <h3 className="text-sm font-bold mb-2">iPhone / iPad</h3>
+              <div className="space-y-2.5 text-left">
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-teal/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-teal">1</span>
+                  </div>
+                  <span>Tap the <strong className="text-foreground"><Share className="inline h-3 w-3" /> Share</strong> button in Safari</span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-teal/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-teal">2</span>
+                  </div>
+                  <span>Select <strong className="text-foreground"><Plus className="inline h-3 w-3" /> Add to Home Screen</strong></span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-teal/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-teal">3</span>
+                  </div>
+                  <span>Launch from your <strong className="text-foreground">home screen</strong></span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Android */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={3}
+              className="glass-card rounded-2xl p-6 text-center group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                className="h-14 w-14 rounded-2xl bg-gradient-sunset flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet/20"
+              >
+                <Download className="h-7 w-7 text-white" />
+              </motion.div>
+              <h3 className="text-sm font-bold mb-2">Android</h3>
+              <div className="space-y-2.5 text-left">
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-violet/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-violet">1</span>
+                  </div>
+                  <span>Tap <strong className="text-foreground"><MoreVertical className="inline h-3 w-3" /> Menu</strong> in Chrome</span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-violet/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-violet">2</span>
+                  </div>
+                  <span>Select <strong className="text-foreground">"Install app"</strong> or <strong className="text-foreground">"Add to Home Screen"</strong></span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="h-5 w-5 rounded-full bg-violet/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-violet">3</span>
+                  </div>
+                  <span>Charmy appears as a <strong className="text-foreground">native app</strong></span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* PWA features pills */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={4}
+            className="flex flex-wrap justify-center gap-3 mt-10">
+            {[
+              { icon: Zap, label: "Instant Launch" },
+              { icon: Shield, label: "Offline Ready" },
+              { icon: Sparkles, label: "Auto Updates" },
+              { icon: FileText, label: "Home Screen Icon" },
+            ].map((feat) => (
+              <div key={feat.label} className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border/50 text-xs font-semibold text-muted-foreground shadow-sm">
+                <feat.icon className="h-3.5 w-3.5 text-primary" />
+                {feat.label}
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-hero-gradient" />
         <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 30% 50%, hsl(262 83% 58% / 0.5), transparent 50%), radial-gradient(circle at 70% 50%, hsl(172 66% 40% / 0.3), transparent 50%)' }} />
