@@ -164,6 +164,9 @@ export default function DashboardLayout() {
             <PwaInstallBanner />
             <OfflineIndicator />
 
+            {/* Workspace context bar for client workspaces */}
+            <WorkspaceContextBar />
+
             {/* Impersonation banner */}
             {impersonating && (
               <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 flex items-center justify-between gap-2 shrink-0">
