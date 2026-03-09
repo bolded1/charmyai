@@ -19,12 +19,10 @@ export default function MarketingLayout() {
   const location = useLocation();
   const { openPreferences } = useCookieConsent();
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  // Prevent body scroll when menu is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
@@ -61,11 +59,11 @@ export default function MarketingLayout() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Sign In</Link>
+            <Button variant="outline" size="sm" asChild>
+              <a href="/#demo-upload">Try Demo</a>
             </Button>
             <Button size="sm" asChild>
-              <Link to="/signup">Start Trial</Link>
+              <Link to="/signup">Start Free Trial</Link>
             </Button>
           </div>
 
@@ -99,10 +97,8 @@ export default function MarketingLayout() {
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-40 md:hidden"
           >
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-background/95 backdrop-blur-xl" />
 
-            {/* Content */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -110,7 +106,6 @@ export default function MarketingLayout() {
               transition={{ duration: 0.25, delay: 0.05 }}
               className="relative pt-20 px-6 pb-8 flex flex-col h-full"
             >
-              {/* Nav links */}
               <nav className="space-y-1 flex-1">
                 {navLinks.map((l, i) => {
                   const isActive = location.pathname === l.to;
@@ -142,22 +137,21 @@ export default function MarketingLayout() {
                 })}
               </nav>
 
-              {/* CTA buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
                 className="space-y-3 pt-6 border-t border-border/50"
               >
+                <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
+                  <a href="/#demo-upload">Try Demo</a>
+                </Button>
                 <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
                   <Link to="/signup">
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Start 7-Day Trial
+                    Start Free Trial
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
-                  <Link to="/login">Sign In</Link>
                 </Button>
               </motion.div>
             </motion.div>
@@ -193,6 +187,7 @@ export default function MarketingLayout() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <Link to="/features" className="block hover:text-foreground">Features</Link>
                 <Link to="/pricing" className="block hover:text-foreground">Pricing</Link>
+                <a href="/#demo-upload" className="block hover:text-foreground">Try Demo</a>
               </div>
             </div>
             <div>
@@ -214,7 +209,7 @@ export default function MarketingLayout() {
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-sm text-muted-foreground text-center">
-            © 2024 Charmy. All rights reserved.
+            © {new Date().getFullYear()} Charmy. All rights reserved.
           </div>
         </div>
       </footer>
