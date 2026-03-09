@@ -598,9 +598,15 @@ export default function WorkspacesPage() {
               <BarChart3 className="h-4 w-4 text-primary" />
             </div>
             <h1 className="text-xl font-bold text-foreground">Firm Dashboard</h1>
+            <Badge variant="secondary" className="text-xs font-medium">
+              {activeClientCount} / {maxWorkspaces}
+            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Manage all your client workspaces from one place.
+            Manage all your client workspaces from one place.{" "}
+            <span className="text-foreground/70 font-medium">
+              {maxWorkspaces - activeClientCount} slot{maxWorkspaces - activeClientCount !== 1 ? "s" : ""} remaining
+            </span>
           </p>
         </div>
         <Button
