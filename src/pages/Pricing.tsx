@@ -5,11 +5,17 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle2, Loader2, Sparkles, Shield, Zap, Users, FileText,
-  Mail, Download, FolderOpen, ChevronDown, ArrowRight,
+  Mail, Download, FolderOpen, ChevronDown, ArrowRight, HelpCircle,
 } from "lucide-react";
 import { useSubscription, STRIPE_PLANS } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const featureIcons: Record<string, React.ElementType> = {
   "Unlimited documents": FileText,
