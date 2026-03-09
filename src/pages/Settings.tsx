@@ -339,76 +339,8 @@ export default function SettingsPage() {
               </Card>
             </div>
           ) : (
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Company Details" description="Basic information about your organization." />
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Field label="Company Name">
-                      <Input defaultValue="Acme Corp" />
-                    </Field>
-                    <Field label="Industry">
-                      <Select defaultValue="technology">
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="technology">Technology</SelectItem>
-                          <SelectItem value="consulting">Consulting</SelectItem>
-                          <SelectItem value="finance">Finance</SelectItem>
-                          <SelectItem value="healthcare">Healthcare</SelectItem>
-                          <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                          <SelectItem value="retail">Retail</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Field label="Country">
-                      <Input defaultValue="Germany" />
-                    </Field>
-                    <Field label="Default Currency">
-                      <Select defaultValue="EUR">
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="EUR">EUR — Euro</SelectItem>
-                          <SelectItem value="USD">USD — US Dollar</SelectItem>
-                          <SelectItem value="GBP">GBP — British Pound</SelectItem>
-                          <SelectItem value="CHF">CHF — Swiss Franc</SelectItem>
-                          <SelectItem value="CAD">CAD — Canadian Dollar</SelectItem>
-                          <SelectItem value="AUD">AUD — Australian Dollar</SelectItem>
-                          <SelectItem value="JPY">JPY — Japanese Yen</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Tax & Legal" description="Tax registration and legal address." />
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Field label="VAT Number" hint="Your tax identification number for invoicing.">
-                      <Input defaultValue="DE123456789" />
-                    </Field>
-                    <Field label="Tax ID">
-                      <Input placeholder="Optional" />
-                    </Field>
-                  </div>
-                  <Field label="Registered Address">
-                    <Input defaultValue="123 Main Street, Berlin, Germany" />
-                  </Field>
-                  <Field label="Website">
-                    <Input placeholder="https://acme.com" />
-                  </Field>
-                </div>
-              </CardContent>
-            </Card>
-
-          </div>
+          <OrgSettingsForm org={org} updateOrg={updateOrg} />
+          )
           )}
         </TabsContent>
 
