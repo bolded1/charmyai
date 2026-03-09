@@ -205,6 +205,8 @@ serve(async (req) => {
       current_period_end: periodEndDate,
       cancel_at_period_end: sub.cancel_at_period_end,
       has_firm_plan: hasFirmPlan,
+      amount_paid: amountPaid,
+      paid_currency: paidCurrency,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
