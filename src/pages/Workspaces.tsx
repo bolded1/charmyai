@@ -995,30 +995,44 @@ export default function WorkspacesPage() {
       </AlertDialog>
 
       {/* ═══ Invite Client Dialog ═══ */}
-      <Dialog open={inviteOpen} onOpenChange={(v) => { setInviteOpen(v); if (!v) { setInviteWs(null); setInviteName(""); setInviteEmail(""); } }}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={inviteOpen} onOpenChange={(v) => { setInviteOpen(v); if (!v) { setInviteWs(null); setInviteRows([{ name: "", email: "" }]); } }}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-primary" />
-              Invite Client
+              Invite Clients
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Send a login invitation to the client for <strong>{inviteWs?.name}</strong>. They'll create an account and access only this workspace.
+              Send login invitations to clients for <strong>{inviteWs?.name}</strong>. They'll create an account and access only this workspace.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <Field label="Client Contact Name">
-              <Input value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="e.g. John Doe" />
-            </Field>
-            <Field label="Client Contact Email">
-              <Input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="client@company.com" />
-            </Field>
+          <div className="space-y-3 py-2 max-h-[50vh] overflow-y-auto">
+            {inviteRows.map((row, idx) => (
+              <div key={idx} className="flex items-end gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Name</Label>
+                  <Input value={row.name} onChange={(e) => updateInviteRow(idx, "name", e.target.value)} placeholder="e.g. John Doe" />
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <Input type="email" value={row.email} onChange={(e) => updateInviteRow(idx, "email", e.target.value)} placeholder="client@company.com" />
+                </div>
+                {inviteRows.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 text-destructive" onClick={() => removeInviteRow(idx)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="w-full" onClick={addInviteRow}>
+              <Plus className="h-3.5 w-3.5 mr-1.5" /> Add another client
+            </Button>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
-            <Button onClick={handleInviteClient} disabled={!inviteName.trim() || !inviteEmail.trim() || inviting}>
+            <Button onClick={handleInviteClients} disabled={validInviteRows.length === 0 || inviting}>
               {inviting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-              Send Invitation
+              Send {validInviteRows.length > 1 ? `${validInviteRows.length} Invitations` : "Invitation"}
             </Button>
           </DialogFooter>
         </DialogContent>
