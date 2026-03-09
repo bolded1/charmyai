@@ -152,6 +152,40 @@ export default function WorkspacesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showArchived, setShowArchived] = useState(false);
 
+  // Standalone invite dialog
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
+  const [inviteName, setInviteName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+
+  const openInviteDialog = (ws: Workspace) => {
+    setInviteWs(ws);
+    setInviteName((ws as any).client_contact_name || "");
+    setInviteEmail((ws as any).client_contact_email || ws.contact_email || "");
+    setInviteOpen(true);
+  };
+
+  const handleInviteClient = async () => {
+    if (!inviteWs || !inviteName.trim() || !inviteEmail.trim() || inviting) return;
+    setInviting(true);
+    try {
+      await sendClientInvitation.mutateAsync({
+        workspace_id: inviteWs.id,
+        client_name: inviteName.trim(),
+        client_email: inviteEmail.trim(),
+      });
+      setInviteOpen(false);
+      setInviteWs(null);
+      setInviteName("");
+      setInviteEmail("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation");
+    } finally {
+      setInviting(false);
+    }
+  };
+
   const homeOrg = allWorkspaces.find(
     (w) => w.workspace_type === "accounting_firm" || w.workspace_type === "standard"
   );
