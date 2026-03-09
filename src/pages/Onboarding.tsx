@@ -56,43 +56,72 @@ const COUNTRIES = [
 ];
 
 export default function OnboardingPage() {
-  const [step, setStep] = useState(0);
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading, updateProfile, uploadAvatar } = useProfile();
   const { data: org } = useOrganization();
   const updateOrg = useUpdateOrganization();
 
+  // Auto-detect which step to start on based on saved data
+  const profileComplete = !!profile?.first_name && !!profile?.last_name;
+  const initialStep = profileComplete ? 1 : 0;
+  const [step, setStep] = useState(initialStep);
+
+  // Update step when profile loads and we detect step 0 was already done
+  useEffect(() => {
+    if (!profileLoading && profileComplete) {
+      setStep((prev) => Math.max(prev, 1));
+    }
+  }, [profileLoading, profileComplete]);
+
   // Redirect already-onboarded users away from onboarding
   useEffect(() => {
-    if (!authLoading && !profileLoading && user && profile?.first_name) {
+    if (!authLoading && !profileLoading && user && profile?.onboarding_completed_at) {
       navigate("/app", { replace: true });
     }
-  }, [authLoading, profileLoading, user, profile?.first_name, navigate]);
+  }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, navigate]);
 
-  // Pre-populate from signup metadata
+  // Pre-populate from saved profile data first, then signup metadata as fallback
   const metaFirst = user?.user_metadata?.first_name || "";
   const metaLast = user?.user_metadata?.last_name || "";
 
-  // Step 1 state
-  const [firstName, setFirstName] = useState(metaFirst);
-  const [lastName, setLastName] = useState(metaLast);
-  const [jobTitle, setJobTitle] = useState("");
-  const [phone, setPhone] = useState("");
+  // Step 1 state — pre-fill from existing profile
+  const [firstName, setFirstName] = useState(profile?.first_name || metaFirst);
+  const [lastName, setLastName] = useState(profile?.last_name || metaLast);
+  const [jobTitle, setJobTitle] = useState(profile?.job_title || "");
+  const [phone, setPhone] = useState(profile?.phone || "");
   const [companyRole, setCompanyRole] = useState("Owner");
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url || null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const brandLogo = useBrandLogo();
 
-  // Step 2 state
-  const [orgName, setOrgName] = useState("");
+  // Step 2 state — pre-fill from existing org
+  const [orgName, setOrgName] = useState(org?.name && org.name !== "My Organization" ? org.name : "");
   const [industry, setIndustry] = useState("technology");
   const [customIndustry, setCustomIndustry] = useState("");
   const [country, setCountry] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
-  const [currency, setCurrency] = useState("EUR");
+  const [currency, setCurrency] = useState(org?.default_currency || "EUR");
   const [vatNumber, setVatNumber] = useState("");
   const [address, setAddress] = useState("");
+
+  // Update pre-filled values when profile/org data loads
+  useEffect(() => {
+    if (profile) {
+      if (profile.first_name && !firstName) setFirstName(profile.first_name);
+      if (profile.last_name && !lastName) setLastName(profile.last_name);
+      if (profile.job_title && !jobTitle) setJobTitle(profile.job_title);
+      if (profile.phone && !phone) setPhone(profile.phone);
+      if (profile.avatar_url && !avatarPreview) setAvatarPreview(profile.avatar_url);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (org) {
+      if (org.name && org.name !== "My Organization" && !orgName) setOrgName(org.name);
+      if (org.default_currency) setCurrency(org.default_currency);
+    }
+  }, [org]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -146,6 +175,12 @@ export default function OnboardingPage() {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
+      // Mark onboarding as completed
+      try {
+        await updateProfile.mutateAsync({
+          onboarding_completed_at: new Date().toISOString(),
+        } as any);
+      } catch {}
       toast.success("Setup complete! Let's activate your trial.");
       navigate("/activate-trial");
     }

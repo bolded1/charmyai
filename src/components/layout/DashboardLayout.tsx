@@ -74,9 +74,8 @@ export default function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  // Onboarding guard: redirect if profile incomplete (no first name set)
-  // Profile is guaranteed loaded at this point due to profileLoading check above
-  if (!profile || !profile.first_name) {
+  // Onboarding guard: redirect if onboarding not completed
+  if (!profile || !profile.onboarding_completed_at) {
     return <Navigate to="/onboarding" replace />;
   }
 

@@ -863,6 +863,7 @@ export type Database = {
           job_title: string | null
           language: string | null
           last_name: string | null
+          onboarding_completed_at: string | null
           phone: string | null
           status: string | null
           timezone: string | null
@@ -880,6 +881,7 @@ export type Database = {
           job_title?: string | null
           language?: string | null
           last_name?: string | null
+          onboarding_completed_at?: string | null
           phone?: string | null
           status?: string | null
           timezone?: string | null
@@ -897,6 +899,7 @@ export type Database = {
           job_title?: string | null
           language?: string | null
           last_name?: string | null
+          onboarding_completed_at?: string | null
           phone?: string | null
           status?: string | null
           timezone?: string | null

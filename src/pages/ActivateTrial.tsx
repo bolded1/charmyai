@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { STRIPE_PLANS } from "@/hooks/useSubscription";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { usePromoCode } from "@/hooks/usePromoCode";
@@ -16,6 +17,7 @@ const STRIPE_PK = "pk_live_51Dzp0JBmkvUKJ0fuaOO3lXgQ83A5srdQrW5qKGr4ve9yaED1A5Um
 export default function ActivateTrialPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { profile } = useProfile();
   const brandLogo = useBrandLogo();
   const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
 
@@ -23,7 +25,9 @@ export default function ActivateTrialPage() {
   const [elements, setElements] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [billingName, setBillingName] = useState("");
+  const [billingName, setBillingName] = useState(
+    profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : ""
+  );
   const [billingAddress, setBillingAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
@@ -31,8 +35,15 @@ export default function ActivateTrialPage() {
   const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
+  // Pre-fill billing name when profile loads
+  useEffect(() => {
+    if (profile && !billingName) {
+      const name = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+      if (name) setBillingName(name);
+    }
+  }, [profile]);
 
-  // Check if user already completed billing AND has active subscription — redirect to app
+
   useEffect(() => {
     if (!user) return;
     const checkExisting = async () => {
