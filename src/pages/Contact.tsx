@@ -32,10 +32,10 @@ export default function ContactPage() {
   };
 
   const contactCards = [
-    { icon: Mail, title: "Email", detail: "hello@charmy.ai", href: "mailto:hello@charmy.ai" },
-    { icon: Phone, title: "Phone", detail: "+49 30 1234567", href: "tel:+4930123456" },
-    { icon: MapPin, title: "Office", detail: "Berlin, Germany" },
-    { icon: Clock, title: "Hours", detail: "Mon–Fri, 9–18 CET" },
+    { icon: Mail, title: "Email", detail: "hello@charmy.net", href: "mailto:hello@charmy.net" },
+    { icon: Phone, title: "Phone", detail: "+357 22270109", href: "tel:+35722270109" },
+    { icon: MapPin, title: "Office", detail: "Nicosia, Cyprus" },
+    { icon: Clock, title: "Hours", detail: "Mon–Fri, 9:00–18:00" },
   ];
 
   const inquiryTypes = [
