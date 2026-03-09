@@ -44,10 +44,14 @@ export function useProfile() {
   const updateProfile = useMutation({
     mutationFn: async (updates: Partial<Omit<Profile, "id" | "user_id" | "full_name" | "created_at" | "updated_at">>) => {
       if (!user) throw new Error("Not authenticated");
+      
+      // Use upsert to handle case where profile row doesn't exist yet
       const { error } = await supabase
         .from("profiles")
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq("user_id", user.id);
+        .upsert(
+          { user_id: user.id, email: user.email, ...updates, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
       if (error) throw error;
     },
     onSuccess: () => {
