@@ -394,38 +394,19 @@ export default function ActivateTrialPage() {
         </div>
 
         <div className="glass-auth rounded-2xl p-6">
-          {/* Plan selector */}
-          <div className="flex gap-3 mb-6">
-            <button
-              type="button"
-              onClick={() => setPlanChoice("pro")}
-              className={`flex-1 rounded-xl border-2 p-4 text-left transition-all ${
-                planChoice === "pro"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground/30"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1.5">
-                <CreditCard className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">Pro Plan</span>
-              </div>
-              <p className="text-xs text-muted-foreground">€29.99 one-time · Lifetime access</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPlanChoice("firm")}
-              className={`flex-1 rounded-xl border-2 p-4 text-left transition-all ${
-                planChoice === "firm"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground/30"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1.5">
-                <Building2 className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">Accounting Firm</span>
-              </div>
-              <p className="text-xs text-muted-foreground">€99 one-time · 10 workspaces</p>
-            </button>
+          {/* Plan badge */}
+          <div className="flex items-center gap-2 mb-5 p-3 rounded-xl bg-primary/5 border border-primary/20">
+            {planChoice === "firm" ? (
+              <Building2 className="h-4 w-4 text-primary" />
+            ) : (
+              <CreditCard className="h-4 w-4 text-primary" />
+            )}
+            <span className="text-sm font-semibold text-foreground">
+              {planChoice === "firm" ? "Accounting Firm Plan" : "Pro Plan"}
+            </span>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {planChoice === "firm" ? "€99 one-time" : "€29.99 one-time"}
+            </span>
           </div>
 
           {planChoice === "pro" ? (
