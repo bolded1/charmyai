@@ -86,11 +86,7 @@ export function useDynamicPwaManifest() {
         .eq("key", "pwa-icon")
         .maybeSingle()
         .then(({ data }) => {
-          applyManifest(
-            data?.value && typeof data.value === "string" && data.value.startsWith("http")
-              ? data.value
-              : null
-          );
+          applyManifest(parseIconValue(data?.value));
         });
     };
 
