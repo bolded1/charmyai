@@ -196,28 +196,40 @@ export function DashboardSidebar() {
           </div>
 
           {/* User card */}
-          <div className="rounded-xl bg-accent/50 p-2.5">
-            <div className="flex items-center gap-2.5 mb-2.5">
-              <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background">
-                {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-                <AvatarFallback className="bg-primary/10 text-primary text-[11px] font-bold">{initials}</AvatarFallback>
-              </Avatar>
-              {showLabels && (
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-[13px] font-semibold text-foreground leading-tight truncate">{displayName}</span>
-                  <span className="text-[10px] text-muted-foreground leading-tight truncate">{profile?.email || user?.email}</span>
-                </div>
-              )}
-            </div>
+          <div className="rounded-xl bg-accent/50 p-2.5 space-y-2">
+            {/* Avatar + name — clickable, opens profile dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2.5 w-full rounded-lg px-1 py-1 hover:bg-background/60 transition-colors focus:outline-none">
+                  <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background">
+                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                    <AvatarFallback className="bg-primary/10 text-primary text-[11px] font-bold">{initials}</AvatarFallback>
+                  </Avatar>
+                  {showLabels && (
+                    <div className="flex flex-col min-w-0 flex-1 text-left">
+                      <span className="text-[13px] font-semibold text-foreground leading-tight truncate">{displayName}</span>
+                      <span className="text-[10px] text-muted-foreground leading-tight truncate">{profile?.email || user?.email}</span>
+                    </div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              {profileDropdownContent}
+            </DropdownMenu>
+
             {showLabels && (
-              <div className="grid grid-cols-2 gap-1.5">
-                {profileMenu}
+              <div className="space-y-1">
+                <button
+                  onClick={() => navigate("/app/settings")}
+                  className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-foreground hover:bg-background/60 border border-border/60 transition-colors"
+                >
+                  <Settings className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  <span>Settings</span>
+                </button>
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center justify-center gap-1.5 h-8 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/60 transition-colors"
-                  title="Sign Out"
+                  className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/60 transition-colors"
                 >
-                  <LogOut className="h-3 w-3" strokeWidth={2.5} />
+                  <LogOut className="h-3.5 w-3.5" strokeWidth={2.5} />
                   <span>Sign Out</span>
                 </button>
               </div>
