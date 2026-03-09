@@ -13,9 +13,13 @@ import { Separator } from "@/components/ui/separator";
 export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
   const { activeWorkspace, allWorkspaces, isAccountingFirm, clientWorkspaces, switchWorkspace } = useWorkspace();
   const navigate = useNavigate();
+  const { isClient } = useClientRole();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Hide switcher entirely for client-role users
+  if (isClient) return null;
 
   // Only show switcher for accounting firms with multiple workspaces
   if (!isAccountingFirm && allWorkspaces.length <= 1) return null;
