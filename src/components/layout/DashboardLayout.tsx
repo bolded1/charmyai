@@ -24,6 +24,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { PwaInstallBanner } from "@/components/PwaInstallBanner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useClientRole } from "@/hooks/useClientRole";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger,
