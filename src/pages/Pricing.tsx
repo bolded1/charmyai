@@ -53,11 +53,16 @@ export default function PricingPage() {
   };
 
   const faqs = [
-    { q: "Can I switch between monthly and yearly?", a: "Yes, you can switch at any time. Changes take effect immediately with prorated billing." },
-    { q: "What happens after my trial ends?", a: "After your 7-day trial, you'll be charged automatically. You can cancel anytime before the trial ends." },
-    { q: "What document formats are supported?", a: "We support PDF, PNG, and JPG files. Scanned documents work too." },
-    { q: "Is my data secure?", a: "Yes. All documents are encrypted at rest and in transit. We never share your data." },
-    { q: "Do I need a credit card for the trial?", a: "Yes, a credit card is required to start the trial, but you won't be charged until the 7-day trial period ends." },
+    { q: "Do I need to enter my card details to start the free trial?", a: "Yes. To start your 7-day free trial, you will be asked to enter your payment method. You will not be charged during the trial period. Your subscription will only begin if you decide to continue using Charmy after the trial ends. You can cancel anytime before the trial ends." },
+    { q: "Can I cancel my subscription anytime?", a: "Yes. You can cancel your subscription at any time from Settings → Billing. If you cancel, your access will remain active until the end of the current billing period." },
+    { q: "What happens when my trial ends?", a: "When your 7-day trial ends, your subscription will automatically continue on the selected plan. If you cancel before the trial ends, no charges will be made." },
+    { q: "What counts as a processed document?", a: "A processed document is any invoice, receipt, or financial document that Charmy reads and extracts financial data from — including supplier invoices, purchase receipts, expense documents, and income invoices. Each document processed by the AI counts toward your monthly document limit." },
+    { q: "What happens if I reach my monthly document limit?", a: "If you reach your plan's document limit, you can upgrade to a higher plan, wait until the next billing cycle, or purchase additional document credits (if available). Your existing documents and data will always remain accessible." },
+    { q: "Can accountants use Charmy for multiple clients?", a: "Yes. Charmy is designed to help accountants and bookkeeping professionals process invoices from multiple clients efficiently. You can collect invoices, extract financial data, and export organized records for accounting workflows." },
+    { q: "Can I change my plan later?", a: "Yes. You can upgrade or downgrade your plan anytime from the Billing settings page. Plan changes take effect immediately or at the next billing cycle depending on the change." },
+    { q: "Is my financial data secure?", a: "Yes. Charmy processes documents using secure cloud infrastructure and encrypted connections. Security measures include SSL encrypted data transfer, secure cloud infrastructure, and GDPR-compliant data handling. Your financial documents are only accessible to your account." },
+    { q: "Can I export my data for accounting software?", a: "Yes. Charmy allows you to export financial data in formats suitable for accountants and accounting systems, including CSV, spreadsheet formats, and structured financial reports. This makes it easy to share data with accountants or import it into accounting tools." },
+    { q: "Can I try Charmy before paying?", a: "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo. This allows you to see how the AI extracts financial data before starting your trial." },
   ];
 
   return (
