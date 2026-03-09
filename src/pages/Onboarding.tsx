@@ -66,6 +66,7 @@ export default function OnboardingPage() {
   const profileComplete = !!profile?.first_name && !!profile?.last_name;
   const initialStep = profileComplete ? 1 : 0;
   const [step, setStep] = useState(initialStep);
+  const [hasStartedOnboardingFlow, setHasStartedOnboardingFlow] = useState(false);
 
   // Update step when profile loads and we detect step 0 was already done
   useEffect(() => {
@@ -74,16 +75,30 @@ export default function OnboardingPage() {
     }
   }, [profileLoading, profileComplete]);
 
-  // Redirect users who already completed onboarding
+  // Redirect users who already completed onboarding (only before they interact with this flow)
   useEffect(() => {
-    if (!authLoading && !profileLoading && user && profile?.onboarding_completed_at) {
+    if (
+      !authLoading &&
+      !profileLoading &&
+      user &&
+      profile?.onboarding_completed_at &&
+      !hasStartedOnboardingFlow
+    ) {
       if (profile?.billing_setup_at) {
         navigate("/app", { replace: true });
       } else {
         navigate("/activate-trial", { replace: true });
       }
     }
-  }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, profile?.billing_setup_at, navigate]);
+  }, [
+    authLoading,
+    profileLoading,
+    user,
+    profile?.onboarding_completed_at,
+    profile?.billing_setup_at,
+    hasStartedOnboardingFlow,
+    navigate,
+  ]);
 
   // Pre-populate from saved profile data first, then signup metadata as fallback
   const metaFirst = user?.user_metadata?.first_name || "";
