@@ -161,19 +161,25 @@ export default function BillingSection() {
             )}
           </div>
 
-          {/* Pro plan details (one-time) */}
+          {/* Pro plan details */}
           {sub.subscribed && !sub.has_firm_plan && sub.plan === "pro" && (
             <>
               <Separator className="my-4" />
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">Payment Type</p>
-                  <p className="font-medium">One-time</p>
+                  <p className="font-medium">{sub.subscription_id ? "Subscription" : "One-time"}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Amount Paid</p>
                   <p className="font-medium">{planPrice}</p>
                 </div>
+                {sub.current_period_end && (
+                  <div>
+                    <p className="text-muted-foreground text-xs">Current Period End</p>
+                    <p className="font-medium">{new Date(sub.current_period_end).toLocaleDateString()}</p>
+                  </div>
+                )}
               </div>
             </>
           )}
