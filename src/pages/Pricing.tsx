@@ -311,7 +311,7 @@ export default function PricingPage() {
               Frequently Asked <span className="text-gradient">Questions</span>
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Everything you need to know about pricing, billing, and your free trial.
+              Everything you need to know about pricing and billing.
             </p>
           </motion.div>
 

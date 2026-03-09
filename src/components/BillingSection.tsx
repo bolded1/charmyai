@@ -331,9 +331,9 @@ export default function BillingSection() {
       {!sub.subscribed && (
         <Card>
           <CardContent className="p-5">
-            <h3 className="font-semibold mb-1">Subscribe to Pro</h3>
+            <h3 className="font-semibold mb-1">Get Charmy Pro</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Get unlimited documents, team access, email import, and more. Start with a 7-day free trial.
+              Get unlimited documents, team access, email import, and more. One-time payment — lifetime access.
             </p>
             <ul className="space-y-2 mb-6">
               {STRIPE_PLANS.pro.features.map((f) => (
@@ -344,19 +344,11 @@ export default function BillingSection() {
             </ul>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id_monthly)}
+                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id)}
                 disabled={!!checkoutLoading}
               >
-                {checkoutLoading === STRIPE_PLANS.pro.price_id_monthly ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                €9.99/month — Start 7-Day Trial
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id_yearly)}
-                disabled={!!checkoutLoading}
-              >
-                {checkoutLoading === STRIPE_PLANS.pro.price_id_yearly ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                €99/year — Save 17%
+                {checkoutLoading === STRIPE_PLANS.pro.price_id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                €29.99 — Get Lifetime Access
               </Button>
             </div>
           </CardContent>
