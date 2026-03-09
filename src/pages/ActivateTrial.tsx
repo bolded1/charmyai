@@ -593,6 +593,62 @@ export default function ActivateTrialPage() {
                 ))}
               </div>
 
+              {/* Promo code section */}
+              <div>
+                {!promoExpanded && !promoResult?.valid ? (
+                  <button
+                    type="button"
+                    onClick={() => setPromoExpanded(true)}
+                    className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                  >
+                    <Tag className="h-3.5 w-3.5" />
+                    Have a promo code?
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                      <Tag className="h-3 w-3" />
+                      Promo Code
+                    </Label>
+                    {promoResult?.valid ? (
+                      <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                          <div>
+                            <p className="text-sm font-semibold text-primary">{promoResult.discount_label}</p>
+                            <p className="text-xs text-muted-foreground">Code: {promoCode.toUpperCase()}</p>
+                          </div>
+                        </div>
+                        <button onClick={handleRemovePromo} className="text-muted-foreground hover:text-foreground">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                          placeholder="Enter code"
+                          className="font-mono text-sm"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => validateCode(promoCode, "onetime", "firm")}
+                          disabled={validating || !promoCode.trim()}
+                          className="shrink-0"
+                        >
+                          {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                        </Button>
+                      </div>
+                    )}
+                    {promoResult && !promoResult.valid && promoResult.error && (
+                      <p className="text-xs text-destructive">{promoResult.error}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Billing Summary */}
               <div className="rounded-xl border border-border/60 bg-muted/30 p-4 space-y-2">
                 <div className="flex justify-between text-sm">
