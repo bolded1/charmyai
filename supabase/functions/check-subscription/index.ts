@@ -55,6 +55,31 @@ serve(async (req) => {
       return promoAccess && promoAccess.length > 0 ? promoAccess[0] : null;
     };
 
+    // Helper: provision firm entitlement on the user's organization
+    const provisionFirmOrg = async () => {
+      try {
+        const { data: orgs } = await supabaseClient
+          .from("organizations")
+          .select("id, workspace_type, max_client_workspaces")
+          .eq("owner_user_id", user.id)
+          .in("workspace_type", ["standard", "accounting_firm"])
+          .limit(1);
+
+        if (orgs && orgs.length > 0) {
+          const org = orgs[0];
+          if (org.workspace_type !== "accounting_firm" || org.max_client_workspaces < 10) {
+            logStep("Provisioning firm entitlement on org", { orgId: org.id });
+            await supabaseClient
+              .from("organizations")
+              .update({ workspace_type: "accounting_firm", max_client_workspaces: 10 })
+              .eq("id", org.id);
+          }
+        }
+      } catch (err) {
+        logStep("Error provisioning firm org", { error: String(err) });
+      }
+    };
+
     if (customers.data.length === 0) {
       logStep("No Stripe customer found, checking promo entitlements");
       const promo = await checkPromo();
@@ -102,6 +127,11 @@ serve(async (req) => {
       logStep("Error checking firm plan sessions", { error: String(err) });
     }
 
+    // Auto-provision firm entitlement on the organization when detected
+    if (hasFirmPlan) {
+      await provisionFirmOrg();
+    }
+
     // Check subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
@@ -113,7 +143,7 @@ serve(async (req) => {
       const promo = await checkPromo();
       if (promo) {
         return new Response(JSON.stringify({
-          subscribed: true, plan: "pro", status: "promo_active",
+          subscribed: true, plan: hasFirmPlan ? "firm" : "pro", status: "promo_active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
           has_firm_plan: hasFirmPlan,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -145,9 +175,9 @@ serve(async (req) => {
     const periodEndDate = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null;
 
     return new Response(JSON.stringify({
-      subscribed: isActive,
-      plan: isActive ? "pro" : "free",
-      status: sub.status,
+      subscribed: isActive || hasFirmPlan,
+      plan: hasFirmPlan ? "firm" : isActive ? "pro" : "free",
+      status: isActive ? sub.status : hasFirmPlan ? "active" : sub.status,
       price_id: priceId,
       subscription_id: sub.id,
       trial_end: trialEndDate,

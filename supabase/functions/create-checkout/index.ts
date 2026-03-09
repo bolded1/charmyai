@@ -62,12 +62,22 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://charmyai.lovable.app";
     const isOneTime = ONE_TIME_PRICE_IDS.has(priceId);
 
+    // For firm plan one-time purchase, use activate-trial success URL
+    // so billing_setup_at gets set properly
+    const successUrl = isOneTime
+      ? `${origin}/app/settings?tab=billing&checkout=success&plan=firm`
+      : `${origin}/app/settings?tab=billing&checkout=success`;
+
     const sessionParams: any = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: isOneTime ? "payment" : "subscription",
-      success_url: `${origin}/app/settings?tab=billing&checkout=success`,
+      success_url: successUrl,
       cancel_url: `${origin}/app/settings?tab=billing&checkout=cancelled`,
+      metadata: {
+        supabase_user_id: user.id,
+        plan_type: isOneTime ? "firm" : "pro",
+      },
     };
 
     // Only add trial & subscription_data for subscription mode
