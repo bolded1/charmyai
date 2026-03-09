@@ -42,10 +42,13 @@ const recordsItems = [
   { title: "Exports", url: "/app/exports", icon: Download },
 ];
 
+const firmItems = [
+  { title: "Firm Dashboard", url: "/app/workspaces", icon: BarChart3 },
+  { title: "Team", url: "/app/team", icon: UsersRound },
+];
+
 const systemItems = [
   { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
-  { title: "Workspaces", url: "/app/workspaces", icon: Briefcase },
-  { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
   { title: "Support", url: "/app/support", icon: LifeBuoy },
   { title: "Help & Documentation", url: "/app/help", icon: HelpCircle },
