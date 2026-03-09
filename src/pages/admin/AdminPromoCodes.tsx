@@ -118,7 +118,7 @@ export default function AdminPromoCodes() {
         discount_type: values.discount_type,
         discount_value: values.discount_value,
         currency: values.currency,
-        applies_to_plans: ["pro"],
+        applies_to_plans: values.applies_to_plans,
         applies_to_billing: values.applies_to_billing,
         applies_to_first_only: values.applies_to_first_only,
         recurring_cycles: values.recurring_cycles || null,
