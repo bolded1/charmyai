@@ -27,7 +27,7 @@ import {
   Building2, Briefcase, Plus, Trash2, Pencil, FileText, Receipt,
   ArrowRight, Loader2, AlertTriangle, Clock, Download, Eye,
   CheckCircle2, Search, LayoutGrid, List, Archive, ArchiveRestore,
-  Activity, BarChart3, Globe, Mail, Phone, Hash, UserPlus,
+  Activity, BarChart3, Globe, Mail, Phone, Hash, UserPlus, User,
   ChevronsUpDown, Check,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { ClientAccessPanel } from "@/components/ClientAccessPanel";
-import { useSendClientInvitation } from "@/hooks/useClientInvitations";
+import { useSendClientInvitation, useClientInvitations } from "@/hooks/useClientInvitations";
 import { useClientRole } from "@/hooks/useClientRole";
 
 const CURRENCIES = [
@@ -245,6 +245,7 @@ export default function WorkspacesPage() {
   const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
   const [inviteRows, setInviteRows] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
   const [inviting, setInviting] = useState(false);
+  const { data: existingInvitations = [] } = useClientInvitations(inviteWs?.id);
 
   // Only accounting firms can access the workspaces page
   useEffect(() => {
@@ -253,10 +254,7 @@ export default function WorkspacesPage() {
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
-    setInviteRows([{
-      name: (ws as any).client_contact_name || "",
-      email: (ws as any).client_contact_email || ws.contact_email || "",
-    }]);
+    setInviteRows([{ name: "", email: "" }]);
     setInviteOpen(true);
   };
 
@@ -275,7 +273,18 @@ export default function WorkspacesPage() {
     setInviting(true);
     let successCount = 0;
     let failCount = 0;
+    let skippedCount = 0;
+
+    // Get existing invitation emails to avoid resending
+    const existingEmails = new Set(
+      (existingInvitations || []).map((inv: any) => inv.client_email?.toLowerCase())
+    );
+
     for (const row of validInviteRows) {
+      if (existingEmails.has(row.email.trim().toLowerCase())) {
+        skippedCount++;
+        continue;
+      }
       try {
         await sendClientInvitation.mutateAsync({
           workspace_id: inviteWs.id,
@@ -288,6 +297,7 @@ export default function WorkspacesPage() {
       }
     }
     if (successCount > 0) toast.success(`${successCount} invitation${successCount > 1 ? "s" : ""} sent`);
+    if (skippedCount > 0) toast.info(`${skippedCount} already invited — skipped`);
     if (failCount > 0) toast.error(`${failCount} invitation${failCount > 1 ? "s" : ""} failed`);
     setInviteOpen(false);
     setInviteWs(null);
@@ -1014,6 +1024,30 @@ export default function WorkspacesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2 max-h-[50vh] overflow-y-auto">
+            {/* Existing invitations */}
+            {existingInvitations.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Already invited</p>
+                {existingInvitations.map((inv: any) => (
+                  <div key={inv.id} className="flex items-center gap-2 bg-accent/50 rounded-lg px-3 py-2">
+                    <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">{inv.client_name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{inv.client_email}</p>
+                    </div>
+                    <Badge
+                      variant={inv.status === "accepted" ? "default" : inv.status === "revoked" ? "destructive" : "secondary"}
+                      className={`text-[9px] shrink-0 ${inv.status === "accepted" ? "bg-emerald-100 text-emerald-700 border-0" : ""}`}
+                    >
+                      {inv.status === "accepted" ? "Active" : inv.status === "revoked" ? "Revoked" : "Pending"}
+                    </Badge>
+                  </div>
+                ))}
+                <Separator className="my-2" />
+                <p className="text-xs font-medium text-muted-foreground">Add new clients</p>
+              </div>
+            )}
+
             {inviteRows.map((row, idx) => (
               <div key={idx} className="flex items-end gap-2">
                 <div className="flex-1 space-y-1.5">

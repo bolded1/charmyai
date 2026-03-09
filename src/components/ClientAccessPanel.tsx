@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -36,11 +35,9 @@ export function ClientAccessPanel({ workspaceId, workspaceName, contactName, con
   const reinstateInvitation = useReinstateClientInvitation();
 
   const [inviteMode, setInviteMode] = useState(false);
-  const [clientName, setClientName] = useState(contactName || "");
-  const [clientEmail, setClientEmail] = useState(contactEmail || "");
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
   const [revokeId, setRevokeId] = useState<string | null>(null);
-
-  const currentInvitation = invitations[0] as ClientInvitation | undefined;
 
   const handleSendInvite = async () => {
     if (!clientName.trim() || !clientEmail.trim()) return;
@@ -50,6 +47,8 @@ export function ClientAccessPanel({ workspaceId, workspaceName, contactName, con
       client_email: clientEmail.trim(),
     });
     setInviteMode(false);
+    setClientName("");
+    setClientEmail("");
   };
 
   const statusBadge = (status: string) => {
@@ -83,16 +82,19 @@ export function ClientAccessPanel({ workspaceId, workspaceName, contactName, con
             <div className="flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-primary" />
               <h3 className="text-sm font-semibold text-foreground">Client Access</h3>
+              {invitations.length > 0 && (
+                <Badge variant="outline" className="text-[10px]">{invitations.length}</Badge>
+              )}
             </div>
-            {!currentInvitation && !inviteMode && (
+            {!inviteMode && (
               <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setInviteMode(true)}>
                 <Send className="h-3 w-3 mr-1" /> Invite Client
               </Button>
             )}
           </div>
 
-          {/* No invitation yet */}
-          {!currentInvitation && !inviteMode && (
+          {/* No invitations yet */}
+          {invitations.length === 0 && !inviteMode && (
             <div className="bg-accent/50 rounded-lg p-4 text-center space-y-2">
               <User className="h-8 w-8 mx-auto text-muted-foreground/40" />
               <p className="text-xs text-muted-foreground">
@@ -105,9 +107,9 @@ export function ClientAccessPanel({ workspaceId, workspaceName, contactName, con
           )}
 
           {/* Invite form */}
-          {inviteMode && !currentInvitation && (
+          {inviteMode && (
             <div className="space-y-3 bg-accent/30 rounded-lg p-4">
-              <p className="text-xs text-muted-foreground">Invite the client to access their workspace. They'll receive an email with a link to set up their account.</p>
+              <p className="text-xs text-muted-foreground">Invite a client to access this workspace. They'll receive an email with a link to set up their account.</p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-muted-foreground">Contact Name</Label>
@@ -119,7 +121,7 @@ export function ClientAccessPanel({ workspaceId, workspaceName, contactName, con
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setInviteMode(false)}>Cancel</Button>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setInviteMode(false); setClientName(""); setClientEmail(""); }}>Cancel</Button>
                 <Button size="sm" className="h-7 text-xs" onClick={handleSendInvite} disabled={!clientName.trim() || !clientEmail.trim() || sendInvitation.isPending}>
                   {sendInvitation.isPending && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                   <Mail className="h-3 w-3 mr-1" /> Send Invitation
@@ -128,77 +130,82 @@ export function ClientAccessPanel({ workspaceId, workspaceName, contactName, con
             </div>
           )}
 
-          {/* Existing invitation */}
-          {currentInvitation && (
+          {/* All invitations list */}
+          {invitations.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{currentInvitation.client_name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{currentInvitation.client_email}</p>
+              {invitations.map((inv: ClientInvitation, idx: number) => (
+                <div key={inv.id}>
+                  {idx > 0 && <Separator className="mb-3" />}
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{inv.client_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{inv.client_email}</p>
+                        </div>
+                      </div>
+                      {statusBadge(inv.status)}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <p className="text-muted-foreground">Role</p>
+                        <p className="font-medium text-foreground">Client</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Invited</p>
+                        <p className="font-medium text-foreground">
+                          {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                      {inv.status === "pending" && (
+                        <div>
+                          <p className="text-muted-foreground">Expires</p>
+                          <p className="font-medium text-foreground">
+                            {formatDistanceToNow(new Date(inv.expires_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      )}
+                      {inv.accepted_at && (
+                        <div>
+                          <p className="text-muted-foreground">Accepted</p>
+                          <p className="font-medium text-foreground">
+                            {formatDistanceToNow(new Date(inv.accepted_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {inv.status === "pending" && (
+                        <>
+                          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => resendInvitation.mutate(inv.id)} disabled={resendInvitation.isPending}>
+                            {resendInvitation.isPending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                            Resend
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setRevokeId(inv.id)}>
+                            <ShieldOff className="h-3 w-3 mr-1" /> Revoke
+                          </Button>
+                        </>
+                      )}
+                      {inv.status === "accepted" && (
+                        <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setRevokeId(inv.id)}>
+                          <ShieldOff className="h-3 w-3 mr-1" /> Revoke Access
+                        </Button>
+                      )}
+                      {inv.status === "revoked" && (
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => reinstateInvitation.mutate(inv.id)} disabled={reinstateInvitation.isPending}>
+                          {reinstateInvitation.isPending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ShieldCheck className="h-3 w-3 mr-1" />}
+                          Re-enable Access
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                {statusBadge(currentInvitation.status)}
-              </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <p className="text-muted-foreground">Role</p>
-                  <p className="font-medium text-foreground">Client</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Invited</p>
-                  <p className="font-medium text-foreground">
-                    {formatDistanceToNow(new Date(currentInvitation.created_at), { addSuffix: true })}
-                  </p>
-                </div>
-                {currentInvitation.status === "pending" && (
-                  <div>
-                    <p className="text-muted-foreground">Expires</p>
-                    <p className="font-medium text-foreground">
-                      {formatDistanceToNow(new Date(currentInvitation.expires_at), { addSuffix: true })}
-                    </p>
-                  </div>
-                )}
-                {currentInvitation.accepted_at && (
-                  <div>
-                    <p className="text-muted-foreground">Accepted</p>
-                    <p className="font-medium text-foreground">
-                      {formatDistanceToNow(new Date(currentInvitation.accepted_at), { addSuffix: true })}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-2 pt-1">
-                {currentInvitation.status === "pending" && (
-                  <>
-                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => resendInvitation.mutate(currentInvitation.id)} disabled={resendInvitation.isPending}>
-                      {resendInvitation.isPending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                      Resend
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setRevokeId(currentInvitation.id)}>
-                      <ShieldOff className="h-3 w-3 mr-1" /> Revoke
-                    </Button>
-                  </>
-                )}
-                {currentInvitation.status === "accepted" && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setRevokeId(currentInvitation.id)}>
-                    <ShieldOff className="h-3 w-3 mr-1" /> Revoke Access
-                  </Button>
-                )}
-                {currentInvitation.status === "revoked" && (
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => reinstateInvitation.mutate(currentInvitation.id)} disabled={reinstateInvitation.isPending}>
-                    {reinstateInvitation.isPending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ShieldCheck className="h-3 w-3 mr-1" />}
-                    Re-enable Access
-                  </Button>
-                )}
-              </div>
+              ))}
             </div>
           )}
         </CardContent>
