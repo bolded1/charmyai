@@ -179,13 +179,6 @@ export default function ActivateTrialPage() {
     setPromoCode("");
   };
 
-  // Re-validate when billing interval changes if code is applied
-  useEffect(() => {
-    if (promoResult?.valid && promoCode) {
-      validateCode(promoCode, billingInterval, "pro");
-    }
-  }, [billingInterval]);
-
   // Whether card is needed based on promo (only relevant for Pro plan)
   const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
 
