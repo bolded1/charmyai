@@ -6,15 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   CreditCard, CheckCircle2, Clock, Loader2, ExternalLink, Download,
-  Building2, Briefcase, Shield, Sparkles, Tag, X,
+  Building2, Briefcase, Shield, Sparkles, Tag, X, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { loadStripe } from "@stripe/stripe-js";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
+import { useAuth } from "@/hooks/useAuth";
+import { usePromoCode } from "@/hooks/usePromoCode";
 
 interface PaymentMethod {
   id: string;
