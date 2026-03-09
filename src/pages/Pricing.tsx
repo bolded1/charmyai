@@ -72,7 +72,7 @@ export default function PricingPage() {
     name: "Accounting Firm",
     price: "€99",
     period: "one-time",
-    desc: "Built for accountants and bookkeeping firms managing multiple client companies.",
+    desc: "For accountants and bookkeeping firms. Manage up to 10 client companies from one account.",
     features: STRIPE_PLANS.firm.features,
     current: subscription?.plan === "firm",
   };
