@@ -89,7 +89,7 @@ export function MarketingCTA() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-3xl md:text-4xl lg:text-5xl font-bold mb-5 text-primary-foreground leading-tight"
         >
-          Upload invoices. Forward emails.{" "}
+          Upload invoices & receipts. Forward emails.{" "}
           <span className="opacity-90">Charmy extracts the data.</span>
         </motion.h2>
 
