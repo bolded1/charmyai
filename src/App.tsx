@@ -59,6 +59,7 @@ import AdminSystemHealth from "./pages/admin/AdminSystemHealth";
 import AdminScheduledJobs from "./pages/admin/AdminScheduledJobs";
 import AdminAISettings from "./pages/admin/AdminAISettings";
 import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
+import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import Assistant from "./pages/Assistant";
 import NotFound from "./pages/NotFound";
 import { useDynamicPwaManifest } from "./hooks/useDynamicPwaManifest";
@@ -149,6 +150,7 @@ const App = () => (
             <Route path="gdpr" element={<AdminGDPR />} />
             <Route path="feedback" element={<AdminFeedback />} />
             <Route path="marketing-email" element={<AdminMarketingEmail />} />
+            <Route path="promo-codes" element={<AdminPromoCodes />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 

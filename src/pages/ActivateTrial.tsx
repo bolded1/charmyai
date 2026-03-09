@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { STRIPE_PLANS } from "@/hooks/useSubscription";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { usePromoCode } from "@/hooks/usePromoCode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Shield, Lock, CreditCard, Loader2, CheckCircle2 } from "lucide-react";
+import { FileText, Shield, Lock, CreditCard, Loader2, CheckCircle2, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 
 const STRIPE_PK = "pk_live_51Dzp0JBmkvUKJ0fuaOO3lXgQ83A5srdQrW5qKGr4ve9yaED1A5UmEel695J4wGxsokdAznHG53i33ELPjqgCFzqV00Y3AyofY0";
@@ -16,6 +17,7 @@ export default function ActivateTrialPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const brandLogo = useBrandLogo();
+  const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
 
   const [stripe, setStripe] = useState<any>(null);
   const [elements, setElements] = useState<any>(null);
@@ -26,6 +28,8 @@ export default function ActivateTrialPage() {
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoExpanded, setPromoExpanded] = useState(false);
 
   // Load Stripe.js
   useEffect(() => {
@@ -84,6 +88,22 @@ export default function ActivateTrialPage() {
     initSetup();
   }, [stripe, user]);
 
+  const handleApplyPromo = async () => {
+    await validateCode(promoCode, billingInterval, "pro");
+  };
+
+  const handleRemovePromo = () => {
+    clearPromo();
+    setPromoCode("");
+  };
+
+  // Re-validate when billing interval changes if code is applied
+  useEffect(() => {
+    if (promoResult?.valid && promoCode) {
+      validateCode(promoCode, billingInterval, "pro");
+    }
+  }, [billingInterval]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements || !clientSecret) return;
@@ -127,13 +147,16 @@ export default function ActivateTrialPage() {
         body: {
           priceId,
           paymentMethodId: setupIntent.payment_method,
+          promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
+          stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
+          extraTrialDays: promoResult?.valid ? promoResult.extra_trial_days : undefined,
         },
       });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast.success("Your 7-day free trial has been activated!");
+      toast.success("Your free trial has been activated!");
       navigate("/app");
     } catch (err: any) {
       setSetupError(err.message || "Failed to activate trial");
@@ -153,6 +176,36 @@ export default function ActivateTrialPage() {
   if (!user) {
     navigate("/login");
     return null;
+  }
+
+  // Calculate billing summary
+  const basePrice = billingInterval === "monthly" ? STRIPE_PLANS.pro.price_monthly : STRIPE_PLANS.pro.price_yearly;
+  const basePeriod = billingInterval === "monthly" ? "/month" : "/year";
+  let discountedPrice: number = basePrice;
+  let discountLine: string | null = null;
+  let trialDays = 7;
+
+  if (promoResult?.valid) {
+    const { discount_type, discount_value, extra_trial_days, free_duration_months } = promoResult;
+    if (extra_trial_days) trialDays += extra_trial_days;
+
+    if (discount_type === "percentage" && discount_value) {
+      discountedPrice = basePrice * (1 - discount_value / 100);
+      discountLine = `-${discount_value}%`;
+      if (discount_value === 100 && !free_duration_months) {
+        discountLine = "Free forever";
+      } else if (discount_value === 100 && free_duration_months) {
+        discountLine = `Free for ${free_duration_months} month${free_duration_months > 1 ? "s" : ""}`;
+      }
+    } else if (discount_type === "fixed" && discount_value) {
+      discountedPrice = Math.max(0, basePrice - discount_value);
+      discountLine = `-€${discount_value}`;
+    } else if (discount_type === "trial_extension") {
+      discountLine = `+${extra_trial_days} extra trial days`;
+    } else if (discount_type === "free_period" && free_duration_months) {
+      discountedPrice = 0;
+      discountLine = `Free for ${free_duration_months} month${free_duration_months > 1 ? "s" : ""}`;
+    }
   }
 
   return (
@@ -176,7 +229,7 @@ export default function ActivateTrialPage() {
               </>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Start your 7-day free trial</h1>
+          <h1 className="text-2xl font-bold text-foreground">Start your {trialDays}-day free trial</h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
             Add your payment method to begin your free trial. You will not be charged until the trial ends.
           </p>
@@ -220,6 +273,89 @@ export default function ActivateTrialPage() {
                 {f}
               </div>
             ))}
+          </div>
+
+          {/* Promo code section */}
+          <div className="mb-5">
+            {!promoExpanded && !promoResult?.valid ? (
+              <button
+                type="button"
+                onClick={() => setPromoExpanded(true)}
+                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                <Tag className="h-3.5 w-3.5" />
+                Have a promo code?
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Tag className="h-3 w-3" />
+                  Promo Code
+                </Label>
+                {promoResult?.valid ? (
+                  <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-primary">{promoResult.discount_label}</p>
+                        <p className="text-xs text-muted-foreground">Code: {promoCode.toUpperCase()}</p>
+                      </div>
+                    </div>
+                    <button onClick={handleRemovePromo} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                      placeholder="Enter code"
+                      className="font-mono text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleApplyPromo}
+                      disabled={validating || !promoCode.trim()}
+                      className="shrink-0"
+                    >
+                      {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                    </Button>
+                  </div>
+                )}
+                {promoResult && !promoResult.valid && promoResult.error && (
+                  <p className="text-xs text-destructive">{promoResult.error}</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Billing Summary */}
+          <div className="rounded-xl border border-border/60 bg-muted/30 p-4 mb-5 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Plan</span>
+              <span className="font-medium">Pro</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Price</span>
+              <span className="font-medium">€{basePrice}{basePeriod}</span>
+            </div>
+            {discountLine && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Discount</span>
+                <span className="font-semibold text-primary">{discountLine}</span>
+              </div>
+            )}
+            <div className="border-t border-border/50 pt-2 mt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Today</span>
+              <span className="font-bold">€0 (trial)</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">After {trialDays}-day trial</span>
+              <span className="font-bold">€{discountedPrice.toFixed(2)}{basePeriod}</span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

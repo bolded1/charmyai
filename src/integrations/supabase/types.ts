@@ -902,6 +902,135 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_code_redemptions: {
+        Row: {
+          discount_snapshot: Json | null
+          id: string
+          organization_id: string | null
+          promo_code_id: string
+          redeemed_at: string
+          status: string
+          subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          discount_snapshot?: Json | null
+          id?: string
+          organization_id?: string | null
+          promo_code_id: string
+          redeemed_at?: string
+          status?: string
+          subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          discount_snapshot?: Json | null
+          id?: string
+          organization_id?: string | null
+          promo_code_id?: string
+          redeemed_at?: string
+          status?: string
+          subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_redemptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_code_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          active: boolean
+          applies_to_billing: string | null
+          applies_to_first_only: boolean | null
+          applies_to_plans: string[] | null
+          code: string
+          created_at: string
+          currency: string | null
+          current_redemptions: number
+          description: string | null
+          discount_type: string
+          discount_value: number
+          end_date: string | null
+          extra_trial_days: number | null
+          free_duration_months: number | null
+          id: string
+          internal_name: string | null
+          max_redemptions: number | null
+          max_redemptions_per_org: number | null
+          recurring_cycles: number | null
+          requires_card: boolean | null
+          stacks_with_trial: boolean | null
+          start_date: string | null
+          stripe_coupon_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          applies_to_billing?: string | null
+          applies_to_first_only?: boolean | null
+          applies_to_plans?: string[] | null
+          code: string
+          created_at?: string
+          currency?: string | null
+          current_redemptions?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_date?: string | null
+          extra_trial_days?: number | null
+          free_duration_months?: number | null
+          id?: string
+          internal_name?: string | null
+          max_redemptions?: number | null
+          max_redemptions_per_org?: number | null
+          recurring_cycles?: number | null
+          requires_card?: boolean | null
+          stacks_with_trial?: boolean | null
+          start_date?: string | null
+          stripe_coupon_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          applies_to_billing?: string | null
+          applies_to_first_only?: boolean | null
+          applies_to_plans?: string[] | null
+          code?: string
+          created_at?: string
+          currency?: string | null
+          current_redemptions?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_date?: string | null
+          extra_trial_days?: number | null
+          free_duration_months?: number | null
+          id?: string
+          internal_name?: string | null
+          max_redemptions?: number | null
+          max_redemptions_per_org?: number | null
+          recurring_cycles?: number | null
+          requires_card?: boolean | null
+          stacks_with_trial?: boolean | null
+          start_date?: string | null
+          stripe_coupon_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scheduled_jobs: {
         Row: {
           created_at: string

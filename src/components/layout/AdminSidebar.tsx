@@ -9,7 +9,7 @@ import { ChevronRight } from "lucide-react";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
-  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain, MailPlus,
+  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain, MailPlus, Tag,
 } from "lucide-react";
 
 const navGroups = [
@@ -41,6 +41,7 @@ const navGroups = [
     items: [
       { title: "Usage & Activity", url: "/admin/usage", icon: BarChart3 },
       { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
+      { title: "Promo Codes", url: "/admin/promo-codes", icon: Tag },
       { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
       { title: "User Feedback", url: "/admin/feedback", icon: MessageSquareHeart },
     ],

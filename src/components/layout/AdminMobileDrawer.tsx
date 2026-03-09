@@ -5,7 +5,7 @@ import { ChevronDown, Shield, ArrowLeft } from "lucide-react";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Sparkles, PenLine, Mail, Megaphone,
-  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock,
+  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Tag,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ const navGroups: NavGroup[] = [
   { label: "Analytics & Revenue", items: [
     { title: "Usage & Activity", url: "/admin/usage", icon: BarChart3 },
     { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
+    { title: "Promo Codes", url: "/admin/promo-codes", icon: Tag },
     { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
     { title: "User Feedback", url: "/admin/feedback", icon: MessageSquareHeart },
   ]},
