@@ -43,7 +43,7 @@ export default function MarketingLayout() {
   return (
     <div className="marketing min-h-screen flex flex-col">
       {/* Floating Header */}
-      <header className="sticky top-0 z-50 w-full pointer-events-none">
+      <header className="fixed inset-x-0 top-0 z-50 w-full pointer-events-none">
         <div className="pointer-events-auto transition-all duration-300 max-w-5xl mx-4 md:mx-auto rounded-2xl border border-border/40" style={{
           marginTop: '0.75rem',
           background: scrolled
