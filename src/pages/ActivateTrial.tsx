@@ -36,7 +36,7 @@ export default function ActivateTrialPage() {
   const [billingAddress, setBillingAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const [promoCode, setPromoCode] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
