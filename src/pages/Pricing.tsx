@@ -253,11 +253,18 @@ export default function PricingPage() {
       <section className="relative pb-20">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-            className="text-center space-y-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              The <span className="font-semibold text-foreground">Accounting Firm</span> plan is a one-time purchase that gives you access to up to 10 client workspaces inside Charmy.
+            className="glass-card rounded-2xl p-8 md:p-10 border border-border/50 text-center space-y-4">
+            <div className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-amber-500/10 mx-auto">
+              <Building2 className="h-5 w-5 text-amber-600" />
+            </div>
+            <h3 className="text-lg font-bold">Why accountants choose Charmy</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
+              Accountants often receive piles of invoices from multiple clients. Instead of chasing files across emails, folders, and spreadsheets — process client invoices in dedicated workspaces and export clean financial data faster.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
+              The <span className="font-semibold text-foreground">Accounting Firm</span> plan is a one-time purchase of <span className="font-semibold text-foreground">€99</span> that gives you access to up to 10 client workspaces inside Charmy. Each workspace keeps documents fully separated, searchable, and ready to export.
+            </p>
+            <p className="text-xs text-muted-foreground pt-1">
               Ideal for firms managing documents for multiple clients from one central platform.
             </p>
           </motion.div>
