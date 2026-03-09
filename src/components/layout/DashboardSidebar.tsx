@@ -74,7 +74,7 @@ export function DashboardSidebar() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { data: org } = useOrganization();
-  const { activeWorkspace, isAccountingFirm } = useWorkspace();
+  const { activeWorkspace, isAccountingFirm, clientWorkspaces, allWorkspaces } = useWorkspace();
   const { isClient } = useClientRole();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   
@@ -210,7 +210,45 @@ export function DashboardSidebar() {
               <>
                 {renderGroup("Documents", financeItems)}
                 {renderGroup("Finance", recordsItems)}
-                {!isClient && isAccountingFirm && renderGroup("Firm", firmItems)}
+                {!isClient && isAccountingFirm && (
+                  <SidebarGroup className="py-1">
+                    {showLabels && (
+                      <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
+                        Firm
+                      </SidebarGroupLabel>
+                    )}
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {firmItems.map((item) => {
+                          const homeOrg = allWorkspaces.find(
+                            (w) => w.workspace_type === "accounting_firm" || w.workspace_type === "standard"
+                          );
+                          const maxWs = homeOrg?.max_client_workspaces || 10;
+                          const showBadge = item.title === "Firm Dashboard";
+                          return (
+                            <SidebarMenuItem key={item.title}>
+                              <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                                <NavLink to={item.url} end={item.url === '/app'}>
+                                  <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                  {showLabels && (
+                                    <span className="text-sm font-medium text-foreground flex-1 flex items-center justify-between">
+                                      {item.title}
+                                      {showBadge && (
+                                        <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
+                                          {clientWorkspaces.length}/{maxWs}
+                                        </span>
+                                      )}
+                                    </span>
+                                  )}
+                                </NavLink>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                )}
                 {renderGroup("System", systemItems)}
               </>
             );
