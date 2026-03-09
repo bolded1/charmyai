@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -189,7 +190,7 @@ export default function ContactPage() {
               Upload an invoice and see how the system extracts financial data instantly.
             </p>
             <Button size="lg" asChild>
-              <a href="/#demo-upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></a>
+              <Link to="/demo">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </motion.div>
         </div>

@@ -60,7 +60,7 @@ export default function MarketingLayout() {
 
           <div className="hidden md:flex items-center gap-3">
             <Button variant="outline" size="sm" asChild>
-              <a href="/#demo-upload">Try Demo</a>
+              <Link to="/demo">Try Demo</Link>
             </Button>
             <Button size="sm" asChild>
               <Link to="/signup">Start Free Trial</Link>
@@ -144,7 +144,7 @@ export default function MarketingLayout() {
                 className="space-y-3 pt-6 border-t border-border/50"
               >
                 <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
-                  <a href="/#demo-upload">Try Demo</a>
+                  <Link to="/demo">Try Demo</Link>
                 </Button>
                 <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
                   <Link to="/signup">
@@ -187,7 +187,7 @@ export default function MarketingLayout() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <Link to="/features" className="block hover:text-foreground">Features</Link>
                 <Link to="/pricing" className="block hover:text-foreground">Pricing</Link>
-                <a href="/#demo-upload" className="block hover:text-foreground">Try Demo</a>
+                <Link to="/demo" className="block hover:text-foreground">Try Demo</Link>
               </div>
             </div>
             <div>

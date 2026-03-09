@@ -347,7 +347,7 @@ export default function FeaturesPage() {
               <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="text-base px-8">
-              <a href="/#demo-upload">Try Demo</a>
+              <Link to="/demo">Try Demo</Link>
             </Button>
           </motion.div>
         </div>
@@ -381,7 +381,7 @@ export default function FeaturesPage() {
               Upload an invoice or receipt and see how Charmy extracts financial data automatically.
             </p>
             <Button size="lg" asChild className="text-base px-8">
-              <a href="/#demo-upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></a>
+              <Link to="/demo">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </motion.div>
         </div>
@@ -399,7 +399,7 @@ export default function FeaturesPage() {
               <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button size="lg" variant="ghost" className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10 text-base px-8" asChild>
-              <a href="/#demo-upload">Try Demo</a>
+              <Link to="/demo">Try Demo</Link>
             </Button>
           </div>
         </div>

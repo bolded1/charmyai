@@ -148,7 +148,7 @@ export default function AboutPage() {
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">Upload an invoice and see how Charmy extracts financial data automatically.</p>
             <div className="flex items-center justify-center gap-3">
               <Button size="lg" asChild>
-                <a href="/#demo-upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></a>
+                <Link to="/demo">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
                 <Link to="/contact">Contact Us</Link>
