@@ -99,10 +99,9 @@ export default function DashboardLayout() {
     );
   }
 
-  // Billing setup gate — user must have explicitly completed the billing page
-  // Even if Stripe says "trialing", we require our own billing_setup_at flag
+  // Billing setup gate — user must have explicitly completed the payment page
   if (!profile.billing_setup_at) {
-    // User never completed the billing/payment step — send to activate trial
+    // User never completed the payment step — send to activate
     return <Navigate to="/activate-trial" replace />;
   }
 
