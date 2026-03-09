@@ -190,7 +190,38 @@ serve(async (req) => {
     const priceId = sub.items.data[0]?.price?.id;
     const isActive = sub.status === "active" || sub.status === "trialing";
 
-    logStep("Subscription found", { id: sub.id, status: sub.status, priceId });
+    // Also check the subscription's product to detect firm/pro plan
+    const subProductId = typeof sub.items.data[0]?.price?.product === "string"
+      ? sub.items.data[0].price.product
+      : (sub.items.data[0]?.price?.product as any)?.id;
+    
+    if (subProductId === FIRM_PLAN_PRODUCT_ID) {
+      hasFirmPlan = true;
+      await provisionFirmOrg();
+    }
+    if (subProductId === PRO_PLAN_PRODUCT_ID && !hasFirmPlan) {
+      hasProPlan = true;
+    }
+
+    // Get actual amount paid from the latest paid invoice
+    if (amountPaid === null) {
+      try {
+        const invoices = await stripe.invoices.list({
+          customer: customerId,
+          subscription: sub.id,
+          status: "paid",
+          limit: 1,
+        });
+        if (invoices.data.length > 0) {
+          amountPaid = (invoices.data[0].amount_paid ?? 0) / 100;
+          paidCurrency = invoices.data[0].currency || "eur";
+        }
+      } catch (err) {
+        logStep("Error fetching invoice amount", { error: String(err) });
+      }
+    }
+
+    logStep("Subscription found", { id: sub.id, status: sub.status, priceId, subProductId, hasFirmPlan, hasProPlan, amountPaid });
 
     const trialEndDate = sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null;
     const periodEndDate = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null;
