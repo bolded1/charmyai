@@ -114,23 +114,23 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       return [...(ownOrgs || []), ...uniqueClientOrgs] as Workspace[];
     },
-    enabled: !!user,
+    enabled: !!targetUserId,
   });
 
   // Get active workspace from profile
   const { data: activeOrgId, isLoading: profileLoading } = useQuery({
-    queryKey: ["active-workspace-id", user?.id],
+    queryKey: ["active-workspace-id", targetUserId],
     queryFn: async () => {
-      if (!user) return null;
+      if (!targetUserId) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("active_organization_id")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .maybeSingle();
       if (error) throw error;
       return data?.active_organization_id || null;
     },
-    enabled: !!user,
+    enabled: !!targetUserId,
   });
 
   const allWorkspaces = workspacesData || [];
