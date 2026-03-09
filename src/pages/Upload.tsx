@@ -161,6 +161,25 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Client workspace indicator */}
+      {isClientContext && activeWorkspace && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Briefcase className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-foreground">
+                Uploading to: {activeWorkspace.name}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Documents will be stored in this client's workspace
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Onboarding Checklist */}
       <OnboardingChecklist />
 
