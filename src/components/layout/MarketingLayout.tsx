@@ -9,6 +9,7 @@ import { useCookieConsent } from "@/components/CookieConsent";
 const navLinks = [
   { label: "Features", to: "/features", description: "See what Charmy can do" },
   { label: "Pricing", to: "/pricing", description: "Plans that scale with you" },
+  { label: "Try Demo", to: "/demo", description: "Test Charmy instantly" },
   { label: "About", to: "/about", description: "Our story and mission" },
   { label: "Contact", to: "/contact", description: "Get in touch with us" },
 ];
@@ -60,7 +61,7 @@ export default function MarketingLayout() {
 
           <div className="hidden md:flex items-center gap-3">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/demo">Try Demo</Link>
+              <Link to="/login">Log In</Link>
             </Button>
             <Button size="sm" asChild>
               <Link to="/signup">Start Free Trial</Link>
@@ -144,7 +145,7 @@ export default function MarketingLayout() {
                 className="space-y-3 pt-6 border-t border-border/50"
               >
                 <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
-                  <Link to="/demo">Try Demo</Link>
+                  <Link to="/login">Log In</Link>
                 </Button>
                 <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
                   <Link to="/signup">
