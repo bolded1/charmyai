@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,14 +31,18 @@ function NotificationIcon({ type }: { type: string }) {
 export function NotificationsPopover() {
   const { data: notifications = [], unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   const handleClick = (n: Notification) => {
     if (!n.read) markAsRead.mutate(n.id);
-    if (n.link) navigate(n.link);
+    if (n.link) {
+      setOpen(false);
+      navigate(n.link);
+    }
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           className="relative h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -66,7 +71,7 @@ export function NotificationsPopover() {
               variant="ghost"
               size="sm"
               className="text-xs h-7 text-muted-foreground"
-              onClick={() => markAllAsRead.mutate()}
+              onClick={(e) => { e.stopPropagation(); markAllAsRead.mutate(); }}
             >
               Mark all read
             </Button>
