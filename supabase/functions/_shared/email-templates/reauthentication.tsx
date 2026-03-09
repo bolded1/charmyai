@@ -34,11 +34,8 @@ export const ReauthenticationEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
-          <table><tr>
-            <td style={logoMark}>✦</td>
-            <td style={logoText}>Charmy</td>
-          </tr></table>
-        </Section>
+            <Img src="https://vhaursnvaadhxxwefxez.supabase.co/storage/v1/object/public/email-images/charmy-logo.png" alt="Charmy" width="40" height="40" style={logoImg} />
+          </Section>
         <Hr style={divider} />
         <Heading style={h1}>{heading}</Heading>
         <Text style={text}>{bodyText}</Text>
