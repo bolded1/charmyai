@@ -39,8 +39,8 @@ export function PwaInstallBanner() {
         className="border-b border-amber-300/40 bg-amber-50 overflow-hidden"
       >
         <div className="px-4 py-3 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
-            <Smartphone className="h-4 w-4 text-primary-foreground" />
+          <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+            <Smartphone className="h-4 w-4 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground">Install Charmy as a Desktop App</p>
