@@ -408,6 +408,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <MarketingFAQ />
       <MarketingCTA />
     </div>
   );
