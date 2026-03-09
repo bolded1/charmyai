@@ -85,6 +85,13 @@ export function useUploadDocument() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Get active workspace
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
@@ -94,11 +101,12 @@ export function useUploadDocument() {
 
       if (uploadError) throw uploadError;
 
-      // Create document record
+      // Create document record with organization_id
       const { data: doc, error: insertError } = await supabase
         .from("documents")
         .insert({
           user_id: user.id,
+          organization_id: profile?.active_organization_id || null,
           file_name: file.name,
           file_path: filePath,
           file_type: file.type,
