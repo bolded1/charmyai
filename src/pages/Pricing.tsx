@@ -103,7 +103,7 @@ export default function PricingPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-6">
               <Sparkles className="h-3.5 w-3.5" />
-              7-day free trial · No commitment
+              One-time payment · Lifetime access
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
               Save hours of manual bookkeeping
