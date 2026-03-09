@@ -376,96 +376,174 @@ export default function BillingSection() {
   );
 }
 
-const stripePromise = loadStripe("pk_live_51Dzp0JBmkvUKJ0fuaOO3lXgQ83A5srdQrW5qKGr4ve9yaED1A5UmEel695J4wGxsokdAznHG53i33ELPjqgCFzqV00Y3AyofY0");
+const STRIPE_PK = "pk_live_51Dzp0JBmkvUKJ0fuaOO3lXgQ83A5srdQrW5qKGr4ve9yaED1A5UmEel695J4wGxsokdAznHG53i33ELPjqgCFzqV00Y3AyofY0";
 
 function FirmUpgradeCard() {
+  const { user } = useAuth();
+  const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
   const [promoCode, setPromoCode] = useState("");
-  const [promoValidating, setPromoValidating] = useState(false);
-  const [promoResult, setPromoResult] = useState<{
-    valid: boolean;
-    discount_label?: string;
-    stripe_coupon_id?: string;
-    requires_card?: boolean;
-  } | null>(null);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [promoExpanded, setPromoExpanded] = useState(false);
+  const [billingName, setBillingName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
-  const handleValidatePromo = async () => {
-    if (!promoCode.trim()) return;
-    setPromoValidating(true);
-    setPromoResult(null);
-    try {
-      const { data, error } = await supabase.functions.invoke("validate-promo-code", {
-        body: { code: promoCode.trim(), plan: "firm", billingCycle: "onetime" },
-      });
-      if (error) throw error;
-      setPromoResult(data);
-      if (!data.valid) {
-        toast.error(data.error || "Invalid promo code");
-      }
-    } catch (err: any) {
-      toast.error("Failed to validate promo code");
-    } finally {
-      setPromoValidating(false);
+  // Stripe state
+  const [stripe, setStripe] = useState<any>(null);
+  const [firmElements, setFirmElements] = useState<any>(null);
+  const [firmClientSecret, setFirmClientSecret] = useState<string | null>(null);
+  const [paymentReady, setPaymentReady] = useState(false);
+
+  const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
+
+  // Load Stripe.js
+  useEffect(() => {
+    if (document.querySelector('script[src*="js.stripe.com"]')) {
+      waitForStripe();
+      return;
     }
+    const script = document.createElement("script");
+    script.src = "https://js.stripe.com/v3/";
+    script.onload = waitForStripe;
+    document.head.appendChild(script);
+
+    function waitForStripe() {
+      const check = setInterval(() => {
+        if ((window as any).Stripe) {
+          clearInterval(check);
+          setStripe((window as any).Stripe(STRIPE_PK));
+        }
+      }, 100);
+    }
+  }, []);
+
+  // Create PaymentIntent and mount Elements
+  useEffect(() => {
+    if (!stripe || !user || !cardRequired) return;
+
+    const init = async () => {
+      try {
+        const waitForEl = () => new Promise<void>((resolve, reject) => {
+          let attempts = 0;
+          const check = () => {
+            if (document.getElementById("stripe-firm-upgrade-element")) return resolve();
+            if (++attempts > 30) return reject(new Error("Payment element not found"));
+            setTimeout(check, 100);
+          };
+          check();
+        });
+        await waitForEl();
+
+        const { data, error } = await supabase.functions.invoke("firm-payment-intent");
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setFirmClientSecret(data.client_secret);
+
+        const els = stripe.elements({
+          clientSecret: data.client_secret,
+          appearance: {
+            theme: "stripe",
+            variables: {
+              colorPrimary: "#1E3A8A",
+              borderRadius: "12px",
+              fontFamily: "system-ui, sans-serif",
+            },
+          },
+        });
+        setFirmElements(els);
+
+        const pe = els.create("payment");
+        pe.mount("#stripe-firm-upgrade-element");
+        pe.on("ready", () => setPaymentReady(true));
+      } catch (err: any) {
+        setSetupError(err.message || "Failed to initialize payment form");
+      }
+    };
+
+    init();
+  }, [stripe, user, cardRequired]);
+
+  const handleApplyPromo = async () => {
+    await validateCode(promoCode, "onetime", "firm");
   };
 
-  const clearPromo = () => {
+  const handleRemovePromo = () => {
+    clearPromo();
     setPromoCode("");
-    setPromoResult(null);
   };
 
-  const handleStartCheckout = async () => {
-    setCheckoutLoading(true);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setSetupError(null);
     try {
-      const stripeCouponId = promoResult?.valid ? promoResult.stripe_coupon_id : undefined;
+      if (cardRequired) {
+        if (!stripe || !firmElements || !firmClientSecret) return;
+        const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+          elements: firmElements,
+          confirmParams: {
+            payment_method_data: {
+              billing_details: { name: billingName || undefined },
+            },
+          },
+          redirect: "if_required",
+        });
 
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          priceId: STRIPE_PLANS.firm.price_id,
-          stripeCouponId,
-          embedded: true,
-        },
-      });
-      if (error) throw error;
-      if (data?.clientSecret) {
-        setClientSecret(data.clientSecret);
-        setShowCheckout(true);
+        if (confirmError) {
+          setSetupError(confirmError.message);
+          setSubmitting(false);
+          return;
+        }
+
+        if (paymentIntent?.status !== "succeeded") {
+          setSetupError("Payment was not completed. Please try again.");
+          setSubmitting(false);
+          return;
+        }
+      } else {
+        const { data, error } = await supabase.functions.invoke("activate-trial", {
+          body: {
+            priceId: STRIPE_PLANS.firm.price_id,
+            skipCard: true,
+            promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
+            stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
       }
+
+      if (user) {
+        try {
+          await supabase
+            .from("profiles")
+            .update({ billing_setup_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+        } catch {}
+      }
+
+      toast.success("Payment successful! Your firm plan is now active.");
+      window.location.reload();
     } catch (err: any) {
-      toast.error(err.message || "Failed to start checkout");
+      setSetupError(err.message || "Payment failed. Please try again.");
     } finally {
-      setCheckoutLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (showCheckout && clientSecret) {
-    return (
-      <Card className="border-primary/20 bg-primary/[0.02] overflow-hidden">
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Complete Your Upgrade</h3>
-                <p className="text-xs text-muted-foreground">Accounting Firm Plan · One-time payment</p>
-              </div>
-            </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setShowCheckout(false); setClientSecret(null); }}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="rounded-lg overflow-hidden border border-border/50 bg-background">
-            <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
-              <EmbeddedCheckout />
-            </EmbeddedCheckoutProvider>
-          </div>
-        </CardContent>
-      </Card>
-    );
+  // Price calculation
+  const basePrice = STRIPE_PLANS.firm.price_onetime || 99;
+  let finalPrice = basePrice;
+  let discountLine: string | null = null;
+  if (promoResult?.valid) {
+    if (promoResult.discount_type === "percentage" && promoResult.discount_value) {
+      finalPrice = basePrice * (1 - promoResult.discount_value / 100);
+      discountLine = promoResult.discount_value === 100 ? "Free" : `-${promoResult.discount_value}%`;
+    } else if (promoResult.discount_type === "fixed" && promoResult.discount_value) {
+      finalPrice = Math.max(0, basePrice - promoResult.discount_value);
+      discountLine = `-€${promoResult.discount_value}`;
+    } else if (promoResult.discount_type === "free_period") {
+      finalPrice = 0;
+      discountLine = "Free";
+    }
   }
 
   return (
@@ -491,41 +569,124 @@ function FirmUpgradeCard() {
           ))}
         </ul>
 
-        {/* Promo Code Input */}
-        <div className="mb-4">
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Promo / Coupon Code</label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Enter code"
-                value={promoCode}
-                onChange={(e) => { setPromoCode(e.target.value); setPromoResult(null); }}
-                className="pl-8 h-9 text-sm"
-                onKeyDown={(e) => e.key === "Enter" && handleValidatePromo()}
-              />
-              {promoCode && (
-                <button onClick={clearPromo} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
+        {/* Promo Code */}
+        <div className="mb-5">
+          {!promoExpanded && !promoResult?.valid ? (
+            <button
+              type="button"
+              onClick={() => setPromoExpanded(true)}
+              className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+            >
+              <Tag className="h-3.5 w-3.5" />
+              Have a promo code?
+            </button>
+          ) : promoResult?.valid ? (
+            <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-primary">{promoResult.discount_label}</p>
+                  <p className="text-xs text-muted-foreground">Code: {promoCode.toUpperCase()}</p>
+                </div>
+              </div>
+              <button onClick={handleRemovePromo} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
+                <X className="h-3.5 w-3.5" />
+              </button>
             </div>
-            <Button variant="outline" size="sm" className="h-9" onClick={handleValidatePromo} disabled={!promoCode.trim() || promoValidating}>
-              {promoValidating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Apply"}
-            </Button>
-          </div>
-          {promoResult?.valid && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-primary">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span className="font-medium">{promoResult.discount_label}</span>
+          ) : (
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 mb-1.5">
+                <Tag className="h-3 w-3" /> Promo Code
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter code"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  className="h-9 text-sm"
+                  onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                />
+                <Button variant="outline" size="sm" className="h-9" onClick={handleApplyPromo} disabled={!promoCode.trim() || validating}>
+                  {validating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Apply"}
+                </Button>
+              </div>
             </div>
           )}
         </div>
 
-        <Button onClick={handleStartCheckout} disabled={checkoutLoading} className="w-full">
-          {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-          €99 One-Time — Upgrade to Firm Plan
+        {/* Billing summary */}
+        <div className="rounded-xl border border-border/50 bg-muted/30 p-3 mb-5">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Firm Plan (one-time)</span>
+            <span className="font-medium">€{basePrice.toFixed(2)}</span>
+          </div>
+          {discountLine && (
+            <div className="flex items-center justify-between text-sm mt-1">
+              <span className="text-primary">Discount</span>
+              <span className="text-primary font-medium">{discountLine}</span>
+            </div>
+          )}
+          <Separator className="my-2" />
+          <div className="flex items-center justify-between text-sm font-semibold">
+            <span>Total</span>
+            <span>€{finalPrice.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Billing name */}
+        {cardRequired && (
+          <div className="mb-4">
+            <Label htmlFor="firm-billing-name" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              Name on Card
+            </Label>
+            <Input
+              id="firm-billing-name"
+              placeholder="Full name"
+              value={billingName}
+              onChange={(e) => setBillingName(e.target.value)}
+              className="h-9 text-sm"
+            />
+          </div>
+        )}
+
+        {/* Stripe Payment Element */}
+        {cardRequired && (
+          <div className="mb-5">
+            <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Payment Details</Label>
+            <div
+              id="stripe-firm-upgrade-element"
+              className="min-h-[120px] rounded-xl border border-border/50 bg-card p-3"
+            />
+            {!paymentReady && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                <Loader2 className="h-3 w-3 animate-spin" /> Loading payment form...
+              </div>
+            )}
+          </div>
+        )}
+
+        {setupError && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            {setupError}
+          </div>
+        )}
+
+        <Button
+          onClick={handleSubmit}
+          disabled={submitting || (cardRequired && (!paymentReady || !firmClientSecret))}
+          className="w-full"
+        >
+          {submitting ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Lock className="h-4 w-4 mr-2" />
+          )}
+          {finalPrice === 0 ? "Activate Firm Plan" : `Pay €${finalPrice.toFixed(2)} — Upgrade to Firm Plan`}
         </Button>
+
+        <p className="text-[10px] text-muted-foreground text-center mt-3 flex items-center justify-center gap-1">
+          <Shield className="h-3 w-3" /> Secured by Stripe · One-time payment
+        </p>
       </CardContent>
     </Card>
   );
