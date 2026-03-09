@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MarketingCTA } from "@/components/MarketingCTA";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";

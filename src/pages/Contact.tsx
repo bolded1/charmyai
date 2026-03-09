@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { MarketingCTA } from "@/components/MarketingCTA";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 

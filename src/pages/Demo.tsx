@@ -6,6 +6,7 @@ import {
   FileText, Zap, Eye, Download, Brain,
 } from "lucide-react";
 import { DemoUploader } from "@/components/demo/DemoUploader";
+import { MarketingCTA } from "@/components/MarketingCTA";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },

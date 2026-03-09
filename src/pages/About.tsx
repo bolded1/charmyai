@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Target, Sparkles, Shield, Zap, Globe } from "lucide-react";
+import { MarketingCTA } from "@/components/MarketingCTA";
 import { motion } from "framer-motion";
 
 const fadeUp = (delay = 0) => ({
