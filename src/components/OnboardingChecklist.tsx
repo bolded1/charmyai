@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function OnboardingChecklist() {
+  const { isAccountingFirm } = useWorkspace();
   const { steps, completedCount, allDone, progress } = useOnboardingChecklist();
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(false);
@@ -23,7 +25,7 @@ export function OnboardingChecklist() {
     sessionStorage.setItem("onboarding-dismissed", "true");
   };
 
-  if (dismissed || allDone) return null;
+  if (dismissed || allDone || isAccountingFirm) return null;
 
   return (
     <Card className="border-0 bg-gradient-to-br from-primary/5 via-background to-accent/10 overflow-hidden">
