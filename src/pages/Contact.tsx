@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
