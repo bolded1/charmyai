@@ -45,8 +45,7 @@ import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminDemoSettings from "./pages/admin/AdminDemoSettings";
 import AdminSupport from "./pages/admin/AdminSupport";
-
-import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
+n/AdminEmailTemplates";
 import AdminBroadcast from "./pages/admin/AdminBroadcast";
 import AdminRevenue from "./pages/admin/AdminRevenue";
 import AdminDocumentStats from "./pages/admin/AdminDocumentStats";
@@ -143,7 +142,7 @@ const App = () => (
             <Route path="scheduled-jobs" element={<AdminScheduledJobs />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
             <Route path="cms" element={<AdminCMS />} />
-            <Route path="email-templates" element={<AdminEmailTemplates />} />
+  ment={<AdminEmailTemplates />} />
             <Route path="broadcast" element={<AdminBroadcast />} />
             <Route path="login-activity" element={<AdminLoginActivity />} />
             <Route path="gdpr" element={<AdminGDPR />} />

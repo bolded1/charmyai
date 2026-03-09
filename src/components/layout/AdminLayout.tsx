@@ -105,7 +105,7 @@ function getPageTitle(path: string): string {
     '/admin/support': 'Support Tools',
     '/admin/revenue': 'Revenue',
     '/admin/storage': 'Storage',
-    '/admin/cms': 'Page Content',
+    
     '/admin/email-templates': 'Email Templates',
     '/admin/broadcast': 'Broadcast',
     '/admin/demo-settings': 'Demo Settings',
