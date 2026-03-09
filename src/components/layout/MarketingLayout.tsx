@@ -61,7 +61,7 @@ export default function MarketingLayout() {
 
           <div className="hidden md:flex items-center gap-3">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/demo">Try Demo</Link>
+              <Link to="/login">Log In</Link>
             </Button>
             <Button size="sm" asChild>
               <Link to="/signup">Start Free Trial</Link>
