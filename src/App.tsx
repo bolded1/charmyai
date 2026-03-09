@@ -23,6 +23,7 @@ import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import ActivateTrial from "./pages/ActivateTrial";
+import ActivateFirmPlan from "./pages/ActivateFirmPlan";
 import BillingRequired from "./pages/BillingRequired";
 import AcceptableUse from "./pages/AcceptableUse";
 
