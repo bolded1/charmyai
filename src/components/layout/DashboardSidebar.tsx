@@ -66,7 +66,11 @@ export function DashboardSidebar() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { data: org } = useOrganization();
+  const { activeWorkspace, isAccountingFirm } = useWorkspace();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  
+  const isClientContext = isAccountingFirm && activeWorkspace?.workspace_type === "client";
+  const isFirmContext = isAccountingFirm && !isClientContext;
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
