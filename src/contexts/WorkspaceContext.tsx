@@ -156,47 +156,74 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     toast.success(`Switched to ${allWorkspaces.find((w) => w.id === orgId)?.name || "workspace"}`);
   };
 
-  const createClientWorkspace = async (name: string): Promise<Workspace> => {
+  const createClientWorkspace = async (data: CreateWorkspaceData): Promise<Workspace> => {
     if (!user || !homeOrg) throw new Error("Not authenticated");
     if (!isAccountingFirm) throw new Error("Only accounting firms can create client workspaces");
     if (clientWorkspaces.length >= (homeOrg.max_client_workspaces || 10)) {
       throw new Error(`Maximum of ${homeOrg.max_client_workspaces || 10} client workspaces reached`);
     }
 
-    const { data, error } = await supabase
+    const { data: result, error } = await supabase
       .from("organizations")
       .insert({
-        name,
+        name: data.name,
         owner_user_id: user.id,
         workspace_type: "client",
         parent_org_id: homeOrg.id,
-      })
+        trading_name: data.trading_name || null,
+        vat_number: data.vat_number || null,
+        tax_id: data.tax_id || null,
+        address: data.address || null,
+        country: data.country || "NL",
+        default_currency: data.default_currency || "EUR",
+        contact_email: data.contact_email || null,
+        contact_phone: data.contact_phone || null,
+      } as any)
       .select()
       .single();
     if (error) throw error;
     queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-    return data as Workspace;
+    return result as unknown as Workspace;
   };
 
   const deleteClientWorkspace = async (orgId: string) => {
-    // Only allow deleting client workspaces
     const ws = allWorkspaces.find((w) => w.id === orgId);
     if (!ws || ws.workspace_type !== "client") throw new Error("Can only delete client workspaces");
     
     const { error } = await supabase.from("organizations").delete().eq("id", orgId);
     if (error) throw error;
     
-    // If we were viewing this workspace, switch back to home
     if (activeWorkspace?.id === orgId && homeOrg) {
       await switchWorkspace(homeOrg.id);
     }
     queryClient.invalidateQueries({ queryKey: ["workspaces"] });
   };
 
-  const updateClientWorkspace = async (orgId: string, updates: Partial<Pick<Workspace, "name" | "default_currency">>) => {
+  const updateClientWorkspace = async (orgId: string, updates: UpdateWorkspaceData) => {
     const { error } = await supabase
       .from("organizations")
-      .update(updates)
+      .update(updates as any)
+      .eq("id", orgId);
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+  };
+
+  const archiveClientWorkspace = async (orgId: string) => {
+    const { error } = await supabase
+      .from("organizations")
+      .update({ archived_at: new Date().toISOString() } as any)
+      .eq("id", orgId);
+    if (error) throw error;
+    if (activeWorkspace?.id === orgId && homeOrg) {
+      await switchWorkspace(homeOrg.id);
+    }
+    queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+  };
+
+  const unarchiveClientWorkspace = async (orgId: string) => {
+    const { error } = await supabase
+      .from("organizations")
+      .update({ archived_at: null } as any)
       .eq("id", orgId);
     if (error) throw error;
     queryClient.invalidateQueries({ queryKey: ["workspaces"] });
@@ -214,6 +241,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         createClientWorkspace,
         deleteClientWorkspace,
         updateClientWorkspace,
+        archiveClientWorkspace,
+        unarchiveClientWorkspace,
       }}
     >
       {children}
