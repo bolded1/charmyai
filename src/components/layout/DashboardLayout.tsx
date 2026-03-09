@@ -107,11 +107,10 @@ export default function DashboardLayout() {
 
   // Subscription gate — fail-closed: block access unless explicitly entitled
   if (!subscription.subscribed) {
-    // Has a Stripe status but it's not valid (expired, canceled, past_due, incomplete, unpaid, etc.)
-    if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing" && subscription.status !== "promo_active") {
+    if (subscription.status && subscription.status !== "active" && subscription.status !== "promo_active") {
       return <Navigate to="/billing-required" replace />;
     }
-    // No subscription status at all — needs to activate trial
+    // No status at all — needs to purchase
     return <Navigate to="/activate-trial" replace />;
   }
 

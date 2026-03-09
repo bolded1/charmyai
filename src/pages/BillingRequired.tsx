@@ -77,8 +77,8 @@ export default function BillingRequiredPage() {
     title = "Your plan access has expired";
     description = "Your plan is no longer active. Purchase a new plan to continue using Charmy.";
   } else if (subscription.status === "past_due") {
-    title = "Payment past due";
-    description = "Your subscription payment failed. Please update your payment method to restore access.";
+    title = "Payment issue";
+    description = "There was an issue with your payment. Please update your payment method to restore access.";
   } else if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
     title = "Payment incomplete";
     description = "Your payment setup was not completed. Please complete payment to access the app.";

@@ -228,7 +228,7 @@ export default function OnboardingPage() {
         toast.success("Setup complete! Let's activate your Accounting Firm plan.");
         navigate("/activate-firm");
       } else {
-        toast.success("Setup complete! Let's activate your trial.");
+        toast.success("Setup complete! Let's activate your plan.");
         navigate("/activate-trial");
       }
     }

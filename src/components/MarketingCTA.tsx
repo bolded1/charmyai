@@ -117,7 +117,7 @@ export function MarketingCTA() {
             className="text-base px-8 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
           >
             <Link to="/signup">
-              Start 7-Day Trial <ChevronRight className="ml-1 h-4 w-4" />
+              Get Started — €29.99 <ChevronRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
           <Button
