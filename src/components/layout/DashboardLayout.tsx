@@ -47,7 +47,7 @@ export default function DashboardLayout() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { profile, displayName, initials } = useProfile();
+  const { profile, displayName, initials, isLoading: profileLoading } = useProfile();
   const { data: org } = useOrganization();
   const { settings: layoutSettings } = useLayoutSettings();
   const isMobile = useIsMobile();
