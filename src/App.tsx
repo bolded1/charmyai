@@ -62,6 +62,7 @@ import AdminAISettings from "./pages/admin/AdminAISettings";
 import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
 import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import Assistant from "./pages/Assistant";
+import Workspaces from "./pages/Workspaces";
 import NotFound from "./pages/NotFound";
 import { useDynamicPwaManifest } from "./hooks/useDynamicPwaManifest";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
