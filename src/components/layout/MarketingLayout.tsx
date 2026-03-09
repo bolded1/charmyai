@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight } from "lucide-react";
+import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight, LogIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +17,7 @@ const navLinks = [
 export default function MarketingLayout() {
   const brandLogo = useBrandLogo();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { openPreferences } = useCookieConsent();
 
@@ -33,58 +34,99 @@ export default function MarketingLayout() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div className="marketing min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass-effect">
-        <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-1.5 font-bold text-base">
-            {brandLogo ? (
-              <img src={brandLogo} alt="Charmy" className="h-6 max-w-[7rem] object-contain" />
-            ) : (
-              <>
-                <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center">
-                  <FileText className="h-3 w-3 text-primary-foreground" />
-                </div>
-                <span className="text-foreground text-sm">Charmy</span>
-              </>
-            )}
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((l) => (
-              <Link key={l.to} to={l.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/login">Log In</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/signup">Start Free Trial</Link>
-            </Button>
-          </div>
-
-          <button
-            className="md:hidden relative z-50 h-10 w-10 flex items-center justify-center rounded-xl hover:bg-accent transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          >
-            <AnimatePresence mode="wait">
-              {mobileOpen ? (
-                <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                  <X className="h-5 w-5" />
-                </motion.div>
+      {/* Floating Header */}
+      <header className="sticky top-0 z-50 w-full">
+        <div className={`mx-auto transition-all duration-300 ${
+          scrolled
+            ? "mt-0 max-w-full bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm"
+            : "mt-3 max-w-5xl mx-4 md:mx-auto bg-background/60 backdrop-blur-lg rounded-2xl border border-border/40 shadow-lg shadow-primary/[0.03]"
+        }`}>
+          <div className="flex h-14 items-center justify-between px-4 md:px-6">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 shrink-0 group">
+              {brandLogo ? (
+                <img src={brandLogo} alt="Charmy" className="h-6 max-w-[7rem] object-contain" />
               ) : (
-                <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                  <Menu className="h-5 w-5" />
-                </motion.div>
+                <>
+                  <motion.div
+                    whileHover={{ scale: 1.05, rotate: -3 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                    className="h-7 w-7 rounded-lg bg-hero-gradient flex items-center justify-center shadow-md shadow-primary/20"
+                  >
+                    <FileText className="h-3.5 w-3.5 text-primary-foreground" />
+                  </motion.div>
+                  <span className="text-foreground font-bold text-[15px] tracking-tight">Charmy</span>
+                </>
               )}
-            </AnimatePresence>
-          </button>
+            </Link>
+
+            {/* Desktop Nav — centered pill links */}
+            <nav className="hidden lg:flex items-center gap-1 bg-muted/50 rounded-xl px-1.5 py-1">
+              {navLinks.map((l) => {
+                const isActive = location.pathname === l.to;
+                return (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    className={`relative px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeNav"
+                        className="absolute inset-0 bg-background rounded-lg shadow-sm border border-border/60"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{l.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Desktop Actions */}
+            <div className="hidden lg:flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground h-8 px-3 text-[13px]">
+                <Link to="/login">
+                  <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                  Log In
+                </Link>
+              </Button>
+              <Button size="sm" asChild className="h-8 px-4 text-[13px] rounded-lg shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-px transition-all duration-200">
+                <Link to="/signup">Start Free Trial</Link>
+              </Button>
+            </div>
+
+            {/* Mobile hamburger */}
+            <button
+              className="lg:hidden relative z-50 h-9 w-9 flex items-center justify-center rounded-lg hover:bg-accent transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            >
+              <AnimatePresence mode="wait">
+                {mobileOpen ? (
+                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                    <X className="h-5 w-5" />
+                  </motion.div>
+                ) : (
+                  <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                    <Menu className="h-5 w-5" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
         </div>
       </header>
 
