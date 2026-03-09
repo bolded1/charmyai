@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Upload as UploadIcon, FileText, CheckCircle2, Loader2, X, AlertCircle,
-  Camera, FolderUp, Clock, Eye, ArrowRight, Mail, Copy, Check,
+  Camera, FolderUp, Clock, Eye, ArrowRight, Mail, Copy, Check, Briefcase,
 } from "lucide-react";
 import { useUploadDocument, useDocuments } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ import { formatDistanceToNow, startOfMonth } from "date-fns";
 import { useOrganization, getImportEmailAddress } from "@/hooks/useOrganization";
 import { toast } from "sonner";
 import { usePlatformLimits } from "@/hooks/usePlatformLimits";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface UploadingFile {
   id: string;
@@ -37,6 +38,8 @@ export default function UploadPage() {
   const { data: documents = [] } = useDocuments();
   const { data: orgData } = useOrganization();
   const { data: limits } = usePlatformLimits();
+  const { activeWorkspace, isAccountingFirm } = useWorkspace();
+  const isClientContext = isAccountingFirm && activeWorkspace?.workspace_type === "client";
   const importEmailAddress = orgData ? getImportEmailAddress(orgData.import_email_token) : null;
 
   const maxFileSizeMB = limits?.maxFileSize ?? 20;
@@ -158,6 +161,25 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Client workspace indicator */}
+      {isClientContext && activeWorkspace && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Briefcase className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-foreground">
+                Uploading to: {activeWorkspace.name}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Documents will be stored in this client's workspace
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Onboarding Checklist */}
       <OnboardingChecklist />
 

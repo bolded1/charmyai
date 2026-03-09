@@ -7,7 +7,9 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Upload, FileText, Receipt, TrendingUp, Tag,
   Download, UsersRound, Settings, LogOut, HelpCircle, LifeBuoy, Sparkles, Briefcase,
+  BarChart3,
 } from "lucide-react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
@@ -40,10 +42,13 @@ const recordsItems = [
   { title: "Exports", url: "/app/exports", icon: Download },
 ];
 
+const firmItems = [
+  { title: "Firm Dashboard", url: "/app/workspaces", icon: BarChart3 },
+  { title: "Team", url: "/app/team", icon: UsersRound },
+];
+
 const systemItems = [
   { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
-  { title: "Workspaces", url: "/app/workspaces", icon: Briefcase },
-  { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
   { title: "Support", url: "/app/support", icon: LifeBuoy },
   { title: "Help & Documentation", url: "/app/help", icon: HelpCircle },
@@ -61,7 +66,11 @@ export function DashboardSidebar() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { data: org } = useOrganization();
+  const { activeWorkspace, isAccountingFirm } = useWorkspace();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  
+  const isClientContext = isAccountingFirm && activeWorkspace?.workspace_type === "client";
+  const isFirmContext = isAccountingFirm && !isClientContext;
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
@@ -184,6 +193,7 @@ export function DashboardSidebar() {
           </div>
           {renderGroup("Documents", financeItems)}
           {renderGroup("Finance", recordsItems)}
+          {isAccountingFirm && renderGroup("Firm", firmItems)}
           {renderGroup("System", systemItems)}
         </SidebarContent>
         <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/40 space-y-3">

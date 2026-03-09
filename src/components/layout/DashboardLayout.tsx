@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { WorkspaceContextBar } from "@/components/WorkspaceContextBar";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
@@ -162,6 +163,9 @@ export default function DashboardLayout() {
           <div className="relative z-10 flex flex-col min-h-0 flex-1">
             <PwaInstallBanner />
             <OfflineIndicator />
+
+            {/* Workspace context bar for client workspaces */}
+            <WorkspaceContextBar />
 
             {/* Impersonation banner */}
             {impersonating && (
