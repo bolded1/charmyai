@@ -104,57 +104,75 @@ export default function ActivateTrialPage() {
     }
   }, [billingInterval]);
 
+  // Whether card is needed based on promo
+  const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements || !clientSecret) return;
-
     setSubmitting(true);
     setSetupError(null);
 
     try {
-      // Confirm the SetupIntent
-      const { error: confirmError, setupIntent } = await stripe.confirmSetup({
-        elements,
-        confirmParams: {
-          payment_method_data: {
-            billing_details: {
-              name: billingName || undefined,
-              address: billingAddress ? { line1: billingAddress } : undefined,
-            },
-          },
-        },
-        redirect: "if_required",
-      });
-
-      if (confirmError) {
-        setSetupError(confirmError.message);
-        setSubmitting(false);
-        return;
-      }
-
-      if (!setupIntent?.payment_method) {
-        setSetupError("Failed to collect payment method");
-        setSubmitting(false);
-        return;
-      }
-
-      // Activate trial subscription
       const priceId = billingInterval === "yearly"
         ? STRIPE_PLANS.pro.price_id_yearly
         : STRIPE_PLANS.pro.price_id_monthly;
 
-      const { data, error } = await supabase.functions.invoke("activate-trial", {
-        body: {
-          priceId,
-          paymentMethodId: setupIntent.payment_method,
-          promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
-          stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
-          extraTrialDays: promoResult?.valid ? promoResult.extra_trial_days : undefined,
-        },
-      });
+      if (cardRequired) {
+        // Card flow — confirm SetupIntent first
+        if (!stripe || !elements || !clientSecret) return;
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+        const { error: confirmError, setupIntent } = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            payment_method_data: {
+              billing_details: {
+                name: billingName || undefined,
+                address: billingAddress ? { line1: billingAddress } : undefined,
+              },
+            },
+          },
+          redirect: "if_required",
+        });
+
+        if (confirmError) {
+          setSetupError(confirmError.message);
+          setSubmitting(false);
+          return;
+        }
+
+        if (!setupIntent?.payment_method) {
+          setSetupError("Failed to collect payment method");
+          setSubmitting(false);
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke("activate-trial", {
+          body: {
+            priceId,
+            paymentMethodId: setupIntent.payment_method,
+            promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
+            stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
+            extraTrialDays: promoResult?.valid ? promoResult.extra_trial_days : undefined,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      } else {
+        // No card required — activate directly without payment method
+        const { data, error } = await supabase.functions.invoke("activate-trial", {
+          body: {
+            priceId,
+            skipCard: true,
+            promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
+            stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
+            extraTrialDays: promoResult?.valid ? promoResult.extra_trial_days : undefined,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      }
 
       toast.success("Your free trial has been activated!");
       navigate("/app");
