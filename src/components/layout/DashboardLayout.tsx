@@ -28,6 +28,9 @@ import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
 import { NPSWidget } from "@/components/NPSWidget";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { PwaInstallBanner } from "@/components/PwaInstallBanner";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const mobileNavItems = [
   { title: "Capture", url: "/app", icon: Upload },
