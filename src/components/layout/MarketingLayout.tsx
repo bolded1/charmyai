@@ -1,10 +1,11 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight, LogIn } from "lucide-react";
+import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight, LogIn, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookieConsent } from "@/components/CookieConsent";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { label: "Features", to: "/features", description: "See what Charmy can do" },
@@ -20,6 +21,7 @@ export default function MarketingLayout() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { openPreferences } = useCookieConsent();
+  const { user } = useAuth();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -103,14 +105,16 @@ export default function MarketingLayout() {
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-2">
               <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground h-8 px-3 text-[13px]">
-                <Link to="/login">
-                  <LogIn className="h-3.5 w-3.5 mr-1.5" />
-                  Log In
+                <Link to={user ? "/app" : "/login"}>
+                  {user ? <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" /> : <LogIn className="h-3.5 w-3.5 mr-1.5" />}
+                  {user ? "Dashboard" : "Log In"}
                 </Link>
               </Button>
-              <Button size="sm" asChild className="h-8 px-4 text-[13px] rounded-lg shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-px transition-all duration-200">
-                <Link to="/signup">Start Free Trial</Link>
-              </Button>
+              {!user && (
+                <Button size="sm" asChild className="h-8 px-4 text-[13px] rounded-lg shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-px transition-all duration-200">
+                  <Link to="/signup">Start Free Trial</Link>
+                </Button>
+              )}
             </div>
 
             {/* Mobile hamburger */}
@@ -192,7 +196,7 @@ export default function MarketingLayout() {
                 className="space-y-3 pt-6 border-t border-border/50"
               >
                 <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
-                  <Link to="/login">Log In</Link>
+                  <Link to={user ? "/app" : "/login"}>{user ? "Dashboard" : "Log In"}</Link>
                 </Button>
                 <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
                   <Link to="/signup">
