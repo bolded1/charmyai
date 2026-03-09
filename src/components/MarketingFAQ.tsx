@@ -1,8 +1,5 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ChevronRight, Sparkles, HelpCircle, ArrowRight } from "lucide-react";
-import {
+import { HelpCircle } from "lucide-react";
   Accordion,
   AccordionContent,
   AccordionItem,
