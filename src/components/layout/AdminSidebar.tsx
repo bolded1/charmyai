@@ -9,7 +9,7 @@ import { ChevronRight } from "lucide-react";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
-  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain, MailPlus, Tag,
+  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain, MailPlus, Tag, Briefcase,
 } from "lucide-react";
 
 const navGroups = [
@@ -23,6 +23,7 @@ const navGroups = [
     label: "Users & Access",
     items: [
       { title: "Organizations", url: "/admin/organizations", icon: Building2 },
+      { title: "Firm Accounts", url: "/admin/firm-accounts", icon: Briefcase },
       { title: "Users", url: "/admin/users", icon: Users },
       { title: "Login Activity", url: "/admin/login-activity", icon: KeyRound },
       { title: "GDPR / Data", url: "/admin/gdpr", icon: UserX },
