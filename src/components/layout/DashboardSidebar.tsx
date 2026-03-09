@@ -193,6 +193,7 @@ export function DashboardSidebar() {
           </div>
           {renderGroup("Documents", financeItems)}
           {renderGroup("Finance", recordsItems)}
+          {isAccountingFirm && renderGroup("Firm", firmItems)}
           {renderGroup("System", systemItems)}
         </SidebarContent>
         <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/40 space-y-3">
