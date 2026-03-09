@@ -188,12 +188,8 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-16 border-t border-border/50">
-        <div className="container max-w-2xl">
-          <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
-            <h2 className="text-3xl font-bold">Frequently Asked Questions</h2>
-          </motion.div>
+
+
       {/* FAQ */}
       <section className="py-20 md:py-28 border-t border-border/50">
         <div className="container max-w-3xl">
