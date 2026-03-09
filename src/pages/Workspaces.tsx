@@ -242,8 +242,26 @@ export default function WorkspacesPage() {
     setCreating(true);
     try {
       const ws = await createClientWorkspace({ ...formData, name: formData.name.trim() });
-      toast.success(`Created workspace "${ws.name}"`);
+
+      // Send client invitation if requested
+      if (sendInvite && formData.contact_email && clientContactName.trim()) {
+        try {
+          await sendClientInvitation.mutateAsync({
+            workspace_id: ws.id,
+            client_name: clientContactName.trim(),
+            client_email: formData.contact_email.trim(),
+          });
+          toast.success(`Created workspace "${ws.name}" and sent client invitation`);
+        } catch {
+          toast.success(`Created workspace "${ws.name}". Failed to send invitation — you can retry later.`);
+        }
+      } else {
+        toast.success(`Created workspace "${ws.name}"`);
+      }
+
       setFormData({ ...emptyForm });
+      setSendInvite(false);
+      setClientContactName("");
       setCreateOpen(false);
       await switchWorkspace(ws.id);
       navigate("/app");
