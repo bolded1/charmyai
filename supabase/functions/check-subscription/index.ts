@@ -128,7 +128,7 @@ serve(async (req) => {
               amountPaid = (session.amount_total ?? 0) / 100;
               paidCurrency = session.currency || "eur";
             }
-            if (productId === PRO_PLAN_PRODUCT_ID) {
+            if (isProProduct(productId)) {
               hasProPlan = true;
               // Only set if not already set by firm plan
               if (amountPaid === null) {
