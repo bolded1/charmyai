@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useWorkspace, Workspace, CreateWorkspaceData, UpdateWorkspaceData } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +36,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { ClientAccessPanel } from "@/components/ClientAccessPanel";
 import { useSendClientInvitation } from "@/hooks/useClientInvitations";
+import { useClientRole } from "@/hooks/useClientRole";
 
 const CURRENCIES = [
   { value: "EUR", label: "EUR – Euro" },
@@ -219,6 +220,7 @@ export default function WorkspacesPage() {
   } = useWorkspace();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isClient } = useClientRole();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
@@ -243,6 +245,11 @@ export default function WorkspacesPage() {
   const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
   const [inviteRows, setInviteRows] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
   const [inviting, setInviting] = useState(false);
+
+  // Clients should not access the firm dashboard
+  useEffect(() => {
+    if (isClient) navigate("/app", { replace: true });
+  }, [isClient, navigate]);
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
