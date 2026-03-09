@@ -5,6 +5,7 @@ import { toast } from "sonner";
 export interface Organization {
   id: string;
   name: string;
+  trading_name: string | null;
   import_email_token: string;
   owner_user_id: string;
   logo_light: string | null;
@@ -15,6 +16,12 @@ export interface Organization {
   workspace_type: string;
   parent_org_id: string | null;
   max_client_workspaces: number;
+  country: string | null;
+  address: string | null;
+  vat_number: string | null;
+  tax_id: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
   created_at: string;
   updated_at: string;
 }
