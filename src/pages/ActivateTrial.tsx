@@ -189,32 +189,48 @@ export default function ActivateTrialPage() {
   // Whether card is needed based on promo (only relevant for Pro plan)
   const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
 
-  // Handle Firm Plan checkout (one-time payment via Stripe Checkout)
+  // Handle Firm Plan inline payment
   const handleFirmCheckout = async () => {
+    if (!stripe || !firmElements || !firmClientSecret) return;
     setSubmitting(true);
     setSetupError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: STRIPE_PLANS.firm.price_id },
+      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+        elements: firmElements,
+        confirmParams: {
+          payment_method_data: {
+            billing_details: {
+              name: billingName || undefined,
+            },
+          },
+        },
+        redirect: "if_required",
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
 
-      // Set billing_setup_at before redirect so after payment the gate opens
-      if (user) {
-        try {
-          await supabase
-            .from("profiles")
-            .update({ billing_setup_at: new Date().toISOString() })
-            .eq("user_id", user.id);
-        } catch {}
+      if (confirmError) {
+        setSetupError(confirmError.message);
+        setSubmitting(false);
+        return;
       }
 
-      if (data?.url) {
-        window.location.href = data.url;
+      if (paymentIntent?.status === "succeeded") {
+        // Set billing_setup_at
+        if (user) {
+          try {
+            await supabase
+              .from("profiles")
+              .update({ billing_setup_at: new Date().toISOString() })
+              .eq("user_id", user.id);
+          } catch {}
+        }
+
+        toast.success("Payment successful! Your firm plan is now active.");
+        navigate("/app/workspaces");
+      } else {
+        setSetupError("Payment was not completed. Please try again.");
       }
     } catch (err: any) {
-      setSetupError(err.message || "Failed to start checkout");
+      setSetupError(err.message || "Payment failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
