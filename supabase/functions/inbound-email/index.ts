@@ -275,21 +275,24 @@ serve(async (req) => {
     const token = formData.get("token") as string || "";
     const signature = formData.get("signature") as string || "";
 
-    // Verify Mailgun webhook signature
+    // Verify Mailgun webhook signature — fail-closed if no key configured
     const mailgunApiKeyRaw = Deno.env.get("MAILGUN_API_KEY");
     const webhookSigningKey = Deno.env.get("MAILGUN_WEBHOOK_SIGNING_KEY") || mailgunApiKeyRaw;
-    if (webhookSigningKey) {
-      const normalizedKey = normalizeMailgunApiKey(webhookSigningKey);
-      if (normalizedKey) {
-        const valid = await verifyMailgunSignature(normalizedKey, timestamp, token, signature);
-        if (!valid) {
-          console.error("Invalid Mailgun webhook signature");
-          return new Response(JSON.stringify({ error: "Invalid signature" }), {
-            status: 401,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-      }
+    const normalizedSigningKey = normalizeMailgunApiKey(webhookSigningKey);
+    if (!normalizedSigningKey) {
+      console.error("[INBOUND-EMAIL] Mailgun signing key not configured — rejecting request");
+      return new Response(JSON.stringify({ error: "Service not configured" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const signatureValid = await verifyMailgunSignature(normalizedSigningKey, timestamp, token, signature);
+    if (!signatureValid) {
+      console.error("[INBOUND-EMAIL] Invalid Mailgun webhook signature");
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const signedFields: MailgunSignedFields = {
