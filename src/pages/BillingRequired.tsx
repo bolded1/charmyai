@@ -104,7 +104,15 @@ export default function BillingRequiredPage() {
           <div className="space-y-3">
             {/* Primary actions */}
             {subscription.status === "past_due" || subscription.status === "unpaid" ? (
-              <Button className="w-full" size="lg" onClick={() => navigate("/app/settings?tab=billing")}>
+              <Button className="w-full" size="lg" onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke("customer-portal");
+                  if (error) throw error;
+                  if (data?.url) window.location.href = data.url;
+                } catch {
+                  toast.error("Could not open billing portal. Please try again.");
+                }
+              }}>
                 <CreditCard className="h-4 w-4 mr-2" />
                 Update Payment Method
               </Button>

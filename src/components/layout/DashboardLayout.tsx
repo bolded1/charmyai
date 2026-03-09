@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useLocation, Navigate, useSearchParams } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -44,7 +44,6 @@ const mobileNavItems = [
 
 export default function DashboardLayout() {
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { profile, displayName, initials, isLoading: profileLoading } = useProfile();
@@ -99,16 +98,13 @@ export default function DashboardLayout() {
   }
 
   // Subscription gate — fail-closed: block access unless explicitly entitled
-  const isBillingPage = location.pathname === "/app/settings" && searchParams.get("tab") === "billing";
-  if (!isBillingPage) {
-    if (!subscription.subscribed) {
-      // Has a Stripe status but it's not valid (expired, canceled, past_due, incomplete, unpaid, etc.)
-      if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing" && subscription.status !== "promo_active") {
-        return <Navigate to="/billing-required" replace />;
-      }
-      // No subscription status at all — needs to activate trial
-      return <Navigate to="/activate-trial" replace />;
+  if (!subscription.subscribed) {
+    // Has a Stripe status but it's not valid (expired, canceled, past_due, incomplete, unpaid, etc.)
+    if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing" && subscription.status !== "promo_active") {
+      return <Navigate to="/billing-required" replace />;
     }
+    // No subscription status at all — needs to activate trial
+    return <Navigate to="/activate-trial" replace />;
   }
 
   const handleSignOut = async () => {
