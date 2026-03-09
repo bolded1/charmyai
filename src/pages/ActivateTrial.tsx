@@ -94,13 +94,16 @@ export default function ActivateTrialPage() {
     }
   }, []);
 
+  // Whether card is needed based on promo (only relevant for Pro plan)
+  const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
+
   // Firm plan: PaymentIntent client secret
   const [firmClientSecret, setFirmClientSecret] = useState<string | null>(null);
   const [firmElements, setFirmElements] = useState<any>(null);
 
   // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
-    if (!stripe || !user || planChoice !== "pro") return;
+    if (!stripe || !user || planChoice !== "pro" || !cardRequired) return;
 
     const initSetup = async () => {
       try {
@@ -130,9 +133,9 @@ export default function ActivateTrialPage() {
       }
     };
 
-    const timer = setTimeout(initSetup, 100);
+    const timer = setTimeout(initSetup, 300);
     return () => clearTimeout(timer);
-  }, [stripe, user, planChoice]);
+  }, [stripe, user, planChoice, cardRequired]);
 
   // Create PaymentIntent and mount Elements for Firm plan
   useEffect(() => {
@@ -178,8 +181,6 @@ export default function ActivateTrialPage() {
     setPromoCode("");
   };
 
-  // Whether card is needed based on promo (only relevant for Pro plan)
-  const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
 
   // Handle Firm Plan inline payment
   const handleFirmCheckout = async () => {
