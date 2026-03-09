@@ -104,6 +104,7 @@ serve(async (req) => {
 
     // Check for one-time firm plan purchase via completed checkout sessions
     let hasFirmPlan = false;
+    let hasProPlan = false;
     try {
       const sessions = await stripe.checkout.sessions.list({
         customer: customerId,
@@ -111,21 +112,22 @@ serve(async (req) => {
       });
       for (const session of sessions.data) {
         if (session.payment_status === "paid" && session.mode === "payment") {
-          // Check line items for firm plan product
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
           for (const item of lineItems.data) {
             const productId = typeof item.price?.product === "string" ? item.price.product : (item.price?.product as any)?.id;
             if (productId === FIRM_PLAN_PRODUCT_ID) {
               hasFirmPlan = true;
-              break;
+            }
+            if (productId === PRO_PLAN_PRODUCT_ID) {
+              hasProPlan = true;
             }
           }
-          if (hasFirmPlan) break;
+          if (hasFirmPlan && hasProPlan) break;
         }
       }
-      logStep("Firm plan check", { hasFirmPlan });
+      logStep("One-time plan check", { hasFirmPlan, hasProPlan });
     } catch (err) {
-      logStep("Error checking firm plan sessions", { error: String(err) });
+      logStep("Error checking one-time plan sessions", { error: String(err) });
     }
 
     // Auto-provision firm entitlement on the organization when detected
