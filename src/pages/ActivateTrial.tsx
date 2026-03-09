@@ -35,8 +35,15 @@ export default function ActivateTrialPage() {
   const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
+  // Pre-fill billing name when profile loads
+  useEffect(() => {
+    if (profile && !billingName) {
+      const name = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+      if (name) setBillingName(name);
+    }
+  }, [profile]);
 
-  // Check if user already completed billing AND has active subscription — redirect to app
+
   useEffect(() => {
     if (!user) return;
     const checkExisting = async () => {
