@@ -202,11 +202,12 @@ export default function PricingPage() {
                   </div>
                 )}
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-amber-500/10 mb-4">
-                    <Building2 className="h-6 w-6 text-amber-600" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-[11px] font-semibold mb-4">
+                    <Building2 className="h-3.5 w-3.5" />
+                    For accountants & bookkeeping firms
                   </div>
                   <h3 className="text-2xl font-bold">{firmPlan.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{firmPlan.desc}</p>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{firmPlan.desc}</p>
                 </div>
                 <div className="text-center mb-2">
                   <div className="flex items-baseline justify-center gap-1">
