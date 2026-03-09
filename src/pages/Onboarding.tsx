@@ -169,17 +169,19 @@ export default function OnboardingPage() {
         return;
       }
       try {
-        await updateProfile.mutateAsync({
+        const profileUpdate: any = {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           job_title: jobTitle.trim() || null,
           phone: phone.trim() || null,
-        });
+        };
+        await updateProfile.mutateAsync(profileUpdate);
         if (avatarFile) {
           await uploadAvatar(avatarFile);
         }
-      } catch {
-        toast.error("Failed to save profile.");
+      } catch (err: any) {
+        console.error("Onboarding profile save error:", err);
+        toast.error("Failed to save profile. Please try again.");
         return;
       }
       setStep(2);
@@ -198,17 +200,18 @@ export default function OnboardingPage() {
       }
       if (org) {
         try {
-          const orgUpdate: any = {
+          const orgUpdate: Record<string, any> = {
             id: org.id,
             name: orgName.trim(),
             default_currency: currency,
           };
           if (accountType === "firm") {
-            orgUpdate.workspace_type = "firm";
+            orgUpdate.workspace_type = "accounting_firm";
             orgUpdate.max_client_workspaces = 10;
           }
-          await updateOrg.mutateAsync(orgUpdate);
-        } catch {
+          await updateOrg.mutateAsync(orgUpdate as any);
+        } catch (err: any) {
+          console.error("Onboarding org save error:", err);
           toast.error("Failed to update organization.");
           return;
         }
