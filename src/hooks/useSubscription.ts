@@ -76,7 +76,8 @@ export function useSubscription() {
       if (error) throw error;
 
       const hasFirm = data.has_firm_plan ?? false;
-      const plan = hasFirm ? "firm" : data.subscribed ? "pro" : "none";
+      const backendPlan = data.plan as string | undefined;
+      const plan: "pro" | "firm" | "none" = backendPlan === "firm" ? "firm" : backendPlan === "pro" ? "pro" : hasFirm ? "firm" : data.subscribed ? "pro" : "none";
 
       setState({
         subscribed: data.subscribed ?? false,

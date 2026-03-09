@@ -102,7 +102,8 @@ export default function BillingSection() {
     return map[brand] || brand.charAt(0).toUpperCase() + brand.slice(1);
   };
 
-  const planName = sub.has_firm_plan ? "Accounting Firm" : sub.subscribed ? "Pro" : "Free";
+  const planName = sub.plan === "firm" ? "Accounting Firm" : sub.plan === "pro" ? "Pro" : "Free";
+  const planPrice = sub.plan === "firm" ? "€99.00" : sub.plan === "pro" ? "€29.99" : null;
 
   return (
     <div className="space-y-6">
@@ -159,7 +160,7 @@ export default function BillingSection() {
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Amount Paid</p>
-                  <p className="font-medium">€29.99</p>
+                  <p className="font-medium">{planPrice}</p>
                 </div>
               </div>
             </>
@@ -176,7 +177,7 @@ export default function BillingSection() {
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Amount Paid</p>
-                  <p className="font-medium">€99.00</p>
+                  <p className="font-medium">{planPrice}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Access</p>
