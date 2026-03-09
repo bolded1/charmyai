@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Sparkles, CreditCard, Building2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import ctaInvoice from "@/assets/cta-invoice.png";
 import ctaEmail from "@/assets/cta-email.png";
@@ -19,7 +19,7 @@ export function MarketingCTA() {
         }}
       />
 
-      {/* Animated grid pattern overlay */}
+      {/* Grid pattern */}
       <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
@@ -29,7 +29,7 @@ export function MarketingCTA() {
         }}
       />
 
-      {/* Floating 3D illustrations */}
+      {/* Floating illustrations */}
       <motion.img
         src={ctaInvoice}
         alt=""
@@ -62,15 +62,9 @@ export function MarketingCTA() {
         animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
-      <motion.div
-        className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, hsla(0,0%,100%,0.06), transparent 70%)" }}
-        animate={{ scale: [1.2, 1, 1.2], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-      />
 
       {/* Content */}
-      <div className="container text-center max-w-2xl relative z-10">
+      <div className="container text-center max-w-3xl relative z-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -79,7 +73,7 @@ export function MarketingCTA() {
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-primary-foreground text-xs font-semibold mb-6"
         >
           <Sparkles className="h-3 w-3" />
-          Start automating today
+          One-time payment · Lifetime access
         </motion.div>
 
         <motion.h2
@@ -89,8 +83,8 @@ export function MarketingCTA() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-3xl md:text-4xl lg:text-5xl font-bold mb-5 text-primary-foreground leading-tight"
         >
-          Upload invoices & receipts. Forward emails.{" "}
-          <span className="opacity-90">Charmy extracts the data.</span>
+          Start processing invoices{" "}
+          <span className="opacity-90">automatically</span>
         </motion.h2>
 
         <motion.p
@@ -98,28 +92,104 @@ export function MarketingCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-primary-foreground/75 mb-10 max-w-md mx-auto text-base md:text-lg"
+          className="text-primary-foreground/75 mb-10 max-w-lg mx-auto text-base md:text-lg"
         >
-          Start processing documents in minutes. One-time payment, lifetime access.
+          Upload invoices and receipts or forward them by email. Charmy extracts the financial data instantly.
         </motion.p>
 
+        {/* Plan cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+          className="grid sm:grid-cols-2 gap-4 max-w-xl mx-auto mb-10"
+        >
+          {/* Pro card */}
+          <motion.div
+            whileHover={{ y: -3, transition: { duration: 0.2 } }}
+            className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 p-5 text-left"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <CreditCard className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-primary-foreground">Pro</p>
+                <p className="text-lg font-bold text-primary-foreground">€29.99</p>
+              </div>
+            </div>
+            <p className="text-xs text-primary-foreground/65 mb-4 leading-relaxed">
+              For freelancers and businesses managing their own invoices and receipts.
+            </p>
+            <div className="space-y-1.5 mb-4">
+              {["Unlimited documents", "AI data extraction", "Email import"].map((f) => (
+                <div key={f} className="flex items-center gap-2 text-[11px] text-primary-foreground/80">
+                  <CheckCircle2 className="h-3 w-3 shrink-0" />
+                  {f}
+                </div>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              asChild
+              className="w-full rounded-xl text-sm shadow-lg"
+            >
+              <Link to="/activate-trial?plan=pro">
+                Get Pro — €29.99 <ChevronRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </motion.div>
+
+          {/* Firm card */}
+          <motion.div
+            whileHover={{ y: -3, transition: { duration: 0.2 } }}
+            className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 p-5 text-left relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 px-2.5 py-0.5 rounded-bl-lg bg-white/15 text-[9px] font-bold text-primary-foreground uppercase tracking-wider">
+              Multi-client
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <Building2 className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-primary-foreground">Accounting Firm</p>
+                <p className="text-lg font-bold text-primary-foreground">€99</p>
+              </div>
+            </div>
+            <p className="text-xs text-primary-foreground/65 mb-4 leading-relaxed">
+              Manage up to 10 client workspaces from one account.
+            </p>
+            <div className="space-y-1.5 mb-4">
+              {["10 client workspaces", "Workspace switching", "All Pro features"].map((f) => (
+                <div key={f} className="flex items-center gap-2 text-[11px] text-primary-foreground/80">
+                  <CheckCircle2 className="h-3 w-3 shrink-0" />
+                  {f}
+                </div>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              asChild
+              className="w-full rounded-xl text-sm shadow-lg"
+            >
+              <Link to="/activate-trial?plan=firm">
+                Accounting Firm — €99 <ChevronRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        {/* Demo button */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          transition={{ duration: 0.5, delay: 0.35 }}
         >
-          <Button
-            size="lg"
-            variant="secondary"
-            asChild
-            className="text-base px-8 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-          >
-            <Link to="/signup">
-              Get Started — €29.99 <ChevronRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
           <Button
             size="lg"
             variant="ghost"
