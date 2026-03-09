@@ -102,7 +102,7 @@ export function DashboardSidebar() {
               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                 <NavLink to={item.url} end={item.url === '/app'}>
                   <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  {showLabels && <span className="text-sm font-semibold text-foreground">{item.title}</span>}
+                  {showLabels && <span className="text-sm font-medium text-foreground">{item.title}</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
