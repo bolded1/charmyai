@@ -1,9 +1,14 @@
 import { useSubscription, STRIPE_PLANS } from "@/hooks/useSubscription";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CreditCard, CheckCircle2, Clock, Loader2, ExternalLink, Download, FileText, Shield } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import {
+  CreditCard, CheckCircle2, Clock, Loader2, ExternalLink, Download,
+  Building2, Briefcase, Shield, Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,10 +40,16 @@ interface BillingDetails {
 
 export default function BillingSection() {
   const sub = useSubscription();
+  const { isAccountingFirm, clientWorkspaces, allWorkspaces } = useWorkspace();
   const [portalLoading, setPortalLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [billingDetails, setBillingDetails] = useState<BillingDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(true);
+
+  const homeOrg = allWorkspaces.find(
+    (w) => w.workspace_type === "accounting_firm" || w.workspace_type === "standard"
+  );
+  const maxWorkspaces = homeOrg?.max_client_workspaces || 10;
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -91,6 +102,8 @@ export default function BillingSection() {
     return map[brand] || brand.charAt(0).toUpperCase() + brand.slice(1);
   };
 
+  const planName = sub.has_firm_plan ? "Accounting Firm" : sub.subscribed ? "Pro" : "Free";
+
   return (
     <div className="space-y-6">
       {/* Current Plan */}
@@ -98,18 +111,23 @@ export default function BillingSection() {
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <CreditCard className="h-5 w-5 text-primary" />
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${sub.has_firm_plan ? "bg-primary/10" : "bg-primary/10"}`}>
+                {sub.has_firm_plan ? <Building2 className="h-5 w-5 text-primary" /> : <CreditCard className="h-5 w-5 text-primary" />}
               </div>
               <div>
-                <h3 className="font-semibold">Pro Plan</h3>
+                <h3 className="font-semibold">{planName} Plan</h3>
                 <div className="flex items-center gap-2 mt-0.5">
-                  {sub.status === "trialing" && (
+                  {sub.has_firm_plan && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px]">
+                      <Shield className="h-3 w-3 mr-1" /> Lifetime Access
+                    </Badge>
+                  )}
+                  {!sub.has_firm_plan && sub.status === "trialing" && (
                     <Badge variant="secondary" className="bg-accent text-accent-foreground text-[10px]">
                       <Clock className="h-3 w-3 mr-1" /> Trial
                     </Badge>
                   )}
-                  {sub.status === "active" && (
+                  {!sub.has_firm_plan && sub.status === "active" && (
                     <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px]">
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Active
                     </Badge>
@@ -127,7 +145,7 @@ export default function BillingSection() {
                 </div>
               </div>
             </div>
-            {sub.subscribed && (
+            {sub.subscribed && !sub.has_firm_plan && (
               <Button variant="outline" size="sm" onClick={handlePortal} disabled={portalLoading}>
                 {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <ExternalLink className="h-4 w-4 mr-1" />}
                 Manage Billing
@@ -135,7 +153,8 @@ export default function BillingSection() {
             )}
           </div>
 
-          {sub.subscribed && (
+          {/* Subscription details (not for firm one-time plan) */}
+          {sub.subscribed && !sub.has_firm_plan && (
             <>
               <Separator className="my-4" />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
@@ -164,15 +183,81 @@ export default function BillingSection() {
               </div>
             </>
           )}
+
+          {/* Firm plan details */}
+          {sub.has_firm_plan && (
+            <>
+              <Separator className="my-4" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs">Payment Type</p>
+                  <p className="font-medium">One-time</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Amount Paid</p>
+                  <p className="font-medium">€99.00</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Access</p>
+                  <p className="font-medium">Lifetime</p>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
+
+      {/* Workspace Usage (firm plan only) */}
+      {sub.has_firm_plan && (
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
+                <Briefcase className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">Workspace Usage</h3>
+                <p className="text-xs text-muted-foreground">
+                  {clientWorkspaces.length} of {maxWorkspaces} client workspaces used
+                </p>
+              </div>
+            </div>
+            <Progress value={(clientWorkspaces.length / maxWorkspaces) * 100} className="h-2 mb-3" />
+            <div className="grid grid-cols-5 gap-1.5 mb-3">
+              {Array.from({ length: maxWorkspaces }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-5 rounded-md transition-colors ${
+                    i < clientWorkspaces.length ? "bg-primary/80" : "bg-accent border border-border/60"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{clientWorkspaces.length} active</span>
+              <span>{maxWorkspaces - clientWorkspaces.length} remaining</span>
+            </div>
+
+            {/* Entitlements list */}
+            <Separator className="my-4" />
+            <p className="text-xs font-medium text-muted-foreground mb-2">Plan Entitlements</p>
+            <ul className="space-y-1.5">
+              {STRIPE_PLANS.firm.features.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-xs text-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />{f}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Payment Method */}
       <Card>
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm">Payment Method</h3>
-            {sub.subscribed && (
+            {sub.subscribed && !sub.has_firm_plan && (
               <Button variant="ghost" size="sm" onClick={handlePortal} disabled={portalLoading}>
                 {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Update"}
               </Button>
@@ -199,7 +284,6 @@ export default function BillingSection() {
           ) : (
             <p className="text-sm text-muted-foreground">No payment method on file.</p>
           )}
-
           {billingDetails?.billing_email && (
             <div className="mt-3 pt-3 border-t border-border/50">
               <p className="text-xs text-muted-foreground">Billing Email</p>
@@ -219,7 +303,6 @@ export default function BillingSection() {
             </div>
           ) : billingDetails?.invoices && billingDetails.invoices.length > 0 ? (
             <div className="space-y-2">
-              {/* Header */}
               <div className="grid grid-cols-[1fr_80px_80px_60px_40px] gap-2 text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2">
                 <span>Date</span>
                 <span>Invoice</span>
@@ -235,19 +318,13 @@ export default function BillingSection() {
                   <span className="text-foreground">
                     {inv.date ? new Date(inv.date).toLocaleDateString() : "—"}
                   </span>
-                  <span className="text-muted-foreground text-xs truncate">
-                    {inv.number || "—"}
-                  </span>
-                  <span className="text-right font-medium">
-                    €{inv.amount.toFixed(2)}
-                  </span>
+                  <span className="text-muted-foreground text-xs truncate">{inv.number || "—"}</span>
+                  <span className="text-right font-medium">€{inv.amount.toFixed(2)}</span>
                   <Badge
                     variant="secondary"
                     className={`text-[9px] ${
-                      inv.status === "paid"
-                        ? "bg-primary/10 text-primary"
-                        : inv.status === "open"
-                        ? "bg-accent text-accent-foreground"
+                      inv.status === "paid" ? "bg-primary/10 text-primary"
+                        : inv.status === "open" ? "bg-accent text-accent-foreground"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
@@ -255,12 +332,7 @@ export default function BillingSection() {
                   </Badge>
                   <div>
                     {inv.pdf_url && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => window.open(inv.pdf_url!, "_blank")}
-                      >
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(inv.pdf_url!, "_blank")}>
                         <Download className="h-3.5 w-3.5" />
                       </Button>
                     )}
@@ -274,7 +346,7 @@ export default function BillingSection() {
         </CardContent>
       </Card>
 
-      {/* Subscribe section for users without a subscription */}
+      {/* Subscribe section */}
       {!sub.subscribed && (
         <Card>
           <CardContent className="p-5">
@@ -291,7 +363,7 @@ export default function BillingSection() {
             </ul>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                onClick={() => STRIPE_PLANS.pro.price_id_monthly && handleUpgrade(STRIPE_PLANS.pro.price_id_monthly)}
+                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id_monthly)}
                 disabled={!!checkoutLoading}
               >
                 {checkoutLoading === STRIPE_PLANS.pro.price_id_monthly ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
@@ -299,13 +371,47 @@ export default function BillingSection() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => STRIPE_PLANS.pro.price_id_yearly && handleUpgrade(STRIPE_PLANS.pro.price_id_yearly)}
+                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id_yearly)}
                 disabled={!!checkoutLoading}
               >
                 {checkoutLoading === STRIPE_PLANS.pro.price_id_yearly ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 €99/year — Save 17%
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Firm plan upsell (show only to subscribed non-firm users) */}
+      {sub.subscribed && !sub.has_firm_plan && (
+        <Card className="border-primary/20 bg-primary/[0.02]">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Accounting Firm Plan</h3>
+                <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage up to 10 separate client workspaces from one account. Perfect for accountants and bookkeepers.
+            </p>
+            <ul className="space-y-1.5 mb-5">
+              {STRIPE_PLANS.firm.features.slice(0, 4).map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{f}
+                </li>
+              ))}
+            </ul>
+            <Button
+              onClick={() => handleUpgrade(STRIPE_PLANS.firm.price_id)}
+              disabled={!!checkoutLoading}
+            >
+              {checkoutLoading === STRIPE_PLANS.firm.price_id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+              €99 One-Time — Upgrade to Firm Plan
+            </Button>
           </CardContent>
         </Card>
       )}
