@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { CookieConsentProvider } from "@/components/CookieConsent";
 import MarketingLayout from "@/components/layout/MarketingLayout";
