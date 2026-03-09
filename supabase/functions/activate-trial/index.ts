@@ -45,17 +45,27 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Find customer
+    // Find or create customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) throw new Error("No Stripe customer found");
-    const customerId = customers.data[0].id;
-    logStep("Customer found", { customerId });
+    let customerId: string;
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    } else {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { supabase_user_id: user.id },
+      });
+      customerId = customer.id;
+    }
+    logStep("Customer resolved", { customerId });
 
-    // Set default payment method on customer
-    await stripe.customers.update(customerId, {
-      invoice_settings: { default_payment_method: paymentMethodId },
-    });
-    logStep("Default payment method set");
+    // Set default payment method on customer (only if card provided)
+    if (paymentMethodId) {
+      await stripe.customers.update(customerId, {
+        invoice_settings: { default_payment_method: paymentMethodId },
+      });
+      logStep("Default payment method set");
+    }
 
     // Check for existing active subscription
     const existingSubs = await stripe.subscriptions.list({
