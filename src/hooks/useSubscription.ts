@@ -53,7 +53,8 @@ export function useSubscription() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setState(prev => ({ ...prev, loading: false }));
+        // No session = not authenticated, set not subscribed (fail-closed)
+        setState(prev => ({ ...prev, subscribed: false, status: null, loading: false }));
         return;
       }
 
@@ -73,7 +74,15 @@ export function useSubscription() {
       });
     } catch (err) {
       console.error("Failed to check subscription:", err);
-      setState(prev => ({ ...prev, loading: false }));
+      // FAIL-CLOSED: on error, explicitly mark as not subscribed
+      // This prevents access if the billing check fails
+      setState(prev => ({
+        ...prev,
+        subscribed: false,
+        plan: "none",
+        status: null,
+        loading: false,
+      }));
     }
   }, []);
 
