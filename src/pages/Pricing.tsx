@@ -140,21 +140,16 @@ export default function PricingPage() {
                     <span className="text-5xl font-bold tracking-tight">{proPlan.price}</span>
                     <span className="text-muted-foreground text-lg">{proPlan.period}</span>
                   </div>
-                  {proPlan.savings && (
-                    <motion.p key={billingCycle} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-sm text-emerald-600 font-medium mt-1">
-                      {proPlan.savings}
-                    </motion.p>
-                  )}
                 </div>
-                <p className="text-center text-xs text-muted-foreground mb-8">7-day free trial included · Cancel anytime</p>
+                <p className="text-center text-xs text-muted-foreground mb-8">One-time payment · Lifetime access</p>
                 {proPlan.current ? (
                   <Button className="w-full h-12 text-base rounded-xl" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
-                    Manage Subscription
+                    Manage Plan
                   </Button>
                 ) : (
                   <Button className="w-full h-12 text-base rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
-                    onClick={() => proPriceId && handleCheckout(proPriceId)}>
-                    {checkoutLoading === proPriceId ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Start 7-Day Free Trial <ArrowRight className="h-4 w-4 ml-2" /></>}
+                    onClick={() => handleCheckout(STRIPE_PLANS.pro.price_id)}>
+                    {checkoutLoading === STRIPE_PLANS.pro.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Get Lifetime Access <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
                 )}
                 <div className="relative my-8">
