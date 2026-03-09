@@ -30,7 +30,6 @@ import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { PwaInstallBanner } from "@/components/PwaInstallBanner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const mobileNavItems = [
   { title: "Capture", url: "/app", icon: Upload },
