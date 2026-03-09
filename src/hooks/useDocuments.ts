@@ -351,6 +351,7 @@ export function useUploadIncomeDocument() {
 
       const { error: incomeErr } = await supabase.from("income_records").insert({
         user_id: user.id,
+        organization_id: profile?.active_organization_id || null,
         document_id: doc.id,
         customer_name: updatedDoc.customer_name || updatedDoc.supplier_name || "Unknown",
         invoice_number: updatedDoc.invoice_number,
