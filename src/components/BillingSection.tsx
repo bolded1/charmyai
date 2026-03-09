@@ -530,8 +530,8 @@ function FirmUpgradeCard() {
   };
 
   // Price calculation
-  const basePrice = STRIPE_PLANS.firm.price_onetime || 99;
-  let finalPrice = basePrice;
+  const basePrice: number = STRIPE_PLANS.firm.price_onetime || 99;
+  let finalPrice: number = basePrice;
   let discountLine: string | null = null;
   if (promoResult?.valid) {
     if (promoResult.discount_type === "percentage" && promoResult.discount_value) {
