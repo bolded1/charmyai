@@ -210,8 +210,14 @@ export default function DashboardLayout() {
           <DashboardSidebar />
         </div>
 
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
+          {/* Background gradient orbs matching login page */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+            <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+            <div className="absolute bottom-[-15%] right-[-8%] w-[400px] h-[400px] rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+          </div>
           {/* Install banner & offline indicator */}
+          <div className="relative z-10 flex flex-col min-h-0 flex-1">
           <PwaInstallBanner />
           <OfflineIndicator />
           {/* Impersonation banner */}
@@ -315,7 +321,7 @@ export default function DashboardLayout() {
             <NPSWidget />
           </main>
 
-
+          </div>
         </div>
       </div>
 
