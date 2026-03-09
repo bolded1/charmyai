@@ -68,6 +68,7 @@ export default function DashboardLayout() {
   const subscription = useSubscription();
   const { data: systemSettings } = useSystemSettings();
   const isAdmin = useIsAdmin();
+  const { isClient } = useClientRole();
 
   // Apply org accent color
   useEffect(() => {
