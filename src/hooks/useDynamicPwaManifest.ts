@@ -50,6 +50,22 @@ function applyManifest(iconUrl: string | null) {
   }
 }
 
+function isValidIconUrl(val: unknown): val is string {
+  if (typeof val !== "string") return false;
+  return val.startsWith("http") || val.startsWith("data:image");
+}
+
+function parseIconValue(val: unknown): string | null {
+  if (isValidIconUrl(val)) return val;
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      if (isValidIconUrl(parsed)) return parsed;
+    } catch { /* ignore */ }
+  }
+  return null;
+}
+
 export function useDynamicPwaManifest() {
   useEffect(() => {
     supabase
@@ -58,9 +74,8 @@ export function useDynamicPwaManifest() {
       .eq("key", "pwa-icon")
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.value && typeof data.value === "string" && data.value.startsWith("http")) {
-          applyManifest(data.value);
-        }
+        const url = parseIconValue(data?.value);
+        if (url) applyManifest(url);
       });
 
     // Listen for changes from admin
@@ -71,11 +86,7 @@ export function useDynamicPwaManifest() {
         .eq("key", "pwa-icon")
         .maybeSingle()
         .then(({ data }) => {
-          applyManifest(
-            data?.value && typeof data.value === "string" && data.value.startsWith("http")
-              ? data.value
-              : null
-          );
+          applyManifest(parseIconValue(data?.value));
         });
     };
 
