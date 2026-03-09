@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { FileText, Building2, UserCircle, ArrowRight, ArrowLeft, Camera, Check, ChevronsUpDown } from "lucide-react";
+import { FileText, Building2, UserCircle, ArrowRight, ArrowLeft, Camera, Check, ChevronsUpDown, Briefcase, Users, FolderOpen, Sparkles } from "lucide-react";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,11 +14,9 @@ import { useProfile } from "@/hooks/useProfile";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
-const steps = [
-  { title: "Your Profile", icon: UserCircle },
-  { title: "Organization Details", icon: Building2 },
-];
+type AccountType = "business" | "firm" | null;
 
 const companyRoles = ["Owner", "Founder", "Accountant", "Finance Manager", "Admin", "Staff"];
 
@@ -62,20 +60,32 @@ export default function OnboardingPage() {
   const { data: org } = useOrganization();
   const updateOrg = useUpdateOrganization();
 
-  // Auto-detect which step to start on based on saved data
-  const profileComplete = !!profile?.first_name && !!profile?.last_name;
-  const initialStep = profileComplete ? 1 : 0;
-  const [step, setStep] = useState(initialStep);
+  const [accountType, setAccountType] = useState<AccountType>(null);
+  const [step, setStep] = useState(0);
   const [hasStartedOnboardingFlow, setHasStartedOnboardingFlow] = useState(false);
 
-  // Update step when profile loads and we detect step 0 was already done
+  const steps = accountType === "firm"
+    ? [
+        { title: "Account Type", icon: Briefcase },
+        { title: "Your Profile", icon: UserCircle },
+        { title: "Firm Details", icon: Building2 },
+      ]
+    : [
+        { title: "Account Type", icon: Briefcase },
+        { title: "Your Profile", icon: UserCircle },
+        { title: "Organization Details", icon: Building2 },
+      ];
+
+  // Auto-detect which step to start on based on saved data
+  const profileComplete = !!profile?.first_name && !!profile?.last_name;
+
   useEffect(() => {
-    if (!profileLoading && profileComplete) {
-      setStep((prev) => Math.max(prev, 1));
+    if (!profileLoading && profileComplete && step === 1) {
+      setStep((prev) => Math.max(prev, 2));
     }
   }, [profileLoading, profileComplete]);
 
-  // Redirect users who already completed onboarding (only before they interact with this flow)
+  // Redirect users who already completed onboarding
   useEffect(() => {
     if (
       !authLoading &&
@@ -90,21 +100,12 @@ export default function OnboardingPage() {
         navigate("/activate-trial", { replace: true });
       }
     }
-  }, [
-    authLoading,
-    profileLoading,
-    user,
-    profile?.onboarding_completed_at,
-    profile?.billing_setup_at,
-    hasStartedOnboardingFlow,
-    navigate,
-  ]);
+  }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, profile?.billing_setup_at, hasStartedOnboardingFlow, navigate]);
 
-  // Pre-populate from saved profile data first, then signup metadata as fallback
+  // Pre-populate from saved profile data
   const metaFirst = user?.user_metadata?.first_name || "";
   const metaLast = user?.user_metadata?.last_name || "";
 
-  // Step 1 state — pre-fill from existing profile
   const [firstName, setFirstName] = useState(profile?.first_name || metaFirst);
   const [lastName, setLastName] = useState(profile?.last_name || metaLast);
   const [jobTitle, setJobTitle] = useState(profile?.job_title || "");
@@ -114,7 +115,6 @@ export default function OnboardingPage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const brandLogo = useBrandLogo();
 
-  // Step 2 state — pre-fill from existing org
   const [orgName, setOrgName] = useState(org?.name && org.name !== "My Organization" ? org.name : "");
   const [industry, setIndustry] = useState("technology");
   const [customIndustry, setCustomIndustry] = useState("");
@@ -124,7 +124,6 @@ export default function OnboardingPage() {
   const [vatNumber, setVatNumber] = useState("");
   const [address, setAddress] = useState("");
 
-  // Update pre-filled values when profile/org data loads
   useEffect(() => {
     if (profile) {
       if (profile.first_name && !firstName) setFirstName(profile.first_name);
@@ -152,7 +151,19 @@ export default function OnboardingPage() {
 
   const next = async () => {
     setHasStartedOnboardingFlow(true);
+
+    // Step 0: Account type selection
     if (step === 0) {
+      if (!accountType) {
+        toast.error("Please choose how you will use Charmy.");
+        return;
+      }
+      setStep(1);
+      return;
+    }
+
+    // Step 1: Profile
+    if (step === 1) {
       if (!firstName.trim() || !lastName.trim()) {
         toast.error("First name and last name are required.");
         return;
@@ -171,11 +182,14 @@ export default function OnboardingPage() {
         toast.error("Failed to save profile.");
         return;
       }
+      setStep(2);
+      return;
     }
 
-    if (step === 1) {
+    // Step 2: Organization/Firm details
+    if (step === 2) {
       if (!orgName.trim()) {
-        toast.error("Company name is required.");
+        toast.error(accountType === "firm" ? "Firm name is required." : "Company name is required.");
         return;
       }
       if (!currency) {
@@ -184,25 +198,36 @@ export default function OnboardingPage() {
       }
       if (org) {
         try {
-          await updateOrg.mutateAsync({ id: org.id, name: orgName.trim(), default_currency: currency });
+          const orgUpdate: any = {
+            id: org.id,
+            name: orgName.trim(),
+            default_currency: currency,
+          };
+          if (accountType === "firm") {
+            orgUpdate.workspace_type = "firm";
+            orgUpdate.max_client_workspaces = 10;
+          }
+          await updateOrg.mutateAsync(orgUpdate);
         } catch {
           toast.error("Failed to update organization.");
           return;
         }
       }
-    }
 
-    if (step < steps.length - 1) {
-      setStep(step + 1);
-    } else {
       // Mark onboarding as completed
       try {
         await updateProfile.mutateAsync({
           onboarding_completed_at: new Date().toISOString(),
         } as any);
       } catch {}
-      toast.success("Setup complete! Let's activate your trial.");
-      navigate("/activate-trial");
+
+      if (accountType === "firm") {
+        toast.success("Setup complete! Let's activate your Accounting Firm plan.");
+        navigate("/activate-trial?plan=firm");
+      } else {
+        toast.success("Setup complete! Let's activate your trial.");
+        navigate("/activate-trial");
+      }
     }
   };
 
@@ -238,164 +263,262 @@ export default function OnboardingPage() {
         </div>
 
         <div className="glass-auth rounded-2xl p-6">
-          {step === 0 && (
-            <div className="space-y-4">
-              <div className="flex justify-center">
-                <label className="relative cursor-pointer group">
-                  <Avatar className="h-20 w-20">
-                    {avatarPreview ? (
-                      <AvatarImage src={avatarPreview} />
-                    ) : null}
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xl">{profileInitials}</AvatarFallback>
-                  </Avatar>
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="h-5 w-5 text-white" />
-                  </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                </label>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name *</Label>
-                  <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+          <AnimatePresence mode="wait">
+            {step === 0 && (
+              <motion.div key="step-0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                <div className="text-center mb-6">
+                  <h2 className="text-lg font-bold text-foreground mb-1">Choose how you will use Charmy</h2>
+                  <p className="text-sm text-muted-foreground">This helps us set up the right experience for you.</p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Last Name *</Label>
-                  <Input placeholder="Smith" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Job Title</Label>
-                <Input placeholder="e.g. Finance Manager" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Phone Number</Label>
-                <Input placeholder="+49 123 456 789" value={phone} onChange={(e) => setPhone(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Role in Company</Label>
-                <Select value={companyRole} onValueChange={setCompanyRole}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {companyRoles.map((r) => (
-                      <SelectItem key={r} value={r}>{r}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("business")}
+                    className={cn(
+                      "w-full rounded-xl border-2 p-5 text-left transition-all group",
+                      accountType === "business"
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border hover:border-muted-foreground/30 hover:bg-accent/50"
+                    )}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={cn(
+                        "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                        accountType === "business" ? "bg-primary/15" : "bg-muted"
+                      )}>
+                        <Briefcase className={cn("h-5 w-5", accountType === "business" ? "text-primary" : "text-muted-foreground")} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-foreground">Business / Freelancer</span>
+                          {accountType === "business" && <Check className="h-4 w-4 text-primary" />}
+                        </div>
+                        <p className="text-sm text-muted-foreground">Manage documents for your own company</p>
+                      </div>
+                    </div>
+                  </button>
 
-          {step === 1 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Company Name *</Label>
-                <Input placeholder="Acme Corp" value={orgName} onChange={(e) => setOrgName(e.target.value)} required />
-              </div>
-
-              {/* Industry as tabs */}
-              <div className="space-y-2">
-                <Label>Industry</Label>
-                <div className="flex flex-wrap gap-2">
-                  {INDUSTRIES.map((ind) => (
-                    <button
-                      key={ind.value}
-                      type="button"
-                      onClick={() => setIndustry(ind.value)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
-                        industry === ind.value
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground"
-                      )}
-                    >
-                      {ind.label}
-                    </button>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("firm")}
+                    className={cn(
+                      "w-full rounded-xl border-2 p-5 text-left transition-all group",
+                      accountType === "firm"
+                        ? "border-amber-500 bg-amber-500/5 shadow-sm"
+                        : "border-border hover:border-muted-foreground/30 hover:bg-accent/50"
+                    )}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={cn(
+                        "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                        accountType === "firm" ? "bg-amber-500/15" : "bg-muted"
+                      )}>
+                        <Building2 className={cn("h-5 w-5", accountType === "firm" ? "text-amber-600" : "text-muted-foreground")} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-foreground">Accounting Firm</span>
+                          {accountType === "firm" && <Check className="h-4 w-4 text-amber-600" />}
+                        </div>
+                        <p className="text-sm text-muted-foreground">Manage documents for multiple client companies</p>
+                      </div>
+                    </div>
+                  </button>
                 </div>
-                {industry === "other" && (
-                  <Input
-                    placeholder="Enter your industry..."
-                    value={customIndustry}
-                    onChange={(e) => setCustomIndustry(e.target.value)}
-                    className="mt-2"
-                  />
+
+                {accountType === "firm" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="mt-4 rounded-xl bg-amber-500/5 border border-amber-500/20 p-4"
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2 text-sm text-foreground font-medium">
+                        <Sparkles className="h-4 w-4 text-amber-600" />
+                        Accounting Firm Plan — €99 one-time
+                      </div>
+                      <div className="space-y-1.5">
+                        {[
+                          "Up to 10 separate client workspaces",
+                          "Dedicated accountant dashboard",
+                          "AI document extraction per workspace",
+                          "Separate exports for each client",
+                        ].map((feat) => (
+                          <div key={feat} className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Check className="h-3 w-3 text-amber-600 shrink-0" />
+                            {feat}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground pt-1 border-t border-amber-500/10">
+                        After setup you'll be directed to the one-time €99 payment to activate your firm account.
+                      </p>
+                    </div>
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
+            )}
 
-              {/* Country with search */}
-              <div className="space-y-2">
-                <Label>Country</Label>
-                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={countryOpen}
-                      className="w-full justify-between font-normal"
-                    >
-                      {country || "Select country..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Search country..." />
-                      <CommandList>
-                        <CommandEmpty>No country found.</CommandEmpty>
-                        <CommandGroup>
-                          {COUNTRIES.map((c) => (
-                            <CommandItem
-                              key={c}
-                              value={c}
-                              onSelect={() => {
-                                setCountry(c);
-                                setCountryOpen(false);
-                              }}
-                            >
-                              <Check className={cn("mr-2 h-4 w-4", country === c ? "opacity-100" : "opacity-0")} />
-                              {c}
-                            </CommandItem>
+            {step === 1 && (
+              <motion.div key="step-1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <label className="relative cursor-pointer group">
+                      <Avatar className="h-20 w-20">
+                        {avatarPreview ? <AvatarImage src={avatarPreview} /> : null}
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xl">{profileInitials}</AvatarFallback>
+                      </Avatar>
+                      <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Camera className="h-5 w-5 text-white" />
+                      </div>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>First Name *</Label>
+                      <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Last Name *</Label>
+                      <Input placeholder="Smith" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Job Title</Label>
+                    <Input placeholder={accountType === "firm" ? "e.g. Senior Accountant" : "e.g. Finance Manager"} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Phone Number</Label>
+                    <Input placeholder="+49 123 456 789" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Role in Company</Label>
+                    <Select value={companyRole} onValueChange={setCompanyRole}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {companyRoles.map((r) => (
+                          <SelectItem key={r} value={r}>{r}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 2 && (
+              <motion.div key="step-2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{accountType === "firm" ? "Firm Name *" : "Company Name *"}</Label>
+                    <Input
+                      placeholder={accountType === "firm" ? "Smith & Partners Accounting" : "Acme Corp"}
+                      value={orgName}
+                      onChange={(e) => setOrgName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {accountType !== "firm" && (
+                    <div className="space-y-2">
+                      <Label>Industry</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {INDUSTRIES.map((ind) => (
+                          <button
+                            key={ind.value}
+                            type="button"
+                            onClick={() => setIndustry(ind.value)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
+                              industry === ind.value
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground"
+                            )}
+                          >
+                            {ind.label}
+                          </button>
+                        ))}
+                      </div>
+                      {industry === "other" && (
+                        <Input placeholder="Enter your industry..." value={customIndustry} onChange={(e) => setCustomIndustry(e.target.value)} className="mt-2" />
+                      )}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>Country</Label>
+                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" aria-expanded={countryOpen} className="w-full justify-between font-normal">
+                          {country || "Select country..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search country..." />
+                          <CommandList>
+                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandGroup>
+                              {COUNTRIES.map((c) => (
+                                <CommandItem key={c} value={c} onSelect={() => { setCountry(c); setCountryOpen(false); }}>
+                                  <Check className={cn("mr-2 h-4 w-4", country === c ? "opacity-100" : "opacity-0")} />
+                                  {c}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Default Currency *</Label>
+                      <Select value={currency} onValueChange={setCurrency}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                           ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>VAT Number</Label>
+                      <Input placeholder="DE123456789" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
+                    </div>
+                  </div>
 
-              {/* Currency & VAT */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Default Currency *</Label>
-                  <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {CURRENCIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>VAT Number</Label>
-                  <Input placeholder="DE123456789" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
-                </div>
-              </div>
+                  <div className="space-y-2">
+                    <Label>Address</Label>
+                    <Input placeholder="123 Main St, Berlin" value={address} onChange={(e) => setAddress(e.target.value)} />
+                  </div>
 
-              <div className="space-y-2">
-                <Label>Address</Label>
-                <Input placeholder="123 Main St, Berlin" value={address} onChange={(e) => setAddress(e.target.value)} />
-              </div>
-            </div>
-          )}
+                  {accountType === "firm" && (
+                    <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-3 flex items-start gap-3">
+                      <Building2 className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                      <p className="text-xs text-muted-foreground">
+                        After completing setup, you'll be directed to the <span className="font-medium text-foreground">€99 one-time payment</span> to activate your Accounting Firm plan with up to 10 client workspaces.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="flex items-center justify-between mt-6 pt-4 border-t">
             <Button variant="ghost" size="sm" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Back
             </Button>
             <Button size="sm" onClick={next}>
-              {step === steps.length - 1 ? "Finish Setup" : "Continue"} <ArrowRight className="h-4 w-4 ml-1" />
+              {step === steps.length - 1
+                ? (accountType === "firm" ? "Continue to Payment" : "Finish Setup")
+                : "Continue"
+              } <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>

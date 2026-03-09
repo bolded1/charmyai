@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -18,12 +18,14 @@ type PlanChoice = "pro" | "firm";
 
 export default function ActivateTrialPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { profile } = useProfile();
   const brandLogo = useBrandLogo();
   const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
 
-  const [planChoice, setPlanChoice] = useState<PlanChoice>("pro");
+  const initialPlan = searchParams.get("plan") === "firm" ? "firm" : "pro";
+  const [planChoice, setPlanChoice] = useState<PlanChoice>(initialPlan);
   const [stripe, setStripe] = useState<any>(null);
   const [elements, setElements] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
