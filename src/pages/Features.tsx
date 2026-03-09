@@ -381,7 +381,7 @@ export default function FeaturesPage() {
               Upload an invoice or receipt and see how Charmy extracts financial data automatically.
             </p>
             <Button size="lg" asChild className="text-base px-8">
-              <a href="/#demo-upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></a>
+              <Link to="/demo">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </motion.div>
         </div>
