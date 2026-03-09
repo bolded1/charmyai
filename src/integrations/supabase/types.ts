@@ -1530,6 +1530,7 @@ export type Database = {
         }
         Returns: string
       }
+      generate_short_token: { Args: { length?: number }; Returns: string }
       has_client_workspace_access: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
