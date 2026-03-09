@@ -491,7 +491,7 @@ export default function ActivateTrialPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Price</span>
-                  <span className="font-medium">€{basePrice}{basePeriod}</span>
+                  <span className="font-medium">€{basePrice}</span>
                 </div>
                 {discountLine && (
                   <div className="flex justify-between text-sm">
@@ -501,13 +501,10 @@ export default function ActivateTrialPage() {
                 )}
                 <div className="border-t border-border/50 pt-2 mt-2" />
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Today</span>
-                  <span className="font-bold">€0 (trial)</span>
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="font-bold">€{discountedPrice.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">After {trialDays}-day trial</span>
-                  <span className="font-bold">€{discountedPrice.toFixed(2)}{basePeriod}</span>
-                </div>
+                <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
