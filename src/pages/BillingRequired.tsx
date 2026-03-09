@@ -45,6 +45,15 @@ export default function BillingRequiredPage() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      // Set billing_setup_at flag so dashboard gate allows access
+      if (user) {
+        try {
+          await supabase
+            .from("profiles")
+            .update({ billing_setup_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+        } catch {}
+      }
       toast.success("Access restored!");
       subscription.checkSubscription();
       navigate("/app");
