@@ -65,9 +65,7 @@ serve(async (req) => {
 
     // For firm plan one-time purchase, use activate-trial success URL
     // so billing_setup_at gets set properly
-    const successUrl = isOneTime
-      ? `${origin}/app/workspaces?checkout=success&plan=firm`
-      : `${origin}/app/settings?tab=billing&checkout=success`;
+    const successUrl = `${origin}/app/settings?tab=billing&checkout=success`;
 
     const sessionParams: any = {
       customer: customerId,

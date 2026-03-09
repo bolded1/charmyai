@@ -95,7 +95,6 @@ serve(async (req) => {
     const subParams: any = {
       customer: customerId,
       items: [{ price: priceId }],
-      trial_period_days: trialDays,
       payment_settings: {
         save_default_payment_method: "on_subscription",
       },
