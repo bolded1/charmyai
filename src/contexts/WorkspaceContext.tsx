@@ -103,7 +103,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         if (!error && data) clientOrgs = data;
       }
 
-      return [...(ownOrgs || []), ...clientOrgs] as Workspace[];
+      // Deduplicate: client orgs may already be in ownOrgs since owner_user_id matches
+      const ownIds = new Set((ownOrgs || []).map((o: any) => o.id));
+      const uniqueClientOrgs = clientOrgs.filter((o: any) => !ownIds.has(o.id));
+
+      return [...(ownOrgs || []), ...uniqueClientOrgs] as Workspace[];
     },
     enabled: !!user,
   });
