@@ -202,6 +202,14 @@ export default function ActivateTrialPage() {
         if (data?.error) throw new Error(data.error);
       }
 
+      // Also set billing_setup_at client-side for immediate effect
+      try {
+        await supabase
+          .from("profiles")
+          .update({ billing_setup_at: new Date().toISOString() })
+          .eq("user_id", user.id);
+      } catch {}
+
       toast.success("Your free trial has been activated!");
       navigate("/app");
     } catch (err: any) {

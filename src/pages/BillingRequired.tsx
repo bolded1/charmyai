@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePromoCode } from "@/hooks/usePromoCode";
