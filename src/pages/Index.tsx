@@ -21,7 +21,7 @@ const fadeUp = {
 
 const floatAnimation = {
   y: [0, -8, 0],
-  transition: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+  transition: { duration: 3, repeat: Infinity, ease: "easeInOut" as Easing },
 };
 
 export default function HomePage() {
