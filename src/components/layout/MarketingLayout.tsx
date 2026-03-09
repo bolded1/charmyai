@@ -144,7 +144,7 @@ export default function MarketingLayout() {
                 className="space-y-3 pt-6 border-t border-border/50"
               >
                 <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
-                  <a href="/#demo-upload">Try Demo</a>
+                  <Link to="/demo">Try Demo</Link>
                 </Button>
                 <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
                   <Link to="/signup">
