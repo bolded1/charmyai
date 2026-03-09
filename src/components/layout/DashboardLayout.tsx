@@ -217,7 +217,7 @@ export default function DashboardLayout() {
             <div className="absolute bottom-[-15%] right-[-8%] w-[400px] h-[400px] rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
           </div>
           {/* Install banner & offline indicator */}
-          <PwaInstallBanner />
+          <div className="relative z-10 flex flex-col min-h-0 flex-1">
           <OfflineIndicator />
           {/* Impersonation banner */}
           {impersonating && (
