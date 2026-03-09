@@ -214,7 +214,7 @@ export default function HomePage() {
                 className="glass-card rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
                 <motion.div
                   animate={floatAnimation}
-                  transition={{ ...floatAnimation.transition, delay: i * 0.4 }}
+                  transition={{ ...floatAnimation.transition, delay: i * 0.4 } as const}
                   className={`h-12 w-12 rounded-2xl ${step.gradient} flex items-center justify-center mx-auto mb-4 shadow-lg ${step.shadow}`}
                 >
                   <step.icon className="h-5 w-5 text-white" />
