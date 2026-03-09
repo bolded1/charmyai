@@ -1530,6 +1530,10 @@ export type Database = {
         }
         Returns: string
       }
+      has_client_workspace_access: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
