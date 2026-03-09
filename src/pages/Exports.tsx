@@ -8,6 +8,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useExpenseRecords, useIncomeRecords } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToPdf } from "@/lib/pdf-export";
 
@@ -122,6 +123,7 @@ export default function ExportsPage() {
   const [exportingIncome, setExportingIncome] = useState(false);
 
   const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
   const { data: expenses = [] } = useExpenseRecords();
   const { data: income = [] } = useIncomeRecords();
 
@@ -177,7 +179,12 @@ export default function ExportsPage() {
       }
 
       await supabase.from("export_history").insert({
-        user_id: user.id, export_name: `Expenses Export`, export_type: "expenses", format, row_count: rows.length,
+        user_id: user.id,
+        organization_id: activeWorkspace?.id || null,
+        export_name: `Expenses Export`,
+        export_type: "expenses",
+        format,
+        row_count: rows.length,
       });
 
       const docIds = records.filter((e) => e.document_id).map((e) => e.document_id);
@@ -232,7 +239,12 @@ export default function ExportsPage() {
       }
 
       await supabase.from("export_history").insert({
-        user_id: user.id, export_name: `Income Export`, export_type: "income", format: incomeFormat, row_count: rows.length,
+        user_id: user.id,
+        organization_id: activeWorkspace?.id || null,
+        export_name: `Income Export`,
+        export_type: "income",
+        format: incomeFormat,
+        row_count: rows.length,
       });
 
       const docIds = records.filter((r) => r.document_id).map((r) => r.document_id);
