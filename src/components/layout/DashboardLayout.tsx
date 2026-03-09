@@ -218,6 +218,7 @@ export default function DashboardLayout() {
           </div>
           {/* Install banner & offline indicator */}
           <div className="relative z-10 flex flex-col min-h-0 flex-1">
+          <PwaInstallBanner />
           <OfflineIndicator />
           {/* Impersonation banner */}
           {impersonating && (
