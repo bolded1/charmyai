@@ -11,6 +11,11 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
+// One-time price IDs (payment mode)
+const ONE_TIME_PRICE_IDS = new Set([
+  "price_1T9A0dBmkvUKJ0fuiFeIMzov", // Accounting Firm Plan €99
+]);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,17 +60,20 @@ serve(async (req) => {
     logStep("Customer resolved", { customerId });
 
     const origin = req.headers.get("origin") || "https://charmyai.lovable.app";
+    const isOneTime = ONE_TIME_PRICE_IDS.has(priceId);
 
     const sessionParams: any = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
-      subscription_data: {
-        trial_period_days: 7,
-      },
+      mode: isOneTime ? "payment" : "subscription",
       success_url: `${origin}/app/settings?tab=billing&checkout=success`,
       cancel_url: `${origin}/app/settings?tab=billing&checkout=cancelled`,
     };
+
+    // Only add trial & subscription_data for subscription mode
+    if (!isOneTime) {
+      sessionParams.subscription_data = { trial_period_days: 7 };
+    }
 
     // Apply Stripe coupon/discount if provided
     if (stripeCouponId) {
@@ -74,8 +82,7 @@ serve(async (req) => {
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
-
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, mode: isOneTime ? "payment" : "subscription" });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
