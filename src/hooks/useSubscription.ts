@@ -132,11 +132,8 @@ export function useSubscription() {
     }
   };
 
-  const billingInterval = state.price_id === STRIPE_PLANS.pro.price_id_yearly ? "yearly" : "monthly";
-
   return {
     ...state,
-    billingInterval,
     checkSubscription,
     startCheckout,
     openCustomerPortal,
