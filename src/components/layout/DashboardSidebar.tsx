@@ -6,7 +6,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Upload, FileText, Receipt, TrendingUp, Tag,
-  Download, UsersRound, Settings, LogOut, HelpCircle, LifeBuoy, Sparkles,
+  Download, UsersRound, Settings, LogOut, HelpCircle, LifeBuoy, Sparkles, Briefcase,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
@@ -20,6 +20,7 @@ import { useKeyboardShortcuts, MOD_LABEL } from "@/hooks/useKeyboardShortcuts";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useState } from "react";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -176,6 +177,10 @@ export function DashboardSidebar() {
           </Link>
         </SidebarHeader>
         <SidebarContent className="px-1.5 pt-1">
+          {/* Workspace Switcher */}
+          <div className="px-1.5 mb-2">
+            <WorkspaceSwitcher compact={collapsed} />
+          </div>
           {renderGroup("Documents", financeItems)}
           {renderGroup("Finance", recordsItems)}
           {renderGroup("System", systemItems)}

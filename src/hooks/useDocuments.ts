@@ -37,6 +37,17 @@ export function useDocuments(statusFilter?: string) {
   return useQuery({
     queryKey: ["documents", statusFilter, effectiveUserId],
     queryFn: async () => {
+      // Get user's active workspace
+      const { data: { user } } = await supabase.auth.getUser();
+      const targetUserId = effectiveUserId || user?.id;
+      if (!targetUserId) return [];
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", effectiveUserId || user!.id)
+        .maybeSingle();
+
       let query = supabase
         .from("documents")
         .select("*")
@@ -44,6 +55,11 @@ export function useDocuments(statusFilter?: string) {
 
       if (effectiveUserId) {
         query = query.eq("user_id", effectiveUserId);
+      }
+
+      // Filter by active workspace if set
+      if (profile?.active_organization_id) {
+        query = query.eq("organization_id", profile.active_organization_id);
       }
 
       if (statusFilter && statusFilter !== "all") {
@@ -69,6 +85,13 @@ export function useUploadDocument() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Get active workspace
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
@@ -78,11 +101,12 @@ export function useUploadDocument() {
 
       if (uploadError) throw uploadError;
 
-      // Create document record
+      // Create document record with organization_id
       const { data: doc, error: insertError } = await supabase
         .from("documents")
         .insert({
           user_id: user.id,
+          organization_id: profile?.active_organization_id || null,
           file_name: file.name,
           file_path: filePath,
           file_type: file.type,
@@ -157,9 +181,17 @@ export function useApproveDocument() {
 
       if (updateErr) throw updateErr;
 
+      // Get active workspace for the expense record
+      const { data: approverProfile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       // Create expense record for all approved documents
       const { error } = await supabase.from("expense_records").insert({
         user_id: user.id,
+        organization_id: approverProfile?.active_organization_id || null,
         document_id: doc.id,
         supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
         invoice_number: doc.invoice_number,
@@ -193,12 +225,25 @@ export function useExpenseRecords() {
   return useQuery({
     queryKey: ["expenses", effectiveUserId],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = effectiveUserId || user?.id;
+      if (!uid) return [];
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", uid)
+        .maybeSingle();
+
       let query = supabase
         .from("expense_records")
         .select("*")
         .order("invoice_date", { ascending: false });
       if (effectiveUserId) {
         query = query.eq("user_id", effectiveUserId);
+      }
+      if (profile?.active_organization_id) {
+        query = query.eq("organization_id", profile.active_organization_id);
       }
       const { data, error } = await query;
       if (error) throw error;
@@ -212,12 +257,25 @@ export function useIncomeRecords() {
   return useQuery({
     queryKey: ["income", effectiveUserId],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = effectiveUserId || user?.id;
+      if (!uid) return [];
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", uid)
+        .maybeSingle();
+
       let query = supabase
         .from("income_records")
         .select("*")
         .order("invoice_date", { ascending: false });
       if (effectiveUserId) {
         query = query.eq("user_id", effectiveUserId);
+      }
+      if (profile?.active_organization_id) {
+        query = query.eq("organization_id", profile.active_organization_id);
       }
       const { data, error } = await query;
       if (error) throw error;
@@ -234,6 +292,12 @@ export function useUploadIncomeDocument() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
@@ -247,6 +311,7 @@ export function useUploadIncomeDocument() {
         .from("documents")
         .insert({
           user_id: user.id,
+          organization_id: profile?.active_organization_id || null,
           file_name: file.name,
           file_path: filePath,
           file_type: file.type,
@@ -286,6 +351,7 @@ export function useUploadIncomeDocument() {
 
       const { error: incomeErr } = await supabase.from("income_records").insert({
         user_id: user.id,
+        organization_id: profile?.active_organization_id || null,
         document_id: doc.id,
         customer_name: updatedDoc.customer_name || updatedDoc.supplier_name || "Unknown",
         invoice_number: updatedDoc.invoice_number,
@@ -415,6 +481,12 @@ export function useBulkApproveDocuments() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       for (const doc of docs) {
         if (doc.status === "approved" || doc.status === "exported") continue;
 
@@ -425,6 +497,7 @@ export function useBulkApproveDocuments() {
 
         await supabase.from("expense_records").insert({
           user_id: user.id,
+          organization_id: profile?.active_organization_id || null,
           document_id: doc.id,
           supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
           invoice_number: doc.invoice_number,

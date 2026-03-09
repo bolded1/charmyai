@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { CookieConsentProvider } from "@/components/CookieConsent";
 import MarketingLayout from "@/components/layout/MarketingLayout";
@@ -61,6 +62,7 @@ import AdminAISettings from "./pages/admin/AdminAISettings";
 import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
 import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import Assistant from "./pages/Assistant";
+import Workspaces from "./pages/Workspaces";
 import NotFound from "./pages/NotFound";
 import { useDynamicPwaManifest } from "./hooks/useDynamicPwaManifest";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
@@ -79,6 +81,7 @@ function PwaManifestUpdater() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ImpersonationProvider>
+    <WorkspaceProvider>
     <CookieConsentProvider>
     <TooltipProvider>
       <Toaster />
@@ -124,6 +127,7 @@ const App = () => (
             <Route path="support" element={<Support />} />
             <Route path="help" element={<Help />} />
             <Route path="assistant" element={<Assistant />} />
+            <Route path="workspaces" element={<Workspaces />} />
           </Route>
 
           {/* Admin pages */}
@@ -159,6 +163,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
     </CookieConsentProvider>
+    </WorkspaceProvider>
     </ImpersonationProvider>
   </QueryClientProvider>
 );
