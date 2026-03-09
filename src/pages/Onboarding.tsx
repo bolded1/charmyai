@@ -169,17 +169,19 @@ export default function OnboardingPage() {
         return;
       }
       try {
-        await updateProfile.mutateAsync({
+        const profileUpdate: any = {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           job_title: jobTitle.trim() || null,
           phone: phone.trim() || null,
-        });
+        };
+        await updateProfile.mutateAsync(profileUpdate);
         if (avatarFile) {
           await uploadAvatar(avatarFile);
         }
-      } catch {
-        toast.error("Failed to save profile.");
+      } catch (err: any) {
+        console.error("Onboarding profile save error:", err);
+        toast.error("Failed to save profile. Please try again.");
         return;
       }
       setStep(2);

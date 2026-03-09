@@ -90,7 +90,7 @@ export function useUpdateOrganization() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (updates: { id: string; name?: string; logo_light?: string | null; logo_dark?: string | null; app_icon?: string | null; primary_color?: string | null; default_currency?: string }) => {
+    mutationFn: async (updates: { id: string; name?: string; logo_light?: string | null; logo_dark?: string | null; app_icon?: string | null; primary_color?: string | null; default_currency?: string; workspace_type?: string; max_client_workspaces?: number }) => {
       const { id, ...fields } = updates;
       const { data, error } = await supabase
         .from("organizations")
