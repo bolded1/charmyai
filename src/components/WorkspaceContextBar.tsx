@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Building2, Briefcase, ChevronRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useClientRole } from "@/hooks/useClientRole";
 
 export function WorkspaceContextBar() {
   const { activeWorkspace, allWorkspaces, isAccountingFirm } = useWorkspace();
+  const { isClient } = useClientRole();
   const navigate = useNavigate();
 
   // Only show for accounting firms viewing a client workspace

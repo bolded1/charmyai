@@ -36,6 +36,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { ClientAccessPanel } from "@/components/ClientAccessPanel";
 import { useSendClientInvitation } from "@/hooks/useClientInvitations";
+import { useClientRole } from "@/hooks/useClientRole";
 
 const CURRENCIES = [
   { value: "EUR", label: "EUR – Euro" },
