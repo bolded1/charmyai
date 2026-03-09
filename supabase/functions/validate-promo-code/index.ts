@@ -88,7 +88,11 @@ serve(async (req) => {
     }
 
     // Check billing cycle eligibility
-    if (promoCode.applies_to_billing !== "both" && billingCycle && promoCode.applies_to_billing !== billingCycle) {
+    const billingMatch = promoCode.applies_to_billing === "both"
+      || !billingCycle
+      || promoCode.applies_to_billing === billingCycle
+      || (["lifetime", "onetime"].includes(promoCode.applies_to_billing) && ["lifetime", "onetime"].includes(billingCycle));
+    if (!billingMatch) {
       return new Response(JSON.stringify({ valid: false, error: `This code only applies to ${promoCode.applies_to_billing} billing` }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
