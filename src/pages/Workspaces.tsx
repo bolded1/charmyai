@@ -238,38 +238,54 @@ export default function WorkspacesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showArchived, setShowArchived] = useState(false);
 
-  // Standalone invite dialog
+  // Standalone invite dialog — multiple clients
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
-  const [inviteName, setInviteName] = useState("");
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRows, setInviteRows] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
   const [inviting, setInviting] = useState(false);
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
-    setInviteName((ws as any).client_contact_name || "");
-    setInviteEmail((ws as any).client_contact_email || ws.contact_email || "");
+    setInviteRows([{
+      name: (ws as any).client_contact_name || "",
+      email: (ws as any).client_contact_email || ws.contact_email || "",
+    }]);
     setInviteOpen(true);
   };
 
-  const handleInviteClient = async () => {
-    if (!inviteWs || !inviteName.trim() || !inviteEmail.trim() || inviting) return;
+  const updateInviteRow = (idx: number, field: "name" | "email", value: string) => {
+    setInviteRows((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
+  };
+
+  const addInviteRow = () => setInviteRows((prev) => [...prev, { name: "", email: "" }]);
+
+  const removeInviteRow = (idx: number) => setInviteRows((prev) => prev.filter((_, i) => i !== idx));
+
+  const validInviteRows = inviteRows.filter((r) => r.name.trim() && r.email.trim());
+
+  const handleInviteClients = async () => {
+    if (!inviteWs || validInviteRows.length === 0 || inviting) return;
     setInviting(true);
-    try {
-      await sendClientInvitation.mutateAsync({
-        workspace_id: inviteWs.id,
-        client_name: inviteName.trim(),
-        client_email: inviteEmail.trim(),
-      });
-      setInviteOpen(false);
-      setInviteWs(null);
-      setInviteName("");
-      setInviteEmail("");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send invitation");
-    } finally {
-      setInviting(false);
+    let successCount = 0;
+    let failCount = 0;
+    for (const row of validInviteRows) {
+      try {
+        await sendClientInvitation.mutateAsync({
+          workspace_id: inviteWs.id,
+          client_name: row.name.trim(),
+          client_email: row.email.trim(),
+        });
+        successCount++;
+      } catch {
+        failCount++;
+      }
     }
+    if (successCount > 0) toast.success(`${successCount} invitation${successCount > 1 ? "s" : ""} sent`);
+    if (failCount > 0) toast.error(`${failCount} invitation${failCount > 1 ? "s" : ""} failed`);
+    setInviteOpen(false);
+    setInviteWs(null);
+    setInviteRows([{ name: "", email: "" }]);
+    setInviting(false);
   };
 
   const homeOrg = allWorkspaces.find(
