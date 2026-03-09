@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Upload as UploadIcon, FileText, CheckCircle2, Loader2, X, AlertCircle,
-  Camera, FolderUp, Clock, Eye, ArrowRight, Mail, Copy, Check,
+  Camera, FolderUp, Clock, Eye, ArrowRight, Mail, Copy, Check, Briefcase,
 } from "lucide-react";
 import { useUploadDocument, useDocuments } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ import { formatDistanceToNow, startOfMonth } from "date-fns";
 import { useOrganization, getImportEmailAddress } from "@/hooks/useOrganization";
 import { toast } from "sonner";
 import { usePlatformLimits } from "@/hooks/usePlatformLimits";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface UploadingFile {
   id: string;
