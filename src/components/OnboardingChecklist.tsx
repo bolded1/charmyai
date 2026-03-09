@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function OnboardingChecklist() {
+  const { isAccountingFirm } = useWorkspace();
   const { steps, completedCount, allDone, progress } = useOnboardingChecklist();
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(false);
