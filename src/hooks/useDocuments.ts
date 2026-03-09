@@ -292,6 +292,12 @@ export function useUploadIncomeDocument() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
@@ -305,6 +311,7 @@ export function useUploadIncomeDocument() {
         .from("documents")
         .insert({
           user_id: user.id,
+          organization_id: profile?.active_organization_id || null,
           file_name: file.name,
           file_path: filePath,
           file_type: file.type,
