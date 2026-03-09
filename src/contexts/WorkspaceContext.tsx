@@ -61,9 +61,11 @@ interface WorkspaceContextType {
   clientWorkspaces: Workspace[];
   isLoading: boolean;
   switchWorkspace: (orgId: string) => Promise<void>;
-  createClientWorkspace: (name: string) => Promise<Workspace>;
+  createClientWorkspace: (data: CreateWorkspaceData) => Promise<Workspace>;
   deleteClientWorkspace: (orgId: string) => Promise<void>;
-  updateClientWorkspace: (orgId: string, updates: Partial<Pick<Workspace, "name" | "default_currency">>) => Promise<void>;
+  updateClientWorkspace: (orgId: string, updates: UpdateWorkspaceData) => Promise<void>;
+  archiveClientWorkspace: (orgId: string) => Promise<void>;
+  unarchiveClientWorkspace: (orgId: string) => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | null>(null);
