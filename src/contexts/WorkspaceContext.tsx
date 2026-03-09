@@ -138,7 +138,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   
   // The user's "home" org (the one they own directly, non-client)
   const homeOrg = allWorkspaces.find(
-    (w) => w.owner_user_id === user?.id && w.workspace_type !== "client"
+    (w) => w.owner_user_id === targetUserId && w.workspace_type !== "client"
   );
   const isAccountingFirm = homeOrg?.workspace_type === "accounting_firm";
   const clientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client" && !w.archived_at);
