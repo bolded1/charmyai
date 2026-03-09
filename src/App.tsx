@@ -150,6 +150,7 @@ const App = () => (
             <Route path="gdpr" element={<AdminGDPR />} />
             <Route path="feedback" element={<AdminFeedback />} />
             <Route path="marketing-email" element={<AdminMarketingEmail />} />
+            <Route path="promo-codes" element={<AdminPromoCodes />} />
             <Route path="support" element={<AdminSupport />} />
           </Route>
 
