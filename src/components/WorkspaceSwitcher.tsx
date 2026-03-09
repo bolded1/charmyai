@@ -4,6 +4,7 @@ import { Building2, ChevronDown, Check, Plus, Briefcase, Search, BarChart3, Arro
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { useClientRole } from "@/hooks/useClientRole";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
@@ -12,9 +13,13 @@ import { Separator } from "@/components/ui/separator";
 export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
   const { activeWorkspace, allWorkspaces, isAccountingFirm, clientWorkspaces, switchWorkspace } = useWorkspace();
   const navigate = useNavigate();
+  const { isClient } = useClientRole();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Hide switcher entirely for client-role users
+  if (isClient) return null;
 
   // Only show switcher for accounting firms with multiple workspaces
   if (!isAccountingFirm && allWorkspaces.length <= 1) return null;
