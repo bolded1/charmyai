@@ -25,7 +25,9 @@ export default function ActivateTrialPage() {
   const [elements, setElements] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [billingName, setBillingName] = useState("");
+  const [billingName, setBillingName] = useState(
+    profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : ""
+  );
   const [billingAddress, setBillingAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
