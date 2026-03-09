@@ -38,10 +38,10 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    const { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays } = await req.json();
+    const { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays, skipCard } = await req.json();
     if (!priceId) throw new Error("priceId is required");
-    if (!paymentMethodId) throw new Error("paymentMethodId is required");
-    logStep("Params received", { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays });
+    if (!paymentMethodId && !skipCard) throw new Error("paymentMethodId is required");
+    logStep("Params received", { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays, skipCard });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
