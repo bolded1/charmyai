@@ -84,7 +84,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   // Use impersonated user if active, otherwise the real user
   const targetUserId = effectiveUserId || user?.id;
-  console.log("[WorkspaceContext] effectiveUserId:", effectiveUserId, "user?.id:", user?.id, "targetUserId:", targetUserId);
+  
 
   // Fetch all workspaces the user has access to
   const { data: workspacesData, isLoading: wsLoading } = useQuery({
