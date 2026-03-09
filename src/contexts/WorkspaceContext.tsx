@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { toast } from "sonner";
 
 export interface Workspace {
@@ -78,18 +79,22 @@ export function useWorkspace() {
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { effectiveUserId } = useImpersonation();
   const queryClient = useQueryClient();
+
+  // Use impersonated user if active, otherwise the real user
+  const targetUserId = effectiveUserId || user?.id;
 
   // Fetch all workspaces the user has access to
   const { data: workspacesData, isLoading: wsLoading } = useQuery({
-    queryKey: ["workspaces", user?.id],
+    queryKey: ["workspaces", targetUserId],
     queryFn: async () => {
-      if (!user) return [];
-      // Get user's own org(s) + child orgs of their accounting firm
+      if (!targetUserId) return [];
+      // Get target user's own org(s) + child orgs of their accounting firm
       const { data: ownOrgs, error: e1 } = await supabase
         .from("organizations")
         .select("*")
-        .eq("owner_user_id", user.id);
+        .eq("owner_user_id", targetUserId);
       if (e1) throw e1;
 
       // Find accounting firm org
@@ -109,23 +114,23 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       return [...(ownOrgs || []), ...uniqueClientOrgs] as Workspace[];
     },
-    enabled: !!user,
+    enabled: !!targetUserId,
   });
 
   // Get active workspace from profile
   const { data: activeOrgId, isLoading: profileLoading } = useQuery({
-    queryKey: ["active-workspace-id", user?.id],
+    queryKey: ["active-workspace-id", targetUserId],
     queryFn: async () => {
-      if (!user) return null;
+      if (!targetUserId) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("active_organization_id")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .maybeSingle();
       if (error) throw error;
       return data?.active_organization_id || null;
     },
-    enabled: !!user,
+    enabled: !!targetUserId,
   });
 
   const allWorkspaces = workspacesData || [];
@@ -133,7 +138,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   
   // The user's "home" org (the one they own directly, non-client)
   const homeOrg = allWorkspaces.find(
-    (w) => w.owner_user_id === user?.id && w.workspace_type !== "client"
+    (w) => w.owner_user_id === targetUserId && w.workspace_type !== "client"
   );
   const isAccountingFirm = homeOrg?.workspace_type === "accounting_firm";
   const clientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client" && !w.archived_at);
