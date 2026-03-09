@@ -38,10 +38,10 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    const { priceId, paymentMethodId } = await req.json();
+    const { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays } = await req.json();
     if (!priceId) throw new Error("priceId is required");
     if (!paymentMethodId) throw new Error("paymentMethodId is required");
-    logStep("Params received", { priceId, paymentMethodId });
+    logStep("Params received", { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -78,22 +78,75 @@ serve(async (req) => {
       }
     }
 
-    // Create subscription with 7-day trial
-    const subscription = await stripe.subscriptions.create({
+    // Calculate trial days (base 7 + extra from promo)
+    const trialDays = 7 + (extraTrialDays || 0);
+    logStep("Trial days calculated", { trialDays });
+
+    // Build subscription params
+    const subParams: any = {
       customer: customerId,
       items: [{ price: priceId }],
-      trial_period_days: 7,
+      trial_period_days: trialDays,
       default_payment_method: paymentMethodId,
       payment_settings: {
         save_default_payment_method: "on_subscription",
       },
-    });
+    };
+
+    // Apply Stripe coupon if provided
+    if (stripeCouponId) {
+      subParams.coupon = stripeCouponId;
+      logStep("Stripe coupon applied", { stripeCouponId });
+    }
+
+    // Create subscription
+    const subscription = await stripe.subscriptions.create(subParams);
 
     logStep("Subscription created", {
       id: subscription.id,
       status: subscription.status,
       trialEnd: subscription.trial_end,
     });
+
+    // Record promo code redemption if applicable
+    if (promoCodeId) {
+      try {
+        // Insert redemption record
+        await supabaseClient.from("promo_code_redemptions").insert({
+          promo_code_id: promoCodeId,
+          user_id: user.id,
+          subscription_id: subscription.id,
+          discount_snapshot: { stripeCouponId, extraTrialDays, priceId },
+          status: "active",
+        });
+
+        // Increment redemption counter
+        await supabaseClient.rpc("increment_promo_redemptions" as any, { _promo_code_id: promoCodeId });
+        
+        logStep("Promo redemption recorded", { promoCodeId });
+      } catch (redeemErr) {
+        // Non-blocking: log but don't fail the subscription
+        logStep("Warning: failed to record redemption", { error: String(redeemErr) });
+        
+        // Fallback: try direct update
+        try {
+          const { data: currentCode } = await supabaseClient
+            .from("promo_codes")
+            .select("current_redemptions")
+            .eq("id", promoCodeId)
+            .single();
+          
+          if (currentCode) {
+            await supabaseClient
+              .from("promo_codes")
+              .update({ current_redemptions: (currentCode.current_redemptions || 0) + 1 })
+              .eq("id", promoCodeId);
+          }
+        } catch (fallbackErr) {
+          logStep("Warning: fallback redemption update also failed", { error: String(fallbackErr) });
+        }
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,
