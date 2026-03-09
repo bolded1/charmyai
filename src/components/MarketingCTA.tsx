@@ -100,7 +100,7 @@ export function MarketingCTA() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-primary-foreground/75 mb-10 max-w-md mx-auto text-base md:text-lg"
         >
-          Start processing documents in minutes. 7-day free trial included.
+          Start processing documents in minutes. One-time payment, lifetime access.
         </motion.p>
 
         <motion.div
