@@ -245,6 +245,7 @@ export default function WorkspacesPage() {
   const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
   const [inviteRows, setInviteRows] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
   const [inviting, setInviting] = useState(false);
+  const { data: existingInvitations = [] } = useClientInvitations(inviteWs?.id);
 
   // Only accounting firms can access the workspaces page
   useEffect(() => {
