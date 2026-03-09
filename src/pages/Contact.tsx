@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MapPin, Phone, Send, MessageSquare, Clock, ArrowRight } from "lucide-react";
+import {
+  Mail, MapPin, Phone, Send, MessageSquare, Clock, ArrowRight,
+  DollarSign, HelpCircle, LifeBuoy, Handshake, Sparkles,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { usePageContent } from "@/hooks/usePageContent";
-import { contactDefaults } from "@/lib/cms-defaults";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -19,7 +19,6 @@ const fadeUp = (delay = 0) => ({
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
-  const { content: c } = usePageContent("contact", contactDefaults);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +30,17 @@ export default function ContactPage() {
   };
 
   const contactCards = [
-    { icon: Mail, title: c.cardEmailTitle, detail: c.email, href: `mailto:${c.email}` },
-    { icon: Phone, title: c.cardPhoneTitle, detail: c.phone, href: `tel:${c.phone}` },
-    { icon: MapPin, title: c.cardOfficeTitle, detail: c.office },
-    { icon: Clock, title: c.cardHoursTitle, detail: c.hours },
+    { icon: Mail, title: "Email", detail: "hello@charmy.ai", href: "mailto:hello@charmy.ai" },
+    { icon: Phone, title: "Phone", detail: "+49 30 1234567", href: "tel:+4930123456" },
+    { icon: MapPin, title: "Office", detail: "Berlin, Germany" },
+    { icon: Clock, title: "Hours", detail: "Mon–Fri, 9–18 CET" },
+  ];
+
+  const inquiryTypes = [
+    { icon: DollarSign, title: "Sales inquiries", desc: "Pricing, plans, and enterprise options" },
+    { icon: HelpCircle, title: "Product questions", desc: "Features, integrations, and capabilities" },
+    { icon: LifeBuoy, title: "Support requests", desc: "Technical help and troubleshooting" },
+    { icon: Handshake, title: "Partnership opportunities", desc: "Integrations and collaborations" },
   ];
 
   return (
@@ -48,15 +54,14 @@ export default function ContactPage() {
           <motion.div {...fadeUp()} className="text-center">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase text-primary bg-primary/10 px-3 py-1 rounded-full mb-6">
               <MessageSquare className="h-3.5 w-3.5" />
-              {c.heroBadge}
+              Get in Touch
             </span>
           </motion.div>
           <motion.h1 {...fadeUp(0.1)} className="text-4xl md:text-6xl font-bold text-center leading-tight">
-            {c.title}{" "}
-            <span className="text-gradient">{c.titleGradient}</span>
+            We're here to <span className="text-gradient">help</span>
           </motion.h1>
           <motion.p {...fadeUp(0.2)} className="text-lg md:text-xl text-muted-foreground text-center mt-6 max-w-2xl mx-auto leading-relaxed">
-            {c.subtitle}
+            Have questions about Charmy? Our team is ready to assist.
           </motion.p>
         </div>
       </section>
@@ -65,23 +70,43 @@ export default function ContactPage() {
       <section className="pb-8">
         <div className="container max-w-4xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {contactCards.filter(card => card.detail).map((item, i) => (
-              <motion.div
-                key={item.title}
-                {...fadeUp(i * 0.08)}
-                className="surface-elevated rounded-2xl p-5 border border-border/50 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all text-center group"
-              >
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/15 transition-colors">
-                  <item.icon className="h-4.5 w-4.5 text-primary" />
-                </div>
+            {contactCards.map((item, i) => (
+              <motion.div key={item.title} {...fadeUp(i * 0.08)}
+                className="surface-elevated rounded-2xl p-5 border border-border/50 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all text-center group">
+                <motion.div
+                  animate={{ y: [0, -3, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
+                  className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/15 transition-colors"
+                >
+                  <item.icon className="h-4 w-4 text-primary" />
+                </motion.div>
                 <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{item.title}</div>
                 {item.href ? (
-                  <a href={item.href} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
-                    {item.detail}
-                  </a>
+                  <a href={item.href} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">{item.detail}</a>
                 ) : (
                   <div className="text-sm font-semibold text-foreground">{item.detail}</div>
                 )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Inquiry types */}
+      <section className="py-12">
+        <div className="container max-w-4xl">
+          <motion.div {...fadeUp()} className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold">How can we help?</h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {inquiryTypes.map((item, i) => (
+              <motion.div key={item.title} {...fadeUp(i * 0.08)}
+                className="glass-card rounded-2xl p-5 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <item.icon className="h-4 w-4 text-primary" />
+                </div>
+                <h3 className="text-sm font-bold mb-1">{item.title}</h3>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -92,32 +117,29 @@ export default function ContactPage() {
       <section className="py-16 md:py-24">
         <div className="container max-w-4xl">
           <div className="grid md:grid-cols-5 gap-10 items-start">
-            {/* Left info */}
             <motion.div {...fadeUp()} className="md:col-span-2 space-y-6">
               <div>
-                <span className="text-xs font-semibold tracking-wider uppercase text-primary mb-2 block">{c.formSectionLabel}</span>
+                <span className="text-xs font-semibold tracking-wider uppercase text-primary mb-2 block">Send a Message</span>
                 <h2 className="text-2xl md:text-3xl font-bold leading-tight">
-                  {c.formTitle}{" "}
-                  <span className="text-gradient">{c.formTitleGradient}</span>
+                  Tell us what <span className="text-gradient">you need</span>
                 </h2>
-                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{c.formDescription}</p>
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                  Whether you have a question about features, pricing, or anything else — our team is ready to help.
+                </p>
               </div>
-
               <div className="surface-elevated rounded-2xl p-5 border border-border/50">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold">{c.responseTitle}</span>
+                  <span className="text-sm font-semibold">Fast Response Time</span>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{c.responseDescription}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  We typically respond within 2–4 hours during business hours. For urgent matters, reach out via phone.
+                </p>
               </div>
             </motion.div>
 
-            {/* Form */}
-            <motion.form
-              {...fadeUp(0.15)}
-              onSubmit={handleSubmit}
-              className="md:col-span-3 surface-elevated rounded-2xl p-6 md:p-8 space-y-5 border border-border/50"
-            >
+            <motion.form {...fadeUp(0.15)} onSubmit={handleSubmit}
+              className="md:col-span-3 surface-elevated rounded-2xl p-6 md:p-8 space-y-5 border border-border/50">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">Name</Label>
@@ -137,22 +159,15 @@ export default function ContactPage() {
                 <Textarea id="message" placeholder="Tell us more about your needs..." rows={5} required />
               </div>
               <Button type="submit" disabled={loading} className="w-full" size="lg">
-                {loading ? (
-                  "Sending..."
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
-                  </>
-                )}
+                {loading ? "Sending..." : <><Send className="h-4 w-4 mr-2" /> Send Message</>}
               </Button>
-              <p className="text-[11px] text-muted-foreground/70 text-center">{c.formDisclaimer}</p>
+              <p className="text-[11px] text-muted-foreground/70 text-center">By submitting this form, you agree to our Privacy Policy.</p>
             </motion.form>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Demo encouragement */}
       <section className="py-16 md:py-24">
         <div className="container max-w-3xl">
           <motion.div
@@ -160,13 +175,21 @@ export default function ContactPage() {
             className="text-center surface-elevated rounded-3xl p-10 md:p-14 border border-border/50 relative overflow-hidden"
           >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="mx-auto mb-4"
+            >
+              <Sparkles className="h-8 w-8 text-primary mx-auto" />
+            </motion.div>
             <h2 className="text-2xl md:text-3xl font-bold mb-3">
-              {c.ctaTitle}{" "}
-              <span className="text-gradient">{c.ctaTitleGradient}</span>
+              Not sure if Charmy is <span className="text-gradient">right for you?</span>
             </h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">{c.ctaSubtitle}</p>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Upload an invoice and see how the system extracts financial data instantly.
+            </p>
             <Button size="lg" asChild>
-              <Link to="/signup">{c.ctaButton} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <a href="/#demo-upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></a>
             </Button>
           </motion.div>
         </div>

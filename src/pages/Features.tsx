@@ -5,10 +5,8 @@ import {
   Upload, Mail, Brain, Eye, FolderOpen, Download,
   Users, ArrowRight, CheckCircle2, FileText, Inbox,
   Search, Filter, Edit3, Zap, Shield, BarChart3,
-  UserPlus, Activity,
+  UserPlus, Activity, Sparkles, Tag,
 } from "lucide-react";
-import { usePageContent } from "@/hooks/usePageContent";
-import { featuresDefaults } from "@/lib/cms-defaults";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -67,12 +65,10 @@ function VisualCard({ children, className = "" }: { children: React.ReactNode; c
 }
 
 export default function FeaturesPage() {
-  const { content: c } = usePageContent("features", featuresDefaults);
-
   const features: Omit<FeatureSectionProps, "index">[] = [
     {
-      title: c.feature1Title,
-      description: c.feature1Desc,
+      title: "Upload invoices",
+      description: "Drag and drop PDF, JPG, or PNG files. Upload invoices, receipts, and supplier bills directly to Charmy.",
       capabilities: [
         { icon: Upload, text: "Drag and drop document uploads" },
         { icon: FileText, text: "Bulk upload multiple invoices" },
@@ -82,27 +78,38 @@ export default function FeaturesPage() {
       visual: (
         <VisualCard>
           <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
-            <div className="h-14 w-14 rounded-2xl bg-brand-soft flex items-center justify-center mx-auto mb-4">
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="h-14 w-14 rounded-2xl bg-brand-soft flex items-center justify-center mx-auto mb-4"
+            >
               <Upload className="h-7 w-7 text-primary-icon" />
-            </div>
+            </motion.div>
             <p className="font-medium text-sm mb-1">Drop invoices here</p>
             <p className="text-xs text-muted-foreground">PDF · PNG · JPG</p>
           </div>
           <div className="mt-4 space-y-2">
-            {["invoice-march-2026.pdf", "receipt-coffee.jpg", "supplier-bill.pdf"].map((f) => (
-              <div key={f} className="flex items-center gap-3 p-2.5 rounded-lg bg-accent/50 border border-border/50">
+            {["invoice-march-2026.pdf", "receipt-coffee.jpg", "supplier-bill.pdf"].map((f, i) => (
+              <motion.div
+                key={f}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                className="flex items-center gap-3 p-2.5 rounded-lg bg-accent/50 border border-border/50"
+              >
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-xs font-medium truncate">{f}</span>
                 <CheckCircle2 className="h-3.5 w-3.5 text-primary-icon ml-auto shrink-0" />
-              </div>
+              </motion.div>
             ))}
           </div>
         </VisualCard>
       ),
     },
     {
-      title: c.feature2Title,
-      description: c.feature2Desc,
+      title: "Email invoice import",
+      description: "Forward supplier invoices directly to your Charmy email address. The system automatically imports attachments and processes them.",
       capabilities: [
         { icon: Inbox, text: "Dedicated email address for your workspace" },
         { icon: Mail, text: "Forward supplier invoices directly" },
@@ -114,9 +121,13 @@ export default function FeaturesPage() {
         <VisualCard>
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50 border border-border/50">
-              <div className="h-8 w-8 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="h-8 w-8 rounded-lg bg-brand-soft flex items-center justify-center shrink-0"
+              >
                 <Mail className="h-4 w-4 text-primary-icon" />
-              </div>
+              </motion.div>
               <div className="min-w-0">
                 <p className="text-xs font-medium">Your import address</p>
                 <p className="text-[11px] text-muted-foreground font-mono truncate">docs-a7x9k@imports.charmy.app</p>
@@ -127,13 +138,19 @@ export default function FeaturesPage() {
                 { from: "accounting@supplier.com", subject: "Invoice #4821", status: "Imported" },
                 { from: "bills@cloudhost.io", subject: "Monthly hosting", status: "Processing" },
               ].map((email) => (
-                <div key={email.subject} className="p-3 rounded-lg bg-accent/30 border border-border/40">
+                <motion.div
+                  key={email.subject}
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="p-3 rounded-lg bg-accent/30 border border-border/40"
+                >
                   <p className="text-[11px] text-muted-foreground">{email.from}</p>
                   <p className="text-xs font-medium mt-0.5">{email.subject}</p>
                   <span className={`inline-block mt-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full ${email.status === "Imported" ? "bg-brand-soft text-primary" : "bg-accent text-muted-foreground"}`}>
                     {email.status}
                   </span>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -141,8 +158,8 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: c.feature3Title,
-      description: c.feature3Desc,
+      title: "AI data extraction",
+      description: "Charmy extracts supplier, invoice number, VAT, totals, currency, and dates from your documents automatically.",
       capabilities: [
         { icon: Brain, text: "Supplier name and details" },
         { icon: FileText, text: "Invoice number and dates" },
@@ -160,11 +177,18 @@ export default function FeaturesPage() {
               { label: "Currency", value: "EUR" },
               { label: "Subtotal", value: "€2,450.00" },
               { label: "VAT", value: "€465.50" },
-            ].map((f) => (
-              <div key={f.label} className="p-2.5 rounded-lg bg-accent/50 border border-border/40">
+            ].map((f, i) => (
+              <motion.div
+                key={f.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                className="p-2.5 rounded-lg bg-accent/50 border border-border/40"
+              >
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{f.label}</div>
                 <div className="text-sm font-semibold mt-0.5 tabular-nums">{f.value}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
           <div className="mt-3 p-3 rounded-lg border border-border bg-brand-soft/50 flex items-center justify-between">
@@ -175,8 +199,8 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: c.feature4Title,
-      description: c.feature4Desc,
+      title: "Fast document review",
+      description: "Verify extracted data quickly with document preview. Process many invoices quickly with a clean review interface.",
       capabilities: [
         { icon: Eye, text: "Side-by-side document preview" },
         { icon: Edit3, text: "Editable extracted fields" },
@@ -213,13 +237,13 @@ export default function FeaturesPage() {
       ),
     },
     {
-      title: c.feature5Title,
-      description: c.feature5Desc,
+      title: "Automatic categorization",
+      description: "Create rules to categorize expenses automatically. Search, filter, and manage your entire document history.",
       capabilities: [
+        { icon: Tag, text: "Create automatic categorization rules" },
         { icon: Search, text: "Search documents instantly" },
         { icon: Filter, text: "Filter by supplier, date, amount, or status" },
         { icon: FolderOpen, text: "Organize expenses and income invoices" },
-        { icon: Activity, text: "Maintain a clear document history" },
       ],
       visual: (
         <VisualCard>
@@ -234,29 +258,36 @@ export default function FeaturesPage() {
           </div>
           <div className="space-y-2">
             {[
-              { name: "CloudTech GmbH", num: "INV-0847", amount: "€2,915.50", status: "Approved" },
-              { name: "Office Supplies Ltd", num: "INV-0912", amount: "€184.20", status: "Needs Review" },
-              { name: "SaaS Platform Inc", num: "INV-1003", amount: "€499.00", status: "Approved" },
-            ].map((doc) => (
-              <div key={doc.num} className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40">
+              { name: "CloudTech GmbH", num: "INV-0847", amount: "€2,915.50", category: "IT Services" },
+              { name: "Office Supplies Ltd", num: "INV-0912", amount: "€184.20", category: "Office" },
+              { name: "SaaS Platform Inc", num: "INV-1003", amount: "€499.00", category: "Software" },
+            ].map((doc, i) => (
+              <motion.div
+                key={doc.num}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40"
+              >
                 <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium truncate">{doc.name}</p>
                   <p className="text-[10px] text-muted-foreground">{doc.num}</p>
                 </div>
                 <span className="text-xs font-semibold tabular-nums">{doc.amount}</span>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${doc.status === "Approved" ? "bg-brand-soft text-primary" : "bg-accent text-muted-foreground"}`}>
-                  {doc.status}
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-soft text-primary shrink-0">
+                  {doc.category}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </VisualCard>
       ),
     },
     {
-      title: c.feature6Title,
-      description: c.feature6Desc,
+      title: "Export financial data",
+      description: "Export expenses and income data to CSV, Excel, or PDF. One-click export of accountant-ready reports.",
       capabilities: [
         { icon: Download, text: "CSV exports" },
         { icon: FileText, text: "Excel exports" },
@@ -272,8 +303,15 @@ export default function FeaturesPage() {
               { format: "CSV", desc: "Comma-separated values", icon: FileText },
               { format: "Excel", desc: "XLSX spreadsheet", icon: BarChart3 },
               { format: "Report", desc: "Formatted PDF report", icon: Download },
-            ].map((exp) => (
-              <div key={exp.format} className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40">
+            ].map((exp, i) => (
+              <motion.div
+                key={exp.format}
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40"
+              >
                 <div className="h-8 w-8 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
                   <exp.icon className="h-4 w-4 text-primary-icon" />
                 </div>
@@ -282,37 +320,7 @@ export default function FeaturesPage() {
                   <p className="text-[10px] text-muted-foreground">{exp.desc}</p>
                 </div>
                 <Button variant="outline" size="sm" className="text-[10px] h-7 px-3">Export</Button>
-              </div>
-            ))}
-          </div>
-        </VisualCard>
-      ),
-    },
-    {
-      title: c.feature7Title,
-      description: c.feature7Desc,
-      capabilities: [
-        { icon: Users, text: "Multiple users" },
-        { icon: Shield, text: "Role-based access" },
-        { icon: Activity, text: "Activity tracking" },
-        { icon: UserPlus, text: "Team collaboration" },
-      ],
-      visual: (
-        <VisualCard>
-          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Team Members</div>
-          <div className="space-y-2.5">
-            {[
-              { name: "Maria Schmidt", role: "Admin", initials: "MS" },
-              { name: "Thomas Weber", role: "Reviewer", initials: "TW" },
-              { name: "Anna Klein", role: "Member", initials: "AK" },
-            ].map((member) => (
-              <div key={member.name} className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40">
-                <div className="h-8 w-8 rounded-full bg-brand-soft flex items-center justify-center text-xs font-semibold text-primary">{member.initials}</div>
-                <div className="flex-1">
-                  <p className="text-xs font-medium">{member.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{member.role}</p>
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </VisualCard>
@@ -326,20 +334,20 @@ export default function FeaturesPage() {
         <div className="container text-center max-w-3xl">
           <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={0}
             className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5">
-            {c.heroTitle}{" "}
-            <span className="text-gradient">{c.heroTitleGradient}</span>
+            Everything you need to process invoices{" "}
+            <span className="text-gradient">automatically</span>
           </motion.h1>
           <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={1}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            {c.heroSubtitle}
+            Charmy converts invoices and receipts into structured financial data using AI.
           </motion.p>
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2}
             className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button size="lg" asChild className="text-base px-8">
-              <Link to="/signup">Start 7-Day Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="text-base px-8">
-              <Link to="/#demo">Try the Demo</Link>
+              <a href="/#demo-upload">Try Demo</a>
             </Button>
           </motion.div>
         </div>
@@ -349,16 +357,49 @@ export default function FeaturesPage() {
         <FeatureSection key={i} {...feature} index={i} />
       ))}
 
+      {/* Demo reinforcement */}
+      <section className="py-20">
+        <div className="container max-w-3xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={0}
+            className="text-center glass-card rounded-2xl p-10 md:p-14 relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="h-14 w-14 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto mb-5 shadow-lg shadow-primary/20"
+            >
+              <Sparkles className="h-6 w-6 text-primary-foreground" />
+            </motion.div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Try Charmy instantly</h2>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Upload an invoice or receipt and see how Charmy extracts financial data automatically.
+            </p>
+            <Button size="lg" asChild className="text-base px-8">
+              <a href="/#demo-upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></a>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
       <section className="py-20 bg-hero-gradient">
         <div className="container text-center max-w-2xl">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">{c.ctaTitle}</h2>
-          <p className="text-primary-foreground/75 mb-8 max-w-lg mx-auto">{c.ctaSubtitle}</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">Stop typing invoice data manually</h2>
+          <p className="text-primary-foreground/75 mb-8 max-w-lg mx-auto">
+            Upload documents or forward invoices by email and let Charmy extract the financial data automatically.
+          </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button size="lg" variant="secondary" asChild className="text-base px-8">
-              <Link to="/signup">Start 7-Day Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button size="lg" variant="ghost" className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10 text-base px-8" asChild>
-              <Link to="/#demo">Try the Demo</Link>
+              <a href="/#demo-upload">Try Demo</a>
             </Button>
           </div>
         </div>
