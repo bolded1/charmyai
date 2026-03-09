@@ -122,12 +122,7 @@ export default function BillingSection() {
                       <Shield className="h-3 w-3 mr-1" /> Lifetime Access
                     </Badge>
                   )}
-                  {!sub.has_firm_plan && sub.status === "trialing" && (
-                    <Badge variant="secondary" className="bg-accent text-accent-foreground text-[10px]">
-                      <Clock className="h-3 w-3 mr-1" /> Trial
-                    </Badge>
-                  )}
-                  {!sub.has_firm_plan && sub.status === "active" && (
+                  {!sub.has_firm_plan && sub.plan === "pro" && sub.status === "active" && (
                     <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px]">
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Active
                     </Badge>
