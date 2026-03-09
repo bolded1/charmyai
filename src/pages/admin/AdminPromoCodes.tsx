@@ -402,6 +402,29 @@ export default function AdminPromoCodes() {
               </div>
             )}
 
+            <div className="space-y-2">
+              <Label>Applies to Plans</Label>
+              <div className="flex gap-4">
+                {[
+                  { value: "pro", label: "Pro (€29.99)" },
+                  { value: "firm", label: "Accounting Firm (€99)" },
+                ].map((plan) => (
+                  <label key={plan.value} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={form.applies_to_plans.includes(plan.value)}
+                      onCheckedChange={(checked) => {
+                        const plans = checked
+                          ? [...form.applies_to_plans, plan.value]
+                          : form.applies_to_plans.filter((p) => p !== plan.value);
+                        setForm({ ...form, applies_to_plans: plans.length ? plans : [plan.value] });
+                      }}
+                    />
+                    {plan.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Applies to Billing</Label>
