@@ -218,7 +218,7 @@ export default function PricingPage() {
             <h3 className="text-2xl font-bold mb-2">Try Charmy before signing up</h3>
             <p className="text-muted-foreground mb-6">Upload a sample invoice and see how Charmy extracts financial data instantly.</p>
             <Button size="lg" className="rounded-xl" asChild>
-              <a href="/#demo-upload">Try Demo <ArrowRight className="h-4 w-4 ml-2" /></a>
+              <Link to="/demo">Try Demo <ArrowRight className="h-4 w-4 ml-2" /></Link>
             </Button>
           </motion.div>
         </div>

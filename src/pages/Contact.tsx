@@ -189,7 +189,7 @@ export default function ContactPage() {
               Upload an invoice and see how the system extracts financial data instantly.
             </p>
             <Button size="lg" asChild>
-              <a href="/#demo-upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></a>
+              <Link to="/demo">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </motion.div>
         </div>

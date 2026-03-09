@@ -399,7 +399,7 @@ export default function FeaturesPage() {
               <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button size="lg" variant="ghost" className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10 text-base px-8" asChild>
-              <a href="/#demo-upload">Try Demo</a>
+              <Link to="/demo">Try Demo</Link>
             </Button>
           </div>
         </div>
