@@ -194,7 +194,7 @@ export default function DashboardLayout() {
             )}
 
             {/* Mobile header with logo + profile */}
-            <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden">
+            <header className="h-14 border-b border-border/30 bg-card/90 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden shadow-[var(--shadow-xs)]">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {brandLogo ? (
                   <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain shrink-0" />
