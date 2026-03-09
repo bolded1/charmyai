@@ -433,6 +433,7 @@ export default function AdminPromoCodes() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="both">Both</SelectItem>
+                    <SelectItem value="lifetime">Lifetime (one-time)</SelectItem>
                     <SelectItem value="monthly">Monthly only</SelectItem>
                     <SelectItem value="yearly">Yearly only</SelectItem>
                   </SelectContent>
