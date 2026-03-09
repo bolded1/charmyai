@@ -553,7 +553,7 @@ function FirmUpgradeCard() {
   }
 
   return (
-    <Card className="border-primary/20 bg-primary/[0.02]">
+    <Card className="border-primary/20 bg-card">
       <CardContent className="p-5">
         <div className="flex items-center gap-3 mb-3">
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
