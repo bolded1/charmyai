@@ -1244,6 +1244,86 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          firm_org_id: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["firm_role"]
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          firm_org_id: string
+          id?: string
+          invited_by: string
+          role?: Database["public"]["Enums"]["firm_role"]
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          firm_org_id?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["firm_role"]
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_firm_org_id_fkey"
+            columns: ["firm_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_workspace_access: {
+        Row: {
+          created_at: string
+          id: string
+          team_member_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          team_member_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          team_member_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_workspace_access_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_workspace_access_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_messages: {
         Row: {
           attachments: Json | null
@@ -1395,6 +1475,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "platform_admin"
+      firm_role: "firm_owner" | "firm_admin" | "accountant" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1523,6 +1604,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "platform_admin"],
+      firm_role: ["firm_owner", "firm_admin", "accountant", "staff"],
     },
   },
 } as const
