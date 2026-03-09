@@ -141,8 +141,7 @@ const App = () => (
             <Route path="system-health" element={<AdminSystemHealth />} />
             <Route path="scheduled-jobs" element={<AdminScheduledJobs />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
-            <Route path="cms" element={<AdminCMS />} />
-  ment={<AdminEmailTemplates />} />
+            <Route path="email-templates" element={<AdminEmailTemplates />} />
             <Route path="broadcast" element={<AdminBroadcast />} />
             <Route path="login-activity" element={<AdminLoginActivity />} />
             <Route path="gdpr" element={<AdminGDPR />} />
