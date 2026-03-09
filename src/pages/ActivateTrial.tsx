@@ -130,9 +130,9 @@ export default function ActivateTrialPage() {
       }
     };
 
-    const timer = setTimeout(initSetup, 100);
+    const timer = setTimeout(initSetup, 300);
     return () => clearTimeout(timer);
-  }, [stripe, user, planChoice]);
+  }, [stripe, user, planChoice, cardRequired]);
 
   // Create PaymentIntent and mount Elements for Firm plan
   useEffect(() => {
