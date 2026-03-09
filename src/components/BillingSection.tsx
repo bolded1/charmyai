@@ -367,38 +367,10 @@ export default function BillingSection() {
         </Card>
       )}
 
-      {/* Firm plan upsell (show only to subscribed non-firm users) */}
-      {sub.subscribed && !sub.has_firm_plan && (
-        <Card className="border-primary/20 bg-primary/[0.02]">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Accounting Firm Plan</h3>
-                <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Manage up to 10 separate client workspaces from one account. Perfect for accountants and bookkeepers.
-            </p>
-            <ul className="space-y-1.5 mb-5">
-              {STRIPE_PLANS.firm.features.slice(0, 4).map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{f}
-                </li>
-              ))}
-            </ul>
-            <Button
-              onClick={() => handleUpgrade(STRIPE_PLANS.firm.price_id)}
-              disabled={!!checkoutLoading}
-            >
-              {checkoutLoading === STRIPE_PLANS.firm.price_id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              €99 One-Time — Upgrade to Firm Plan
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Firm plan upsell (show only to subscribed pro users without firm plan) */}
+      {sub.subscribed && !sub.has_firm_plan && sub.plan === "pro" && (
+        <FirmUpgradeCard />
+      )}
       )}
     </div>
   );
