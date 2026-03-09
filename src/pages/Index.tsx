@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, type Easing } from "framer-motion";
 import {
   Upload, Mail, Search, ClipboardCheck, Download,
   ArrowRight, CheckCircle2, FileText, Clock, Receipt,
