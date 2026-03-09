@@ -223,7 +223,7 @@ export default function PricingPage() {
                 ) : (
                   <Button className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
                     onClick={() => handleCheckout(STRIPE_PLANS.firm.price_id)}>
-                    {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Get Started <ArrowRight className="h-4 w-4 ml-2" /></>}
+                    {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Start with 10 Client Workspaces <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
                 )}
                 <div className="relative my-8">
