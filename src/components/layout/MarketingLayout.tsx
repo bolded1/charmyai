@@ -256,8 +256,9 @@ export default function MarketingLayout() {
               </div>
             </div>
           </div>
-          <div className="border-t mt-8 pt-8 text-sm text-muted-foreground text-center">
-            © {new Date().getFullYear()} Charmy. All rights reserved.
+          <div className="border-t mt-8 pt-8 text-sm text-muted-foreground text-center space-y-1">
+            <p>© {new Date().getFullYear()} Charmy. All rights reserved.</p>
+            <p className="text-xs">Designed with <span className="text-rose inline-block animate-pulse">♥</span> by <a href="https://devitus.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors underline underline-offset-2">Devitus Digital Ltd</a></p>
           </div>
         </div>
       </footer>
