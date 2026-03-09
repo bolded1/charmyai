@@ -4,6 +4,7 @@ import { Building2, ChevronDown, Check, Plus, Briefcase, Search, BarChart3, Arro
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { useClientRole } from "@/hooks/useClientRole";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
