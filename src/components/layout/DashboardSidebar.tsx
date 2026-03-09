@@ -23,6 +23,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useState } from "react";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { useClientRole } from "@/hooks/useClientRole";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -45,6 +46,13 @@ const recordsItems = [
 const firmItems = [
   { title: "Firm Dashboard", url: "/app/workspaces", icon: BarChart3 },
   { title: "Team", url: "/app/team", icon: UsersRound },
+];
+
+const clientItems = [
+  { title: "Capture", url: "/app", icon: Upload },
+  { title: "Documents", url: "/app/documents", icon: FileText },
+  { title: "Expenses", url: "/app/expenses", icon: Receipt },
+  { title: "Exports", url: "/app/exports", icon: Download },
 ];
 
 const systemItems = [
