@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -25,12 +26,14 @@ import {
   Building2, Briefcase, Plus, Trash2, Pencil, FileText, Receipt,
   ArrowRight, Loader2, AlertTriangle, Clock, Download, Eye,
   CheckCircle2, Search, LayoutGrid, List, Archive, ArchiveRestore,
-  Activity, BarChart3, Globe, Mail, Phone, Hash,
+  Activity, BarChart3, Globe, Mail, Phone, Hash, UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { ClientAccessPanel } from "@/components/ClientAccessPanel";
+import { useSendClientInvitation } from "@/hooks/useClientInvitations";
 
 const CURRENCIES = [
   { value: "EUR", label: "EUR – Euro" },
