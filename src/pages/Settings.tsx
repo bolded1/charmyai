@@ -16,10 +16,11 @@ import { useProfile } from "@/hooks/useProfile";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff } from "lucide-react";
+import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff, Lock } from "lucide-react";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
+import { useClientRole } from "@/hooks/useClientRole";
 
 /* ── Section Header helper ── */
 function SectionHeader({ title, description }: { title: string; description: string }) {
