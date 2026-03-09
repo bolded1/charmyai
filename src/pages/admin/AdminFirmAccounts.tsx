@@ -591,6 +591,27 @@ export default function AdminFirmAccounts() {
                         </Button>
                       </CardContent>
                     </Card>
+
+                    {/* Delete firm account */}
+                    <Card className="border-destructive/30 bg-destructive/5">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-destructive">Delete Firm Account</p>
+                          <p className="text-xs text-muted-foreground">Permanently delete this firm, all client workspaces, and related data. This cannot be undone.</p>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setConfirmAction({
+                            type: "delete_firm",
+                            label: `Permanently delete "${selectedFirm.name}" and all its ${selectedFirm.workspace_count} client workspaces? All documents, expenses, and data will be lost. This cannot be undone.`,
+                            orgId: selectedFirm.id,
+                          })}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Firm
+                        </Button>
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
               </Tabs>
