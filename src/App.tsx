@@ -61,6 +61,7 @@ import AdminScheduledJobs from "./pages/admin/AdminScheduledJobs";
 import AdminAISettings from "./pages/admin/AdminAISettings";
 import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
 import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
+import AdminFirmAccounts from "./pages/admin/AdminFirmAccounts";
 import Assistant from "./pages/Assistant";
 import Workspaces from "./pages/Workspaces";
 import NotFound from "./pages/NotFound";
