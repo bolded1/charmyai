@@ -223,7 +223,7 @@ export default function OnboardingPage() {
 
       if (accountType === "firm") {
         toast.success("Setup complete! Let's activate your Accounting Firm plan.");
-        navigate("/activate-trial?plan=firm");
+        navigate("/activate-firm");
       } else {
         toast.success("Setup complete! Let's activate your trial.");
         navigate("/activate-trial");
