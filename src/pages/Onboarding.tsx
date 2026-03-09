@@ -151,6 +151,7 @@ export default function OnboardingPage() {
   };
 
   const next = async () => {
+    setHasStartedOnboardingFlow(true);
     if (step === 0) {
       if (!firstName.trim() || !lastName.trim()) {
         toast.error("First name and last name are required.");
