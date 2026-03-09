@@ -371,7 +371,161 @@ export default function BillingSection() {
       {sub.subscribed && !sub.has_firm_plan && sub.plan === "pro" && (
         <FirmUpgradeCard />
       )}
-      )}
     </div>
+  );
+}
+
+const stripePromise = loadStripe("pk_live_51Dzp0JBmkvUKJ0fuaOO3lXgQ83A5srdQrW5qKGr4ve9yaED1A5UmEel695J4wGxsokdAznHG53i33ELPjqgCFzqV00Y3AyofY0");
+
+function FirmUpgradeCard() {
+  const [promoCode, setPromoCode] = useState("");
+  const [promoValidating, setPromoValidating] = useState(false);
+  const [promoResult, setPromoResult] = useState<{
+    valid: boolean;
+    discount_label?: string;
+    stripe_coupon_id?: string;
+    requires_card?: boolean;
+  } | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+  const handleValidatePromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoValidating(true);
+    setPromoResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("validate-promo-code", {
+        body: { code: promoCode.trim(), plan: "firm", billingCycle: "onetime" },
+      });
+      if (error) throw error;
+      setPromoResult(data);
+      if (!data.valid) {
+        toast.error(data.error || "Invalid promo code");
+      }
+    } catch (err: any) {
+      toast.error("Failed to validate promo code");
+    } finally {
+      setPromoValidating(false);
+    }
+  };
+
+  const clearPromo = () => {
+    setPromoCode("");
+    setPromoResult(null);
+  };
+
+  const handleStartCheckout = async () => {
+    setCheckoutLoading(true);
+    try {
+      const stripeCouponId = promoResult?.valid ? promoResult.stripe_coupon_id : undefined;
+
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          priceId: STRIPE_PLANS.firm.price_id,
+          stripeCouponId,
+          embedded: true,
+        },
+      });
+      if (error) throw error;
+      if (data?.clientSecret) {
+        setClientSecret(data.clientSecret);
+        setShowCheckout(true);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start checkout");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  if (showCheckout && clientSecret) {
+    return (
+      <Card className="border-primary/20 bg-primary/[0.02] overflow-hidden">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Complete Your Upgrade</h3>
+                <p className="text-xs text-muted-foreground">Accounting Firm Plan · One-time payment</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setShowCheckout(false); setClientSecret(null); }}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="rounded-lg overflow-hidden border border-border/50 bg-background">
+            <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-primary/20 bg-primary/[0.02]">
+      <CardContent className="p-5">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Building2 className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Accounting Firm Plan</h3>
+            <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Manage up to 10 separate client workspaces from one account. Perfect for accountants and bookkeepers.
+        </p>
+        <ul className="space-y-1.5 mb-5">
+          {STRIPE_PLANS.firm.features.slice(0, 4).map((f) => (
+            <li key={f} className="flex items-start gap-2 text-sm">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{f}
+            </li>
+          ))}
+        </ul>
+
+        {/* Promo Code Input */}
+        <div className="mb-4">
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Promo / Coupon Code</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Enter code"
+                value={promoCode}
+                onChange={(e) => { setPromoCode(e.target.value); setPromoResult(null); }}
+                className="pl-8 h-9 text-sm"
+                onKeyDown={(e) => e.key === "Enter" && handleValidatePromo()}
+              />
+              {promoCode && (
+                <button onClick={clearPromo} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <Button variant="outline" size="sm" className="h-9" onClick={handleValidatePromo} disabled={!promoCode.trim() || promoValidating}>
+              {promoValidating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Apply"}
+            </Button>
+          </div>
+          {promoResult?.valid && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-primary">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span className="font-medium">{promoResult.discount_label}</span>
+            </div>
+          )}
+        </div>
+
+        <Button onClick={handleStartCheckout} disabled={checkoutLoading} className="w-full">
+          {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+          €99 One-Time — Upgrade to Firm Plan
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
