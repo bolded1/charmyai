@@ -204,7 +204,7 @@ serve(async (req) => {
       hasFirmPlan = true;
       await provisionFirmOrg();
     }
-    if (subProductId === PRO_PLAN_PRODUCT_ID && !hasFirmPlan) {
+    if (isProProduct(subProductId) && !hasFirmPlan) {
       hasProPlan = true;
     }
 
