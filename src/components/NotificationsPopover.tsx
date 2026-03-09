@@ -30,10 +30,14 @@ function NotificationIcon({ type }: { type: string }) {
 export function NotificationsPopover() {
   const { data: notifications = [], unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   const handleClick = (n: Notification) => {
     if (!n.read) markAsRead.mutate(n.id);
-    if (n.link) navigate(n.link);
+    if (n.link) {
+      setOpen(false);
+      navigate(n.link);
+    }
   };
 
   return (
