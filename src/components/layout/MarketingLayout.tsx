@@ -9,6 +9,7 @@ import { useCookieConsent } from "@/components/CookieConsent";
 const navLinks = [
   { label: "Features", to: "/features", description: "See what Charmy can do" },
   { label: "Pricing", to: "/pricing", description: "Plans that scale with you" },
+  { label: "Try Demo", to: "/demo", description: "Test Charmy instantly" },
   { label: "About", to: "/about", description: "Our story and mission" },
   { label: "Contact", to: "/contact", description: "Get in touch with us" },
 ];
