@@ -128,36 +128,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Demo CTA */}
-      <section className="py-20 md:py-28">
-        <div className="container max-w-3xl">
-          <motion.div
-            {...fadeUp()}
-            className="text-center surface-elevated rounded-3xl p-10 md:p-14 border border-border/50 relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="mx-auto mb-4"
-            >
-              <Sparkles className="h-8 w-8 text-primary mx-auto" />
-            </motion.div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">
-              See Charmy <span className="text-gradient">in action</span>
-            </h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">Upload an invoice and see how Charmy extracts financial data automatically.</p>
-            <div className="flex items-center justify-center gap-3">
-              <Button size="lg" asChild>
-                <Link to="/demo">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/contact">Contact Us</Link>
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <MarketingCTA />
     </div>
   );
 }
