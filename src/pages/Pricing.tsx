@@ -115,24 +115,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Billing toggle */}
-      <section className="relative pb-6">
-        <div className="container flex justify-center">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="inline-flex items-center gap-1 p-1 rounded-xl bg-muted/80 backdrop-blur-sm border border-border/50">
-            <button onClick={() => setBillingCycle("monthly")}
-              className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              Monthly
-            </button>
-            <button onClick={() => setBillingCycle("yearly")}
-              className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              Yearly
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">SAVE 17%</span>
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Plan cards */}
       <section className="relative pb-10">
         <div className="container max-w-5xl">
