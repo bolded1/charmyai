@@ -51,3 +51,5 @@ project_id = "vhaursnvaadhxxwefxez"
     verify_jwt = false
   [functions.firm-payment-intent]
     verify_jwt = false
+  [functions.client-invitation]
+    verify_jwt = false
