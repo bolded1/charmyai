@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -59,6 +60,7 @@ const defaultForm = {
   discount_type: "percentage",
   discount_value: 0,
   currency: "EUR",
+  applies_to_plans: ["pro", "firm"] as string[],
   applies_to_billing: "both",
   applies_to_first_only: false,
   recurring_cycles: null as number | null,
@@ -117,7 +119,7 @@ export default function AdminPromoCodes() {
         discount_type: values.discount_type,
         discount_value: values.discount_value,
         currency: values.currency,
-        applies_to_plans: ["pro"],
+        applies_to_plans: values.applies_to_plans,
         applies_to_billing: values.applies_to_billing,
         applies_to_first_only: values.applies_to_first_only,
         recurring_cycles: values.recurring_cycles || null,
@@ -184,6 +186,7 @@ export default function AdminPromoCodes() {
       discount_type: code.discount_type,
       discount_value: code.discount_value,
       currency: code.currency || "EUR",
+      applies_to_plans: code.applies_to_plans || ["pro", "firm"],
       applies_to_billing: code.applies_to_billing || "both",
       applies_to_first_only: code.applies_to_first_only ?? false,
       recurring_cycles: code.recurring_cycles,
@@ -399,6 +402,29 @@ export default function AdminPromoCodes() {
                 <Input type="number" value={form.extra_trial_days} onChange={(e) => setForm({ ...form, extra_trial_days: parseInt(e.target.value) || 0 })} />
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label>Applies to Plans</Label>
+              <div className="flex gap-4">
+                {[
+                  { value: "pro", label: "Pro (€29.99)" },
+                  { value: "firm", label: "Accounting Firm (€99)" },
+                ].map((plan) => (
+                  <label key={plan.value} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={form.applies_to_plans.includes(plan.value)}
+                      onCheckedChange={(checked) => {
+                        const plans = checked
+                          ? [...form.applies_to_plans, plan.value]
+                          : form.applies_to_plans.filter((p) => p !== plan.value);
+                        setForm({ ...form, applies_to_plans: plans.length ? plans : [plan.value] });
+                      }}
+                    />
+                    {plan.label}
+                  </label>
+                ))}
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
