@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useWorkspace, Workspace } from "@/contexts/WorkspaceContext";
+import { useWorkspace, Workspace, CreateWorkspaceData, UpdateWorkspaceData } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,8 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -20,15 +24,54 @@ import {
 import {
   Building2, Briefcase, Plus, Trash2, Pencil, FileText, Receipt,
   ArrowRight, Loader2, AlertTriangle, Clock, Download, Eye,
-  TrendingUp, CheckCircle2, Search, LayoutGrid, List, Archive,
-  Activity, BarChart3, Users,
+  CheckCircle2, Search, LayoutGrid, List, Archive, ArchiveRestore,
+  Activity, BarChart3, Globe, Mail, Phone, Hash,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
-/* ── Stat card helper ── */
+const CURRENCIES = [
+  { value: "EUR", label: "EUR – Euro" },
+  { value: "USD", label: "USD – US Dollar" },
+  { value: "GBP", label: "GBP – British Pound" },
+  { value: "CHF", label: "CHF – Swiss Franc" },
+  { value: "SEK", label: "SEK – Swedish Krona" },
+  { value: "NOK", label: "NOK – Norwegian Krone" },
+  { value: "DKK", label: "DKK – Danish Krone" },
+  { value: "PLN", label: "PLN – Polish Zloty" },
+  { value: "CZK", label: "CZK – Czech Koruna" },
+];
+
+const COUNTRIES = [
+  { value: "NL", label: "Netherlands" },
+  { value: "BE", label: "Belgium" },
+  { value: "DE", label: "Germany" },
+  { value: "FR", label: "France" },
+  { value: "GB", label: "United Kingdom" },
+  { value: "US", label: "United States" },
+  { value: "CH", label: "Switzerland" },
+  { value: "AT", label: "Austria" },
+  { value: "ES", label: "Spain" },
+  { value: "IT", label: "Italy" },
+  { value: "SE", label: "Sweden" },
+  { value: "NO", label: "Norway" },
+  { value: "DK", label: "Denmark" },
+  { value: "PL", label: "Poland" },
+  { value: "CZ", label: "Czech Republic" },
+  { value: "PT", label: "Portugal" },
+  { value: "IE", label: "Ireland" },
+  { value: "LU", label: "Luxembourg" },
+];
+
+const emptyForm: CreateWorkspaceData = {
+  name: "", trading_name: "", vat_number: "", tax_id: "",
+  address: "", country: "NL", default_currency: "EUR",
+  contact_email: "", contact_phone: "",
+};
+
+/* ── Stat card ── */
 function StatCard({ icon: Icon, label, value, accent, subtext }: {
   icon: React.ElementType; label: string; value: string | number; accent: string; subtext?: string;
 }) {
@@ -67,30 +110,51 @@ function ActivityItem({ icon: Icon, text, time, accent }: {
   );
 }
 
+/* ── Form field helper ── */
+function Field({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">
+        {label}{optional && <span className="text-muted-foreground/50 ml-1">(optional)</span>}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
 export default function WorkspacesPage() {
   const {
     activeWorkspace, allWorkspaces, isAccountingFirm, clientWorkspaces,
-    switchWorkspace, createClientWorkspace, deleteClientWorkspace, updateClientWorkspace,
+    switchWorkspace, createClientWorkspace, deleteClientWorkspace,
+    updateClientWorkspace, archiveClientWorkspace, unarchiveClientWorkspace,
   } = useWorkspace();
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [newName, setNewName] = useState("");
+  const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
   const [creating, setCreating] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingWs, setEditingWs] = useState<Workspace | null>(null);
+  const [editData, setEditData] = useState<UpdateWorkspaceData>({});
+
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showArchived, setShowArchived] = useState(false);
 
   const homeOrg = allWorkspaces.find(
     (w) => w.workspace_type === "accounting_firm" || w.workspace_type === "standard"
   );
   const maxWorkspaces = homeOrg?.max_client_workspaces || 10;
 
-  // Fetch cross-workspace stats for all client workspaces
-  const clientOrgIds = useMemo(() => clientWorkspaces.map((w) => w.id), [clientWorkspaces]);
+  const allClientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client");
+  const archivedWorkspaces = allClientWorkspaces.filter((w) => w.archived_at);
+  const activeClientCount = clientWorkspaces.length; // already excludes archived
+
+  const clientOrgIds = useMemo(() => allClientWorkspaces.map((w) => w.id), [allClientWorkspaces]);
 
   const { data: allDocs = [] } = useQuery({
     queryKey: ["firm-all-docs", clientOrgIds],
@@ -102,22 +166,6 @@ export default function WorkspacesPage() {
         .in("organization_id", clientOrgIds)
         .order("created_at", { ascending: false })
         .limit(500);
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: isAccountingFirm && clientOrgIds.length > 0,
-  });
-
-  const { data: allExpenses = [] } = useQuery({
-    queryKey: ["firm-all-expenses", clientOrgIds],
-    queryFn: async () => {
-      if (clientOrgIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from("expense_records")
-        .select("id, organization_id, created_at, supplier_name, total_amount")
-        .in("organization_id", clientOrgIds)
-        .order("created_at", { ascending: false })
-        .limit(200);
       if (error) throw error;
       return data || [];
     },
@@ -140,16 +188,13 @@ export default function WorkspacesPage() {
     enabled: isAccountingFirm && clientOrgIds.length > 0,
   });
 
-  // Derived stats
   const totalDocs = allDocs.length;
   const needsReview = allDocs.filter((d) => d.status === "processed").length;
   const totalExports = allExports.length;
-  const activeWsCount = clientWorkspaces.length;
 
-  // Per-workspace stats
   const wsStats = useMemo(() => {
     const map: Record<string, { docs: number; review: number; lastActivity: string | null }> = {};
-    for (const ws of clientWorkspaces) {
+    for (const ws of allClientWorkspaces) {
       map[ws.id] = { docs: 0, review: 0, lastActivity: null };
     }
     for (const doc of allDocs) {
@@ -162,44 +207,38 @@ export default function WorkspacesPage() {
       }
     }
     return map;
-  }, [clientWorkspaces, allDocs]);
+  }, [allClientWorkspaces, allDocs]);
 
-  // Recent activity feed (last 10 across all workspaces)
   const recentActivity = useMemo(() => {
-    const items: { type: string; text: string; time: string; ws: string }[] = [];
-    const wsMap = Object.fromEntries(clientWorkspaces.map((w) => [w.id, w.name]));
-
+    const items: { type: string; text: string; time: string }[] = [];
+    const wsMap = Object.fromEntries(allClientWorkspaces.map((w) => [w.id, w.name]));
     for (const doc of allDocs.slice(0, 20)) {
       const wsName = doc.organization_id ? wsMap[doc.organization_id] || "Unknown" : "Unknown";
-      if (doc.status === "processing") {
-        items.push({ type: "upload", text: `"${doc.file_name}" uploaded in ${wsName}`, time: doc.created_at, ws: wsName });
-      } else if (doc.status === "processed") {
-        items.push({ type: "processed", text: `"${doc.file_name}" processed in ${wsName}`, time: doc.created_at, ws: wsName });
-      } else if (doc.status === "approved") {
-        items.push({ type: "approved", text: `"${doc.file_name}" approved in ${wsName}`, time: doc.created_at, ws: wsName });
-      }
+      if (doc.status === "processing") items.push({ type: "upload", text: `"${doc.file_name}" uploaded in ${wsName}`, time: doc.created_at });
+      else if (doc.status === "processed") items.push({ type: "processed", text: `"${doc.file_name}" processed in ${wsName}`, time: doc.created_at });
+      else if (doc.status === "approved") items.push({ type: "approved", text: `"${doc.file_name}" approved in ${wsName}`, time: doc.created_at });
     }
     for (const exp of allExports.slice(0, 5)) {
       const wsName = exp.organization_id ? wsMap[exp.organization_id] || "Unknown" : "Unknown";
-      items.push({ type: "export", text: `Export "${exp.export_name}" (${exp.format}) from ${wsName}`, time: exp.created_at, ws: wsName });
+      items.push({ type: "export", text: `Export "${exp.export_name}" (${exp.format}) from ${wsName}`, time: exp.created_at });
     }
-
     return items.sort((a, b) => b.time.localeCompare(a.time)).slice(0, 10);
-  }, [allDocs, allExports, clientWorkspaces]);
+  }, [allDocs, allExports, allClientWorkspaces]);
 
-  // Filtered workspaces
-  const filteredWorkspaces = clientWorkspaces.filter((ws) =>
-    ws.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const displayedWorkspaces = (showArchived ? archivedWorkspaces : clientWorkspaces)
+    .filter((ws) => ws.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  // ── Handlers ──
   const handleCreate = async () => {
-    if (!newName.trim()) return;
+    if (!formData.name.trim()) return;
     setCreating(true);
     try {
-      const ws = await createClientWorkspace(newName.trim());
+      const ws = await createClientWorkspace({ ...formData, name: formData.name.trim() });
       toast.success(`Created workspace "${ws.name}"`);
-      setNewName("");
+      setFormData({ ...emptyForm });
       setCreateOpen(false);
+      await switchWorkspace(ws.id);
+      navigate("/app");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -207,12 +246,49 @@ export default function WorkspacesPage() {
     }
   };
 
+  const openEditDialog = (ws: Workspace) => {
+    setEditingWs(ws);
+    setEditData({
+      name: ws.name,
+      trading_name: ws.trading_name || "",
+      vat_number: ws.vat_number || "",
+      tax_id: ws.tax_id || "",
+      address: ws.address || "",
+      country: ws.country || "NL",
+      default_currency: ws.default_currency || "EUR",
+      contact_email: ws.contact_email || "",
+      contact_phone: ws.contact_phone || "",
+    });
+    setEditOpen(true);
+  };
+
   const handleEdit = async () => {
-    if (!editingId || !editName.trim()) return;
+    if (!editingWs || !editData.name?.trim()) return;
     try {
-      await updateClientWorkspace(editingId, { name: editName.trim() });
+      await updateClientWorkspace(editingWs.id, { ...editData, name: editData.name!.trim() });
       toast.success("Workspace updated");
-      setEditingId(null);
+      setEditOpen(false);
+      setEditingWs(null);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!archivingId) return;
+    try {
+      await archiveClientWorkspace(archivingId);
+      toast.success("Workspace archived");
+      setArchivingId(null);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleUnarchive = async (orgId: string) => {
+    try {
+      await unarchiveClientWorkspace(orgId);
+      toast.success("Workspace restored");
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -234,7 +310,13 @@ export default function WorkspacesPage() {
     navigate("/app");
   };
 
-  // Non-firm users: upsell
+  const updateField = (field: keyof CreateWorkspaceData, value: string) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const updateEditField = (field: keyof UpdateWorkspaceData, value: string) =>
+    setEditData((prev) => ({ ...prev, [field]: value }));
+
+  // ── Non-firm upsell ──
   if (!isAccountingFirm) {
     return (
       <div className="max-w-2xl mx-auto py-12 text-center space-y-4">
@@ -251,6 +333,86 @@ export default function WorkspacesPage() {
     );
   }
 
+  /* ── Workspace form fields (shared between create & edit) ── */
+  const renderFormFields = (
+    data: CreateWorkspaceData | UpdateWorkspaceData,
+    onChange: (field: any, value: string) => void,
+  ) => (
+    <div className="space-y-5">
+      {/* Company details */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Company Details</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Field label="Company Name">
+            <Input value={data.name || ""} onChange={(e) => onChange("name", e.target.value)} placeholder="e.g. Acme Corp BV" />
+          </Field>
+          <Field label="Trading Name" optional>
+            <Input value={data.trading_name || ""} onChange={(e) => onChange("trading_name", e.target.value)} placeholder="e.g. Acme" />
+          </Field>
+        </div>
+      </div>
+
+      {/* Tax info */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Tax Information</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Field label="VAT Number" optional>
+            <Input value={data.vat_number || ""} onChange={(e) => onChange("vat_number", e.target.value)} placeholder="e.g. NL123456789B01" />
+          </Field>
+          <Field label="Tax ID / KVK" optional>
+            <Input value={data.tax_id || ""} onChange={(e) => onChange("tax_id", e.target.value)} placeholder="e.g. 12345678" />
+          </Field>
+        </div>
+      </div>
+
+      {/* Location & Currency */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Location & Currency</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Field label="Country">
+            <Select value={data.country || "NL"} onValueChange={(v) => onChange("country", v)}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Base Currency">
+            <Select value={data.default_currency || "EUR"} onValueChange={(v) => onChange("default_currency", v)}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </Field>
+          <div className="sm:col-span-2">
+            <Field label="Address" optional>
+              <Textarea
+                value={data.address || ""}
+                onChange={(e) => onChange("address", e.target.value)}
+                placeholder="Street, city, postal code"
+                className="min-h-[60px] resize-none text-sm"
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Contact</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Field label="Contact Email" optional>
+            <Input type="email" value={data.contact_email || ""} onChange={(e) => onChange("contact_email", e.target.value)} placeholder="finance@acme.com" />
+          </Field>
+          <Field label="Contact Phone" optional>
+            <Input type="tel" value={data.contact_phone || ""} onChange={(e) => onChange("contact_phone", e.target.value)} placeholder="+31 6 12345678" />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-6xl space-y-6">
       {/* ═══ Page Header ═══ */}
@@ -266,42 +428,38 @@ export default function WorkspacesPage() {
             Manage all your client workspaces from one place.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={clientWorkspaces.length >= maxWorkspaces} size="sm" className="shrink-0">
+        <Button
+          onClick={() => { setFormData({ ...emptyForm }); setCreateOpen(true); }}
+          disabled={activeClientCount >= maxWorkspaces}
+          size="sm"
+          className="shrink-0"
+        >
           <Plus className="h-4 w-4 mr-1.5" />
           Create New Workspace
         </Button>
       </div>
 
+      {/* Limit banner */}
+      {activeClientCount >= maxWorkspaces && (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Workspace limit reached</p>
+              <p className="text-xs text-muted-foreground">
+                You've used all {maxWorkspaces} workspace slots. Archive or delete an existing workspace to create a new one.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* ═══ Summary Stats ═══ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          icon={Briefcase}
-          label="Client Workspaces"
-          value={activeWsCount}
-          accent="bg-primary/10 text-primary"
-          subtext={`of ${maxWorkspaces} available`}
-        />
-        <StatCard
-          icon={FileText}
-          label="Total Documents"
-          value={totalDocs}
-          accent="bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]"
-          subtext="across all workspaces"
-        />
-        <StatCard
-          icon={Eye}
-          label="Needs Review"
-          value={needsReview}
-          accent={needsReview > 0 ? "bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))]" : "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]"}
-          subtext={needsReview > 0 ? "documents pending" : "all clear"}
-        />
-        <StatCard
-          icon={Download}
-          label="Exports"
-          value={totalExports}
-          accent="bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]"
-          subtext="generated total"
-        />
+        <StatCard icon={Briefcase} label="Client Workspaces" value={activeClientCount} accent="bg-primary/10 text-primary" subtext={`of ${maxWorkspaces} available`} />
+        <StatCard icon={FileText} label="Total Documents" value={totalDocs} accent="bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" subtext="across all workspaces" />
+        <StatCard icon={Eye} label="Needs Review" value={needsReview} accent={needsReview > 0 ? "bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))]" : "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]"} subtext={needsReview > 0 ? "documents pending" : "all clear"} />
+        <StatCard icon={Download} label="Exports" value={totalExports} accent="bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]" subtext="generated total" />
       </div>
 
       {/* ═══ Usage Overview ═══ */}
@@ -310,47 +468,41 @@ export default function WorkspacesPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-sm font-semibold text-foreground">Workspace Usage</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {clientWorkspaces.length} of {maxWorkspaces} workspace slots used
-              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">{activeClientCount} of {maxWorkspaces} workspace slots used</p>
             </div>
-            <Badge variant={clientWorkspaces.length >= maxWorkspaces ? "destructive" : "secondary"} className="text-[10px]">
-              {maxWorkspaces - clientWorkspaces.length} remaining
+            <Badge variant={activeClientCount >= maxWorkspaces ? "destructive" : "secondary"} className="text-[10px]">
+              {maxWorkspaces - activeClientCount} remaining
             </Badge>
           </div>
-          <Progress value={(clientWorkspaces.length / maxWorkspaces) * 100} className="h-2" />
-          <div className="flex justify-between mt-2">
-            <span className="text-[10px] text-muted-foreground">0</span>
-            <span className="text-[10px] text-muted-foreground">{maxWorkspaces}</span>
-          </div>
+          <Progress value={(activeClientCount / maxWorkspaces) * 100} className="h-2" />
         </CardContent>
       </Card>
 
       {/* ═══ Client Workspaces Section ═══ */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">Client Workspaces</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-base font-semibold text-foreground">Client Workspaces</h2>
+            {archivedWorkspaces.length > 0 && (
+              <button
+                onClick={() => setShowArchived(!showArchived)}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                <Archive className="h-3 w-3" />
+                {showArchived ? "Show active" : `${archivedWorkspaces.length} archived`}
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search workspaces..."
-                className="pl-8 h-8 text-xs"
-              />
+              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search workspaces..." className="pl-8 h-8 text-xs" />
             </div>
             <div className="flex border border-border rounded-md">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-1.5 transition-colors ${viewMode === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
+              <button onClick={() => setViewMode("grid")} className={`p-1.5 transition-colors ${viewMode === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 <LayoutGrid className="h-3.5 w-3.5" />
               </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-1.5 transition-colors ${viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
+              <button onClick={() => setViewMode("list")} className={`p-1.5 transition-colors ${viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 <List className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -361,19 +513,13 @@ export default function WorkspacesPage() {
         {viewMode === "grid" && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <AnimatePresence>
-              {filteredWorkspaces.map((ws) => {
+              {displayedWorkspaces.map((ws) => {
                 const stats = wsStats[ws.id] || { docs: 0, review: 0, lastActivity: null };
+                const isArchived = !!ws.archived_at;
                 return (
-                  <motion.div
-                    key={ws.id}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <Card className={`group hover:shadow-md transition-all cursor-pointer ${activeWorkspace?.id === ws.id ? "ring-2 ring-primary/30 border-primary/40" : "hover:border-border/80"}`}>
-                      <CardContent className="p-5 space-y-4" onClick={() => handleOpenWorkspace(ws)}>
-                        {/* Header */}
+                  <motion.div key={ws.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.15 }}>
+                    <Card className={`group hover:shadow-md transition-all cursor-pointer ${isArchived ? "opacity-60" : ""} ${activeWorkspace?.id === ws.id ? "ring-2 ring-primary/30 border-primary/40" : "hover:border-border/80"}`}>
+                      <CardContent className="p-5 space-y-4" onClick={() => !isArchived && handleOpenWorkspace(ws)}>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center shrink-0">
@@ -382,41 +528,55 @@ export default function WorkspacesPage() {
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-foreground truncate">{ws.name}</p>
                               <p className="text-[10px] text-muted-foreground">
-                                {stats.lastActivity
+                                {isArchived ? "Archived" : stats.lastActivity
                                   ? `Active ${formatDistanceToNow(new Date(stats.lastActivity), { addSuffix: true })}`
                                   : "No activity yet"}
                               </p>
                             </div>
                           </div>
-                          {activeWorkspace?.id === ws.id && (
+                          {isArchived ? (
+                            <Badge variant="outline" className="text-[9px] shrink-0">Archived</Badge>
+                          ) : activeWorkspace?.id === ws.id ? (
                             <Badge className="bg-primary/10 text-primary border-0 text-[9px] shrink-0">Active</Badge>
-                          )}
+                          ) : null}
                         </div>
 
-                        {/* Stats row */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-accent/50 rounded-lg px-3 py-2 text-center">
-                            <p className="text-lg font-bold text-foreground tabular-nums">{stats.docs}</p>
-                            <p className="text-[10px] text-muted-foreground">Documents</p>
+                        {!isArchived && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-accent/50 rounded-lg px-3 py-2 text-center">
+                              <p className="text-lg font-bold text-foreground tabular-nums">{stats.docs}</p>
+                              <p className="text-[10px] text-muted-foreground">Documents</p>
+                            </div>
+                            <div className={`rounded-lg px-3 py-2 text-center ${stats.review > 0 ? "bg-[hsl(var(--amber-soft))]" : "bg-accent/50"}`}>
+                              <p className={`text-lg font-bold tabular-nums ${stats.review > 0 ? "text-[hsl(var(--amber))]" : "text-foreground"}`}>{stats.review}</p>
+                              <p className="text-[10px] text-muted-foreground">Needs Review</p>
+                            </div>
                           </div>
-                          <div className={`rounded-lg px-3 py-2 text-center ${stats.review > 0 ? "bg-[hsl(var(--amber-soft))]" : "bg-accent/50"}`}>
-                            <p className={`text-lg font-bold tabular-nums ${stats.review > 0 ? "text-[hsl(var(--amber))]" : "text-foreground"}`}>{stats.review}</p>
-                            <p className="text-[10px] text-muted-foreground">Needs Review</p>
-                          </div>
-                        </div>
+                        )}
 
-                        {/* Actions */}
                         <div className="flex items-center gap-1.5 pt-1 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="flex-1 h-7 text-[11px]" onClick={() => handleOpenWorkspace(ws)}>
-                            <ArrowRight className="h-3 w-3 mr-1" />
-                            Open
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingId(ws.id); setEditName(ws.name); }}>
-                            <Pencil className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeletingId(ws.id)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          {isArchived ? (
+                            <>
+                              <Button variant="ghost" size="sm" className="flex-1 h-7 text-[11px]" onClick={() => handleUnarchive(ws.id)}>
+                                <ArchiveRestore className="h-3 w-3 mr-1" /> Restore
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeletingId(ws.id)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="sm" className="flex-1 h-7 text-[11px]" onClick={() => handleOpenWorkspace(ws)}>
+                                <ArrowRight className="h-3 w-3 mr-1" /> Open
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(ws)}>
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setArchivingId(ws.id)}>
+                                <Archive className="h-3 w-3" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -425,12 +585,8 @@ export default function WorkspacesPage() {
               })}
             </AnimatePresence>
 
-            {/* Create card */}
-            {clientWorkspaces.length < maxWorkspaces && (
-              <Card
-                className="border-dashed hover:border-primary/40 hover:bg-primary/[0.02] transition-all cursor-pointer group"
-                onClick={() => setCreateOpen(true)}
-              >
+            {!showArchived && activeClientCount < maxWorkspaces && (
+              <Card className="border-dashed hover:border-primary/40 hover:bg-primary/[0.02] transition-all cursor-pointer group" onClick={() => { setFormData({ ...emptyForm }); setCreateOpen(true); }}>
                 <CardContent className="p-5 flex flex-col items-center justify-center min-h-[180px] gap-3">
                   <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Plus className="h-5 w-5 text-primary" />
@@ -441,6 +597,12 @@ export default function WorkspacesPage() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {displayedWorkspaces.length === 0 && (
+              <div className="sm:col-span-2 lg:col-span-3 py-12 text-center text-sm text-muted-foreground">
+                {searchQuery ? "No workspaces match your search." : showArchived ? "No archived workspaces." : "No client workspaces yet."}
+              </div>
             )}
           </div>
         )}
@@ -454,7 +616,7 @@ export default function WorkspacesPage() {
                   <thead>
                     <tr className="border-b border-border/60">
                       <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Company</th>
-                      <th className="text-center px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Documents</th>
+                      <th className="text-center px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Docs</th>
                       <th className="text-center px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Review</th>
                       <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Last Activity</th>
                       <th className="text-center px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
@@ -462,35 +624,35 @@ export default function WorkspacesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredWorkspaces.map((ws) => {
+                    {displayedWorkspaces.map((ws) => {
                       const stats = wsStats[ws.id] || { docs: 0, review: 0, lastActivity: null };
+                      const isArchived = !!ws.archived_at;
                       return (
-                        <tr key={ws.id} className="border-b border-border/40 last:border-0 hover:bg-accent/30 transition-colors">
+                        <tr key={ws.id} className={`border-b border-border/40 last:border-0 hover:bg-accent/30 transition-colors ${isArchived ? "opacity-60" : ""}`}>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2.5">
                               <div className="h-8 w-8 rounded-md bg-accent flex items-center justify-center shrink-0">
                                 <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
                               </div>
-                              <span className="font-medium text-foreground">{ws.name}</span>
+                              <div className="min-w-0">
+                                <span className="font-medium text-foreground block truncate">{ws.name}</span>
+                                {ws.trading_name && <span className="text-[10px] text-muted-foreground">{ws.trading_name}</span>}
+                              </div>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-center tabular-nums font-medium">{stats.docs}</td>
                           <td className="px-4 py-3 text-center">
                             {stats.review > 0 ? (
-                              <Badge variant="secondary" className="bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))] border-0 text-[10px]">
-                                {stats.review}
-                              </Badge>
-                            ) : (
-                              <span className="text-muted-foreground text-xs">—</span>
-                            )}
+                              <Badge variant="secondary" className="bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))] border-0 text-[10px]">{stats.review}</Badge>
+                            ) : <span className="text-muted-foreground text-xs">—</span>}
                           </td>
                           <td className="px-4 py-3 text-xs text-muted-foreground">
-                            {stats.lastActivity
-                              ? formatDistanceToNow(new Date(stats.lastActivity), { addSuffix: true })
-                              : "No activity"}
+                            {stats.lastActivity ? formatDistanceToNow(new Date(stats.lastActivity), { addSuffix: true }) : "No activity"}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            {activeWorkspace?.id === ws.id ? (
+                            {isArchived ? (
+                              <Badge variant="outline" className="text-[10px]">Archived</Badge>
+                            ) : activeWorkspace?.id === ws.id ? (
                               <Badge className="bg-primary/10 text-primary border-0 text-[10px]">Active</Badge>
                             ) : (
                               <Badge variant="outline" className="text-[10px]">Idle</Badge>
@@ -498,25 +660,37 @@ export default function WorkspacesPage() {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="sm" className="h-7 text-[11px]" onClick={() => handleOpenWorkspace(ws)}>
-                                <ArrowRight className="h-3 w-3 mr-1" />
-                                Open
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingId(ws.id); setEditName(ws.name); }}>
-                                <Pencil className="h-3 w-3" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeletingId(ws.id)}>
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                              {isArchived ? (
+                                <>
+                                  <Button variant="ghost" size="sm" className="h-7 text-[11px]" onClick={() => handleUnarchive(ws.id)}>
+                                    <ArchiveRestore className="h-3 w-3 mr-1" /> Restore
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeletingId(ws.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button variant="ghost" size="sm" className="h-7 text-[11px]" onClick={() => handleOpenWorkspace(ws)}>
+                                    <ArrowRight className="h-3 w-3 mr-1" /> Open
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(ws)}>
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setArchivingId(ws.id)}>
+                                    <Archive className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </td>
                         </tr>
                       );
                     })}
-                    {filteredWorkspaces.length === 0 && (
+                    {displayedWorkspaces.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">
-                          {searchQuery ? "No workspaces match your search." : "No client workspaces yet."}
+                          {searchQuery ? "No workspaces match your search." : showArchived ? "No archived workspaces." : "No client workspaces yet."}
                         </td>
                       </tr>
                     )}
@@ -546,15 +720,7 @@ export default function WorkspacesPage() {
                     export: { icon: Download, accent: "bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" },
                   };
                   const { icon, accent } = iconMap[item.type] || iconMap.upload;
-                  return (
-                    <ActivityItem
-                      key={i}
-                      icon={icon}
-                      text={item.text}
-                      time={formatDistanceToNow(new Date(item.time), { addSuffix: true })}
-                      accent={accent}
-                    />
-                  );
+                  return <ActivityItem key={i} icon={icon} text={item.text} time={formatDistanceToNow(new Date(item.time), { addSuffix: true })} accent={accent} />;
                 })}
               </div>
             ) : (
@@ -566,83 +732,49 @@ export default function WorkspacesPage() {
           </CardContent>
         </Card>
 
-        {/* Quick actions */}
         <Card>
           <CardContent className="p-5 space-y-4">
             <h3 className="text-sm font-semibold text-foreground">Quick Actions</h3>
             <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 text-[13px]"
-                onClick={() => setCreateOpen(true)}
-                disabled={clientWorkspaces.length >= maxWorkspaces}
-              >
-                <Plus className="h-4 w-4 mr-2 text-primary" />
-                New Client Workspace
+              <Button variant="outline" className="w-full justify-start h-10 text-[13px]" onClick={() => { setFormData({ ...emptyForm }); setCreateOpen(true); }} disabled={activeClientCount >= maxWorkspaces}>
+                <Plus className="h-4 w-4 mr-2 text-primary" /> New Client Workspace
               </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 text-[13px]"
-                onClick={() => navigate("/app/settings?tab=billing")}
-              >
-                <Receipt className="h-4 w-4 mr-2 text-muted-foreground" />
-                Manage Billing
+              <Button variant="outline" className="w-full justify-start h-10 text-[13px]" onClick={() => navigate("/app/settings?tab=billing")}>
+                <Receipt className="h-4 w-4 mr-2 text-muted-foreground" /> Manage Billing
               </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 text-[13px]"
-                onClick={() => navigate("/app/settings?tab=organization")}
-              >
-                <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
-                Firm Settings
+              <Button variant="outline" className="w-full justify-start h-10 text-[13px]" onClick={() => navigate("/app/settings?tab=organization")}>
+                <Building2 className="h-4 w-4 mr-2 text-muted-foreground" /> Firm Settings
               </Button>
             </div>
-
             <Separator />
-
-            {/* Workspace slots visual */}
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">Workspace Slots</p>
               <div className="grid grid-cols-5 gap-1.5">
                 {Array.from({ length: maxWorkspaces }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-6 rounded-md transition-colors ${
-                      i < clientWorkspaces.length
-                        ? "bg-primary/80"
-                        : "bg-accent border border-border/60"
-                    }`}
-                  />
+                  <div key={i} className={`h-6 rounded-md transition-colors ${i < activeClientCount ? "bg-primary/80" : "bg-accent border border-border/60"}`} />
                 ))}
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1.5">
-                {clientWorkspaces.length} used · {maxWorkspaces - clientWorkspaces.length} available
-              </p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">{activeClientCount} used · {maxWorkspaces - activeClientCount} available</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* ═══ Dialogs ═══ */}
+      {/* ═══ Create Dialog ═══ */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Client Workspace</DialogTitle>
+            <DialogDescription className="text-xs">
+              Set up a new isolated workspace for a client company. You can always edit details later.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Client / Company Name</Label>
-              <Input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. Acme Corp"
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-              />
-            </div>
+          <div className="py-2">
+            {renderFormFields(formData, updateField)}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!newName.trim() || creating}>
+            <Button onClick={handleCreate} disabled={!formData.name.trim() || creating}>
               {creating && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
               Create Workspace
             </Button>
@@ -650,28 +782,45 @@ export default function WorkspacesPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!editingId} onOpenChange={() => setEditingId(null)}>
-        <DialogContent className="sm:max-w-md">
+      {/* ═══ Edit Dialog ═══ */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Client Workspace</DialogTitle>
+            <DialogDescription className="text-xs">
+              Update workspace details for {editingWs?.name}.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Workspace Name</Label>
-              <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleEdit()}
-              />
-            </div>
+          <div className="py-2">
+            {renderFormFields(editData, updateEditField)}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
-            <Button onClick={handleEdit} disabled={!editName.trim()}>Save</Button>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button onClick={handleEdit} disabled={!editData.name?.trim()}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* ═══ Archive Confirm ═══ */}
+      <AlertDialog open={!!archivingId} onOpenChange={() => setArchivingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Archive className="h-5 w-5 text-muted-foreground" />
+              Archive Client Workspace
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This workspace will be hidden from your active list but all data will be preserved. You can restore it at any time. Archiving frees up a workspace slot.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive}>Archive Workspace</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ═══ Delete Confirm ═══ */}
       <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -685,10 +834,7 @@ export default function WorkspacesPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete Workspace
             </AlertDialogAction>
           </AlertDialogFooter>
