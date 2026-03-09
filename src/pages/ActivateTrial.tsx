@@ -571,12 +571,12 @@ export default function ActivateTrialPage() {
           ) : (
             /* ── Firm Plan ── */
             <div className="space-y-5">
-              {/* Firm features */}
-              <div className="space-y-2">
+              {/* Firm features grid */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {STRIPE_PLANS.firm.features.map((f) => (
-                  <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                    {f}
+                  <div key={f} className="flex items-start gap-2 text-[13px] text-foreground/80 py-1">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                    <span className="leading-tight">{f}</span>
                   </div>
                 ))}
               </div>
