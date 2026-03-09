@@ -160,7 +160,7 @@ export default function BillingSection() {
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Amount Paid</p>
-                  <p className="font-medium">€29.99</p>
+                  <p className="font-medium">{planPrice}</p>
                 </div>
               </div>
             </>
