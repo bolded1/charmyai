@@ -76,10 +76,6 @@ export default function HomePage() {
         </motion.div>
 
         {/* Supporting sentence */}
-        <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={5}
-          className="text-center text-sm text-muted-foreground max-w-lg mx-auto mt-2 mb-8 px-4">
-          Upload an invoice and see Charmy extract supplier, totals, VAT, and dates in seconds.
-        </motion.p>
       </section>
 
       {/* ═══ Problem Section ═══ */}
