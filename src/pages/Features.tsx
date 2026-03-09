@@ -359,6 +359,210 @@ export default function FeaturesPage() {
         <FeatureSection key={i} {...feature} index={i} />
       ))}
 
+      {/* ── Multi-Client Workspaces for Accounting Firms ── */}
+      <section className="py-20 md:py-28 surface-sunken">
+        <div className="container max-w-5xl">
+          {/* Header */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={0}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-5">
+              <Building2 className="h-3.5 w-3.5" />
+              For Accounting Firms
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-[1.1] mb-5">
+              Multi-Client Workspaces for{" "}
+              <span className="text-gradient">Accounting Firms</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+              Charmy helps accountants and bookkeeping firms manage invoices and receipts for multiple client companies without losing organization.
+            </p>
+          </motion.div>
+
+          {/* Animated workspace dashboard illustration */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={1}
+            className="mb-20"
+          >
+            <div className="surface-elevated rounded-2xl border border-border p-6 md:p-8 overflow-hidden">
+              <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-5">Firm Dashboard</div>
+              
+              {/* Workspace switcher bar */}
+              <div className="flex items-center gap-2 mb-6 p-2 rounded-xl bg-accent/40 border border-border/40">
+                {["All Workspaces", "Active (6)", "Archived (1)"].map((tab, i) => (
+                  <motion.button
+                    key={tab}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                      i === 0 ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab}
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Workspace cards grid */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { name: "ABC Consulting", docs: 47, color: "hsl(var(--primary))" },
+                  { name: "Smith & Partners", docs: 23, color: "hsl(220 70% 55%)" },
+                  { name: "Tech Solutions BV", docs: 89, color: "hsl(150 60% 45%)" },
+                  { name: "Riverside Bakery", docs: 12, color: "hsl(30 80% 55%)" },
+                  { name: "Nordic Design Co", docs: 34, color: "hsl(280 60% 55%)" },
+                  { name: "GreenLeaf BV", docs: 56, color: "hsl(100 50% 45%)" },
+                ].map((ws, i) => (
+                  <motion.div
+                    key={ws.name}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 + i * 0.08, duration: 0.4 }}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                    className="p-4 rounded-xl bg-card border border-border/60 cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div
+                        className="h-9 w-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0"
+                        style={{ backgroundColor: ws.color }}
+                      >
+                        {ws.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{ws.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{ws.docs} documents</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex -space-x-1.5">
+                        {[0, 1].map((a) => (
+                          <div key={a} className="h-5 w-5 rounded-full bg-accent border-2 border-card" />
+                        ))}
+                      </div>
+                      <span className="text-[10px] text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        Open <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Feature highlights */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+            {[
+              {
+                icon: Layers,
+                title: "Separate Workspaces for Each Client",
+                desc: "Each client company has its own workspace with separate invoices, receipts, contacts, and exports.",
+              },
+              {
+                icon: ArrowLeftRight,
+                title: "Instant Workspace Switching",
+                desc: "Move between companies with a single click without logging in and out.",
+              },
+              {
+                icon: UserCheck,
+                title: "Client Document Collaboration",
+                desc: "Invite clients to upload invoices and receipts directly into their workspace.",
+              },
+              {
+                icon: Brain,
+                title: "Organized Data for Accounting",
+                desc: "Charmy extracts financial data automatically and keeps records structured.",
+              },
+              {
+                icon: FileOutput,
+                title: "Export Data Per Client",
+                desc: "Generate exports and financial data for each client independently.",
+              },
+              {
+                icon: Shield,
+                title: "Complete Data Isolation",
+                desc: "Every workspace is fully isolated — client data never mixes between workspaces.",
+              },
+            ].map((feat, i) => (
+              <motion.div
+                key={feat.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.45 }}
+                className="surface-elevated rounded-2xl border border-border p-6 group hover:border-primary/30 transition-colors"
+              >
+                <div className="h-10 w-10 rounded-xl bg-brand-soft flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+                  <feat.icon className="h-5 w-5 text-primary-icon" />
+                </div>
+                <h3 className="font-semibold mb-2">{feat.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feat.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Accounting firm plan CTA */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={0}
+            className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-primary mb-3">
+                  <Building2 className="h-3.5 w-3.5" />
+                  Accounting Firm Plan
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold mb-3">
+                  Manage up to 10 client workspaces
+                </h3>
+                <p className="text-muted-foreground leading-relaxed mb-4 max-w-lg">
+                  The Accounting Firm plan allows you to manage up to 10 client workspaces from one Charmy account.
+                  Perfect for accounting firms, bookkeeping services, and financial consultants.
+                </p>
+                <ul className="flex flex-wrap gap-x-6 gap-y-2 mb-6">
+                  {["10 client workspaces", "One-time €99 payment", "Lifetime access", "All Pro features included"].map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-sm font-medium">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Button size="lg" asChild className="text-base px-8">
+                  <Link to="/activate-trial?plan=firm">
+                    Get Firm Plan — €99 <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+              <div className="shrink-0">
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="h-24 w-24 rounded-3xl bg-hero-gradient flex items-center justify-center shadow-xl shadow-primary/20"
+                >
+                  <Building2 className="h-10 w-10 text-primary-foreground" />
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Demo reinforcement */}
       <section className="py-20">
         <div className="container max-w-3xl">
