@@ -79,10 +79,7 @@ serve(async (req) => {
       },
     };
 
-    // Only add trial & subscription_data for subscription mode
-    if (!isOneTime) {
-      sessionParams.subscription_data = { trial_period_days: 7 };
-    }
+    // No trial period for any plan
 
     // Apply Stripe coupon/discount if provided
     if (stripeCouponId) {
