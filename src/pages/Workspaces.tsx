@@ -222,12 +222,6 @@ export default function WorkspacesPage() {
   const navigate = useNavigate();
   const { isClient } = useClientRole();
 
-  // Clients should not access the firm dashboard
-  if (isClient) {
-    navigate("/app", { replace: true });
-    return null;
-  }
-
   const [createOpen, setCreateOpen] = useState(false);
   const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
   const [creating, setCreating] = useState(false);
@@ -251,6 +245,12 @@ export default function WorkspacesPage() {
   const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
   const [inviteRows, setInviteRows] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
   const [inviting, setInviting] = useState(false);
+
+  // Clients should not access the firm dashboard
+  if (isClient) {
+    navigate("/app", { replace: true });
+    return null;
+  }
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
