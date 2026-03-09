@@ -221,9 +221,9 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
   );
 }
 
-// ── PWA Icon Upload ──
+// ── PWA Icon Upload (uses same data-URL-in-DB pattern as LogoUploadField) ──
 function PwaIconUpload() {
-  const [iconUrl, setIconUrl] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -234,17 +234,26 @@ function PwaIconUpload() {
       .eq("key", "pwa-icon")
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.value && typeof data.value === "string" && data.value.startsWith("http")) {
-          setIconUrl(data.value);
+        const val = data?.value;
+        if (typeof val === "string" && (val.startsWith("data:image") || val.startsWith("http"))) {
+          setPreview(val);
+        } else if (typeof val === "string") {
+          try {
+            const parsed = JSON.parse(val);
+            if (typeof parsed === "string" && parsed.startsWith("data:image")) setPreview(parsed);
+          } catch { /* ignore */ }
         }
       });
   }, []);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+
+    // Allow common image types including .ico
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"];
+    if (!file.type.startsWith("image/") && !allowed.includes(file.type)) {
+      toast.error("Please upload an image file (PNG, JPG, WEBP, SVG, or ICO)");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -253,50 +262,43 @@ function PwaIconUpload() {
     }
 
     setUploading(true);
-    try {
-      const ext = file.name.split(".").pop() || "png";
-      const filePath = `pwa/app-icon-${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const publicUrl = urlData.publicUrl;
-
-      await supabase
-        .from("demo_settings")
-        .upsert({ key: "pwa-icon", value: publicUrl }, { onConflict: "key" });
-
-      setIconUrl(publicUrl);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      const { error } = await supabase.from("demo_settings").upsert(
+        { key: "pwa-icon", value: dataUrl },
+        { onConflict: "key" }
+      );
+      setUploading(false);
+      if (error) {
+        toast.error(`Upload failed: ${error.message}`);
+        return;
+      }
+      setPreview(dataUrl);
       window.dispatchEvent(new Event("pwa-icon-changed"));
       toast.success("PWA icon updated. Users will see the new icon on next app refresh.");
-    } catch (err: any) {
-      toast.error(`Upload failed: ${err.message}`);
-    } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
-    }
+    };
+    reader.readAsDataURL(file);
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   const handleRemove = async () => {
-    await supabase.from("demo_settings").delete().eq("key", "pwa-icon");
-    setIconUrl(null);
+    const { error } = await supabase.from("demo_settings").delete().eq("key", "pwa-icon");
+    if (error) {
+      toast.error(`Failed to remove: ${error.message}`);
+      return;
+    }
+    setPreview(null);
     window.dispatchEvent(new Event("pwa-icon-changed"));
     toast.success("PWA icon reset to default");
   };
 
   return (
     <div className="space-y-3">
-      {iconUrl ? (
+      {preview ? (
         <div className="flex items-center gap-4">
           <div className="relative inline-block border rounded-xl p-3 bg-muted/30">
-            <img src={iconUrl} alt="PWA Icon" className="h-16 w-16 rounded-lg object-cover" />
+            <img src={preview} alt="PWA Icon" className="h-16 w-16 rounded-lg object-cover" />
             <button
               onClick={handleRemove}
               className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:bg-destructive/90"
@@ -319,7 +321,7 @@ function PwaIconUpload() {
           {uploading ? "Uploading…" : "Upload PWA icon (512×512 PNG recommended)"}
         </button>
       )}
-      <input ref={inputRef} type="file" accept="image/png,image/jpg,image/jpeg,image/webp" className="hidden" onChange={handleUpload} />
+      <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,.ico" className="hidden" onChange={handleFile} />
     </div>
   );
 }
