@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
@@ -182,20 +183,22 @@ export default function DashboardLayout() {
             )}
 
             {/* Mobile header with logo + profile */}
-            <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 md:hidden">
-              <div className="flex items-center gap-2">
+            <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 {brandLogo ? (
-                  <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain" />
+                  <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain shrink-0" />
                 ) : (
-                  <Link to="/app" className="flex items-center gap-1.5">
+                  <Link to="/app" className="flex items-center gap-1.5 shrink-0">
                     <div className="h-7 w-7 rounded-md bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
                       <FileText className="h-3.5 w-3.5 text-white" />
                     </div>
-                    <span className="font-bold text-sm text-gradient">Charmy</span>
                   </Link>
                 )}
+                <div className="flex-1 min-w-0 max-w-[180px]">
+                  <WorkspaceSwitcher compact={false} />
+                </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <NotificationsPopover />
                 {mobileProfileMenu}
               </div>
