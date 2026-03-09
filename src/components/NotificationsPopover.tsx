@@ -71,7 +71,7 @@ export function NotificationsPopover() {
               variant="ghost"
               size="sm"
               className="text-xs h-7 text-muted-foreground"
-              onClick={() => markAllAsRead.mutate()}
+              onClick={(e) => { e.stopPropagation(); markAllAsRead.mutate(); }}
             >
               Mark all read
             </Button>
