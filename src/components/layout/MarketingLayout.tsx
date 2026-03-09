@@ -44,10 +44,10 @@ export default function MarketingLayout() {
     <div className="marketing min-h-screen flex flex-col">
       {/* Floating Header */}
       <header className="sticky top-0 z-50 w-full">
-        <div className={`mx-auto transition-all duration-300 ${
+        <div className={`transition-all duration-300 max-w-5xl mx-4 md:mx-auto rounded-2xl border border-border/40 ${
           scrolled
-            ? "mt-0 max-w-full bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm"
-            : "mt-3 max-w-5xl mx-4 md:mx-auto bg-background/60 backdrop-blur-lg rounded-2xl border border-border/40 shadow-lg shadow-primary/[0.03]"
+            ? "mt-3 bg-card/85 backdrop-blur-xl shadow-lg shadow-primary/[0.06] border-border/50"
+            : "mt-3 bg-card shadow-lg shadow-primary/[0.03]"
         }`}>
           <div className="flex h-14 items-center justify-between px-4 md:px-6">
             {/* Logo */}
