@@ -81,6 +81,7 @@ function PwaManifestUpdater() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ImpersonationProvider>
+    <WorkspaceProvider>
     <CookieConsentProvider>
     <TooltipProvider>
       <Toaster />
