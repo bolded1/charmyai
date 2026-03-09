@@ -387,23 +387,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20 bg-hero-gradient">
-        <div className="container text-center max-w-2xl">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">Stop typing invoice data manually</h2>
-          <p className="text-primary-foreground/75 mb-8 max-w-lg mx-auto">
-            Upload documents or forward invoices by email and let Charmy extract the financial data automatically.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button size="lg" variant="secondary" asChild className="text-base px-8">
-              <Link to="/signup">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-            <Button size="lg" variant="ghost" className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10 text-base px-8" asChild>
-              <Link to="/demo">Try Demo</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <MarketingCTA />
     </div>
   );
 }
