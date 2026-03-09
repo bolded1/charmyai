@@ -166,20 +166,22 @@ export default function AdminFirmAccounts() {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Enrich with owner email
-      const enriched = await Promise.all(
-        (data || []).map(async (org: any) => {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("email")
-            .eq("user_id", org.owner_user_id)
-            .maybeSingle();
-          return { ...org, owner_email: profile?.email || null };
-        })
-      );
+      // Enrich with owner email — fetch all profiles at once
+      const ownerIds = [...new Set((data || []).map((o: any) => o.owner_user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, email")
+        .in("user_id", ownerIds.length > 0 ? ownerIds : ["__none__"]);
+
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.email]));
+      const enriched = (data || []).map((org: any) => ({
+        ...org,
+        owner_email: profileMap.get(org.owner_user_id) || null,
+      }));
       setAllStandardOrgs(enriched);
-    } catch {
-      toast.error("Failed to load organizations");
+    } catch (err: any) {
+      console.error("Failed to load organizations:", err);
+      toast.error("Failed to load organizations: " + (err.message || "Unknown error"));
     } finally {
       setGrantOrgsLoading(false);
     }
