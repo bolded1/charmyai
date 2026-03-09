@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState, useRef, useCallback, useEffect } from "react";
 
-import { Upload, X, Sun, Moon, Check, Smartphone } from "lucide-react";
+import { Upload, X, Sun, Moon, Check, Smartphone, Palette } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 
@@ -42,7 +42,6 @@ function useAutoSave<T>(key: string, initialValue: T, delay = 800) {
     });
   }, [key, delay]);
 
-  // Flush pending save on unmount instead of discarding it
   useEffect(() => () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -55,7 +54,7 @@ function useAutoSave<T>(key: string, initialValue: T, delay = 800) {
   return [value, update, saving] as const;
 }
 
-// ── DB-backed auto-save hook (for limits stored in demo_settings) ──
+// ── DB-backed auto-save hook ──
 function useDbAutoSave(key: string, initialValue: string, delay = 800) {
   const [value, setValue] = useState<string>(initialValue);
   const [saving, setSaving] = useState(false);
@@ -64,7 +63,6 @@ function useDbAutoSave(key: string, initialValue: string, delay = 800) {
   const pendingRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
 
-  // Load initial value from DB
   useEffect(() => {
     supabase
       .from("demo_settings")
@@ -99,7 +97,6 @@ function useDbAutoSave(key: string, initialValue: string, delay = 800) {
     }, delay);
   }, [key, delay, queryClient]);
 
-  // Flush on unmount
   useEffect(() => () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -126,7 +123,6 @@ function SaveIndicator({ saving }: { saving: boolean }) {
 function normalizeLogoValue(value: unknown): string | null {
   if (typeof value !== "string") return null;
   if (value.startsWith("data:image")) return value;
-
   try {
     const parsed = JSON.parse(value);
     return typeof parsed === "string" && parsed.startsWith("data:image") ? parsed : null;
@@ -135,7 +131,7 @@ function normalizeLogoValue(value: unknown): string | null {
   }
 }
 
-// ── Logo upload with auto-save via database (demo_settings) ──
+// ── Logo upload ──
 function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; storageKey: string; icon: React.ElementType }) {
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -144,12 +140,7 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
     const load = async () => {
       const { data } = await supabase.from("demo_settings").select("value").eq("key", storageKey).maybeSingle();
       const dbLogo = normalizeLogoValue(data?.value);
-
-      if (dbLogo) {
-        setPreview(dbLogo);
-        return;
-      }
-
+      if (dbLogo) { setPreview(dbLogo); return; }
       const legacyLocalLogo = localStorage.getItem(storageKey);
       if (legacyLocalLogo && legacyLocalLogo.startsWith("data:image")) {
         setPreview(legacyLocalLogo);
@@ -157,7 +148,6 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
         window.dispatchEvent(new Event("brand-logo-changed"));
       }
     };
-
     load();
   }, [storageKey]);
 
@@ -169,8 +159,7 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
     reader.onload = async () => {
       const dataUrl = reader.result as string;
       const { error } = await supabase.from("demo_settings").upsert(
-        { key: storageKey, value: dataUrl },
-        { onConflict: "key" }
+        { key: storageKey, value: dataUrl }, { onConflict: "key" }
       );
       if (error) { toast.error(`Failed to save logo: ${error.message}`); return; }
       localStorage.removeItem(storageKey);
@@ -221,18 +210,14 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
   );
 }
 
-// ── PWA Icon Upload (uses same data-URL-in-DB pattern as LogoUploadField) ──
+// ── PWA Icon Upload ──
 function PwaIconUpload() {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase
-      .from("demo_settings")
-      .select("value")
-      .eq("key", "pwa-icon")
-      .maybeSingle()
+    supabase.from("demo_settings").select("value").eq("key", "pwa-icon").maybeSingle()
       .then(({ data }) => {
         const val = data?.value;
         if (typeof val === "string" && (val.startsWith("data:image") || val.startsWith("http"))) {
@@ -249,34 +234,26 @@ function PwaIconUpload() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Allow common image types including .ico
-    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"];
-    if (!file.type.startsWith("image/") && !allowed.includes(file.type)) {
-      toast.error("Please upload an image file (PNG, JPG, WEBP, SVG, or ICO)");
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Icon must be under 2MB");
       return;
     }
-
     setUploading(true);
     const reader = new FileReader();
     reader.onload = async () => {
       const dataUrl = reader.result as string;
       const { error } = await supabase.from("demo_settings").upsert(
-        { key: "pwa-icon", value: dataUrl },
-        { onConflict: "key" }
+        { key: "pwa-icon", value: dataUrl }, { onConflict: "key" }
       );
       setUploading(false);
-      if (error) {
-        toast.error(`Upload failed: ${error.message}`);
-        return;
-      }
+      if (error) { toast.error(`Upload failed: ${error.message}`); return; }
       setPreview(dataUrl);
-      window.dispatchEvent(new Event("pwa-icon-changed"));
-      toast.success("PWA icon updated. Users will see the new icon on next app refresh.");
+      window.dispatchEvent(new Event("pwa-settings-changed"));
+      toast.success("PWA icon updated");
     };
     reader.readAsDataURL(file);
     if (inputRef.current) inputRef.current.value = "";
@@ -284,12 +261,9 @@ function PwaIconUpload() {
 
   const handleRemove = async () => {
     const { error } = await supabase.from("demo_settings").delete().eq("key", "pwa-icon");
-    if (error) {
-      toast.error(`Failed to remove: ${error.message}`);
-      return;
-    }
+    if (error) { toast.error(`Failed to remove: ${error.message}`); return; }
     setPreview(null);
-    window.dispatchEvent(new Event("pwa-icon-changed"));
+    window.dispatchEvent(new Event("pwa-settings-changed"));
     toast.success("PWA icon reset to default");
   };
 
@@ -326,6 +300,81 @@ function PwaIconUpload() {
   );
 }
 
+// ── Splash Logo Upload (reuses same pattern) ──
+function SplashLogoUpload() {
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    supabase.from("demo_settings").select("value").eq("key", "pwa-splash-logo").maybeSingle()
+      .then(({ data }) => {
+        const val = data?.value;
+        if (typeof val === "string" && (val.startsWith("data:image") || val.startsWith("http"))) {
+          setPreview(val);
+        }
+      });
+  }, []);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error("Splash logo must be under 2MB"); return; }
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      const { error } = await supabase.from("demo_settings").upsert(
+        { key: "pwa-splash-logo", value: dataUrl }, { onConflict: "key" }
+      );
+      setUploading(false);
+      if (error) { toast.error(`Upload failed: ${error.message}`); return; }
+      setPreview(dataUrl);
+      toast.success("Splash screen logo updated");
+    };
+    reader.readAsDataURL(file);
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const handleRemove = async () => {
+    await supabase.from("demo_settings").delete().eq("key", "pwa-splash-logo");
+    setPreview(null);
+    toast.success("Splash logo reset to default");
+  };
+
+  return (
+    <div className="space-y-3">
+      {preview ? (
+        <div className="flex items-center gap-4">
+          <div className="relative inline-block border rounded-xl p-3 bg-muted/30">
+            <img src={preview} alt="Splash Logo" className="h-12 max-w-[12rem] object-contain" />
+            <button
+              onClick={handleRemove}
+              className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:bg-destructive/90"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Custom splash logo active</p>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-2 border border-dashed rounded-lg px-4 py-3 text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors w-full justify-center"
+        >
+          <Upload className="h-4 w-4" />
+          {uploading ? "Uploading…" : "Upload splash screen logo"}
+        </button>
+      )}
+      <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={handleFile} />
+      <p className="text-xs text-muted-foreground">Displayed on the splash screen when the app launches. PNG or SVG recommended.</p>
+    </div>
+  );
+}
+
 export default function AdminSettingsPage() {
   // Limits & Upload (DB-backed)
   const [maxFileSize, setMaxFileSize, mfsSaving] = useDbAutoSave("max-file-size", "20");
@@ -334,9 +383,6 @@ export default function AdminSettingsPage() {
   // Pro Plan (DB-backed)
   const [proDocsLimit, setProDocsLimit, pdlSaving] = useDbAutoSave("pro-docs-limit", "999999");
   const [proUsersLimit, setProUsersLimit, pulSaving] = useDbAutoSave("pro-users-limit", "10");
-
-
-
 
   // Email
   const [fromName, setFromName, fnSaving] = useAutoSave("from-name", "Charmy");
@@ -349,16 +395,27 @@ export default function AdminSettingsPage() {
   const [newSignups, setNewSignups, nsSaving] = useDbAutoSave("new-signups", "true");
   const [debugLog, setDebugLog, dlSaving] = useDbAutoSave("debug-log", "false");
 
+  // PWA Settings (DB-backed)
+  const [pwaName, setPwaName, pnmSaving] = useDbAutoSave("pwa-name", "Charmy - AI Financial Document Processing");
+  const [pwaShortName, setPwaShortName, psnSaving] = useDbAutoSave("pwa-short-name", "Charmy");
+  const [pwaThemeColor, setPwaThemeColor, ptcSaving] = useDbAutoSave("pwa-theme-color", "#2563EB");
+  const [pwaBgColor, setPwaBgColor, pbcSaving] = useDbAutoSave("pwa-bg-color", "#f5f6fa");
+
   const systemQueryClient = useQueryClient();
 
-  // Invalidate system-settings cache when system toggles change
   useEffect(() => {
     systemQueryClient.invalidateQueries({ queryKey: ["system-settings"] });
   }, [maintenance, newSignups, debugLog, systemQueryClient]);
 
+  // Dispatch pwa-settings-changed when text fields change
+  useEffect(() => {
+    window.dispatchEvent(new Event("pwa-settings-changed"));
+  }, [pwaName, pwaShortName, pwaThemeColor, pwaBgColor]);
+
   const anySaving = mfsSaving || mfSaving || pdlSaving || pulSaving ||
     fnSaving || feSaving || weSaving || pnSaving ||
-    mtSaving || nsSaving || dlSaving;
+    mtSaving || nsSaving || dlSaving ||
+    pnmSaving || psnSaving || ptcSaving || pbcSaving;
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -370,44 +427,152 @@ export default function AdminSettingsPage() {
       </div>
 
       <Tabs defaultValue="branding" className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full">
+        <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="branding">Branding</TabsTrigger>
+          <TabsTrigger value="pwa">PWA</TabsTrigger>
           <TabsTrigger value="limits">Limits</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="system">System</TabsTrigger>
         </TabsList>
 
+        {/* ── Branding Tab ── */}
         <TabsContent value="branding">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, login, onboarding, and marketing pages.</p>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
+                <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── PWA Tab ── */}
+        <TabsContent value="pwa">
           <div className="space-y-6">
+            {/* Identity */}
             <Card>
-              <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
-              <CardContent className="space-y-6">
-                <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, login, onboarding, and marketing pages. Provide separate versions for light and dark themes.</p>
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
-                  <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">App Identity</CardTitle>
+                  <SaveIndicator saving={pnmSaving || psnSaving} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Configure how the app appears when installed on user devices.</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>App Name</Label>
+                    <Input value={pwaName} onChange={(e) => setPwaName(e.target.value)} placeholder="Charmy - AI Financial Document Processing" />
+                    <p className="text-xs text-muted-foreground">Full name shown in app settings</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Short Name</Label>
+                    <Input value={pwaShortName} onChange={(e) => setPwaShortName(e.target.value)} placeholder="Charmy" />
+                    <p className="text-xs text-muted-foreground">Shown below the home screen icon</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* App Icon */}
             <Card>
-              <CardHeader><CardTitle className="text-base">PWA App Icon</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">App Icon</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Upload a square icon (minimum 512×512px) used as the app icon when users install the app on their device. Changes apply to new installs and when existing users' devices refresh the manifest.
+                  Upload a square icon (min 512×512px) displayed on home screens and app launchers.
                 </p>
                 <PwaIconUpload />
+              </CardContent>
+            </Card>
+
+            {/* Splash Screen Logo */}
+            <Card>
+              <CardHeader><CardTitle className="text-base">Splash Screen Logo</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <SplashLogoUpload />
+              </CardContent>
+            </Card>
+
+            {/* Colors */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Theme Colors</CardTitle>
+                  <SaveIndicator saving={ptcSaving || pbcSaving} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Customize the status bar and splash screen colors on mobile devices.</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5">
+                      <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+                      Theme Color
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={pwaThemeColor}
+                        onChange={(e) => setPwaThemeColor(e.target.value)}
+                        className="h-9 w-12 rounded border cursor-pointer"
+                      />
+                      <Input value={pwaThemeColor} onChange={(e) => setPwaThemeColor(e.target.value)} className="flex-1" placeholder="#2563EB" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Status bar & window chrome color</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5">
+                      <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+                      Background Color
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={pwaBgColor}
+                        onChange={(e) => setPwaBgColor(e.target.value)}
+                        className="h-9 w-12 rounded border cursor-pointer"
+                      />
+                      <Input value={pwaBgColor} onChange={(e) => setPwaBgColor(e.target.value)} className="flex-1" placeholder="#f5f6fa" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Splash screen background color</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Features Info */}
+            <Card>
+              <CardHeader><CardTitle className="text-base">PWA Features</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {[
+                    { label: "Install Prompt", desc: "Users see an install banner after login", active: true },
+                    { label: "Offline Support", desc: "App loads without internet, uploads queued", active: true },
+                    { label: "Auto Updates", desc: "Users prompted to refresh for new versions", active: true },
+                    { label: "App Shortcuts", desc: "Upload, Scan, Review shortcuts from home screen", active: true },
+                    { label: "Push Notifications", desc: "Document processed, review needed alerts", active: true },
+                    { label: "Background Processing", desc: "Documents process server-side after close", active: true },
+                  ].map((f) => (
+                    <div key={f.label} className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
+                      <div className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${f.active ? "bg-primary" : "bg-muted-foreground/30"}`} />
+                      <div>
+                        <p className="text-sm font-medium">{f.label}</p>
+                        <p className="text-xs text-muted-foreground">{f.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-
-
-
+        {/* ── Limits Tab ── */}
         <TabsContent value="limits">
           <div className="space-y-6">
-            {/* Upload Limits */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -437,10 +602,6 @@ export default function AdminSettingsPage() {
               </CardContent>
             </Card>
 
-
-
-
-            {/* Pro Plan Limits */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -465,6 +626,7 @@ export default function AdminSettingsPage() {
           </div>
         </TabsContent>
 
+        {/* ── Email Tab ── */}
         <TabsContent value="email">
           <Card>
             <CardHeader>
@@ -502,6 +664,7 @@ export default function AdminSettingsPage() {
           </Card>
         </TabsContent>
 
+        {/* ── System Tab ── */}
         <TabsContent value="system">
           <Card>
             <CardHeader>
