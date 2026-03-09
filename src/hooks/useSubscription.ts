@@ -4,13 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const STRIPE_PLANS = {
   pro: {
     name: "Pro",
-    price_monthly: 9.99,
-    price_yearly: 99,
-    price_id_monthly: "price_1T8XiYBmkvUKJ0fulbvWmmQN",
-    price_id_yearly: "price_1T8XixBmkvUKJ0fuFUP1JDl7",
-    product_id_monthly: "prod_U6lFbZZFmHhG8T",
-    product_id_yearly: "prod_U6lFBZgYR4YdhA",
-    trial_days: 7,
+    price_onetime: 29.99,
+    price_id: "price_1T9AklBmkvUKJ0fuE3YD85rg",
+    product_id: "prod_U7PZ8dbaVYJKAv",
     features: [
       "Unlimited documents",
       "AI data extraction",
