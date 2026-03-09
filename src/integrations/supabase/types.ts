@@ -203,6 +203,69 @@ export type Database = {
           },
         ]
       }
+      client_invitations: {
+        Row: {
+          accepted_at: string | null
+          client_email: string
+          client_name: string
+          created_at: string
+          expires_at: string
+          firm_org_id: string
+          id: string
+          invited_by: string
+          revoked_at: string | null
+          status: string
+          token: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_email: string
+          client_name: string
+          created_at?: string
+          expires_at?: string
+          firm_org_id: string
+          id?: string
+          invited_by: string
+          revoked_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          client_email?: string
+          client_name?: string
+          created_at?: string
+          expires_at?: string
+          firm_org_id?: string
+          id?: string
+          invited_by?: string
+          revoked_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_invitations_firm_org_id_fkey"
+            columns: ["firm_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_invitations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_settings: {
         Row: {
           id: string
@@ -867,6 +930,8 @@ export type Database = {
           address: string | null
           app_icon: string | null
           archived_at: string | null
+          client_contact_email: string | null
+          client_contact_name: string | null
           company_logo: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -892,6 +957,8 @@ export type Database = {
           address?: string | null
           app_icon?: string | null
           archived_at?: string | null
+          client_contact_email?: string | null
+          client_contact_name?: string | null
           company_logo?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -917,6 +984,8 @@ export type Database = {
           address?: string | null
           app_icon?: string | null
           archived_at?: string | null
+          client_contact_email?: string | null
+          client_contact_name?: string | null
           company_logo?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -1479,7 +1548,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "platform_admin"
-      firm_role: "firm_owner" | "firm_admin" | "accountant" | "staff"
+      firm_role: "firm_owner" | "firm_admin" | "accountant" | "staff" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1608,7 +1677,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "platform_admin"],
-      firm_role: ["firm_owner", "firm_admin", "accountant", "staff"],
+      firm_role: ["firm_owner", "firm_admin", "accountant", "staff", "client"],
     },
   },
 } as const

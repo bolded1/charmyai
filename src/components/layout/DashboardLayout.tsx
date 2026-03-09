@@ -24,6 +24,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { PwaInstallBanner } from "@/components/PwaInstallBanner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useClientRole } from "@/hooks/useClientRole";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger,
@@ -45,6 +46,15 @@ const mobileNavItems = [
   { title: "Settings", url: "/app/settings", icon: Settings },
 ];
 
+const clientMobileNavItems = [
+  { title: "Capture", url: "/app", icon: Upload },
+  { title: "Documents", url: "/app/documents", icon: FileText },
+  { title: "Expenses", url: "/app/expenses", icon: Receipt },
+  { title: "Exports", url: "/app/exports", icon: Download },
+  { title: "Support", url: "/app/support", icon: LifeBuoy },
+  { title: "Help", url: "/app/help", icon: HelpCircle },
+];
+
 export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -58,6 +68,7 @@ export default function DashboardLayout() {
   const subscription = useSubscription();
   const { data: systemSettings } = useSystemSettings();
   const isAdmin = useIsAdmin();
+  const { isClient } = useClientRole();
 
   // Apply org accent color
   useEffect(() => {
@@ -99,18 +110,16 @@ export default function DashboardLayout() {
     );
   }
 
-  // Billing setup gate — user must have explicitly completed the payment page
-  if (!profile.billing_setup_at) {
-    // User never completed the payment step — send to activate
+  // Billing setup gate — client users skip billing (their firm pays)
+  if (!isClient && !profile.billing_setup_at) {
     return <Navigate to="/activate-trial" replace />;
   }
 
-  // Subscription gate — fail-closed: block access unless explicitly entitled
-  if (!subscription.subscribed) {
+  // Subscription gate — client users skip subscription check
+  if (!isClient && !subscription.subscribed) {
     if (subscription.status && subscription.status !== "active" && subscription.status !== "promo_active") {
       return <Navigate to="/billing-required" replace />;
     }
-    // No status at all — needs to purchase
     return <Navigate to="/activate-trial" replace />;
   }
 
@@ -220,7 +229,7 @@ export default function DashboardLayout() {
               </button>
               <nav id="mobile-nav-scroll" className="flex-1 overflow-x-auto scrollbar-hide">
                 <div className="flex min-w-max">
-                  {mobileNavItems.map((item) => {
+                  {(isClient ? clientMobileNavItems : mobileNavItems).map((item) => {
                     const isActive = item.url === "/app"
                       ? location.pathname === "/app"
                       : location.pathname.startsWith(item.url);

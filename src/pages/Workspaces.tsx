@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -25,12 +26,14 @@ import {
   Building2, Briefcase, Plus, Trash2, Pencil, FileText, Receipt,
   ArrowRight, Loader2, AlertTriangle, Clock, Download, Eye,
   CheckCircle2, Search, LayoutGrid, List, Archive, ArchiveRestore,
-  Activity, BarChart3, Globe, Mail, Phone, Hash,
+  Activity, BarChart3, Globe, Mail, Phone, Hash, UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { ClientAccessPanel } from "@/components/ClientAccessPanel";
+import { useSendClientInvitation } from "@/hooks/useClientInvitations";
 
 const CURRENCIES = [
   { value: "EUR", label: "EUR – Euro" },
@@ -135,6 +138,9 @@ export default function WorkspacesPage() {
   const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
   const [creating, setCreating] = useState(false);
   const creatingRef = useRef(false);
+  const [sendInvite, setSendInvite] = useState(false);
+  const [clientContactName, setClientContactName] = useState("");
+  const sendClientInvitation = useSendClientInvitation();
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingWs, setEditingWs] = useState<Workspace | null>(null);
@@ -236,8 +242,26 @@ export default function WorkspacesPage() {
     setCreating(true);
     try {
       const ws = await createClientWorkspace({ ...formData, name: formData.name.trim() });
-      toast.success(`Created workspace "${ws.name}"`);
+
+      // Send client invitation if requested
+      if (sendInvite && formData.contact_email && clientContactName.trim()) {
+        try {
+          await sendClientInvitation.mutateAsync({
+            workspace_id: ws.id,
+            client_name: clientContactName.trim(),
+            client_email: formData.contact_email.trim(),
+          });
+          toast.success(`Created workspace "${ws.name}" and sent client invitation`);
+        } catch {
+          toast.success(`Created workspace "${ws.name}". Failed to send invitation — you can retry later.`);
+        }
+      } else {
+        toast.success(`Created workspace "${ws.name}"`);
+      }
+
       setFormData({ ...emptyForm });
+      setSendInvite(false);
+      setClientContactName("");
       setCreateOpen(false);
       await switchWorkspace(ws.id);
       navigate("/app");
@@ -772,14 +796,46 @@ export default function WorkspacesPage() {
               Set up a new isolated workspace for a client company. You can always edit details later.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-5">
             {renderFormFields(formData, updateField)}
+
+            {/* Client invitation option */}
+            <div>
+              <Separator className="mb-4" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Client Access</p>
+              <div className="flex items-start gap-3 bg-accent/30 rounded-lg p-3">
+                <Checkbox
+                  id="send-invite"
+                  checked={sendInvite}
+                  onCheckedChange={(c) => setSendInvite(!!c)}
+                  className="mt-0.5"
+                />
+                <div className="space-y-1 flex-1">
+                  <label htmlFor="send-invite" className="text-sm font-medium text-foreground cursor-pointer">
+                    Send client invitation now
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Invite the client to log in and access their workspace. Leave unchecked for internal-only workspaces.
+                  </p>
+                </div>
+              </div>
+              {sendInvite && (
+                <div className="mt-3 grid sm:grid-cols-2 gap-3">
+                  <Field label="Client Contact Name">
+                    <Input value={clientContactName} onChange={(e) => setClientContactName(e.target.value)} placeholder="e.g. John Doe" />
+                  </Field>
+                  <Field label="Client Contact Email">
+                    <Input type="email" value={formData.contact_email || ""} onChange={(e) => updateField("contact_email", e.target.value)} placeholder="client@company.com" />
+                  </Field>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!formData.name.trim() || creating}>
+            <Button onClick={handleCreate} disabled={!formData.name.trim() || creating || (sendInvite && (!clientContactName.trim() || !formData.contact_email?.trim()))}>
               {creating && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-              Create Workspace
+              {sendInvite ? "Create & Invite Client" : "Create Workspace"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -794,8 +850,21 @@ export default function WorkspacesPage() {
               Update workspace details for {editingWs?.name}.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-5">
             {renderFormFields(editData, updateEditField)}
+
+            {/* Client Access Panel */}
+            {editingWs && (
+              <>
+                <Separator />
+                <ClientAccessPanel
+                  workspaceId={editingWs.id}
+                  workspaceName={editingWs.name}
+                  contactName={(editingWs as any).client_contact_name}
+                  contactEmail={(editingWs as any).client_contact_email}
+                />
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>

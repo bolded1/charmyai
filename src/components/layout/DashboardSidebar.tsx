@@ -23,6 +23,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useState } from "react";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { useClientRole } from "@/hooks/useClientRole";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -47,6 +48,13 @@ const firmItems = [
   { title: "Team", url: "/app/team", icon: UsersRound },
 ];
 
+const clientItems = [
+  { title: "Capture", url: "/app", icon: Upload },
+  { title: "Documents", url: "/app/documents", icon: FileText },
+  { title: "Expenses", url: "/app/expenses", icon: Receipt },
+  { title: "Exports", url: "/app/exports", icon: Download },
+];
+
 const systemItems = [
   { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
   { title: "Settings", url: "/app/settings", icon: Settings },
@@ -67,6 +75,7 @@ export function DashboardSidebar() {
   const isMobile = useIsMobile();
   const { data: org } = useOrganization();
   const { activeWorkspace, isAccountingFirm } = useWorkspace();
+  const { isClient } = useClientRole();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   
   const isClientContext = isAccountingFirm && activeWorkspace?.workspace_type === "client";
@@ -191,10 +200,22 @@ export function DashboardSidebar() {
           <div className="px-1.5 mb-2">
             <WorkspaceSwitcher compact={collapsed} />
           </div>
-          {renderGroup("Documents", financeItems)}
-          {renderGroup("Finance", recordsItems)}
-          {isAccountingFirm && renderGroup("Firm", firmItems)}
-          {renderGroup("System", systemItems)}
+          {isClient ? (
+            <>
+              {renderGroup("Your Workspace", clientItems)}
+              {renderGroup("System", [
+                { title: "Support", url: "/app/support", icon: LifeBuoy },
+                { title: "Help", url: "/app/help", icon: HelpCircle },
+              ])}
+            </>
+          ) : (
+            <>
+              {renderGroup("Documents", financeItems)}
+              {renderGroup("Finance", recordsItems)}
+              {isAccountingFirm && renderGroup("Firm", firmItems)}
+              {renderGroup("System", systemItems)}
+            </>
+          )}
         </SidebarContent>
         <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/40 space-y-3">
           {/* Notifications row */}
