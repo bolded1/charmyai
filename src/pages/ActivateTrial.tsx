@@ -139,7 +139,7 @@ export default function ActivateTrialPage() {
 
   // Create PaymentIntent and mount Elements for Firm plan
   useEffect(() => {
-    if (!stripe || !user || planChoice !== "firm") return;
+    if (!stripe || !user || planChoice !== "firm" || !cardRequired) return;
 
     const initFirmPayment = async () => {
       try {
@@ -182,7 +182,7 @@ export default function ActivateTrialPage() {
 
     initFirmPayment();
     return () => {};
-  }, [stripe, user, planChoice]);
+  }, [stripe, user, planChoice, cardRequired]);
 
   const handleApplyPromo = async () => {
     await validateCode(promoCode, "onetime", "pro");
@@ -196,44 +196,61 @@ export default function ActivateTrialPage() {
 
   // Handle Firm Plan inline payment
   const handleFirmCheckout = async () => {
-    if (!stripe || !firmElements || !firmClientSecret) return;
     setSubmitting(true);
     setSetupError(null);
     try {
-      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
-        elements: firmElements,
-        confirmParams: {
-          payment_method_data: {
-            billing_details: {
-              name: billingName || undefined,
+      if (cardRequired) {
+        // Card payment flow
+        if (!stripe || !firmElements || !firmClientSecret) return;
+        const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+          elements: firmElements,
+          confirmParams: {
+            payment_method_data: {
+              billing_details: {
+                name: billingName || undefined,
+              },
             },
           },
-        },
-        redirect: "if_required",
-      });
+          redirect: "if_required",
+        });
 
-      if (confirmError) {
-        setSetupError(confirmError.message);
-        setSubmitting(false);
-        return;
-      }
-
-      if (paymentIntent?.status === "succeeded") {
-        // Set billing_setup_at
-        if (user) {
-          try {
-            await supabase
-              .from("profiles")
-              .update({ billing_setup_at: new Date().toISOString() })
-              .eq("user_id", user.id);
-          } catch {}
+        if (confirmError) {
+          setSetupError(confirmError.message);
+          setSubmitting(false);
+          return;
         }
 
-        toast.success("Payment successful! Your firm plan is now active.");
-        navigate("/app/workspaces");
+        if (paymentIntent?.status !== "succeeded") {
+          setSetupError("Payment was not completed. Please try again.");
+          setSubmitting(false);
+          return;
+        }
       } else {
-        setSetupError("Payment was not completed. Please try again.");
+        // Free access via promo code — call activate-trial with skipCard
+        const { data, error } = await supabase.functions.invoke("activate-trial", {
+          body: {
+            priceId: STRIPE_PLANS.firm.price_id,
+            skipCard: true,
+            promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
+            stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
       }
+
+      // Set billing_setup_at
+      if (user) {
+        try {
+          await supabase
+            .from("profiles")
+            .update({ billing_setup_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+        } catch {}
+      }
+
+      toast.success("Payment successful! Your firm plan is now active.");
+      navigate("/app/workspaces");
     } catch (err: any) {
       setSetupError(err.message || "Payment failed. Please try again.");
     } finally {
