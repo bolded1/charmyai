@@ -427,35 +427,6 @@ export default function ActivateTrialPage() {
 
           {planChoice === "pro" ? (
             <>
-              {/* Billing interval toggle */}
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <button
-                  type="button"
-                  onClick={() => setBillingInterval("monthly")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    billingInterval === "monthly"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Monthly — €9.99/mo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingInterval("yearly")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
-                    billingInterval === "yearly"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Yearly — €99/yr
-                  <span className="absolute -top-2 -right-2 text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full font-bold">
-                    SAVE 17%
-                  </span>
-                </button>
-              </div>
-
               {/* Features list */}
               <div className="mb-6 space-y-2">
                 {STRIPE_PLANS.pro.features.slice(0, 4).map((f) => (
