@@ -181,7 +181,7 @@ export default function ActivateTrialPage() {
   // Calculate billing summary
   const basePrice = billingInterval === "monthly" ? STRIPE_PLANS.pro.price_monthly : STRIPE_PLANS.pro.price_yearly;
   const basePeriod = billingInterval === "monthly" ? "/month" : "/year";
-  let discountedPrice = basePrice;
+  let discountedPrice: number = basePrice;
   let discountLine: string | null = null;
   let trialDays = 7;
 
