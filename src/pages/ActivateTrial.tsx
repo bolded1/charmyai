@@ -339,27 +339,37 @@ export default function ActivateTrialPage() {
     return null;
   }
 
-  // Calculate billing summary for Pro
+  // Calculate billing summary
+  const currentBasePrice = planChoice === "firm" ? STRIPE_PLANS.firm.price_onetime : STRIPE_PLANS.pro.price_onetime;
   const basePrice = STRIPE_PLANS.pro.price_onetime;
-  let discountedPrice: number = basePrice;
+  let discountedPrice: number = currentBasePrice;
   let discountLine: string | null = null;
 
   if (promoResult?.valid) {
     const { discount_type, discount_value, free_duration_months } = promoResult;
 
     if (discount_type === "percentage" && discount_value) {
-      discountedPrice = basePrice * (1 - discount_value / 100);
+      discountedPrice = currentBasePrice * (1 - discount_value / 100);
       discountLine = `-${discount_value}%`;
       if (discount_value === 100) {
         discountLine = "Free";
       }
     } else if (discount_type === "fixed" && discount_value) {
-      discountedPrice = Math.max(0, basePrice - discount_value);
+      discountedPrice = Math.max(0, currentBasePrice - discount_value);
       discountLine = `-€${discount_value}`;
     } else if (discount_type === "free_period" && free_duration_months) {
       discountedPrice = 0;
       discountLine = `Free`;
     }
+  }
+
+  const firmBasePrice = STRIPE_PLANS.firm.price_onetime;
+  let firmDiscountedPrice: number = firmBasePrice;
+  let firmDiscountLine: string | null = null;
+
+  if (promoResult?.valid && planChoice === "firm") {
+    firmDiscountedPrice = discountedPrice;
+    firmDiscountLine = discountLine;
   }
 
   return (
