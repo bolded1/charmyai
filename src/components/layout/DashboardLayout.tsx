@@ -89,12 +89,13 @@ export default function DashboardLayout() {
   }
 
   // Onboarding guard: client users skip onboarding, others need it completed
-  if (!isClient && (!profile || !profile.onboarding_completed_at)) {
+  // Admins impersonating skip all gates
+  if (!impersonating && !isClient && (!profile || !profile.onboarding_completed_at)) {
     return <Navigate to="/onboarding" replace />;
   }
 
   // Maintenance mode: block non-admin users
-  if (systemSettings?.maintenance && isAdmin === false) {
+  if (!impersonating && systemSettings?.maintenance && isAdmin === false) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center max-w-md space-y-4">
@@ -111,12 +112,12 @@ export default function DashboardLayout() {
   }
 
   // Billing setup gate — client users skip billing (their firm pays)
-  if (!isClient && !profile.billing_setup_at) {
+  if (!impersonating && !isClient && !profile.billing_setup_at) {
     return <Navigate to="/activate-trial" replace />;
   }
 
   // Subscription gate — client users skip subscription check
-  if (!isClient && !subscription.subscribed) {
+  if (!impersonating && !isClient && !subscription.subscribed) {
     if (subscription.status && subscription.status !== "active" && subscription.status !== "promo_active") {
       return <Navigate to="/billing-required" replace />;
     }
