@@ -36,6 +36,7 @@ const mobileNavItems = [
   { title: "Income", url: "/app/income", icon: TrendingUp },
   { title: "Exports", url: "/app/exports", icon: Download },
   { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
+  { title: "Workspaces", url: "/app/workspaces", icon: Briefcase },
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Help & Documentation", url: "/app/help", icon: HelpCircle },
   { title: "Support", url: "/app/support", icon: LifeBuoy },
