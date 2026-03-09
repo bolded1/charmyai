@@ -97,7 +97,15 @@ serve(async (req) => {
       customer: customerId,
       items: [{ price: priceId }],
       trial_period_days: trialDays,
-      default_payment_method: paymentMethodId,
+      payment_settings: {
+        save_default_payment_method: "on_subscription",
+      },
+    };
+
+    // Only set payment method if provided
+    if (paymentMethodId) {
+      subParams.default_payment_method = paymentMethodId;
+    }
       payment_settings: {
         save_default_payment_method: "on_subscription",
       },
