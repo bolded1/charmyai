@@ -88,8 +88,8 @@ export default function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  // Onboarding guard: only completed onboarding grants app access
-  if (!profile || !profile.onboarding_completed_at) {
+  // Onboarding guard: client users skip onboarding, others need it completed
+  if (!isClient && (!profile || !profile.onboarding_completed_at)) {
     return <Navigate to="/onboarding" replace />;
   }
 

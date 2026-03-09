@@ -133,8 +133,22 @@ Deno.serve(async (req) => {
       if (existingUser) {
         // User already has an account - just link them
         userId = existingUser.id;
+        
+        // Ensure profile has onboarding + billing marked
+        console.log("Existing user, updating profile for:", userId);
+        await adminClient
+          .from("profiles")
+          .update({
+            first_name,
+            last_name,
+            full_name: `${first_name} ${last_name}`,
+            onboarding_completed_at: new Date().toISOString(),
+            billing_setup_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
       } else {
         // Create new user account with auto-confirm
+        console.log("Creating new user for invitation:", invitation.client_email);
         const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
           email: invitation.client_email,
           password,
@@ -146,6 +160,7 @@ Deno.serve(async (req) => {
         });
 
         if (createError) {
+          console.error("Failed to create user:", createError.message);
           return new Response(JSON.stringify({ error: createError.message }), {
             status: 400,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -153,12 +168,30 @@ Deno.serve(async (req) => {
         }
 
         userId = newUser.user.id;
+        console.log("User created:", userId);
 
-        // Wait a moment for the trigger to create profile + org
-        await new Promise((r) => setTimeout(r, 1000));
+        // Wait for the handle_new_user trigger to create profile, with retry
+        let profileExists = false;
+        for (let attempt = 0; attempt < 10; attempt++) {
+          await new Promise((r) => setTimeout(r, 500));
+          const { data: profileCheck } = await adminClient
+            .from("profiles")
+            .select("id")
+            .eq("user_id", userId)
+            .maybeSingle();
+          if (profileCheck) {
+            profileExists = true;
+            console.log("Profile found after attempt", attempt + 1);
+            break;
+          }
+        }
 
-        // Update the profile with names
-        await adminClient
+        if (!profileExists) {
+          console.error("Profile not created after 10 attempts for user:", userId);
+        }
+
+        // Update the profile with names and mark onboarding + billing as done
+        const { error: updateError } = await adminClient
           .from("profiles")
           .update({
             first_name,
@@ -168,6 +201,28 @@ Deno.serve(async (req) => {
             billing_setup_at: new Date().toISOString(),
           })
           .eq("user_id", userId);
+
+        if (updateError) {
+          console.error("Failed to update profile:", updateError.message);
+        } else {
+          console.log("Profile updated successfully for:", userId);
+        }
+
+        // Delete the auto-created "My Organization" since client uses workspace
+        const { data: autoOrg } = await adminClient
+          .from("organizations")
+          .select("id")
+          .eq("owner_user_id", userId)
+          .eq("name", "My Organization")
+          .maybeSingle();
+
+        if (autoOrg) {
+          console.log("Deleting auto-created org:", autoOrg.id);
+          await adminClient
+            .from("organizations")
+            .delete()
+            .eq("id", autoOrg.id);
+        }
       }
 
       // Create team member record with 'client' role
