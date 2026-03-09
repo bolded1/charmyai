@@ -646,6 +646,25 @@ export default function ActivateTrialPage() {
                 </div>
               </div>
 
+              {/* Billing Name */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
+                <Input
+                  placeholder="John Smith"
+                  value={billingName}
+                  onChange={(e) => setBillingName(e.target.value)}
+                />
+              </div>
+
+              {/* Inline Stripe Payment Element */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground">Payment Details</Label>
+                <div
+                  id="stripe-firm-element"
+                  className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
+                />
+              </div>
+
               {setupError && (
                 <p className="text-sm text-destructive">{setupError}</p>
               )}
@@ -654,7 +673,7 @@ export default function ActivateTrialPage() {
                 className="w-full"
                 size="lg"
                 onClick={handleFirmCheckout}
-                disabled={submitting}
+                disabled={submitting || !stripe || !firmClientSecret}
               >
                 {submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
