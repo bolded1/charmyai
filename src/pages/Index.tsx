@@ -5,6 +5,7 @@ import {
   Upload, Mail, Search, ClipboardCheck, Download,
   ArrowRight, CheckCircle2, FileText, Clock, Receipt,
   FolderOpen, ChevronRight, Sparkles, Zap, Shield,
+  Smartphone, Monitor, Share, Plus, MoreVertical,
 } from "lucide-react";
 import { DemoUploader } from "@/components/demo/DemoUploader";
 import { usePageContent } from "@/hooks/usePageContent";
