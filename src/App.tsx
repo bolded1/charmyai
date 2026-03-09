@@ -45,7 +45,6 @@ import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminDemoSettings from "./pages/admin/AdminDemoSettings";
 import AdminSupport from "./pages/admin/AdminSupport";
-import AdminCMS from "./pages/admin/AdminCMS";
 import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminBroadcast from "./pages/admin/AdminBroadcast";
 import AdminRevenue from "./pages/admin/AdminRevenue";
@@ -142,7 +141,6 @@ const App = () => (
             <Route path="system-health" element={<AdminSystemHealth />} />
             <Route path="scheduled-jobs" element={<AdminScheduledJobs />} />
             <Route path="demo-settings" element={<AdminDemoSettings />} />
-            <Route path="cms" element={<AdminCMS />} />
             <Route path="email-templates" element={<AdminEmailTemplates />} />
             <Route path="broadcast" element={<AdminBroadcast />} />
             <Route path="login-activity" element={<AdminLoginActivity />} />
