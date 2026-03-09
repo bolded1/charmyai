@@ -93,6 +93,8 @@ export function useSubscription() {
         current_period_end: data.current_period_end ?? null,
         cancel_at_period_end: data.cancel_at_period_end ?? false,
         has_firm_plan: hasFirm,
+        amount_paid: data.amount_paid ?? null,
+        paid_currency: data.paid_currency ?? "eur",
         loading: false,
       });
     } catch (err) {
