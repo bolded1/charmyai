@@ -1,0 +1,187 @@
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+
+export interface Workspace {
+  id: string;
+  name: string;
+  workspace_type: string;
+  parent_org_id: string | null;
+  owner_user_id: string;
+  default_currency: string;
+  primary_color: string | null;
+  logo_light: string | null;
+  logo_dark: string | null;
+  app_icon: string | null;
+  import_email_token: string;
+  max_client_workspaces: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface WorkspaceContextType {
+  activeWorkspace: Workspace | null;
+  allWorkspaces: Workspace[];
+  isAccountingFirm: boolean;
+  clientWorkspaces: Workspace[];
+  isLoading: boolean;
+  switchWorkspace: (orgId: string) => Promise<void>;
+  createClientWorkspace: (name: string) => Promise<Workspace>;
+  deleteClientWorkspace: (orgId: string) => Promise<void>;
+  updateClientWorkspace: (orgId: string, updates: Partial<Pick<Workspace, "name" | "default_currency">>) => Promise<void>;
+}
+
+const WorkspaceContext = createContext<WorkspaceContextType | null>(null);
+
+export function useWorkspace() {
+  const ctx = useContext(WorkspaceContext);
+  if (!ctx) throw new Error("useWorkspace must be inside WorkspaceProvider");
+  return ctx;
+}
+
+export function WorkspaceProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch all workspaces the user has access to
+  const { data: workspacesData, isLoading: wsLoading } = useQuery({
+    queryKey: ["workspaces", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      // Get user's own org(s) + child orgs of their accounting firm
+      const { data: ownOrgs, error: e1 } = await supabase
+        .from("organizations")
+        .select("*")
+        .eq("owner_user_id", user.id);
+      if (e1) throw e1;
+
+      // Find accounting firm org
+      const firmOrg = (ownOrgs || []).find((o: any) => o.workspace_type === "accounting_firm");
+      let clientOrgs: any[] = [];
+      if (firmOrg) {
+        const { data, error } = await supabase
+          .from("organizations")
+          .select("*")
+          .eq("parent_org_id", firmOrg.id);
+        if (!error && data) clientOrgs = data;
+      }
+
+      return [...(ownOrgs || []), ...clientOrgs] as Workspace[];
+    },
+    enabled: !!user,
+  });
+
+  // Get active workspace from profile
+  const { data: activeOrgId, isLoading: profileLoading } = useQuery({
+    queryKey: ["active-workspace-id", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.active_organization_id || null;
+    },
+    enabled: !!user,
+  });
+
+  const allWorkspaces = workspacesData || [];
+  const activeWorkspace = allWorkspaces.find((w) => w.id === activeOrgId) || allWorkspaces[0] || null;
+  
+  // The user's "home" org (the one they own directly, non-client)
+  const homeOrg = allWorkspaces.find(
+    (w) => w.owner_user_id === user?.id && w.workspace_type !== "client"
+  );
+  const isAccountingFirm = homeOrg?.workspace_type === "accounting_firm";
+  const clientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client");
+
+  const switchWorkspace = async (orgId: string) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ active_organization_id: orgId })
+      .eq("user_id", user.id);
+    if (error) {
+      toast.error("Failed to switch workspace");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["active-workspace-id"] });
+    // Invalidate all workspace-scoped data
+    queryClient.invalidateQueries({ queryKey: ["documents"] });
+    queryClient.invalidateQueries({ queryKey: ["expenses"] });
+    queryClient.invalidateQueries({ queryKey: ["income"] });
+    queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
+    queryClient.invalidateQueries({ queryKey: ["export_history"] });
+    queryClient.invalidateQueries({ queryKey: ["organization"] });
+    queryClient.invalidateQueries({ queryKey: ["email-imports"] });
+    toast.success(`Switched to ${allWorkspaces.find((w) => w.id === orgId)?.name || "workspace"}`);
+  };
+
+  const createClientWorkspace = async (name: string): Promise<Workspace> => {
+    if (!user || !homeOrg) throw new Error("Not authenticated");
+    if (!isAccountingFirm) throw new Error("Only accounting firms can create client workspaces");
+    if (clientWorkspaces.length >= (homeOrg.max_client_workspaces || 10)) {
+      throw new Error(`Maximum of ${homeOrg.max_client_workspaces || 10} client workspaces reached`);
+    }
+
+    const { data, error } = await supabase
+      .from("organizations")
+      .insert({
+        name,
+        owner_user_id: user.id,
+        workspace_type: "client",
+        parent_org_id: homeOrg.id,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    return data as Workspace;
+  };
+
+  const deleteClientWorkspace = async (orgId: string) => {
+    // Only allow deleting client workspaces
+    const ws = allWorkspaces.find((w) => w.id === orgId);
+    if (!ws || ws.workspace_type !== "client") throw new Error("Can only delete client workspaces");
+    
+    const { error } = await supabase.from("organizations").delete().eq("id", orgId);
+    if (error) throw error;
+    
+    // If we were viewing this workspace, switch back to home
+    if (activeWorkspace?.id === orgId && homeOrg) {
+      await switchWorkspace(homeOrg.id);
+    }
+    queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+  };
+
+  const updateClientWorkspace = async (orgId: string, updates: Partial<Pick<Workspace, "name" | "default_currency">>) => {
+    const { error } = await supabase
+      .from("organizations")
+      .update(updates)
+      .eq("id", orgId);
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+  };
+
+  return (
+    <WorkspaceContext.Provider
+      value={{
+        activeWorkspace,
+        allWorkspaces,
+        isAccountingFirm,
+        clientWorkspaces,
+        isLoading: wsLoading || profileLoading,
+        switchWorkspace,
+        createClientWorkspace,
+        deleteClientWorkspace,
+        updateClientWorkspace,
+      }}
+    >
+      {children}
+    </WorkspaceContext.Provider>
+  );
+}
