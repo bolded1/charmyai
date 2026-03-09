@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { STRIPE_PLANS } from "@/hooks/useSubscription";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { usePromoCode } from "@/hooks/usePromoCode";
