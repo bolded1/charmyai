@@ -42,6 +42,7 @@ const recordsItems = [
 
 const systemItems = [
   { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
+  { title: "Workspaces", url: "/app/workspaces", icon: Briefcase },
   { title: "Team", url: "/app/team", icon: UsersRound },
   { title: "Settings", url: "/app/settings", icon: Settings },
   { title: "Support", url: "/app/support", icon: LifeBuoy },
