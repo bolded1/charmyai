@@ -63,6 +63,8 @@ export function useSubscription() {
     current_period_end: null,
     cancel_at_period_end: false,
     has_firm_plan: false,
+    amount_paid: null,
+    paid_currency: "eur",
     loading: true,
   });
 
