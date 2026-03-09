@@ -138,6 +138,9 @@ export default function WorkspacesPage() {
   const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
   const [creating, setCreating] = useState(false);
   const creatingRef = useRef(false);
+  const [sendInvite, setSendInvite] = useState(false);
+  const [clientContactName, setClientContactName] = useState("");
+  const sendClientInvitation = useSendClientInvitation();
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingWs, setEditingWs] = useState<Workspace | null>(null);
