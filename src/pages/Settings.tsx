@@ -56,6 +56,118 @@ function SettingRow({ title, description, children }: { title: string; descripti
   );
 }
 
+/* ── Organization Settings Form (data-bound with auto-save) ── */
+function OrgSettingsForm({ org, updateOrg }: { org: any; updateOrg: any }) {
+  const [orgForm, setOrgForm] = useState({
+    name: "", trading_name: "", country: "", default_currency: "EUR",
+    vat_number: "", tax_id: "", address: "", contact_email: "", contact_phone: "",
+  });
+  const orgReadyRef = useRef(false);
+  const lastSavedOrgRef = useRef("");
+  const orgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (org) {
+      const newForm = {
+        name: org.name || "", trading_name: org.trading_name || "",
+        country: org.country || "", default_currency: org.default_currency || "EUR",
+        vat_number: org.vat_number || "", tax_id: org.tax_id || "",
+        address: org.address || "", contact_email: org.contact_email || "",
+        contact_phone: org.contact_phone || "",
+      };
+      setOrgForm(newForm);
+      setTimeout(() => {
+        lastSavedOrgRef.current = JSON.stringify(newForm);
+        orgReadyRef.current = true;
+      }, 100);
+    }
+  }, [org]);
+
+  useEffect(() => {
+    if (!orgReadyRef.current || !org) return;
+    const serialized = JSON.stringify(orgForm);
+    if (serialized === lastSavedOrgRef.current) return;
+
+    if (orgTimerRef.current) clearTimeout(orgTimerRef.current);
+    orgTimerRef.current = setTimeout(async () => {
+      try {
+        await updateOrg.mutateAsync({ id: org.id, name: orgForm.name || org.name, ...orgForm });
+        lastSavedOrgRef.current = serialized;
+        toast.success("Saved");
+      } catch { toast.error("Failed to save organization."); }
+    }, 800);
+    return () => { if (orgTimerRef.current) clearTimeout(orgTimerRef.current); };
+  }, [orgForm]);
+
+  const update = (field: string, value: string) => setOrgForm(prev => ({ ...prev, [field]: value }));
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="p-6">
+          <SectionHeader title="Company Details" description="Basic information about your organization." />
+          <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Company Name">
+                <Input value={orgForm.name} onChange={e => update("name", e.target.value)} placeholder="Your company name" />
+              </Field>
+              <Field label="Trading Name">
+                <Input value={orgForm.trading_name} onChange={e => update("trading_name", e.target.value)} placeholder="Optional trading name" />
+              </Field>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Country">
+                <Input value={orgForm.country} onChange={e => update("country", e.target.value)} placeholder="e.g. Germany" />
+              </Field>
+              <Field label="Default Currency">
+                <Select value={orgForm.default_currency} onValueChange={v => update("default_currency", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EUR">EUR — Euro</SelectItem>
+                    <SelectItem value="USD">USD — US Dollar</SelectItem>
+                    <SelectItem value="GBP">GBP — British Pound</SelectItem>
+                    <SelectItem value="CHF">CHF — Swiss Franc</SelectItem>
+                    <SelectItem value="CAD">CAD — Canadian Dollar</SelectItem>
+                    <SelectItem value="AUD">AUD — Australian Dollar</SelectItem>
+                    <SelectItem value="JPY">JPY — Japanese Yen</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-6">
+          <SectionHeader title="Tax & Legal" description="Tax registration and legal address." />
+          <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="VAT Number" hint="Your tax identification number for invoicing.">
+                <Input value={orgForm.vat_number} onChange={e => update("vat_number", e.target.value)} placeholder="e.g. DE123456789" />
+              </Field>
+              <Field label="Tax ID">
+                <Input value={orgForm.tax_id} onChange={e => update("tax_id", e.target.value)} placeholder="Optional" />
+              </Field>
+            </div>
+            <Field label="Registered Address">
+              <Input value={orgForm.address} onChange={e => update("address", e.target.value)} placeholder="123 Main Street, Berlin" />
+            </Field>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Contact Email">
+                <Input value={orgForm.contact_email} onChange={e => update("contact_email", e.target.value)} placeholder="info@company.com" />
+              </Field>
+              <Field label="Contact Phone">
+                <Input value={orgForm.contact_phone} onChange={e => update("contact_phone", e.target.value)} placeholder="+49 123 456 789" />
+              </Field>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { profile, isLoading, updateProfile, uploadAvatar, initials } = useProfile();
   const [profileForm, setProfileForm] = useState({
@@ -339,76 +451,7 @@ export default function SettingsPage() {
               </Card>
             </div>
           ) : (
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Company Details" description="Basic information about your organization." />
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Field label="Company Name">
-                      <Input defaultValue="Acme Corp" />
-                    </Field>
-                    <Field label="Industry">
-                      <Select defaultValue="technology">
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="technology">Technology</SelectItem>
-                          <SelectItem value="consulting">Consulting</SelectItem>
-                          <SelectItem value="finance">Finance</SelectItem>
-                          <SelectItem value="healthcare">Healthcare</SelectItem>
-                          <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                          <SelectItem value="retail">Retail</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Field label="Country">
-                      <Input defaultValue="Germany" />
-                    </Field>
-                    <Field label="Default Currency">
-                      <Select defaultValue="EUR">
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="EUR">EUR — Euro</SelectItem>
-                          <SelectItem value="USD">USD — US Dollar</SelectItem>
-                          <SelectItem value="GBP">GBP — British Pound</SelectItem>
-                          <SelectItem value="CHF">CHF — Swiss Franc</SelectItem>
-                          <SelectItem value="CAD">CAD — Canadian Dollar</SelectItem>
-                          <SelectItem value="AUD">AUD — Australian Dollar</SelectItem>
-                          <SelectItem value="JPY">JPY — Japanese Yen</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <SectionHeader title="Tax & Legal" description="Tax registration and legal address." />
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Field label="VAT Number" hint="Your tax identification number for invoicing.">
-                      <Input defaultValue="DE123456789" />
-                    </Field>
-                    <Field label="Tax ID">
-                      <Input placeholder="Optional" />
-                    </Field>
-                  </div>
-                  <Field label="Registered Address">
-                    <Input defaultValue="123 Main Street, Berlin, Germany" />
-                  </Field>
-                  <Field label="Website">
-                    <Input placeholder="https://acme.com" />
-                  </Field>
-                </div>
-              </CardContent>
-            </Card>
-
-          </div>
+            <OrgSettingsForm org={org} updateOrg={updateOrg} />
           )}
         </TabsContent>
 
