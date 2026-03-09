@@ -563,7 +563,7 @@ export default function ActivateTrialPage() {
                   ) : (
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                   )}
-                  {cardRequired ? "Start Free Trial" : "Activate Free Access"}
+                  {cardRequired ? "Pay €29.99 — Get Lifetime Access" : "Activate Free Access"}
                 </Button>
               </form>
             </>
