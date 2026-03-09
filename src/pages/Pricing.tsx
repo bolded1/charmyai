@@ -77,6 +77,17 @@ export default function PricingPage() {
     current: subscription?.plan === "firm",
   };
 
+  const firmFaqs = [
+    { q: "What is included in the Accounting Firm plan?", a: "The Accounting Firm plan gives you access to a dedicated accountant dashboard inside Charmy, where you can create and manage up to 10 separate client workspaces. Each workspace represents a different client or company and keeps documents, data, and exports fully separated." },
+    { q: "How many client workspaces are included?", a: "The plan includes up to 10 client workspaces. This allows you to manage invoices, receipts, and financial documents for up to 10 different client companies from one Charmy account." },
+    { q: "Can I create separate workspaces for each customer?", a: "Yes. Each client can have their own dedicated workspace with separate documents, settings, contacts, exports, and financial data." },
+    { q: "Can my team access multiple client workspaces?", a: "Yes. You can invite team members and assign them access to one or more client workspaces depending on their role." },
+    { q: "What happens when I reach 10 workspaces?", a: "Once you reach your workspace limit, you will not be able to create additional workspaces unless extra capacity is granted. Future upgrades or additional workspace packs can be added later." },
+    { q: "Is the €99 fee one-time or recurring?", a: "The Accounting Firm plan is a €99 one-time fee. There are no recurring charges — you pay once and get lifetime access to up to 10 client workspaces." },
+    { q: "Can I buy more workspaces later?", a: "Yes. The system is designed to support future add-on workspace packs or upgraded firm plans for firms that need more capacity." },
+    { q: "Can I export data separately for each client?", a: "Yes. Each client workspace is fully isolated, so you can export financial data — invoices, expenses, and reports — separately for each company." },
+  ];
+
   const faqs = [
     { q: "Do I need to enter my card details to start the free trial?", a: "Yes. To start your 7-day free trial, you will be asked to enter your payment method. You will not be charged during the trial period. Your subscription will only begin if you decide to continue using Charmy after the trial ends. You can cancel anytime before the trial ends." },
     { q: "Can I cancel my subscription anytime?", a: "Yes. You can cancel your subscription at any time from Settings → Billing. If you cancel, your access will remain active until the end of the current billing period." },
@@ -286,7 +297,40 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* Firm FAQ */}
+      <section className="py-20 md:py-28 border-t border-border/50">
+        <div className="container max-w-3xl">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-semibold mb-5">
+              <Building2 className="h-3.5 w-3.5" />
+              Accounting Firm Plan
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              Firm Plan <span className="text-gradient">FAQ</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Everything you need to know about managing multiple client workspaces.
+            </p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.5 }}>
+            <Accordion type="single" collapsible className="w-full">
+              {firmFaqs.map((faq, i) => (
+                <AccordionItem key={i} value={`firm-faq-${i}`} className="border-b border-border/50 last:border-b-0">
+                  <AccordionTrigger className="text-left text-[15px] font-semibold py-5 hover:no-underline hover:text-amber-700 transition-colors [&[data-state=open]]:text-amber-700">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed text-sm pb-5">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* General FAQ */}
       <section className="py-20 md:py-28 border-t border-border/50">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
