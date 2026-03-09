@@ -240,9 +240,7 @@ export default function ActivateTrialPage() {
     setSetupError(null);
 
     try {
-      const priceId = billingInterval === "yearly"
-        ? STRIPE_PLANS.pro.price_id_yearly
-        : STRIPE_PLANS.pro.price_id_monthly;
+      const priceId = STRIPE_PLANS.pro.price_id;
 
       if (cardRequired) {
         if (!stripe || !elements || !clientSecret) return;
