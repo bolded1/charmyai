@@ -7,8 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Accounting Firm plan product ID (one-time purchase)
+// Product IDs for one-time purchases
 const FIRM_PLAN_PRODUCT_ID = "prod_U7OoSyNLV7qab3";
+const PRO_PLAN_PRODUCT_ID = "prod_U7PZ8dbaVYJKAv";
 
 const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
@@ -103,6 +104,7 @@ serve(async (req) => {
 
     // Check for one-time firm plan purchase via completed checkout sessions
     let hasFirmPlan = false;
+    let hasProPlan = false;
     try {
       const sessions = await stripe.checkout.sessions.list({
         customer: customerId,
@@ -110,21 +112,22 @@ serve(async (req) => {
       });
       for (const session of sessions.data) {
         if (session.payment_status === "paid" && session.mode === "payment") {
-          // Check line items for firm plan product
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
           for (const item of lineItems.data) {
             const productId = typeof item.price?.product === "string" ? item.price.product : (item.price?.product as any)?.id;
             if (productId === FIRM_PLAN_PRODUCT_ID) {
               hasFirmPlan = true;
-              break;
+            }
+            if (productId === PRO_PLAN_PRODUCT_ID) {
+              hasProPlan = true;
             }
           }
-          if (hasFirmPlan) break;
+          if (hasFirmPlan && hasProPlan) break;
         }
       }
-      logStep("Firm plan check", { hasFirmPlan });
+      logStep("One-time plan check", { hasFirmPlan, hasProPlan });
     } catch (err) {
-      logStep("Error checking firm plan sessions", { error: String(err) });
+      logStep("Error checking one-time plan sessions", { error: String(err) });
     }
 
     // Auto-provision firm entitlement on the organization when detected
@@ -139,7 +142,7 @@ serve(async (req) => {
     });
 
     if (subscriptions.data.length === 0) {
-      logStep("No subscriptions found, checking promo");
+      logStep("No subscriptions found, checking promo and one-time purchases");
       const promo = await checkPromo();
       if (promo) {
         return new Response(JSON.stringify({
@@ -149,12 +152,20 @@ serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // If no subscription but has firm plan, they're still entitled
+      // Check one-time purchases
       if (hasFirmPlan) {
         return new Response(JSON.stringify({
           subscribed: true, plan: "firm", status: "active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
           has_firm_plan: true,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (hasProPlan) {
+        return new Response(JSON.stringify({
+          subscribed: true, plan: "pro", status: "active",
+          trial_end: null, current_period_end: null, cancel_at_period_end: false,
+          has_firm_plan: false,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 

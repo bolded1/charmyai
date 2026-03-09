@@ -40,7 +40,6 @@ const firmFeatureIcons: Record<string, React.ElementType> = {
 };
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const { user } = useAuth();
   const subscription = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
@@ -54,18 +53,13 @@ export default function PricingPage() {
     finally { setCheckoutLoading(null); }
   };
 
-  const proPriceId = billingCycle === "yearly"
-    ? STRIPE_PLANS.pro.price_id_yearly
-    : STRIPE_PLANS.pro.price_id_monthly;
-
   const proPlan = {
     name: "Pro",
-    price: billingCycle === "monthly" ? "€9.99" : "€99",
-    period: billingCycle === "monthly" ? "/month" : "/year",
+    price: "€29.99",
+    period: "one-time",
     desc: "Everything you need to process invoices and manage expenses effortlessly.",
     features: STRIPE_PLANS.pro.features,
     current: subscription?.plan === "pro",
-    savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
   };
 
   const firmPlan = {
@@ -89,16 +83,14 @@ export default function PricingPage() {
   ];
 
   const faqs = [
-    { q: "Do I need to enter my card details to start the free trial?", a: "Yes. To start your 7-day free trial, you will be asked to enter your payment method. You will not be charged during the trial period. Your subscription will only begin if you decide to continue using Charmy after the trial ends. You can cancel anytime before the trial ends." },
-    { q: "Can I cancel my subscription anytime?", a: "Yes. You can cancel your subscription at any time from Settings → Billing. If you cancel, your access will remain active until the end of the current billing period." },
-    { q: "What happens when my trial ends?", a: "When your 7-day trial ends, your subscription will automatically continue on the selected plan. If you cancel before the trial ends, no charges will be made." },
-    { q: "What counts as a processed document?", a: "A processed document is any invoice, receipt, or financial document that Charmy reads and extracts financial data from — including supplier invoices, purchase receipts, expense documents, and income invoices. Each document processed by the AI counts toward your monthly document limit." },
-    { q: "What happens if I reach my monthly document limit?", a: "If you reach your plan's document limit, you can upgrade to a higher plan, wait until the next billing cycle, or purchase additional document credits (if available). Your existing documents and data will always remain accessible." },
+    { q: "Is the Pro plan a one-time payment?", a: "Yes. The Pro plan is a one-time payment of €29.99. There are no recurring charges — you pay once and get lifetime access to all Pro features." },
+    { q: "Can I cancel or get a refund?", a: "Since the Pro plan is a one-time purchase, there are no recurring charges to cancel. If you have any issues, please contact our support team." },
+    { q: "What counts as a processed document?", a: "A processed document is any invoice, receipt, or financial document that Charmy reads and extracts financial data from — including supplier invoices, purchase receipts, expense documents, and income invoices." },
     { q: "Can accountants use Charmy for multiple clients?", a: "Yes. With the Accounting Firm plan, you get up to 10 separate client workspaces. Each workspace is fully isolated — documents, expenses, and exports stay separate per client." },
     { q: "What is the Accounting Firm plan?", a: "The Accounting Firm plan is a one-time purchase of €99 that gives you access to up to 10 client workspaces inside Charmy. It includes all Pro features plus multi-workspace management, an accountant dashboard, and team access." },
-    { q: "Can I change my plan later?", a: "Yes. You can upgrade or downgrade your plan anytime from the Billing settings page. Plan changes take effect immediately or at the next billing cycle depending on the change." },
+    { q: "Can I change my plan later?", a: "Yes. You can upgrade from Pro to the Accounting Firm plan at any time to get multi-workspace support." },
     { q: "Is my financial data secure?", a: "Yes. Charmy processes documents using secure cloud infrastructure and encrypted connections. Security measures include SSL encrypted data transfer, secure cloud infrastructure, and GDPR-compliant data handling. Your financial documents are only accessible to your account." },
-    { q: "Can I try Charmy before paying?", a: "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo. This allows you to see how the AI extracts financial data before starting your trial." },
+    { q: "Can I try Charmy before paying?", a: "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo. This allows you to see how the AI extracts financial data before purchasing." },
   ];
 
   return (
@@ -111,7 +103,7 @@ export default function PricingPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-6">
               <Sparkles className="h-3.5 w-3.5" />
-              7-day free trial · No commitment
+              One-time payment · Lifetime access
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
               Save hours of manual bookkeeping
@@ -119,24 +111,6 @@ export default function PricingPage() {
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
               Let Charmy process your invoices automatically so you can focus on more important work.
             </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Billing toggle */}
-      <section className="relative pb-6">
-        <div className="container flex justify-center">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="inline-flex items-center gap-1 p-1 rounded-xl bg-muted/80 backdrop-blur-sm border border-border/50">
-            <button onClick={() => setBillingCycle("monthly")}
-              className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              Monthly
-            </button>
-            <button onClick={() => setBillingCycle("yearly")}
-              className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              Yearly
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">SAVE 17%</span>
-            </button>
           </motion.div>
         </div>
       </section>
@@ -166,21 +140,16 @@ export default function PricingPage() {
                     <span className="text-5xl font-bold tracking-tight">{proPlan.price}</span>
                     <span className="text-muted-foreground text-lg">{proPlan.period}</span>
                   </div>
-                  {proPlan.savings && (
-                    <motion.p key={billingCycle} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-sm text-emerald-600 font-medium mt-1">
-                      {proPlan.savings}
-                    </motion.p>
-                  )}
                 </div>
-                <p className="text-center text-xs text-muted-foreground mb-8">7-day free trial included · Cancel anytime</p>
+                <p className="text-center text-xs text-muted-foreground mb-8">One-time payment · Lifetime access</p>
                 {proPlan.current ? (
                   <Button className="w-full h-12 text-base rounded-xl" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
-                    Manage Subscription
+                    Manage Plan
                   </Button>
                 ) : (
                   <Button className="w-full h-12 text-base rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
-                    onClick={() => proPriceId && handleCheckout(proPriceId)}>
-                    {checkoutLoading === proPriceId ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Start 7-Day Free Trial <ArrowRight className="h-4 w-4 ml-2" /></>}
+                    onClick={() => handleCheckout(STRIPE_PLANS.pro.price_id)}>
+                    {checkoutLoading === STRIPE_PLANS.pro.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Get Lifetime Access <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
                 )}
                 <div className="relative my-8">
@@ -287,7 +256,7 @@ export default function PricingPage() {
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
             className="flex flex-wrap items-center justify-center gap-6 md:gap-10 text-muted-foreground">
-            {["GDPR Compliant", "End-to-end encrypted", "Cancel anytime"].map((text) => (
+            {["GDPR Compliant", "End-to-end encrypted", "Secure payments"].map((text) => (
               <div key={text} className="flex items-center gap-2 text-sm">
                 <Shield className="h-4 w-4 text-primary" />
                 <span>{text}</span>
@@ -342,7 +311,7 @@ export default function PricingPage() {
               Frequently Asked <span className="text-gradient">Questions</span>
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Everything you need to know about pricing, billing, and your free trial.
+              Everything you need to know about pricing and billing.
             </p>
           </motion.div>
 

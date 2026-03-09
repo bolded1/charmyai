@@ -217,17 +217,16 @@ const helpArticles: HelpArticle[] = [
   },
   {
     id: "billing",
-    title: "Billing & Subscription",
-    description: "Manage your Pro Plan, trial, and payment details.",
+    title: "Billing & Plans",
+    description: "Manage your Pro Plan and payment details.",
     icon: CreditCard,
     iconColor: "icon-bg-amber",
     category: "Organization",
     content: [
-      "Charmy offers a Pro Plan at €9.99/month or €99/year with a 7-day free trial.",
-      "Activate your trial on first login — a payment method is required but you won't be charged during the trial.",
-      "View your current plan status, trial end date, and next billing date in Settings → Billing.",
+      "Charmy offers a Pro Plan at €29.99 (one-time payment) with lifetime access.",
+      "Purchase your plan on first login — a one-time payment gives you immediate access to all features.",
+      "View your current plan status in Settings → Billing.",
       "Download PDF invoices for any past payment directly from the billing dashboard.",
-      "Cancel or change your plan at any time through the customer portal.",
     ],
   },
   {

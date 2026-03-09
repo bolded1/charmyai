@@ -223,20 +223,13 @@ export default function AdminSubscriptionsPage() {
               Change plan for {changePlanDialog?.customer_email}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-3 py-4">
+          <div className="grid grid-cols-1 gap-3 py-4">
             <Button
-              variant={changePlanDialog?.price_id === STRIPE_PLANS.pro.price_id_monthly ? "default" : "outline"}
-              onClick={() => changePlanDialog && handleAction("change_plan", { subscriptionId: changePlanDialog.id, newPriceId: STRIPE_PLANS.pro.price_id_monthly }, "Switched to monthly")}
+              variant={changePlanDialog?.price_id === STRIPE_PLANS.pro.price_id ? "default" : "outline"}
+              onClick={() => changePlanDialog && handleAction("change_plan", { subscriptionId: changePlanDialog.id, newPriceId: STRIPE_PLANS.pro.price_id }, "Switched to Pro")}
               disabled={actionLoading}
             >
-              Monthly (€9.99)
-            </Button>
-            <Button
-              variant={changePlanDialog?.price_id === STRIPE_PLANS.pro.price_id_yearly ? "default" : "outline"}
-              onClick={() => changePlanDialog && handleAction("change_plan", { subscriptionId: changePlanDialog.id, newPriceId: STRIPE_PLANS.pro.price_id_yearly }, "Switched to yearly")}
-              disabled={actionLoading}
-            >
-              Yearly (€99)
+              Pro (€29.99 one-time)
             </Button>
           </div>
         </DialogContent>

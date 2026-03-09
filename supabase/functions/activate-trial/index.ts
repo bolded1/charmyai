@@ -88,15 +88,13 @@ serve(async (req) => {
       }
     }
 
-    // Calculate trial days (base 7 + extra from promo)
-    const trialDays = 7 + (extraTrialDays || 0);
-    logStep("Trial days calculated", { trialDays });
+    // No trial - direct activation
+    logStep("Creating subscription without trial");
 
     // Build subscription params
     const subParams: any = {
       customer: customerId,
       items: [{ price: priceId }],
-      trial_period_days: trialDays,
       payment_settings: {
         save_default_payment_method: "on_subscription",
       },
@@ -178,14 +176,13 @@ serve(async (req) => {
       await supabaseClient.from("audit_logs").insert({
         user_id: user.id,
         user_email: user.email,
-        action: "trial_activated",
+        action: "plan_activated",
         entity_type: "subscription",
         entity_id: subscription.id,
-        details: `Trial activated (${trialDays} days)${promoCodeId ? ' with promo code' : ''}`,
+        details: `Plan activated${promoCodeId ? ' with promo code' : ''}`,
         metadata: {
           subscription_id: subscription.id,
           status: subscription.status,
-          trial_days: trialDays,
           price_id: priceId,
           promo_code_id: promoCodeId || null,
           skip_card: skipCard || false,

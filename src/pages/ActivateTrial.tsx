@@ -36,7 +36,6 @@ export default function ActivateTrialPage() {
   const [billingAddress, setBillingAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
@@ -171,20 +170,13 @@ export default function ActivateTrialPage() {
   }, [stripe, user, planChoice]);
 
   const handleApplyPromo = async () => {
-    await validateCode(promoCode, billingInterval, "pro");
+    await validateCode(promoCode, "onetime", "pro");
   };
 
   const handleRemovePromo = () => {
     clearPromo();
     setPromoCode("");
   };
-
-  // Re-validate when billing interval changes if code is applied
-  useEffect(() => {
-    if (promoResult?.valid && promoCode) {
-      validateCode(promoCode, billingInterval, "pro");
-    }
-  }, [billingInterval]);
 
   // Whether card is needed based on promo (only relevant for Pro plan)
   const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
@@ -248,9 +240,7 @@ export default function ActivateTrialPage() {
     setSetupError(null);
 
     try {
-      const priceId = billingInterval === "yearly"
-        ? STRIPE_PLANS.pro.price_id_yearly
-        : STRIPE_PLANS.pro.price_id_monthly;
+      const priceId = STRIPE_PLANS.pro.price_id;
 
       if (cardRequired) {
         if (!stripe || !elements || !clientSecret) return;
@@ -314,10 +304,10 @@ export default function ActivateTrialPage() {
           .eq("user_id", user!.id);
       } catch {}
 
-      toast.success("Your free trial has been activated!");
+      toast.success("Your Pro plan has been activated!");
       navigate("/app");
     } catch (err: any) {
-      setSetupError(err.message || "Failed to activate trial");
+      setSetupError(err.message || "Failed to activate plan");
     } finally {
       setSubmitting(false);
     }
@@ -337,32 +327,25 @@ export default function ActivateTrialPage() {
   }
 
   // Calculate billing summary for Pro
-  const basePrice = billingInterval === "monthly" ? STRIPE_PLANS.pro.price_monthly : STRIPE_PLANS.pro.price_yearly;
-  const basePeriod = billingInterval === "monthly" ? "/month" : "/year";
+  const basePrice = STRIPE_PLANS.pro.price_onetime;
   let discountedPrice: number = basePrice;
   let discountLine: string | null = null;
-  let trialDays = 7;
 
   if (promoResult?.valid) {
-    const { discount_type, discount_value, extra_trial_days, free_duration_months } = promoResult;
-    if (extra_trial_days) trialDays += extra_trial_days;
+    const { discount_type, discount_value, free_duration_months } = promoResult;
 
     if (discount_type === "percentage" && discount_value) {
       discountedPrice = basePrice * (1 - discount_value / 100);
       discountLine = `-${discount_value}%`;
-      if (discount_value === 100 && !free_duration_months) {
-        discountLine = "Free forever";
-      } else if (discount_value === 100 && free_duration_months) {
-        discountLine = `Free for ${free_duration_months} month${free_duration_months > 1 ? "s" : ""}`;
+      if (discount_value === 100) {
+        discountLine = "Free";
       }
     } else if (discount_type === "fixed" && discount_value) {
       discountedPrice = Math.max(0, basePrice - discount_value);
       discountLine = `-€${discount_value}`;
-    } else if (discount_type === "trial_extension") {
-      discountLine = `+${extra_trial_days} extra trial days`;
     } else if (discount_type === "free_period" && free_duration_months) {
       discountedPrice = 0;
-      discountLine = `Free for ${free_duration_months} month${free_duration_months > 1 ? "s" : ""}`;
+      discountLine = `Free`;
     }
   }
 
@@ -388,12 +371,12 @@ export default function ActivateTrialPage() {
             )}
           </div>
           <h1 className="text-2xl font-bold text-foreground">
-            {planChoice === "firm" ? "Get the Accounting Firm Plan" : `Start your ${trialDays}-day free trial`}
+            {planChoice === "firm" ? "Get the Accounting Firm Plan" : "Get Charmy Pro"}
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
             {planChoice === "firm"
               ? "One-time payment of €99. Manage up to 10 client workspaces — no recurring fees."
-              : "Add your payment method to begin your free trial. You will not be charged until the trial ends."}
+              : "One-time payment of €29.99. Get lifetime access to all Pro features."}
           </p>
         </div>
 
@@ -413,7 +396,7 @@ export default function ActivateTrialPage() {
                 <CreditCard className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold text-foreground">Pro Plan</span>
               </div>
-              <p className="text-xs text-muted-foreground">€9.99/mo · 7-day free trial</p>
+              <p className="text-xs text-muted-foreground">€29.99 one-time · Lifetime access</p>
             </button>
             <button
               type="button"
@@ -434,35 +417,6 @@ export default function ActivateTrialPage() {
 
           {planChoice === "pro" ? (
             <>
-              {/* Billing interval toggle */}
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <button
-                  type="button"
-                  onClick={() => setBillingInterval("monthly")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    billingInterval === "monthly"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Monthly — €9.99/mo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingInterval("yearly")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
-                    billingInterval === "yearly"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Yearly — €99/yr
-                  <span className="absolute -top-2 -right-2 text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full font-bold">
-                    SAVE 17%
-                  </span>
-                </button>
-              </div>
-
               {/* Features list */}
               <div className="mb-6 space-y-2">
                 {STRIPE_PLANS.pro.features.slice(0, 4).map((f) => (
@@ -537,7 +491,7 @@ export default function ActivateTrialPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Price</span>
-                  <span className="font-medium">€{basePrice}{basePeriod}</span>
+                  <span className="font-medium">€{basePrice}</span>
                 </div>
                 {discountLine && (
                   <div className="flex justify-between text-sm">
@@ -547,13 +501,10 @@ export default function ActivateTrialPage() {
                 )}
                 <div className="border-t border-border/50 pt-2 mt-2" />
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Today</span>
-                  <span className="font-bold">€0 (trial)</span>
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="font-bold">€{discountedPrice.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">After {trialDays}-day trial</span>
-                  <span className="font-bold">€{discountedPrice.toFixed(2)}{basePeriod}</span>
-                </div>
+                <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -612,7 +563,7 @@ export default function ActivateTrialPage() {
                   ) : (
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                   )}
-                  {cardRequired ? "Start Free Trial" : "Activate Free Access"}
+                  {cardRequired ? "Pay €29.99 — Get Lifetime Access" : "Activate Free Access"}
                 </Button>
               </form>
             </>
@@ -699,7 +650,7 @@ export default function ActivateTrialPage() {
           <p className="text-center text-[11px] text-muted-foreground/70 mt-3">
             {planChoice === "firm"
               ? "Pay once, use forever. No recurring fees. Powered by Stripe."
-              : "Cancel anytime during your trial. No charge until the trial ends."}
+              : "Pay once, use forever. No recurring fees. Powered by Stripe."}
           </p>
           <p className="text-center text-[11px] text-muted-foreground/70 mt-1.5">
             Your card details are processed securely by Stripe and are never stored on our servers.

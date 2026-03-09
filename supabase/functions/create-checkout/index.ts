@@ -14,6 +14,7 @@ const logStep = (step: string, details?: any) => {
 // One-time price IDs (payment mode)
 const ONE_TIME_PRICE_IDS = new Set([
   "price_1T9A0dBmkvUKJ0fuiFeIMzov", // Accounting Firm Plan €99
+  "price_1T9AklBmkvUKJ0fuE3YD85rg", // Pro Plan €29.99
 ]);
 
 serve(async (req) => {
@@ -64,9 +65,7 @@ serve(async (req) => {
 
     // For firm plan one-time purchase, use activate-trial success URL
     // so billing_setup_at gets set properly
-    const successUrl = isOneTime
-      ? `${origin}/app/workspaces?checkout=success&plan=firm`
-      : `${origin}/app/settings?tab=billing&checkout=success`;
+    const successUrl = `${origin}/app/settings?tab=billing&checkout=success`;
 
     const sessionParams: any = {
       customer: customerId,
@@ -80,10 +79,7 @@ serve(async (req) => {
       },
     };
 
-    // Only add trial & subscription_data for subscription mode
-    if (!isOneTime) {
-      sessionParams.subscription_data = { trial_period_days: 7 };
-    }
+    // No trial period for any plan
 
     // Apply Stripe coupon/discount if provided
     if (stripeCouponId) {

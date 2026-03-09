@@ -122,12 +122,7 @@ export default function BillingSection() {
                       <Shield className="h-3 w-3 mr-1" /> Lifetime Access
                     </Badge>
                   )}
-                  {!sub.has_firm_plan && sub.status === "trialing" && (
-                    <Badge variant="secondary" className="bg-accent text-accent-foreground text-[10px]">
-                      <Clock className="h-3 w-3 mr-1" /> Trial
-                    </Badge>
-                  )}
-                  {!sub.has_firm_plan && sub.status === "active" && (
+                  {!sub.has_firm_plan && sub.plan === "pro" && sub.status === "active" && (
                     <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px]">
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Active
                     </Badge>
@@ -153,32 +148,18 @@ export default function BillingSection() {
             )}
           </div>
 
-          {/* Subscription details (not for firm one-time plan) */}
-          {sub.subscribed && !sub.has_firm_plan && (
+          {/* Pro plan details (one-time) */}
+          {sub.subscribed && !sub.has_firm_plan && sub.plan === "pro" && (
             <>
               <Separator className="my-4" />
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground text-xs">Billing Cycle</p>
-                  <p className="font-medium capitalize">{sub.billingInterval}</p>
+                  <p className="text-muted-foreground text-xs">Payment Type</p>
+                  <p className="font-medium">One-time</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">
-                    {sub.status === "trialing" ? "Trial Ends" : "Next Billing"}
-                  </p>
-                  <p className="font-medium">
-                    {sub.status === "trialing" && sub.trial_end
-                      ? new Date(sub.trial_end).toLocaleDateString()
-                      : sub.current_period_end
-                        ? new Date(sub.current_period_end).toLocaleDateString()
-                        : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Price</p>
-                  <p className="font-medium">
-                    {sub.billingInterval === "yearly" ? "€99/year" : "€9.99/month"}
-                  </p>
+                  <p className="text-muted-foreground text-xs">Amount Paid</p>
+                  <p className="font-medium">€29.99</p>
                 </div>
               </div>
             </>
@@ -350,9 +331,9 @@ export default function BillingSection() {
       {!sub.subscribed && (
         <Card>
           <CardContent className="p-5">
-            <h3 className="font-semibold mb-1">Subscribe to Pro</h3>
+            <h3 className="font-semibold mb-1">Get Charmy Pro</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Get unlimited documents, team access, email import, and more. Start with a 7-day free trial.
+              Get unlimited documents, team access, email import, and more. One-time payment — lifetime access.
             </p>
             <ul className="space-y-2 mb-6">
               {STRIPE_PLANS.pro.features.map((f) => (
@@ -363,19 +344,11 @@ export default function BillingSection() {
             </ul>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id_monthly)}
+                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id)}
                 disabled={!!checkoutLoading}
               >
-                {checkoutLoading === STRIPE_PLANS.pro.price_id_monthly ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                €9.99/month — Start 7-Day Trial
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleUpgrade(STRIPE_PLANS.pro.price_id_yearly)}
-                disabled={!!checkoutLoading}
-              >
-                {checkoutLoading === STRIPE_PLANS.pro.price_id_yearly ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                €99/year — Save 17%
+                {checkoutLoading === STRIPE_PLANS.pro.price_id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                €29.99 — Get Lifetime Access
               </Button>
             </div>
           </CardContent>
