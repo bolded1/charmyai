@@ -6,8 +6,9 @@ import {
   Upload, Mail, Brain, Eye, FolderOpen, Download,
   Users, ArrowRight, CheckCircle2, FileText, Inbox,
   Search, Filter, Edit3, Zap, Shield, BarChart3,
-  UserPlus, Activity, Sparkles, Tag,
-} from "lucide-react";
+  UserPlus, Activity, Sparkles, Tag, Building2,
+  ArrowLeftRight, UserCheck, Layers, FileOutput,
+}from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
