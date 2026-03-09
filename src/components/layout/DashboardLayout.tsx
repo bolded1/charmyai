@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { Outlet, useLocation, Navigateuter-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -44,8 +44,7 @@ const mobileNavItems = [
 
 export default function DashboardLayout() {
   const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [searchPara = useNavigate();
   const { user, loading } = useAuth();
   const { profile, displayName, initials, isLoading: profileLoading } = useProfile();
   const { data: org } = useOrganization();
