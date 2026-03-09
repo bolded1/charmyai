@@ -230,7 +230,7 @@ export default function WorkspacesPage() {
 
   // ── Handlers ──
   const handleCreate = async () => {
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim() || creating) return;
     setCreating(true);
     try {
       const ws = await createClientWorkspace({ ...formData, name: formData.name.trim() });
