@@ -198,11 +198,23 @@ export function DashboardSidebar() {
           {renderGroup("Finance", recordsItems)}
           {renderGroup("System", systemItems)}
         </SidebarContent>
-        <SidebarFooter className="p-3 space-y-1">
-          <div className="flex items-center gap-1 px-1">
+        <SidebarFooter className="p-3 border-t border-border/40">
+          <div className="flex items-center gap-2">
+            {/* Profile trigger with avatar + name */}
+            <div className="flex-1 min-w-0">
+              {profileMenu}
+            </div>
+            {/* Notification bell */}
             <NotificationsPopover />
+            {/* Sign out button */}
+            <button
+              onClick={handleSignOut}
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+              title="Sign Out"
+            >
+              <LogOut className="h-3.5 w-3.5" strokeWidth={2.5} />
+            </button>
           </div>
-          {profileMenu}
         </SidebarFooter>
       </Sidebar>
 
