@@ -104,57 +104,75 @@ export default function ActivateTrialPage() {
     }
   }, [billingInterval]);
 
+  // Whether card is needed based on promo
+  const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements || !clientSecret) return;
-
     setSubmitting(true);
     setSetupError(null);
 
     try {
-      // Confirm the SetupIntent
-      const { error: confirmError, setupIntent } = await stripe.confirmSetup({
-        elements,
-        confirmParams: {
-          payment_method_data: {
-            billing_details: {
-              name: billingName || undefined,
-              address: billingAddress ? { line1: billingAddress } : undefined,
-            },
-          },
-        },
-        redirect: "if_required",
-      });
-
-      if (confirmError) {
-        setSetupError(confirmError.message);
-        setSubmitting(false);
-        return;
-      }
-
-      if (!setupIntent?.payment_method) {
-        setSetupError("Failed to collect payment method");
-        setSubmitting(false);
-        return;
-      }
-
-      // Activate trial subscription
       const priceId = billingInterval === "yearly"
         ? STRIPE_PLANS.pro.price_id_yearly
         : STRIPE_PLANS.pro.price_id_monthly;
 
-      const { data, error } = await supabase.functions.invoke("activate-trial", {
-        body: {
-          priceId,
-          paymentMethodId: setupIntent.payment_method,
-          promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
-          stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
-          extraTrialDays: promoResult?.valid ? promoResult.extra_trial_days : undefined,
-        },
-      });
+      if (cardRequired) {
+        // Card flow — confirm SetupIntent first
+        if (!stripe || !elements || !clientSecret) return;
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+        const { error: confirmError, setupIntent } = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            payment_method_data: {
+              billing_details: {
+                name: billingName || undefined,
+                address: billingAddress ? { line1: billingAddress } : undefined,
+              },
+            },
+          },
+          redirect: "if_required",
+        });
+
+        if (confirmError) {
+          setSetupError(confirmError.message);
+          setSubmitting(false);
+          return;
+        }
+
+        if (!setupIntent?.payment_method) {
+          setSetupError("Failed to collect payment method");
+          setSubmitting(false);
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke("activate-trial", {
+          body: {
+            priceId,
+            paymentMethodId: setupIntent.payment_method,
+            promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
+            stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
+            extraTrialDays: promoResult?.valid ? promoResult.extra_trial_days : undefined,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      } else {
+        // No card required — activate directly without payment method
+        const { data, error } = await supabase.functions.invoke("activate-trial", {
+          body: {
+            priceId,
+            skipCard: true,
+            promoCodeId: promoResult?.valid ? promoResult.promo_code_id : undefined,
+            stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
+            extraTrialDays: promoResult?.valid ? promoResult.extra_trial_days : undefined,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      }
 
       toast.success("Your free trial has been activated!");
       navigate("/app");
@@ -359,31 +377,43 @@ export default function ActivateTrialPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
-              <Input
-                placeholder="John Smith"
-                value={billingName}
-                onChange={(e) => setBillingName(e.target.value)}
-              />
-            </div>
+            {cardRequired && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
+                  <Input
+                    placeholder="John Smith"
+                    value={billingName}
+                    onChange={(e) => setBillingName(e.target.value)}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Billing Address (optional)</Label>
-              <Input
-                placeholder="123 Main St, Berlin"
-                value={billingAddress}
-                onChange={(e) => setBillingAddress(e.target.value)}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Billing Address (optional)</Label>
+                  <Input
+                    placeholder="123 Main St, Berlin"
+                    value={billingAddress}
+                    onChange={(e) => setBillingAddress(e.target.value)}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Card Details</Label>
-              <div
-                id="stripe-card-element"
-                className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Card Details</Label>
+                  <div
+                    id="stripe-card-element"
+                    className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
+                  />
+                </div>
+              </>
+            )}
+
+            {!cardRequired && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+                <CheckCircle2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                <p className="text-sm font-medium text-foreground">No payment method required</p>
+                <p className="text-xs text-muted-foreground mt-1">Your promo code grants free access — no card needed.</p>
+              </div>
+            )}
 
             {setupError && (
               <p className="text-sm text-destructive">{setupError}</p>
@@ -393,14 +423,16 @@ export default function ActivateTrialPage() {
               type="submit"
               className="w-full"
               size="lg"
-              disabled={submitting || !stripe || !clientSecret}
+              disabled={submitting || (cardRequired && (!stripe || !clientSecret))}
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
+              ) : cardRequired ? (
                 <CreditCard className="h-4 w-4 mr-2" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 mr-2" />
               )}
-              Start Free Trial
+              {cardRequired ? "Start Free Trial" : "Activate Free Access"}
             </Button>
           </form>
 

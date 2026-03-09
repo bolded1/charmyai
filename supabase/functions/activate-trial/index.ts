@@ -38,24 +38,34 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    const { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays } = await req.json();
+    const { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays, skipCard } = await req.json();
     if (!priceId) throw new Error("priceId is required");
-    if (!paymentMethodId) throw new Error("paymentMethodId is required");
-    logStep("Params received", { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays });
+    if (!paymentMethodId && !skipCard) throw new Error("paymentMethodId is required");
+    logStep("Params received", { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays, skipCard });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Find customer
+    // Find or create customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) throw new Error("No Stripe customer found");
-    const customerId = customers.data[0].id;
-    logStep("Customer found", { customerId });
+    let customerId: string;
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    } else {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { supabase_user_id: user.id },
+      });
+      customerId = customer.id;
+    }
+    logStep("Customer resolved", { customerId });
 
-    // Set default payment method on customer
-    await stripe.customers.update(customerId, {
-      invoice_settings: { default_payment_method: paymentMethodId },
-    });
-    logStep("Default payment method set");
+    // Set default payment method on customer (only if card provided)
+    if (paymentMethodId) {
+      await stripe.customers.update(customerId, {
+        invoice_settings: { default_payment_method: paymentMethodId },
+      });
+      logStep("Default payment method set");
+    }
 
     // Check for existing active subscription
     const existingSubs = await stripe.subscriptions.list({
@@ -87,7 +97,15 @@ serve(async (req) => {
       customer: customerId,
       items: [{ price: priceId }],
       trial_period_days: trialDays,
-      default_payment_method: paymentMethodId,
+      payment_settings: {
+        save_default_payment_method: "on_subscription",
+      },
+    };
+
+    // Only set payment method if provided
+    if (paymentMethodId) {
+      subParams.default_payment_method = paymentMethodId;
+    }
       payment_settings: {
         save_default_payment_method: "on_subscription",
       },
