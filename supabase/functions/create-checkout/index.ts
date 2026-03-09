@@ -40,9 +40,9 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    const { priceId, stripeCouponId } = await req.json();
+    const { priceId, stripeCouponId, embedded } = await req.json();
     if (!priceId) throw new Error("priceId is required");
-    logStep("Price ID received", { priceId, stripeCouponId });
+    logStep("Price ID received", { priceId, stripeCouponId, embedded });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -63,23 +63,26 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://charmyai.lovable.app";
     const isOneTime = ONE_TIME_PRICE_IDS.has(priceId);
 
-    // For firm plan one-time purchase, use activate-trial success URL
-    // so billing_setup_at gets set properly
     const successUrl = `${origin}/app/settings?tab=billing&checkout=success`;
 
     const sessionParams: any = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: isOneTime ? "payment" : "subscription",
-      success_url: successUrl,
-      cancel_url: `${origin}/app/settings?tab=billing&checkout=cancelled`,
       metadata: {
         supabase_user_id: user.id,
         plan_type: isOneTime ? "firm" : "pro",
       },
     };
 
-    // No trial period for any plan
+    // Embedded mode returns client_secret instead of URL
+    if (embedded) {
+      sessionParams.ui_mode = "embedded";
+      sessionParams.return_url = `${successUrl}&session_id={CHECKOUT_SESSION_ID}`;
+    } else {
+      sessionParams.success_url = successUrl;
+      sessionParams.cancel_url = `${origin}/app/settings?tab=billing&checkout=cancelled`;
+    }
 
     // Apply Stripe coupon/discount if provided
     if (stripeCouponId) {
@@ -88,7 +91,14 @@ serve(async (req) => {
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
-    logStep("Checkout session created", { sessionId: session.id, mode: isOneTime ? "payment" : "subscription" });
+    logStep("Checkout session created", { sessionId: session.id, mode: isOneTime ? "payment" : "subscription", embedded });
+
+    if (embedded) {
+      return new Response(JSON.stringify({ clientSecret: session.client_secret }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
