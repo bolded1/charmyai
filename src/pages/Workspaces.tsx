@@ -247,10 +247,9 @@ export default function WorkspacesPage() {
   const [inviting, setInviting] = useState(false);
 
   // Clients should not access the firm dashboard
-  if (isClient) {
-    navigate("/app", { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isClient) navigate("/app", { replace: true });
+  }, [isClient, navigate]);
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
