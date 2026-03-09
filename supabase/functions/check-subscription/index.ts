@@ -158,7 +158,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({
           subscribed: true, plan: hasFirmPlan ? "firm" : "pro", status: "promo_active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: hasFirmPlan,
+          has_firm_plan: hasFirmPlan, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -167,7 +167,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({
           subscribed: true, plan: "firm", status: "active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: true,
+          has_firm_plan: true, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -175,7 +175,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({
           subscribed: true, plan: "pro", status: "active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: false,
+          has_firm_plan: false, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
