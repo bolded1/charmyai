@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import CategoryAnalytics from "@/components/CategoryAnalytics";
 
 export default function CategoriesPage() {
@@ -29,6 +30,7 @@ export default function CategoriesPage() {
   const [ruleCategory, setRuleCategory] = useState("");
 
   const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
   const { data: categories = [], isLoading } = useExpenseCategories();
   const createCategory = useCreateExpenseCategory();
   const deleteCategory = useDeleteExpenseCategory();
@@ -38,15 +40,20 @@ export default function CategoriesPage() {
   const createRule = useCreateAutoCategoryRule();
   const deleteRule = useDeleteAutoCategoryRule();
 
-  // Fetch expense records for analytics
+  // Fetch expense records for analytics - scoped to active workspace
+  const orgId = activeWorkspace?.id;
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({
-    queryKey: ["expense-records-for-analytics", user?.id],
+    queryKey: ["expense-records-for-analytics", user?.id, orgId],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from("expense_records")
         .select("category, currency, total_amount, invoice_date")
         .eq("user_id", user.id);
+      if (orgId) {
+        query = query.eq("organization_id", orgId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
