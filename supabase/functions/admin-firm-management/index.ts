@@ -388,6 +388,82 @@ Deno.serve(async (req) => {
         });
       }
 
+      // ── Delete entire firm account ──
+      case "delete_firm": {
+        const { org_id } = body;
+        if (!org_id) throw new Error("org_id is required");
+
+        // Verify it's an accounting_firm
+        const { data: firmOrg, error: fErr } = await adminClient
+          .from("organizations")
+          .select("id, name, owner_user_id, workspace_type")
+          .eq("id", org_id)
+          .maybeSingle();
+        if (fErr) throw fErr;
+        if (!firmOrg || firmOrg.workspace_type !== "accounting_firm") {
+          throw new Error("Organization is not an accounting firm");
+        }
+
+        // Delete all child client workspaces and their related data
+        const { data: childOrgs } = await adminClient
+          .from("organizations")
+          .select("id")
+          .eq("parent_org_id", org_id);
+
+        const childIds = (childOrgs || []).map((c: any) => c.id);
+
+        // Delete related data for child workspaces
+        for (const childId of childIds) {
+          await adminClient.from("documents").delete().eq("organization_id", childId);
+          await adminClient.from("expense_records").delete().eq("organization_id", childId);
+          await adminClient.from("income_records").delete().eq("organization_id", childId);
+          await adminClient.from("expense_categories").delete().eq("organization_id", childId);
+          await adminClient.from("export_history").delete().eq("organization_id", childId);
+          await adminClient.from("auto_category_rules").delete().eq("organization_id", childId);
+          await adminClient.from("email_imports").delete().eq("organization_id", childId);
+          await adminClient.from("client_invitations").delete().eq("workspace_id", childId);
+        }
+
+        // Delete child orgs
+        if (childIds.length > 0) {
+          await adminClient.from("team_workspace_access").delete().in("workspace_id", childIds);
+          await adminClient.from("organizations").delete().in("id", childIds);
+        }
+
+        // Delete firm-level data
+        await adminClient.from("documents").delete().eq("organization_id", org_id);
+        await adminClient.from("expense_records").delete().eq("organization_id", org_id);
+        await adminClient.from("income_records").delete().eq("organization_id", org_id);
+        await adminClient.from("expense_categories").delete().eq("organization_id", org_id);
+        await adminClient.from("export_history").delete().eq("organization_id", org_id);
+        await adminClient.from("auto_category_rules").delete().eq("organization_id", org_id);
+        await adminClient.from("email_imports").delete().eq("organization_id", org_id);
+        await adminClient.from("team_members").delete().eq("firm_org_id", org_id);
+        await adminClient.from("client_invitations").delete().eq("firm_org_id", org_id);
+        await adminClient.from("chat_conversations").delete().eq("organization_id", org_id);
+
+        // Delete the firm org itself
+        const { error: delErr } = await adminClient
+          .from("organizations")
+          .delete()
+          .eq("id", org_id);
+        if (delErr) throw delErr;
+
+        await adminClient.from("audit_logs").insert({
+          action: "firm_deleted",
+          user_id: caller.id,
+          user_email: caller.email,
+          entity_type: "organization",
+          entity_id: org_id,
+          details: `Firm "${firmOrg.name}" and ${childIds.length} workspaces permanently deleted`,
+          metadata: { firm_name: firmOrg.name, workspace_count: childIds.length },
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,
