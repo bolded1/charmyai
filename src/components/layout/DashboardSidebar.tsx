@@ -198,22 +198,40 @@ export function DashboardSidebar() {
           {renderGroup("Finance", recordsItems)}
           {renderGroup("System", systemItems)}
         </SidebarContent>
-        <SidebarFooter className="p-3 border-t border-border/40">
-          <div className="flex items-center gap-2">
-            {/* Profile trigger with avatar + name */}
-            <div className="flex-1 min-w-0">
-              {profileMenu}
-            </div>
-            {/* Notification bell */}
+        <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/40 space-y-3">
+          {/* Notifications row */}
+          <div className="flex items-center justify-between px-1">
+            {showLabels && <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Notifications</span>}
             <NotificationsPopover />
-            {/* Sign out button */}
-            <button
-              onClick={handleSignOut}
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
-              title="Sign Out"
-            >
-              <LogOut className="h-3.5 w-3.5" strokeWidth={2.5} />
-            </button>
+          </div>
+
+          {/* User card */}
+          <div className="rounded-xl bg-accent/50 p-2.5">
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background">
+                {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                <AvatarFallback className="bg-primary/10 text-primary text-[11px] font-bold">{initials}</AvatarFallback>
+              </Avatar>
+              {showLabels && (
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[13px] font-semibold text-foreground leading-tight truncate">{displayName}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight truncate">{profile?.email || user?.email}</span>
+                </div>
+              )}
+            </div>
+            {showLabels && (
+              <div className="flex gap-1.5">
+                {profileMenu}
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/60 transition-colors shrink-0"
+                  title="Sign Out"
+                >
+                  <LogOut className="h-3 w-3" strokeWidth={2.5} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            )}
           </div>
         </SidebarFooter>
       </Sidebar>
