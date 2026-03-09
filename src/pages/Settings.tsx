@@ -268,6 +268,77 @@ export default function SettingsPage() {
 
         {/* ════════════════ ORGANIZATION ════════════════ */}
         <TabsContent value="organization">
+          {isClient ? (
+            <div className="space-y-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-5">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <h3 className="text-sm font-medium text-foreground">Organization Details</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">These settings are managed by your accounting firm and cannot be edited.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="Company Name">
+                        <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                          {org?.name || "—"}
+                        </div>
+                      </Field>
+                      <Field label="Trading Name">
+                        <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                          {org?.trading_name || "—"}
+                        </div>
+                      </Field>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="Country">
+                        <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                          {org?.country || "—"}
+                        </div>
+                      </Field>
+                      <Field label="Default Currency">
+                        <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                          {org?.default_currency || "EUR"}
+                        </div>
+                      </Field>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <SectionHeader title="Tax & Legal" description="Set by your accounting firm." />
+                  <div className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="VAT Number">
+                        <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                          {org?.vat_number || "—"}
+                        </div>
+                      </Field>
+                      <Field label="Tax ID">
+                        <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                          {org?.tax_id || "—"}
+                        </div>
+                      </Field>
+                    </div>
+                    <Field label="Registered Address">
+                      <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                        {org?.address || "—"}
+                      </div>
+                    </Field>
+                    <Field label="Contact Email">
+                      <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                        {org?.contact_email || "—"}
+                      </div>
+                    </Field>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
           <div className="space-y-6">
             <Card>
               <CardContent className="p-6">
@@ -338,6 +409,7 @@ export default function SettingsPage() {
             </Card>
 
           </div>
+          )}
         </TabsContent>
 
         {/* ════════════════ EMAIL IMPORT ════════════════ */}
