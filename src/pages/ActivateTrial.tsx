@@ -339,27 +339,37 @@ export default function ActivateTrialPage() {
     return null;
   }
 
-  // Calculate billing summary for Pro
+  // Calculate billing summary
+  const currentBasePrice = planChoice === "firm" ? STRIPE_PLANS.firm.price_onetime : STRIPE_PLANS.pro.price_onetime;
   const basePrice = STRIPE_PLANS.pro.price_onetime;
-  let discountedPrice: number = basePrice;
+  let discountedPrice: number = currentBasePrice;
   let discountLine: string | null = null;
 
   if (promoResult?.valid) {
     const { discount_type, discount_value, free_duration_months } = promoResult;
 
     if (discount_type === "percentage" && discount_value) {
-      discountedPrice = basePrice * (1 - discount_value / 100);
+      discountedPrice = currentBasePrice * (1 - discount_value / 100);
       discountLine = `-${discount_value}%`;
       if (discount_value === 100) {
         discountLine = "Free";
       }
     } else if (discount_type === "fixed" && discount_value) {
-      discountedPrice = Math.max(0, basePrice - discount_value);
+      discountedPrice = Math.max(0, currentBasePrice - discount_value);
       discountLine = `-€${discount_value}`;
     } else if (discount_type === "free_period" && free_duration_months) {
       discountedPrice = 0;
       discountLine = `Free`;
     }
+  }
+
+  const firmBasePrice = STRIPE_PLANS.firm.price_onetime;
+  let firmDiscountedPrice: number = firmBasePrice;
+  let firmDiscountLine: string | null = null;
+
+  if (promoResult?.valid && planChoice === "firm") {
+    firmDiscountedPrice = discountedPrice;
+    firmDiscountLine = discountLine;
   }
 
   return (
@@ -637,34 +647,53 @@ export default function ActivateTrialPage() {
                   <span className="font-medium">Accounting Firm</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Type</span>
-                  <span className="font-medium">One-time payment</span>
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-medium">€{firmBasePrice}</span>
                 </div>
+                {firmDiscountLine && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Discount</span>
+                    <span className="font-semibold text-primary">{firmDiscountLine}</span>
+                  </div>
+                )}
                 <div className="border-t border-border/50 pt-2 mt-2" />
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold text-lg">€{STRIPE_PLANS.firm.price_onetime}</span>
+                  <span className="font-bold text-lg">€{firmDiscountedPrice.toFixed(2)}</span>
                 </div>
+                <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
               </div>
 
-              {/* Billing Name */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
-                <Input
-                  placeholder="John Smith"
-                  value={billingName}
-                  onChange={(e) => setBillingName(e.target.value)}
-                />
-              </div>
+              {cardRequired && (
+                <>
+                  {/* Billing Name */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
+                    <Input
+                      placeholder="John Smith"
+                      value={billingName}
+                      onChange={(e) => setBillingName(e.target.value)}
+                    />
+                  </div>
 
-              {/* Inline Stripe Payment Element */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Payment Details</Label>
-                <div
-                  id="stripe-firm-element"
-                  className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
-                />
-              </div>
+                  {/* Inline Stripe Payment Element */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground">Payment Details</Label>
+                    <div
+                      id="stripe-firm-element"
+                      className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
+                    />
+                  </div>
+                </>
+              )}
+
+              {!cardRequired && (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+                  <CheckCircle2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-sm font-medium text-foreground">No payment method required</p>
+                  <p className="text-xs text-muted-foreground mt-1">Your promo code grants free access — no card needed.</p>
+                </div>
+              )}
 
               {setupError && (
                 <p className="text-sm text-destructive">{setupError}</p>
@@ -674,14 +703,16 @@ export default function ActivateTrialPage() {
                 className="w-full"
                 size="lg"
                 onClick={handleFirmCheckout}
-                disabled={submitting || !stripe || !firmClientSecret}
+                disabled={submitting || (cardRequired && (!stripe || !firmClientSecret))}
               >
                 {submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
+                ) : cardRequired ? (
                   <Building2 className="h-4 w-4 mr-2" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
                 )}
-                Pay €{STRIPE_PLANS.firm.price_onetime} — Get Lifetime Access
+                {cardRequired ? `Pay €${firmDiscountedPrice.toFixed(2)} — Get Lifetime Access` : "Activate Free Access"}
               </Button>
             </div>
           )}
