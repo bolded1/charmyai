@@ -181,8 +181,6 @@ export default function ActivateTrialPage() {
     setPromoCode("");
   };
 
-  // Whether card is needed based on promo (only relevant for Pro plan)
-  const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
 
   // Handle Firm Plan inline payment
   const handleFirmCheckout = async () => {
