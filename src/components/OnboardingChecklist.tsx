@@ -25,7 +25,7 @@ export function OnboardingChecklist() {
     sessionStorage.setItem("onboarding-dismissed", "true");
   };
 
-  if (dismissed || allDone) return null;
+  if (dismissed || allDone || isAccountingFirm) return null;
 
   return (
     <Card className="border-0 bg-gradient-to-br from-primary/5 via-background to-accent/10 overflow-hidden">
