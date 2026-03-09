@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { DemoUploader } from "@/components/demo/DemoUploader";
 import { MarketingCTA } from "@/components/MarketingCTA";
+import { MarketingFAQ } from "@/components/MarketingFAQ";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -407,6 +408,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <MarketingFAQ />
       <MarketingCTA />
     </div>
   );
