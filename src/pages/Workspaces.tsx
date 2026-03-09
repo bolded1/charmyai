@@ -148,7 +148,7 @@ export default function WorkspacesPage() {
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchQuery = "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showArchived, setShowArchived] = useState(false);
 
