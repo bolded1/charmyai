@@ -173,8 +173,45 @@ function Field({ label, optional, children }: { label: string; optional?: boolea
     </div>
   );
 }
+/* ── Country Combobox ── */
+function CountryCombobox({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const selected = COUNTRIES.find((c) => c.value === value);
 
-export default function WorkspacesPage() {
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between h-9 text-sm font-normal">
+          {selected?.label || "Select country..."}
+          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search country..." className="h-9" />
+          <CommandList>
+            <CommandEmpty>No country found.</CommandEmpty>
+            <CommandGroup>
+              {COUNTRIES.map((c) => (
+                <CommandItem
+                  key={c.value}
+                  value={c.label}
+                  onSelect={() => { onChange(c.value); setOpen(false); }}
+                  className="text-sm"
+                >
+                  <Check className={`mr-2 h-3.5 w-3.5 ${value === c.value ? "opacity-100" : "opacity-0"}`} />
+                  {c.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+
   const {
     activeWorkspace, allWorkspaces, isAccountingFirm, clientWorkspaces,
     switchWorkspace, createClientWorkspace, deleteClientWorkspace,
