@@ -269,14 +269,14 @@ Deno.serve(async (req) => {
     });
 
     const tokenStr = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(tokenStr);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user: callerUser }, error: callerError } = await adminClient.auth.getUser(tokenStr);
+    if (callerError || !callerUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userId = claimsData.claims.sub as string;
+    const userId = callerUser.id;
 
     // Get firm org
     const { data: firmOrg } = await adminClient
