@@ -72,7 +72,7 @@ export default function PricingPage() {
     name: "Accounting Firm",
     price: "€99",
     period: "one-time",
-    desc: "Built for accountants and bookkeeping firms managing multiple client companies.",
+    desc: "For accountants and bookkeeping firms. Manage up to 10 client companies from one account.",
     features: STRIPE_PLANS.firm.features,
     current: subscription?.plan === "firm",
   };
@@ -202,11 +202,12 @@ export default function PricingPage() {
                   </div>
                 )}
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-amber-500/10 mb-4">
-                    <Building2 className="h-6 w-6 text-amber-600" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-[11px] font-semibold mb-4">
+                    <Building2 className="h-3.5 w-3.5" />
+                    For accountants & bookkeeping firms
                   </div>
                   <h3 className="text-2xl font-bold">{firmPlan.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{firmPlan.desc}</p>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{firmPlan.desc}</p>
                 </div>
                 <div className="text-center mb-2">
                   <div className="flex items-baseline justify-center gap-1">
@@ -222,7 +223,7 @@ export default function PricingPage() {
                 ) : (
                   <Button className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
                     onClick={() => handleCheckout(STRIPE_PLANS.firm.price_id)}>
-                    {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Get Started <ArrowRight className="h-4 w-4 ml-2" /></>}
+                    {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Start with 10 Client Workspaces <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
                 )}
                 <div className="relative my-8">
@@ -252,11 +253,18 @@ export default function PricingPage() {
       <section className="relative pb-20">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-            className="text-center space-y-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              The <span className="font-semibold text-foreground">Accounting Firm</span> plan is a one-time purchase that gives you access to up to 10 client workspaces inside Charmy.
+            className="glass-card rounded-2xl p-8 md:p-10 border border-border/50 text-center space-y-4">
+            <div className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-amber-500/10 mx-auto">
+              <Building2 className="h-5 w-5 text-amber-600" />
+            </div>
+            <h3 className="text-lg font-bold">Why accountants choose Charmy</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
+              Accountants often receive piles of invoices from multiple clients. Instead of chasing files across emails, folders, and spreadsheets — process client invoices in dedicated workspaces and export clean financial data faster.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
+              The <span className="font-semibold text-foreground">Accounting Firm</span> plan is a one-time purchase of <span className="font-semibold text-foreground">€99</span> that gives you access to up to 10 client workspaces inside Charmy. Each workspace keeps documents fully separated, searchable, and ready to export.
+            </p>
+            <p className="text-xs text-muted-foreground pt-1">
               Ideal for firms managing documents for multiple clients from one central platform.
             </p>
           </motion.div>
