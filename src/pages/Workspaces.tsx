@@ -148,7 +148,7 @@ export default function WorkspacesPage() {
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchQuery = "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showArchived, setShowArchived] = useState(false);
 
@@ -521,10 +521,6 @@ export default function WorkspacesPage() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search workspaces..." className="pl-8 h-8 text-xs" />
-            </div>
             <div className="flex border border-border rounded-md">
               <button onClick={() => setViewMode("grid")} className={`p-1.5 transition-colors ${viewMode === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -730,62 +726,33 @@ export default function WorkspacesPage() {
       </div>
 
       {/* ═══ Recent Activity ═══ */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">Recent Activity</h3>
-            </div>
-            {recentActivity.length > 0 ? (
-              <div>
-                {recentActivity.map((item, i) => {
-                  const iconMap: Record<string, { icon: React.ElementType; accent: string }> = {
-                    upload: { icon: FileText, accent: "bg-primary/10 text-primary" },
-                    processed: { icon: CheckCircle2, accent: "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]" },
-                    approved: { icon: CheckCircle2, accent: "bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]" },
-                    export: { icon: Download, accent: "bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" },
-                  };
-                  const { icon, accent } = iconMap[item.type] || iconMap.upload;
-                  return <ActivityItem key={i} icon={icon} text={item.text} time={formatDistanceToNow(new Date(item.time), { addSuffix: true })} accent={accent} />;
-                })}
-              </div>
-            ) : (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                <Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
-                No recent activity across workspaces.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Quick Actions</h3>
-            <div className="space-y-2">
-              <Button variant="outline" className="w-full justify-start h-10 text-[13px]" onClick={() => { setFormData({ ...emptyForm }); setCreateOpen(true); }} disabled={activeClientCount >= maxWorkspaces}>
-                <Plus className="h-4 w-4 mr-2 text-primary" /> New Client Workspace
-              </Button>
-              <Button variant="outline" className="w-full justify-start h-10 text-[13px]" onClick={() => navigate("/app/settings?tab=billing")}>
-                <Receipt className="h-4 w-4 mr-2 text-muted-foreground" /> Manage Billing
-              </Button>
-              <Button variant="outline" className="w-full justify-start h-10 text-[13px]" onClick={() => navigate("/app/settings?tab=organization")}>
-                <Building2 className="h-4 w-4 mr-2 text-muted-foreground" /> Firm Settings
-              </Button>
-            </div>
-            <Separator />
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Recent Activity</h3>
+          </div>
+          {recentActivity.length > 0 ? (
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">Workspace Slots</p>
-              <div className="grid grid-cols-5 gap-1.5">
-                {Array.from({ length: maxWorkspaces }).map((_, i) => (
-                  <div key={i} className={`h-6 rounded-md transition-colors ${i < activeClientCount ? "bg-primary/80" : "bg-accent border border-border/60"}`} />
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1.5">{activeClientCount} used · {maxWorkspaces - activeClientCount} available</p>
+              {recentActivity.map((item, i) => {
+                const iconMap: Record<string, { icon: React.ElementType; accent: string }> = {
+                  upload: { icon: FileText, accent: "bg-primary/10 text-primary" },
+                  processed: { icon: CheckCircle2, accent: "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]" },
+                  approved: { icon: CheckCircle2, accent: "bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]" },
+                  export: { icon: Download, accent: "bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" },
+                };
+                const { icon, accent } = iconMap[item.type] || iconMap.upload;
+                return <ActivityItem key={i} icon={icon} text={item.text} time={formatDistanceToNow(new Date(item.time), { addSuffix: true })} accent={accent} />;
+              })}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          ) : (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              <Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
+              No recent activity across workspaces.
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ═══ Create Dialog ═══ */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
