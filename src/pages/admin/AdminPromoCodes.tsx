@@ -59,6 +59,7 @@ const defaultForm = {
   discount_type: "percentage",
   discount_value: 0,
   currency: "EUR",
+  applies_to_plans: ["pro", "firm"] as string[],
   applies_to_billing: "both",
   applies_to_first_only: false,
   recurring_cycles: null as number | null,
