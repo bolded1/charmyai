@@ -143,6 +143,18 @@ export default function ActivateTrialPage() {
 
     const initFirmPayment = async () => {
       try {
+        // Wait for DOM element to exist
+        const waitForEl = () => new Promise<void>((resolve, reject) => {
+          let attempts = 0;
+          const check = () => {
+            if (document.getElementById("stripe-firm-element")) return resolve();
+            if (++attempts > 20) return reject(new Error("Payment element not found"));
+            setTimeout(check, 100);
+          };
+          check();
+        });
+        await waitForEl();
+
         const { data, error } = await supabase.functions.invoke("firm-payment-intent");
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
@@ -168,8 +180,8 @@ export default function ActivateTrialPage() {
       }
     };
 
-    const timer = setTimeout(initFirmPayment, 100);
-    return () => clearTimeout(timer);
+    initFirmPayment();
+    return () => {};
   }, [stripe, user, planChoice]);
 
   const handleApplyPromo = async () => {
