@@ -1024,6 +1024,30 @@ export default function WorkspacesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2 max-h-[50vh] overflow-y-auto">
+            {/* Existing invitations */}
+            {existingInvitations.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Already invited</p>
+                {existingInvitations.map((inv: any) => (
+                  <div key={inv.id} className="flex items-center gap-2 bg-accent/50 rounded-lg px-3 py-2">
+                    <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">{inv.client_name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{inv.client_email}</p>
+                    </div>
+                    <Badge
+                      variant={inv.status === "accepted" ? "default" : inv.status === "revoked" ? "destructive" : "secondary"}
+                      className={`text-[9px] shrink-0 ${inv.status === "accepted" ? "bg-emerald-100 text-emerald-700 border-0" : ""}`}
+                    >
+                      {inv.status === "accepted" ? "Active" : inv.status === "revoked" ? "Revoked" : "Pending"}
+                    </Badge>
+                  </div>
+                ))}
+                <Separator className="my-2" />
+                <p className="text-xs font-medium text-muted-foreground">Add new clients</p>
+              </div>
+            )}
+
             {inviteRows.map((row, idx) => (
               <div key={idx} className="flex items-end gap-2">
                 <div className="flex-1 space-y-1.5">
