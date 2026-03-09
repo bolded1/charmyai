@@ -43,7 +43,8 @@ const mobileNavItems = [
 ];
 
 export default function DashboardLayout() {
-  const location = useLocnavigateconst [searchPara = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { profile, displayName, initials, isLoading: profileLoading } = useProfile();
   const { data: org } = useOrganization();
