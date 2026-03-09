@@ -110,18 +110,16 @@ export default function DashboardLayout() {
     );
   }
 
-  // Billing setup gate — user must have explicitly completed the payment page
-  if (!profile.billing_setup_at) {
-    // User never completed the payment step — send to activate
+  // Billing setup gate — client users skip billing (their firm pays)
+  if (!isClient && !profile.billing_setup_at) {
     return <Navigate to="/activate-trial" replace />;
   }
 
-  // Subscription gate — fail-closed: block access unless explicitly entitled
-  if (!subscription.subscribed) {
+  // Subscription gate — client users skip subscription check
+  if (!isClient && !subscription.subscribed) {
     if (subscription.status && subscription.status !== "active" && subscription.status !== "promo_active") {
       return <Navigate to="/billing-required" replace />;
     }
-    // No status at all — needs to purchase
     return <Navigate to="/activate-trial" replace />;
   }
 
