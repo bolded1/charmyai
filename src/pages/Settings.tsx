@@ -65,6 +65,7 @@ export default function SettingsPage() {
 
   const { data: org } = useOrganization();
   const updateOrg = useUpdateOrganization();
+  const { isClient } = useClientRole();
 
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
 
