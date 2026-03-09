@@ -171,7 +171,7 @@ export default function ActivateTrialPage() {
   }, [stripe, user, planChoice]);
 
   const handleApplyPromo = async () => {
-    await validateCode(promoCode, billingInterval, "pro");
+    await validateCode(promoCode, "onetime", "pro");
   };
 
   const handleRemovePromo = () => {
