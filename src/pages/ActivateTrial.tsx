@@ -95,9 +95,13 @@ export default function ActivateTrialPage() {
     }
   }, []);
 
+  // Firm plan: PaymentIntent client secret
+  const [firmClientSecret, setFirmClientSecret] = useState<string | null>(null);
+  const [firmElements, setFirmElements] = useState<any>(null);
+
   // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
-    if (!stripe || !user || planChoice === "firm") return;
+    if (!stripe || !user || planChoice !== "pro") return;
 
     const initSetup = async () => {
       try {
@@ -127,8 +131,42 @@ export default function ActivateTrialPage() {
       }
     };
 
-    // Small delay to ensure DOM element exists
     const timer = setTimeout(initSetup, 100);
+    return () => clearTimeout(timer);
+  }, [stripe, user, planChoice]);
+
+  // Create PaymentIntent and mount Elements for Firm plan
+  useEffect(() => {
+    if (!stripe || !user || planChoice !== "firm") return;
+
+    const initFirmPayment = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("firm-payment-intent");
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setFirmClientSecret(data.client_secret);
+
+        const els = stripe.elements({
+          clientSecret: data.client_secret,
+          appearance: {
+            theme: "stripe",
+            variables: {
+              colorPrimary: "#1E3A8A",
+              borderRadius: "12px",
+              fontFamily: "system-ui, sans-serif",
+            },
+          },
+        });
+        setFirmElements(els);
+
+        const pe = els.create("payment");
+        pe.mount("#stripe-firm-element");
+      } catch (err: any) {
+        setSetupError(err.message || "Failed to initialize payment form");
+      }
+    };
+
+    const timer = setTimeout(initFirmPayment, 100);
     return () => clearTimeout(timer);
   }, [stripe, user, planChoice]);
 
