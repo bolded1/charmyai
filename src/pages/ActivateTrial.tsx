@@ -139,7 +139,7 @@ export default function ActivateTrialPage() {
 
   // Create PaymentIntent and mount Elements for Firm plan
   useEffect(() => {
-    if (!stripe || !user || planChoice !== "firm") return;
+    if (!stripe || !user || planChoice !== "firm" || !cardRequired) return;
 
     const initFirmPayment = async () => {
       try {
@@ -182,7 +182,7 @@ export default function ActivateTrialPage() {
 
     initFirmPayment();
     return () => {};
-  }, [stripe, user, planChoice]);
+  }, [stripe, user, planChoice, cardRequired]);
 
   const handleApplyPromo = async () => {
     await validateCode(promoCode, "onetime", "pro");
