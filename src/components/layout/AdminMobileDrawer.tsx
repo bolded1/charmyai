@@ -31,6 +31,7 @@ const navGroups: NavGroup[] = [
   { label: "Analytics & Revenue", items: [
     { title: "Usage & Activity", url: "/admin/usage", icon: BarChart3 },
     { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
+    { title: "Promo Codes", url: "/admin/promo-codes", icon: Tag },
     { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
     { title: "User Feedback", url: "/admin/feedback", icon: MessageSquareHeart },
   ]},
