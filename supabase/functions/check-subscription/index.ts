@@ -7,8 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Accounting Firm plan product ID (one-time purchase)
+// Product IDs for one-time purchases
 const FIRM_PLAN_PRODUCT_ID = "prod_U7OoSyNLV7qab3";
+const PRO_PLAN_PRODUCT_ID = "prod_U7PZ8dbaVYJKAv";
 
 const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
