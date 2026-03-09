@@ -93,7 +93,13 @@ export default function AcceptInvitationPage() {
       });
 
       if (!signInError) {
-        setTimeout(() => navigate("/app"), 1500);
+        // Invalidate any cached profile data so DashboardLayout sees onboarding_completed_at
+        const { QueryClient } = await import("@tanstack/react-query");
+        // Use a short delay to let auth state settle, then navigate
+        setTimeout(() => {
+          // Force refetch of profile data on next render
+          window.location.href = "/app";
+        }, 1500);
       }
     } catch {
       toast.error("Something went wrong");
