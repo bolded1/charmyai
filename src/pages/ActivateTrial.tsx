@@ -9,10 +9,12 @@ import { usePromoCode } from "@/hooks/usePromoCode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Shield, Lock, CreditCard, Loader2, CheckCircle2, Tag, X } from "lucide-react";
+import { FileText, Shield, Lock, CreditCard, Loader2, CheckCircle2, Tag, X, Building2, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 
 const STRIPE_PK = "pk_live_51Dzp0JBmkvUKJ0fuaOO3lXgQ83A5srdQrW5qKGr4ve9yaED1A5UmEel695J4wGxsokdAznHG53i33ELPjqgCFzqV00Y3AyofY0";
+
+type PlanChoice = "pro" | "firm";
 
 export default function ActivateTrialPage() {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export default function ActivateTrialPage() {
   const brandLogo = useBrandLogo();
   const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
 
+  const [planChoice, setPlanChoice] = useState<PlanChoice>("pro");
   const [stripe, setStripe] = useState<any>(null);
   const [elements, setElements] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
@@ -35,6 +38,7 @@ export default function ActivateTrialPage() {
   const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
+
   // Pre-fill billing name when profile loads
   useEffect(() => {
     if (profile && !billingName) {
@@ -43,19 +47,16 @@ export default function ActivateTrialPage() {
     }
   }, [profile]);
 
-
   useEffect(() => {
     if (!user) return;
     const checkExisting = async () => {
       try {
-        // Check if billing setup was already completed
         const { data: profileData } = await supabase
           .from("profiles")
           .select("billing_setup_at")
           .eq("user_id", user.id)
           .maybeSingle();
 
-        // Only redirect if BOTH billing was completed AND subscription is active
         if (profileData?.billing_setup_at) {
           const { data, error } = await supabase.functions.invoke("check-subscription");
           if (!error && data?.subscribed) {
@@ -64,7 +65,7 @@ export default function ActivateTrialPage() {
           }
         }
       } catch {
-        // fail-closed: don't redirect, let user complete billing
+        // fail-closed
       }
     };
     checkExisting();
@@ -92,9 +93,9 @@ export default function ActivateTrialPage() {
     }
   }, []);
 
-  // Create SetupIntent and mount Elements
+  // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
-    if (!stripe || !user) return;
+    if (!stripe || !user || planChoice === "firm") return;
 
     const initSetup = async () => {
       try {
@@ -124,8 +125,10 @@ export default function ActivateTrialPage() {
       }
     };
 
-    initSetup();
-  }, [stripe, user]);
+    // Small delay to ensure DOM element exists
+    const timer = setTimeout(initSetup, 100);
+    return () => clearTimeout(timer);
+  }, [stripe, user, planChoice]);
 
   const handleApplyPromo = async () => {
     await validateCode(promoCode, billingInterval, "pro");
@@ -143,11 +146,48 @@ export default function ActivateTrialPage() {
     }
   }, [billingInterval]);
 
-  // Whether card is needed based on promo
+  // Whether card is needed based on promo (only relevant for Pro plan)
   const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
+
+  // Handle Firm Plan checkout (one-time payment via Stripe Checkout)
+  const handleFirmCheckout = async () => {
+    setSubmitting(true);
+    setSetupError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: STRIPE_PLANS.firm.price_id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Set billing_setup_at before redirect so after payment the gate opens
+      if (user) {
+        try {
+          await supabase
+            .from("profiles")
+            .update({ billing_setup_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+        } catch {}
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      setSetupError(err.message || "Failed to start checkout");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (planChoice === "firm") {
+      await handleFirmCheckout();
+      return;
+    }
+
     setSubmitting(true);
     setSetupError(null);
 
@@ -157,7 +197,6 @@ export default function ActivateTrialPage() {
         : STRIPE_PLANS.pro.price_id_monthly;
 
       if (cardRequired) {
-        // Card flow — confirm SetupIntent first
         if (!stripe || !elements || !clientSecret) return;
 
         const { error: confirmError, setupIntent } = await stripe.confirmSetup({
@@ -198,7 +237,6 @@ export default function ActivateTrialPage() {
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
       } else {
-        // No card required — activate directly without payment method
         const { data, error } = await supabase.functions.invoke("activate-trial", {
           body: {
             priceId,
@@ -213,12 +251,11 @@ export default function ActivateTrialPage() {
         if (data?.error) throw new Error(data.error);
       }
 
-      // Also set billing_setup_at client-side for immediate effect
       try {
         await supabase
           .from("profiles")
           .update({ billing_setup_at: new Date().toISOString() })
-          .eq("user_id", user.id);
+          .eq("user_id", user!.id);
       } catch {}
 
       toast.success("Your free trial has been activated!");
@@ -243,7 +280,7 @@ export default function ActivateTrialPage() {
     return null;
   }
 
-  // Calculate billing summary
+  // Calculate billing summary for Pro
   const basePrice = billingInterval === "monthly" ? STRIPE_PLANS.pro.price_monthly : STRIPE_PLANS.pro.price_yearly;
   const basePeriod = billingInterval === "monthly" ? "/month" : "/year";
   let discountedPrice: number = basePrice;
@@ -294,194 +331,284 @@ export default function ActivateTrialPage() {
               </>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Start your {trialDays}-day free trial</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {planChoice === "firm" ? "Get the Accounting Firm Plan" : `Start your ${trialDays}-day free trial`}
+          </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-            Add your payment method to begin your free trial. You will not be charged until the trial ends.
+            {planChoice === "firm"
+              ? "One-time payment of €99. Manage up to 10 client workspaces — no recurring fees."
+              : "Add your payment method to begin your free trial. You will not be charged until the trial ends."}
           </p>
         </div>
 
         <div className="glass-auth rounded-2xl p-6">
-          {/* Billing interval toggle */}
-          <div className="flex items-center justify-center gap-2 mb-6">
+          {/* Plan selector */}
+          <div className="flex gap-3 mb-6">
             <button
               type="button"
-              onClick={() => setBillingInterval("monthly")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                billingInterval === "monthly"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
+              onClick={() => setPlanChoice("pro")}
+              className={`flex-1 rounded-xl border-2 p-4 text-left transition-all ${
+                planChoice === "pro"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/30"
               }`}
             >
-              Monthly — €9.99/mo
-            </button>
-            <button
-              type="button"
-              onClick={() => setBillingInterval("yearly")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
-                billingInterval === "yearly"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Yearly — €99/yr
-              <span className="absolute -top-2 -right-2 text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full font-bold">
-                SAVE 17%
-              </span>
-            </button>
-          </div>
-
-          {/* Features list */}
-          <div className="mb-6 space-y-2">
-            {STRIPE_PLANS.pro.features.slice(0, 4).map((f) => (
-              <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                {f}
+              <div className="flex items-center gap-2 mb-1.5">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Pro Plan</span>
               </div>
-            ))}
+              <p className="text-xs text-muted-foreground">€9.99/mo · 7-day free trial</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlanChoice("firm")}
+              className={`flex-1 rounded-xl border-2 p-4 text-left transition-all ${
+                planChoice === "firm"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/30"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1.5">
+                <Building2 className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Accounting Firm</span>
+              </div>
+              <p className="text-xs text-muted-foreground">€99 one-time · 10 workspaces</p>
+            </button>
           </div>
 
-          {/* Promo code section */}
-          <div className="mb-5">
-            {!promoExpanded && !promoResult?.valid ? (
-              <button
-                type="button"
-                onClick={() => setPromoExpanded(true)}
-                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-              >
-                <Tag className="h-3.5 w-3.5" />
-                Have a promo code?
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <Tag className="h-3 w-3" />
-                  Promo Code
-                </Label>
-                {promoResult?.valid ? (
-                  <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-primary">{promoResult.discount_label}</p>
-                        <p className="text-xs text-muted-foreground">Code: {promoCode.toUpperCase()}</p>
-                      </div>
-                    </div>
-                    <button onClick={handleRemovePromo} className="text-muted-foreground hover:text-foreground">
-                      <X className="h-4 w-4" />
-                    </button>
+          {planChoice === "pro" ? (
+            <>
+              {/* Billing interval toggle */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <button
+                  type="button"
+                  onClick={() => setBillingInterval("monthly")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    billingInterval === "monthly"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Monthly — €9.99/mo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingInterval("yearly")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
+                    billingInterval === "yearly"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Yearly — €99/yr
+                  <span className="absolute -top-2 -right-2 text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full font-bold">
+                    SAVE 17%
+                  </span>
+                </button>
+              </div>
+
+              {/* Features list */}
+              <div className="mb-6 space-y-2">
+                {STRIPE_PLANS.pro.features.slice(0, 4).map((f) => (
+                  <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                    {f}
                   </div>
+                ))}
+              </div>
+
+              {/* Promo code section */}
+              <div className="mb-5">
+                {!promoExpanded && !promoResult?.valid ? (
+                  <button
+                    type="button"
+                    onClick={() => setPromoExpanded(true)}
+                    className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                  >
+                    <Tag className="h-3.5 w-3.5" />
+                    Have a promo code?
+                  </button>
                 ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                      placeholder="Enter code"
-                      className="font-mono text-sm"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleApplyPromo}
-                      disabled={validating || !promoCode.trim()}
-                      className="shrink-0"
-                    >
-                      {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
-                    </Button>
+                  <div className="space-y-3">
+                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                      <Tag className="h-3 w-3" />
+                      Promo Code
+                    </Label>
+                    {promoResult?.valid ? (
+                      <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                          <div>
+                            <p className="text-sm font-semibold text-primary">{promoResult.discount_label}</p>
+                            <p className="text-xs text-muted-foreground">Code: {promoCode.toUpperCase()}</p>
+                          </div>
+                        </div>
+                        <button onClick={handleRemovePromo} className="text-muted-foreground hover:text-foreground">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                          placeholder="Enter code"
+                          className="font-mono text-sm"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleApplyPromo}
+                          disabled={validating || !promoCode.trim()}
+                          className="shrink-0"
+                        >
+                          {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                        </Button>
+                      </div>
+                    )}
+                    {promoResult && !promoResult.valid && promoResult.error && (
+                      <p className="text-xs text-destructive">{promoResult.error}</p>
+                    )}
                   </div>
                 )}
-                {promoResult && !promoResult.valid && promoResult.error && (
-                  <p className="text-xs text-destructive">{promoResult.error}</p>
+              </div>
+
+              {/* Billing Summary */}
+              <div className="rounded-xl border border-border/60 bg-muted/30 p-4 mb-5 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Plan</span>
+                  <span className="font-medium">Pro</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-medium">€{basePrice}{basePeriod}</span>
+                </div>
+                {discountLine && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Discount</span>
+                    <span className="font-semibold text-primary">{discountLine}</span>
+                  </div>
                 )}
-              </div>
-            )}
-          </div>
-
-          {/* Billing Summary */}
-          <div className="rounded-xl border border-border/60 bg-muted/30 p-4 mb-5 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Plan</span>
-              <span className="font-medium">Pro</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Price</span>
-              <span className="font-medium">€{basePrice}{basePeriod}</span>
-            </div>
-            {discountLine && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Discount</span>
-                <span className="font-semibold text-primary">{discountLine}</span>
-              </div>
-            )}
-            <div className="border-t border-border/50 pt-2 mt-2" />
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Today</span>
-              <span className="font-bold">€0 (trial)</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">After {trialDays}-day trial</span>
-              <span className="font-bold">€{discountedPrice.toFixed(2)}{basePeriod}</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {cardRequired && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
-                  <Input
-                    placeholder="John Smith"
-                    value={billingName}
-                    onChange={(e) => setBillingName(e.target.value)}
-                  />
+                <div className="border-t border-border/50 pt-2 mt-2" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Today</span>
+                  <span className="font-bold">€0 (trial)</span>
                 </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground">Billing Address (optional)</Label>
-                  <Input
-                    placeholder="123 Main St, Berlin"
-                    value={billingAddress}
-                    onChange={(e) => setBillingAddress(e.target.value)}
-                  />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">After {trialDays}-day trial</span>
+                  <span className="font-bold">€{discountedPrice.toFixed(2)}{basePeriod}</span>
                 </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground">Card Details</Label>
-                  <div
-                    id="stripe-card-element"
-                    className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
-                  />
-                </div>
-              </>
-            )}
-
-            {!cardRequired && (
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
-                <CheckCircle2 className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-sm font-medium text-foreground">No payment method required</p>
-                <p className="text-xs text-muted-foreground mt-1">Your promo code grants free access — no card needed.</p>
               </div>
-            )}
 
-            {setupError && (
-              <p className="text-sm text-destructive">{setupError}</p>
-            )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {cardRequired && (
+                  <>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
+                      <Input
+                        placeholder="John Smith"
+                        value={billingName}
+                        onChange={(e) => setBillingName(e.target.value)}
+                      />
+                    </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              disabled={submitting || (cardRequired && (!stripe || !clientSecret))}
-            >
-              {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : cardRequired ? (
-                <CreditCard className="h-4 w-4 mr-2" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4 mr-2" />
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground">Billing Address (optional)</Label>
+                      <Input
+                        placeholder="123 Main St, Berlin"
+                        value={billingAddress}
+                        onChange={(e) => setBillingAddress(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground">Card Details</Label>
+                      <div
+                        id="stripe-card-element"
+                        className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {!cardRequired && (
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                    <p className="text-sm font-medium text-foreground">No payment method required</p>
+                    <p className="text-xs text-muted-foreground mt-1">Your promo code grants free access — no card needed.</p>
+                  </div>
+                )}
+
+                {setupError && (
+                  <p className="text-sm text-destructive">{setupError}</p>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  disabled={submitting || (cardRequired && (!stripe || !clientSecret))}
+                >
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : cardRequired ? (
+                    <CreditCard className="h-4 w-4 mr-2" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                  )}
+                  {cardRequired ? "Start Free Trial" : "Activate Free Access"}
+                </Button>
+              </form>
+            </>
+          ) : (
+            /* ── Firm Plan ── */
+            <div className="space-y-5">
+              {/* Firm features */}
+              <div className="space-y-2">
+                {STRIPE_PLANS.firm.features.map((f) => (
+                  <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+
+              {/* Billing Summary */}
+              <div className="rounded-xl border border-border/60 bg-muted/30 p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Plan</span>
+                  <span className="font-medium">Accounting Firm</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Type</span>
+                  <span className="font-medium">One-time payment</span>
+                </div>
+                <div className="border-t border-border/50 pt-2 mt-2" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="font-bold text-lg">€{STRIPE_PLANS.firm.price_onetime}</span>
+                </div>
+              </div>
+
+              {setupError && (
+                <p className="text-sm text-destructive">{setupError}</p>
               )}
-              {cardRequired ? "Start Free Trial" : "Activate Free Access"}
-            </Button>
-          </form>
+
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={handleFirmCheckout}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Building2 className="h-4 w-4 mr-2" />
+                )}
+                Pay €{STRIPE_PLANS.firm.price_onetime} — Get Lifetime Access
+              </Button>
+            </div>
+          )}
 
           {/* Trust badges */}
           <div className="flex items-center justify-center gap-4 mt-5 pt-4 border-t border-border/50">
@@ -495,7 +622,9 @@ export default function ActivateTrialPage() {
             </div>
           </div>
           <p className="text-center text-[11px] text-muted-foreground/70 mt-3">
-            Cancel anytime during your trial. No charge until the trial ends.
+            {planChoice === "firm"
+              ? "Pay once, use forever. No recurring fees. Powered by Stripe."
+              : "Cancel anytime during your trial. No charge until the trial ends."}
           </p>
           <p className="text-center text-[11px] text-muted-foreground/70 mt-1.5">
             Your card details are processed securely by Stripe and are never stored on our servers.
