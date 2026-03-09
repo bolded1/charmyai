@@ -21,6 +21,7 @@ export default function MarketingLayout() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { openPreferences } = useCookieConsent();
+  const { user } = useAuth();
 
   useEffect(() => {
     setMobileOpen(false);
