@@ -17,6 +17,7 @@ const STRIPE_PK = "pk_live_51Dzp0JBmkvUKJ0fuaOO3lXgQ83A5srdQrW5qKGr4ve9yaED1A5Um
 export default function ActivateTrialPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { profile } = useProfile();
   const brandLogo = useBrandLogo();
   const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
 
