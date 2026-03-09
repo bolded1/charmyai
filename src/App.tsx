@@ -83,6 +83,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <PwaManifestUpdater />
+      <PwaUpdatePrompt />
       <BrowserRouter>
         <ScrollToTop />
         <Routes>
