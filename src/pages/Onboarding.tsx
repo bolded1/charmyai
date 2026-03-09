@@ -175,6 +175,12 @@ export default function OnboardingPage() {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
+      // Mark onboarding as completed
+      try {
+        await updateProfile.mutateAsync({
+          onboarding_completed_at: new Date().toISOString(),
+        } as any);
+      } catch {}
       toast.success("Setup complete! Let's activate your trial.");
       navigate("/activate-trial");
     }
