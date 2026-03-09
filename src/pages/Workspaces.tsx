@@ -27,7 +27,7 @@ import {
   Building2, Briefcase, Plus, Trash2, Pencil, FileText, Receipt,
   ArrowRight, Loader2, AlertTriangle, Clock, Download, Eye,
   CheckCircle2, Search, LayoutGrid, List, Archive, ArchiveRestore,
-  Activity, BarChart3, Globe, Mail, Phone, Hash, UserPlus,
+  Activity, BarChart3, Globe, Mail, Phone, Hash, UserPlus, User,
   ChevronsUpDown, Check,
 } from "lucide-react";
 import { toast } from "sonner";
