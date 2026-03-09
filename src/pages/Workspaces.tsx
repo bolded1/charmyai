@@ -481,29 +481,6 @@ export default function WorkspacesPage() {
         </Card>
       )}
 
-      {/* ═══ Summary Stats ═══ */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={Briefcase} label="Client Workspaces" value={activeClientCount} accent="bg-primary/10 text-primary" subtext={`of ${maxWorkspaces} available`} />
-        <StatCard icon={FileText} label="Total Documents" value={totalDocs} accent="bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" subtext="across all workspaces" />
-        <StatCard icon={Eye} label="Needs Review" value={needsReview} accent={needsReview > 0 ? "bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))]" : "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]"} subtext={needsReview > 0 ? "documents pending" : "all clear"} />
-        <StatCard icon={Download} label="Exports" value={totalExports} accent="bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]" subtext="generated total" />
-      </div>
-
-      {/* ═══ Usage Overview ═══ */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">Workspace Usage</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{activeClientCount} of {maxWorkspaces} workspace slots used</p>
-            </div>
-            <Badge variant={activeClientCount >= maxWorkspaces ? "destructive" : "secondary"} className="text-[10px]">
-              {maxWorkspaces - activeClientCount} remaining
-            </Badge>
-          </div>
-          <Progress value={(activeClientCount / maxWorkspaces) * 100} className="h-2" />
-        </CardContent>
-      </Card>
 
       {/* ═══ Client Workspaces Section ═══ */}
       <div className="space-y-4">
