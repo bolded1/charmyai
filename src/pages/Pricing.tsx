@@ -256,7 +256,7 @@ export default function PricingPage() {
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
             className="flex flex-wrap items-center justify-center gap-6 md:gap-10 text-muted-foreground">
-            {["GDPR Compliant", "End-to-end encrypted", "Cancel anytime"].map((text) => (
+            {["GDPR Compliant", "End-to-end encrypted", "Secure payments"].map((text) => (
               <div key={text} className="flex items-center gap-2 text-sm">
                 <Shield className="h-4 w-4 text-primary" />
                 <span>{text}</span>
