@@ -88,9 +88,8 @@ serve(async (req) => {
       }
     }
 
-    // Calculate trial days (base 7 + extra from promo)
-    const trialDays = 7 + (extraTrialDays || 0);
-    logStep("Trial days calculated", { trialDays });
+    // No trial - direct activation
+    logStep("Creating subscription without trial");
 
     // Build subscription params
     const subParams: any = {
