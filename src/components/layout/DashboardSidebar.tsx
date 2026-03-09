@@ -95,19 +95,9 @@ export function DashboardSidebar() {
   const profileMenu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2.5 rounded-md px-2 py-1.5 w-full hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <Avatar className="h-7 w-7 shrink-0">
-            {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-            <AvatarFallback className="bg-muted text-muted-foreground text-[10px] font-medium">{initials}</AvatarFallback>
-          </Avatar>
-          {showLabels && (
-            <div className="flex flex-col items-start min-w-0">
-              <span className="text-[13px] font-semibold text-foreground leading-tight truncate">{displayName}</span>
-              {profile?.job_title && (
-                <span className="text-[10px] text-muted-foreground leading-tight truncate">{profile.job_title}</span>
-              )}
-            </div>
-          )}
+        <button className="flex items-center justify-center gap-1.5 h-8 flex-1 rounded-lg text-[11px] font-medium text-foreground hover:bg-background/80 border border-border/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Settings className="h-3 w-3" strokeWidth={2.5} />
+          <span>Settings</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side="right" className="w-60">
