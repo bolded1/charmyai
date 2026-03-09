@@ -246,10 +246,10 @@ export default function WorkspacesPage() {
   const [inviteRows, setInviteRows] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
   const [inviting, setInviting] = useState(false);
 
-  // Clients should not access the firm dashboard
+  // Only accounting firms can access the workspaces page
   useEffect(() => {
-    if (isClient) navigate("/app", { replace: true });
-  }, [isClient, navigate]);
+    if (!isAccountingFirm || isClient) navigate("/app", { replace: true });
+  }, [isAccountingFirm, isClient, navigate]);
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
