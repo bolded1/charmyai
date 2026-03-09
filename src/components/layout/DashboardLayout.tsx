@@ -161,10 +161,10 @@ export default function DashboardLayout() {
         </div>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
-          {/* Background gradient orbs */}
+          {/* Subtle background gradient */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
-            <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
-            <div className="absolute bottom-[-15%] right-[-8%] w-[400px] h-[400px] rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+            <div className="absolute top-[-15%] left-[-5%] w-[600px] h-[600px] rounded-full opacity-[0.07] blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(224 76% 48%), transparent 70%)' }} />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-[0.05] blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(262 83% 58%), transparent 70%)' }} />
           </div>
 
           <div className="relative z-10 flex flex-col min-h-0 flex-1">
