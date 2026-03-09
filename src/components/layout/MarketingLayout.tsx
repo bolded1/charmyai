@@ -1,10 +1,11 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight, LogIn } from "lucide-react";
+import { FileText, Menu, X, ArrowRight, Sparkles, ChevronRight, LogIn, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookieConsent } from "@/components/CookieConsent";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { label: "Features", to: "/features", description: "See what Charmy can do" },
