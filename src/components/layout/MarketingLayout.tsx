@@ -43,12 +43,17 @@ export default function MarketingLayout() {
   return (
     <div className="marketing min-h-screen flex flex-col">
       {/* Floating Header */}
-      <header className="sticky top-0 z-50 w-full">
-        <div className={`transition-all duration-300 max-w-5xl mx-4 md:mx-auto rounded-2xl border border-border/40 ${
-          scrolled
-            ? "mt-3 bg-card/85 backdrop-blur-xl shadow-lg shadow-primary/[0.06] border-border/50"
-            : "mt-3 bg-card shadow-lg shadow-primary/[0.03]"
-        }`}>
+      <header className="sticky top-0 z-50 w-full pointer-events-none">
+        <div className="pointer-events-auto transition-all duration-300 max-w-5xl mx-4 md:mx-auto rounded-2xl border border-border/40" style={{
+          marginTop: '0.75rem',
+          background: scrolled
+            ? 'hsla(0, 0%, 100%, 0.8)'
+            : 'hsl(0, 0%, 100%)',
+          backdropFilter: scrolled ? 'blur(20px)' : 'none',
+          boxShadow: scrolled
+            ? '0 8px 32px -8px hsla(224, 76%, 48%, 0.08)'
+            : '0 4px 16px -4px hsla(224, 76%, 48%, 0.04)',
+        }}>
           <div className="flex h-14 items-center justify-between px-4 md:px-6">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 shrink-0 group">
