@@ -216,7 +216,7 @@ export default function DashboardLayout() {
             </header>
 
             {/* Mobile navigation tab bar */}
-            <div className="md:hidden border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center">
+            <div className="md:hidden border-b border-border/30 bg-card/90 backdrop-blur-xl flex items-center">
               <button
                 onClick={() => {
                   const el = document.getElementById("mobile-nav-scroll");
