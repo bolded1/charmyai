@@ -105,9 +105,8 @@ export default SignupEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Inter, Arial, sans-serif' }
 const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
-const logoSection = { marginBottom: '8px' }
-const logoMark = { width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #1E3A8A, #2563EB)', color: '#ffffff', fontSize: '16px', textAlign: 'center' as const, verticalAlign: 'middle' as const, fontWeight: 'bold' as const }
-const logoText = { fontSize: '18px', fontWeight: 'bold' as const, color: '#0a0f1a', paddingLeft: '8px', verticalAlign: 'middle' as const }
+const logoSection = { marginBottom: '8px', textAlign: 'center' as const }
+const logoImg = { borderRadius: '12px' }
 const divider = { borderColor: '#e5e7eb', margin: '16px 0 24px' }
 const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#0a0f1a', margin: '0 0 16px' }
 const h2 = { fontSize: '16px', fontWeight: '600' as const, color: '#0a0f1a', margin: '0 0 12px' }
