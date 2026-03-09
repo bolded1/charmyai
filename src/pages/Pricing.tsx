@@ -286,7 +286,40 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* Firm FAQ */}
+      <section className="py-20 md:py-28 border-t border-border/50">
+        <div className="container max-w-3xl">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-semibold mb-5">
+              <Building2 className="h-3.5 w-3.5" />
+              Accounting Firm Plan
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              Firm Plan <span className="text-gradient">FAQ</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Everything you need to know about managing multiple client workspaces.
+            </p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.5 }}>
+            <Accordion type="single" collapsible className="w-full">
+              {firmFaqs.map((faq, i) => (
+                <AccordionItem key={i} value={`firm-faq-${i}`} className="border-b border-border/50 last:border-b-0">
+                  <AccordionTrigger className="text-left text-[15px] font-semibold py-5 hover:no-underline hover:text-amber-700 transition-colors [&[data-state=open]]:text-amber-700">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed text-sm pb-5">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* General FAQ */}
       <section className="py-20 md:py-28 border-t border-border/50">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
