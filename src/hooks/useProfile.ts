@@ -16,6 +16,7 @@ export interface Profile {
   timezone: string;
   language: string;
   status: string;
+  billing_setup_at: string | null;
   created_at: string;
   updated_at: string;
 }

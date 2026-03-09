@@ -32,18 +32,28 @@ export default function ActivateTrialPage() {
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
 
-  // Check if user already has an active subscription — redirect to app
+  // Check if user already completed billing AND has active subscription — redirect to app
   useEffect(() => {
     if (!user) return;
     const checkExisting = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("check-subscription");
-        if (!error && data?.subscribed) {
-          setAlreadySubscribed(true);
-          navigate("/app", { replace: true });
+        // Check if billing setup was already completed
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("billing_setup_at")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        // Only redirect if BOTH billing was completed AND subscription is active
+        if (profileData?.billing_setup_at) {
+          const { data, error } = await supabase.functions.invoke("check-subscription");
+          if (!error && data?.subscribed) {
+            setAlreadySubscribed(true);
+            navigate("/app", { replace: true });
+          }
         }
       } catch {
-        // fail-open here since this is just a convenience redirect
+        // fail-closed: don't redirect, let user complete billing
       }
     };
     checkExisting();
@@ -191,6 +201,14 @@ export default function ActivateTrialPage() {
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
       }
+
+      // Also set billing_setup_at client-side for immediate effect
+      try {
+        await supabase
+          .from("profiles")
+          .update({ billing_setup_at: new Date().toISOString() })
+          .eq("user_id", user.id);
+      } catch {}
 
       toast.success("Your free trial has been activated!");
       navigate("/app");

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePromoCode } from "@/hooks/usePromoCode";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 
 export default function BillingRequiredPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const brandLogo = useBrandLogo();
   const subscription = useSubscription();
   const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
@@ -43,6 +45,15 @@ export default function BillingRequiredPage() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      // Set billing_setup_at flag so dashboard gate allows access
+      if (user) {
+        try {
+          await supabase
+            .from("profiles")
+            .update({ billing_setup_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+        } catch {}
+      }
       toast.success("Access restored!");
       subscription.checkSubscription();
       navigate("/app");

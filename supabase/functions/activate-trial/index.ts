@@ -162,6 +162,17 @@ serve(async (req) => {
       }
     }
 
+    // Mark billing setup as completed on the user's profile
+    try {
+      await supabaseClient
+        .from("profiles")
+        .update({ billing_setup_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+      logStep("billing_setup_at flag set on profile");
+    } catch (profileErr) {
+      logStep("Warning: failed to set billing_setup_at", { error: String(profileErr) });
+    }
+
     // Log audit event for trial activation
     try {
       await supabaseClient.from("audit_logs").insert({
