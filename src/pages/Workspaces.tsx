@@ -211,7 +211,7 @@ function CountryCombobox({ value, onChange }: { value: string; onChange: (v: str
   );
 }
 
-
+export default function WorkspacesPage() {
   const {
     activeWorkspace, allWorkspaces, isAccountingFirm, clientWorkspaces,
     switchWorkspace, createClientWorkspace, deleteClientWorkspace,
