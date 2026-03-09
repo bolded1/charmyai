@@ -204,22 +204,17 @@ export function DashboardSidebar() {
           <div className="px-1.5 mb-2">
             <WorkspaceSwitcher compact={collapsed} />
           </div>
-          {isClient ? (
-            <>
-              {renderGroup("Your Workspace", clientItems)}
-              {renderGroup("System", [
-                { title: "Support", url: "/app/support", icon: LifeBuoy },
-                { title: "Help", url: "/app/help", icon: HelpCircle },
-              ])}
-            </>
-          ) : (
-            <>
-              {renderGroup("Documents", financeItems)}
-              {renderGroup("Finance", recordsItems)}
-              {isAccountingFirm && renderGroup("Firm", firmItems)}
-              {renderGroup("System", systemItems)}
-            </>
-          )}
+          {(() => {
+            // Clients get the same sidebar as pro users (no firm section)
+            return (
+              <>
+                {renderGroup("Documents", financeItems)}
+                {renderGroup("Finance", recordsItems)}
+                {!isClient && isAccountingFirm && renderGroup("Firm", firmItems)}
+                {renderGroup("System", systemItems)}
+              </>
+            );
+          })()}
         </SidebarContent>
         <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/40 space-y-3">
           {/* Notifications row */}
