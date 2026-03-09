@@ -134,6 +134,7 @@ export default function WorkspacesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
   const [creating, setCreating] = useState(false);
+  const creatingRef = useRef(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingWs, setEditingWs] = useState<Workspace | null>(null);
