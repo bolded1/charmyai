@@ -24,14 +24,21 @@ export function WorkspaceContextBar() {
     <div className="shrink-0 bg-primary/5 border-b border-primary/10 px-4 py-2">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          {/* Breadcrumb: Firm > Client */}
-          <button
-            onClick={() => navigate("/app/workspaces")}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-          >
-            <Building2 className="h-3.5 w-3.5 text-primary" />
-            <span className="font-medium hidden sm:inline">{firmOrg?.name || "Firm"}</span>
-          </button>
+          {/* Breadcrumb: Firm > Client — firm link only for non-clients */}
+          {!isClient ? (
+            <button
+              onClick={() => navigate("/app/workspaces")}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            >
+              <Building2 className="h-3.5 w-3.5 text-primary" />
+              <span className="font-medium hidden sm:inline">{firmOrg?.name || "Firm"}</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+              <Building2 className="h-3.5 w-3.5 text-primary" />
+              <span className="font-medium hidden sm:inline">{firmOrg?.name || "Firm"}</span>
+            </div>
+          )}
           <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
           <div className="flex items-center gap-1.5 min-w-0">
             <Briefcase className="h-3.5 w-3.5 text-foreground shrink-0" />
@@ -49,15 +56,17 @@ export function WorkspaceContextBar() {
           </Badge>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
-          onClick={() => navigate("/app/workspaces")}
-        >
-          <ArrowLeft className="h-3 w-3" />
-          <span className="hidden sm:inline">Back to Firm</span>
-        </Button>
+        {!isClient && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
+            onClick={() => navigate("/app/workspaces")}
+          >
+            <ArrowLeft className="h-3 w-3" />
+            <span className="hidden sm:inline">Back to Firm</span>
+          </Button>
+        )}
       </div>
     </div>
   );
