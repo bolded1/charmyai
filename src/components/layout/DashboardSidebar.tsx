@@ -11,6 +11,21 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { NotificationsPopover } from "@/components/NotificationsPopover";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useKeyboardShortcuts, MOD_LABEL } from "@/hooks/useKeyboardShortcuts";
+import { useOrganization } from "@/hooks/useOrganization";
+import { useState } from "react";
+import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenuGroup, DropdownMenuShortcut,
+} from "@/components/ui/dropdown-menu";
+import { User, Building2, Palette, Keyboard, HelpCircle as HelpIcon } from "lucide-react";
 
 const financeItems = [
   { title: "Capture", url: "/app", icon: Upload },
@@ -40,6 +55,13 @@ export function DashboardSidebar() {
   const { settings } = useLayoutSettings();
   const showLabels = settings.showSidebarLabels && !collapsed;
   const brandLogo = useBrandLogo();
+  const { profile, displayName, initials } = useProfile();
+  const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const { data: org } = useOrganization();
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -70,35 +92,121 @@ export function DashboardSidebar() {
     </SidebarGroup>
   );
 
-  return (
-    <Sidebar collapsible="none">
-      <SidebarHeader className="px-3 py-4">
-        <Link to="/app" className="flex items-center gap-2.5">
-          {brandLogo ? (
-            <img src={brandLogo} alt="Logo" className="h-7 max-w-[7rem] object-contain shrink-0" />
-          ) : (
-            <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
-              <FileText className="h-3 w-3 text-white" />
+  const profileMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2.5 rounded-md px-2 py-1.5 w-full hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Avatar className="h-7 w-7 shrink-0">
+            {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+            <AvatarFallback className="bg-muted text-muted-foreground text-[10px] font-medium">{initials}</AvatarFallback>
+          </Avatar>
+          {showLabels && (
+            <div className="flex flex-col items-start min-w-0">
+              <span className="text-[13px] font-semibold text-foreground leading-tight truncate">{displayName}</span>
+              {profile?.job_title && (
+                <span className="text-[10px] text-muted-foreground leading-tight truncate">{profile.job_title}</span>
+              )}
             </div>
           )}
-          {showLabels && !brandLogo && <span className="font-bold text-xs text-gradient">Charmy</span>}
-        </Link>
-      </SidebarHeader>
-      <SidebarContent className="px-1.5 pt-1">
-        {renderGroup("Documents", financeItems)}
-        {renderGroup("Finance", recordsItems)}
-        {renderGroup("System", systemItems)}
-      </SidebarContent>
-      <SidebarFooter className="p-3">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-muted hover:text-sidebar-accent-foreground">
-              <LogOut className="h-3.5 w-3.5" strokeWidth={2.5} />
-              {showLabels && <span className="font-medium">Sign Out</span>}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" side="right" className="w-60">
+        <DropdownMenuLabel className="font-normal p-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9 shrink-0">
+              {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+              <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{displayName}</p>
+              <p className="text-xs text-muted-foreground truncate">{profile?.email || user?.email}</p>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuLabel className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+          Workspace
+        </DropdownMenuLabel>
+        <DropdownMenuItem className="text-xs text-muted-foreground px-3 cursor-default" disabled>
+          <Building2 className="h-3.5 w-3.5 mr-2" />
+          {org?.name || "My Organization"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => navigate("/app/settings")} className="px-3 min-h-[40px]">
+            <User className="h-3.5 w-3.5 mr-2" />
+            <span className="text-[13px]">My Profile</span>
+            {!isMobile && <DropdownMenuShortcut>{MOD_LABEL},</DropdownMenuShortcut>}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/app/settings?tab=organization")} className="px-3 min-h-[40px]">
+            <Building2 className="h-3.5 w-3.5 mr-2" />
+            <span className="text-[13px]">Organization Settings</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/app/settings?tab=appearance")} className="px-3 min-h-[40px]">
+            <Palette className="h-3.5 w-3.5 mr-2" />
+            <span className="text-[13px]">Appearance</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/app/team")} className="px-3 min-h-[40px]">
+            <UsersRound className="h-3.5 w-3.5 mr-2" />
+            <span className="text-[13px]">Team Members</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="px-3 min-h-[40px]" onClick={() => navigate("/app/help")}>
+            <HelpCircle className="h-3.5 w-3.5 mr-2" />
+            <span className="text-[13px]">Help & Documentation</span>
+          </DropdownMenuItem>
+          {!isMobile && (
+            <DropdownMenuItem className="px-3 min-h-[40px]" onClick={() => setShortcutsOpen(true)}>
+              <Keyboard className="h-3.5 w-3.5 mr-2" />
+              <span className="text-[13px]">Keyboard Shortcuts</span>
+              <DropdownMenuShortcut>{MOD_LABEL}/</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem onClick={handleSignOut} className="px-3 text-muted-foreground min-h-[40px]">
+          <LogOut className="h-3.5 w-3.5 mr-2" />
+          <span className="text-[13px]">Sign Out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  return (
+    <>
+      <Sidebar collapsible="none">
+        <SidebarHeader className="px-3 py-4">
+          <Link to="/app" className="flex items-center gap-2.5">
+            {brandLogo ? (
+              <img src={brandLogo} alt="Logo" className="h-7 max-w-[7rem] object-contain shrink-0" />
+            ) : (
+              <div className="h-6 w-6 rounded-md bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
+                <FileText className="h-3 w-3 text-white" />
+              </div>
+            )}
+            {showLabels && !brandLogo && <span className="font-bold text-xs text-gradient">Charmy</span>}
+          </Link>
+        </SidebarHeader>
+        <SidebarContent className="px-1.5 pt-1">
+          {renderGroup("Documents", financeItems)}
+          {renderGroup("Finance", recordsItems)}
+          {renderGroup("System", systemItems)}
+        </SidebarContent>
+        <SidebarFooter className="p-3 space-y-1">
+          <div className="flex items-center gap-1 px-1">
+            <NotificationsPopover />
+          </div>
+          {profileMenu}
+        </SidebarFooter>
+      </Sidebar>
+
+      <KeyboardShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} shortcuts={shortcuts} />
+    </>
   );
 }
