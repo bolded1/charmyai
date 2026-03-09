@@ -30,7 +30,7 @@ export default function HomePage() {
   return (
     <div>
       {/* ═══ Hero ═══ */}
-      <section className="pt-16 md:pt-28 pb-6 relative overflow-hidden">
+      <section className="pt-28 md:pt-40 pb-6 relative overflow-hidden">
         {/* Background orbs */}
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
         <div className="absolute top-[10%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-10 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.5), transparent 70%)' }} />
