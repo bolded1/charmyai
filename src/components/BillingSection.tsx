@@ -148,32 +148,18 @@ export default function BillingSection() {
             )}
           </div>
 
-          {/* Subscription details (not for firm one-time plan) */}
-          {sub.subscribed && !sub.has_firm_plan && (
+          {/* Pro plan details (one-time) */}
+          {sub.subscribed && !sub.has_firm_plan && sub.plan === "pro" && (
             <>
               <Separator className="my-4" />
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground text-xs">Billing Cycle</p>
-                  <p className="font-medium capitalize">{sub.billingInterval}</p>
+                  <p className="text-muted-foreground text-xs">Payment Type</p>
+                  <p className="font-medium">One-time</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">
-                    {sub.status === "trialing" ? "Trial Ends" : "Next Billing"}
-                  </p>
-                  <p className="font-medium">
-                    {sub.status === "trialing" && sub.trial_end
-                      ? new Date(sub.trial_end).toLocaleDateString()
-                      : sub.current_period_end
-                        ? new Date(sub.current_period_end).toLocaleDateString()
-                        : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Price</p>
-                  <p className="font-medium">
-                    {sub.billingInterval === "yearly" ? "€99/year" : "€9.99/month"}
-                  </p>
+                  <p className="text-muted-foreground text-xs">Amount Paid</p>
+                  <p className="font-medium">€29.99</p>
                 </div>
               </div>
             </>
