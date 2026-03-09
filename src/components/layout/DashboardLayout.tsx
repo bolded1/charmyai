@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { WorkspaceContextBar } from "@/components/WorkspaceContextBar";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
