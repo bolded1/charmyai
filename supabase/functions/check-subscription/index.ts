@@ -105,6 +105,8 @@ serve(async (req) => {
     // Check for one-time firm plan purchase via completed checkout sessions
     let hasFirmPlan = false;
     let hasProPlan = false;
+    let amountPaid: number | null = null;
+    let paidCurrency: string = "eur";
     try {
       const sessions = await stripe.checkout.sessions.list({
         customer: customerId,
@@ -117,15 +119,23 @@ serve(async (req) => {
             const productId = typeof item.price?.product === "string" ? item.price.product : (item.price?.product as any)?.id;
             if (productId === FIRM_PLAN_PRODUCT_ID) {
               hasFirmPlan = true;
+              // Capture actual amount paid (in cents -> convert to main unit)
+              amountPaid = (session.amount_total ?? 0) / 100;
+              paidCurrency = session.currency || "eur";
             }
             if (productId === PRO_PLAN_PRODUCT_ID) {
               hasProPlan = true;
+              // Only set if not already set by firm plan
+              if (amountPaid === null) {
+                amountPaid = (session.amount_total ?? 0) / 100;
+                paidCurrency = session.currency || "eur";
+              }
             }
           }
           if (hasFirmPlan && hasProPlan) break;
         }
       }
-      logStep("One-time plan check", { hasFirmPlan, hasProPlan });
+      logStep("One-time plan check", { hasFirmPlan, hasProPlan, amountPaid, paidCurrency });
     } catch (err) {
       logStep("Error checking one-time plan sessions", { error: String(err) });
     }
@@ -148,7 +158,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({
           subscribed: true, plan: hasFirmPlan ? "firm" : "pro", status: "promo_active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: hasFirmPlan,
+          has_firm_plan: hasFirmPlan, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -157,7 +167,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({
           subscribed: true, plan: "firm", status: "active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: true,
+          has_firm_plan: true, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -165,7 +175,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({
           subscribed: true, plan: "pro", status: "active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: false,
+          has_firm_plan: false, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -195,6 +205,8 @@ serve(async (req) => {
       current_period_end: periodEndDate,
       cancel_at_period_end: sub.cancel_at_period_end,
       has_firm_plan: hasFirmPlan,
+      amount_paid: amountPaid,
+      paid_currency: paidCurrency,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);

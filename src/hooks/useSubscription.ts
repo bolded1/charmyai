@@ -47,6 +47,8 @@ export interface SubscriptionState {
   current_period_end: string | null;
   cancel_at_period_end: boolean;
   has_firm_plan: boolean;
+  amount_paid: number | null;
+  paid_currency: string;
   loading: boolean;
 }
 
@@ -61,6 +63,8 @@ export function useSubscription() {
     current_period_end: null,
     cancel_at_period_end: false,
     has_firm_plan: false,
+    amount_paid: null,
+    paid_currency: "eur",
     loading: true,
   });
 
@@ -89,6 +93,8 @@ export function useSubscription() {
         current_period_end: data.current_period_end ?? null,
         cancel_at_period_end: data.cancel_at_period_end ?? false,
         has_firm_plan: hasFirm,
+        amount_paid: data.amount_paid ?? null,
+        paid_currency: data.paid_currency ?? "eur",
         loading: false,
       });
     } catch (err) {

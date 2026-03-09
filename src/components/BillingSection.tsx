@@ -103,7 +103,15 @@ export default function BillingSection() {
   };
 
   const planName = sub.plan === "firm" ? "Accounting Firm" : sub.plan === "pro" ? "Pro" : "Free";
-  const planPrice = sub.plan === "firm" ? "€99.00" : sub.plan === "pro" ? "€29.99" : null;
+  
+  // Use actual amount paid from Stripe; fall back to list price
+  const formatAmount = (amount: number, currency: string) => {
+    const symbol = currency.toLowerCase() === "eur" ? "€" : currency.toLowerCase() === "usd" ? "$" : currency.toUpperCase() + " ";
+    return amount === 0 ? "Free" : `${symbol}${amount.toFixed(2)}`;
+  };
+  const planPrice = sub.amount_paid !== null
+    ? formatAmount(sub.amount_paid, sub.paid_currency)
+    : sub.plan === "firm" ? "€99.00" : sub.plan === "pro" ? "€29.99" : null;
 
   return (
     <div className="space-y-6">
