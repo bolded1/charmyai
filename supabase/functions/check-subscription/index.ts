@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Accounting Firm plan product ID (one-time purchase)
+const FIRM_PLAN_PRODUCT_ID = "prod_U7OoSyNLV7qab3";
+
 const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
@@ -41,106 +44,105 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
-    if (customers.data.length === 0) {
-      logStep("No Stripe customer found, checking promo entitlements");
-
-      // Check for promo-based free access (no Stripe subscription needed)
+    // Helper: check promo entitlements
+    const checkPromo = async () => {
       const { data: promoAccess } = await supabaseClient
         .from("promo_code_redemptions")
         .select("id, status, promo_code_id, discount_snapshot")
         .eq("user_id", user.id)
         .eq("status", "active")
         .limit(1);
+      return promoAccess && promoAccess.length > 0 ? promoAccess[0] : null;
+    };
 
-      if (promoAccess && promoAccess.length > 0) {
-        logStep("Active promo entitlement found", { redemptionId: promoAccess[0].id });
+    if (customers.data.length === 0) {
+      logStep("No Stripe customer found, checking promo entitlements");
+      const promo = await checkPromo();
+      if (promo) {
+        logStep("Active promo entitlement found", { redemptionId: promo.id });
         return new Response(JSON.stringify({
-          subscribed: true,
-          plan: "pro",
-          status: "promo_active",
-          trial_end: null,
-          current_period_end: null,
-          cancel_at_period_end: false,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+          subscribed: true, plan: "pro", status: "promo_active",
+          trial_end: null, current_period_end: null, cancel_at_period_end: false,
+          has_firm_plan: false,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-
       return new Response(JSON.stringify({
-        subscribed: false,
-        plan: "free",
-        status: null,
-        trial_end: null,
-        current_period_end: null,
-        cancel_at_period_end: false,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+        subscribed: false, plan: "free", status: null,
+        trial_end: null, current_period_end: null, cancel_at_period_end: false,
+        has_firm_plan: false,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const customerId = customers.data[0].id;
     logStep("Customer found", { customerId });
 
-    // Check subscriptions (any status, not just active)
+    // Check for one-time firm plan purchase via completed checkout sessions
+    let hasFirmPlan = false;
+    try {
+      const sessions = await stripe.checkout.sessions.list({
+        customer: customerId,
+        limit: 100,
+      });
+      for (const session of sessions.data) {
+        if (session.payment_status === "paid" && session.mode === "payment") {
+          // Check line items for firm plan product
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
+          for (const item of lineItems.data) {
+            const productId = typeof item.price?.product === "string" ? item.price.product : (item.price?.product as any)?.id;
+            if (productId === FIRM_PLAN_PRODUCT_ID) {
+              hasFirmPlan = true;
+              break;
+            }
+          }
+          if (hasFirmPlan) break;
+        }
+      }
+      logStep("Firm plan check", { hasFirmPlan });
+    } catch (err) {
+      logStep("Error checking firm plan sessions", { error: String(err) });
+    }
+
+    // Check subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
     });
 
     if (subscriptions.data.length === 0) {
-      logStep("No subscriptions found, checking promo entitlements");
-
-      // Fallback: check promo-based access
-      const { data: promoAccess } = await supabaseClient
-        .from("promo_code_redemptions")
-        .select("id, status, promo_code_id, discount_snapshot")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .limit(1);
-
-      if (promoAccess && promoAccess.length > 0) {
-        logStep("Active promo entitlement found (no Stripe sub)", { redemptionId: promoAccess[0].id });
+      logStep("No subscriptions found, checking promo");
+      const promo = await checkPromo();
+      if (promo) {
         return new Response(JSON.stringify({
-          subscribed: true,
-          plan: "pro",
-          status: "promo_active",
-          trial_end: null,
-          current_period_end: null,
-          cancel_at_period_end: false,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+          subscribed: true, plan: "pro", status: "promo_active",
+          trial_end: null, current_period_end: null, cancel_at_period_end: false,
+          has_firm_plan: hasFirmPlan,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // If no subscription but has firm plan, they're still entitled
+      if (hasFirmPlan) {
+        return new Response(JSON.stringify({
+          subscribed: true, plan: "firm", status: "active",
+          trial_end: null, current_period_end: null, cancel_at_period_end: false,
+          has_firm_plan: true,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       return new Response(JSON.stringify({
-        subscribed: false,
-        plan: "free",
-        status: null,
-        trial_end: null,
-        current_period_end: null,
-        cancel_at_period_end: false,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+        subscribed: false, plan: "free", status: null,
+        trial_end: null, current_period_end: null, cancel_at_period_end: false,
+        has_firm_plan: false,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const sub = subscriptions.data[0];
     const priceId = sub.items.data[0]?.price?.id;
     const isActive = sub.status === "active" || sub.status === "trialing";
 
-    logStep("Subscription found", {
-      id: sub.id,
-      status: sub.status,
-      priceId,
-      trialEnd: sub.trial_end,
-    });
+    logStep("Subscription found", { id: sub.id, status: sub.status, priceId });
 
-    const trialEndDate = sub.trial_end
-      ? new Date(sub.trial_end * 1000).toISOString()
-      : null;
-    const periodEndDate = sub.current_period_end
-      ? new Date(sub.current_period_end * 1000).toISOString()
-      : null;
+    const trialEndDate = sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null;
+    const periodEndDate = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null;
 
     return new Response(JSON.stringify({
       subscribed: isActive,
@@ -151,9 +153,8 @@ serve(async (req) => {
       trial_end: trialEndDate,
       current_period_end: periodEndDate,
       cancel_at_period_end: sub.cancel_at_period_end,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      has_firm_plan: hasFirmPlan,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: msg });

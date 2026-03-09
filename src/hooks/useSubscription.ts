@@ -22,17 +22,35 @@ export const STRIPE_PLANS = {
       "CSV & Excel exports",
     ],
   },
+  firm: {
+    name: "Accounting Firm",
+    price_onetime: 99,
+    price_id: "price_1T9A0dBmkvUKJ0fuiFeIMzov",
+    product_id: "prod_U7OoSyNLV7qab3",
+    max_workspaces: 10,
+    features: [
+      "Up to 10 client workspaces",
+      "Accountant dashboard",
+      "Workspace switching",
+      "Document processing per workspace",
+      "Exports per workspace",
+      "Team access support",
+      "All Pro features included",
+      "One-time payment — no recurring fees",
+    ],
+  },
 } as const;
 
 export interface SubscriptionState {
   subscribed: boolean;
-  plan: "pro" | "none";
-  status: string | null; // active | trialing | past_due | canceled | incomplete | unpaid | promo_active | null
+  plan: "pro" | "firm" | "none";
+  status: string | null;
   price_id: string | null;
   subscription_id: string | null;
   trial_end: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  has_firm_plan: boolean;
   loading: boolean;
 }
 
@@ -46,6 +64,7 @@ export function useSubscription() {
     trial_end: null,
     current_period_end: null,
     cancel_at_period_end: false,
+    has_firm_plan: false,
     loading: true,
   });
 
@@ -53,7 +72,6 @@ export function useSubscription() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // No session = not authenticated, set not subscribed (fail-closed)
         setState(prev => ({ ...prev, subscribed: false, status: null, loading: false }));
         return;
       }
@@ -61,21 +79,23 @@ export function useSubscription() {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
 
+      const hasFirm = data.has_firm_plan ?? false;
+      const plan = hasFirm ? "firm" : data.subscribed ? "pro" : "none";
+
       setState({
         subscribed: data.subscribed ?? false,
-        plan: data.subscribed ? "pro" : "none",
+        plan,
         status: data.status ?? null,
         price_id: data.price_id ?? null,
         subscription_id: data.subscription_id ?? null,
         trial_end: data.trial_end ?? null,
         current_period_end: data.current_period_end ?? null,
         cancel_at_period_end: data.cancel_at_period_end ?? false,
+        has_firm_plan: hasFirm,
         loading: false,
       });
     } catch (err) {
       console.error("Failed to check subscription:", err);
-      // FAIL-CLOSED: on error, explicitly mark as not subscribed
-      // This prevents access if the billing check fails
       setState(prev => ({
         ...prev,
         subscribed: false,
@@ -88,15 +108,10 @@ export function useSubscription() {
 
   useEffect(() => {
     checkSubscription();
-
-    // Re-check every 60s
     const interval = setInterval(checkSubscription, 60000);
-
-    // Re-check on auth state change
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       checkSubscription();
     });
-
     return () => {
       clearInterval(interval);
       subscription.unsubscribe();
