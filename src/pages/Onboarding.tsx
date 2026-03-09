@@ -200,17 +200,18 @@ export default function OnboardingPage() {
       }
       if (org) {
         try {
-          const orgUpdate: any = {
+          const orgUpdate: Record<string, any> = {
             id: org.id,
             name: orgName.trim(),
             default_currency: currency,
           };
           if (accountType === "firm") {
-            orgUpdate.workspace_type = "firm";
+            orgUpdate.workspace_type = "accounting_firm";
             orgUpdate.max_client_workspaces = 10;
           }
-          await updateOrg.mutateAsync(orgUpdate);
-        } catch {
+          await updateOrg.mutateAsync(orgUpdate as any);
+        } catch (err: any) {
+          console.error("Onboarding org save error:", err);
           toast.error("Failed to update organization.");
           return;
         }
