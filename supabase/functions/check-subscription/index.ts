@@ -142,7 +142,7 @@ serve(async (req) => {
     });
 
     if (subscriptions.data.length === 0) {
-      logStep("No subscriptions found, checking promo");
+      logStep("No subscriptions found, checking promo and one-time purchases");
       const promo = await checkPromo();
       if (promo) {
         return new Response(JSON.stringify({
@@ -152,12 +152,20 @@ serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // If no subscription but has firm plan, they're still entitled
+      // Check one-time purchases
       if (hasFirmPlan) {
         return new Response(JSON.stringify({
           subscribed: true, plan: "firm", status: "active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
           has_firm_plan: true,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (hasProPlan) {
+        return new Response(JSON.stringify({
+          subscribed: true, plan: "pro", status: "active",
+          trial_end: null, current_period_end: null, cancel_at_period_end: false,
+          has_firm_plan: false,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
