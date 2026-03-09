@@ -337,32 +337,25 @@ export default function ActivateTrialPage() {
   }
 
   // Calculate billing summary for Pro
-  const basePrice = billingInterval === "monthly" ? STRIPE_PLANS.pro.price_monthly : STRIPE_PLANS.pro.price_yearly;
-  const basePeriod = billingInterval === "monthly" ? "/month" : "/year";
+  const basePrice = STRIPE_PLANS.pro.price_onetime;
   let discountedPrice: number = basePrice;
   let discountLine: string | null = null;
-  let trialDays = 7;
 
   if (promoResult?.valid) {
-    const { discount_type, discount_value, extra_trial_days, free_duration_months } = promoResult;
-    if (extra_trial_days) trialDays += extra_trial_days;
+    const { discount_type, discount_value, free_duration_months } = promoResult;
 
     if (discount_type === "percentage" && discount_value) {
       discountedPrice = basePrice * (1 - discount_value / 100);
       discountLine = `-${discount_value}%`;
-      if (discount_value === 100 && !free_duration_months) {
-        discountLine = "Free forever";
-      } else if (discount_value === 100 && free_duration_months) {
-        discountLine = `Free for ${free_duration_months} month${free_duration_months > 1 ? "s" : ""}`;
+      if (discount_value === 100) {
+        discountLine = "Free";
       }
     } else if (discount_type === "fixed" && discount_value) {
       discountedPrice = Math.max(0, basePrice - discount_value);
       discountLine = `-€${discount_value}`;
-    } else if (discount_type === "trial_extension") {
-      discountLine = `+${extra_trial_days} extra trial days`;
     } else if (discount_type === "free_period" && free_duration_months) {
       discountedPrice = 0;
-      discountLine = `Free for ${free_duration_months} month${free_duration_months > 1 ? "s" : ""}`;
+      discountLine = `Free`;
     }
   }
 
