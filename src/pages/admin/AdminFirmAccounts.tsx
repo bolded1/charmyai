@@ -139,8 +139,11 @@ export default function AdminFirmAccounts() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success("Action completed successfully");
+      if (actionType === "delete_firm") {
+        setSelectedFirm(null);
+      }
       fetchFirms();
-      if (selectedFirm) fetchWorkspaces(selectedFirm.id);
+      if (selectedFirm && actionType !== "delete_firm") fetchWorkspaces(selectedFirm.id);
     } catch (err: any) {
       toast.error(err.message || "Action failed");
     } finally {
