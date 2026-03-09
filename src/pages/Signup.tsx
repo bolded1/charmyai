@@ -204,7 +204,7 @@ export default function SignupPage() {
               </>
             )}
           </Link>
-          <p className="text-sm text-muted-foreground mt-3">Start your 7-day free trial</p>
+          <p className="text-sm text-muted-foreground mt-3">Create your account — €29.99 one-time</p>
         </div>
 
         <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-7 space-y-5">

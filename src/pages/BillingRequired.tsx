@@ -36,7 +36,7 @@ export default function BillingRequiredPage() {
     try {
       const { data, error } = await supabase.functions.invoke("activate-trial", {
         body: {
-          priceId: "price_1T8XiYBmkvUKJ0fulbvWmmQN", // monthly default
+          priceId: "price_1T9AklBmkvUKJ0fuE3YD85rg", // Pro one-time
           skipCard: promoResult.requires_card === false,
           promoCodeId: promoResult.promo_code_id,
           stripeCouponId: promoResult.stripe_coupon_id,
@@ -71,14 +71,14 @@ export default function BillingRequiredPage() {
 
   // Determine the message based on subscription status
   let title = "Complete your setup to access Charmy";
-  let description = "Your account has been created, but you need an active trial or subscription to continue using the app.";
+  let description = "Your account has been created, but you need an active plan to continue using the app.";
 
   if (subscription.status === "canceled") {
-    title = "Your subscription has been canceled";
-    description = "Your subscription is no longer active. Reactivate or start a new plan to continue using Charmy.";
+    title = "Your plan access has expired";
+    description = "Your plan is no longer active. Purchase a new plan to continue using Charmy.";
   } else if (subscription.status === "past_due") {
-    title = "Payment past due";
-    description = "Your subscription payment failed. Please update your payment method to restore access.";
+    title = "Payment issue";
+    description = "There was an issue with your payment. Please update your payment method to restore access.";
   } else if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
     title = "Payment incomplete";
     description = "Your payment setup was not completed. Please complete payment to access the app.";

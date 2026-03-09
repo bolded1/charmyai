@@ -109,7 +109,7 @@ export default function MarketingLayout() {
               </Button>
               {!user && (
                 <Button size="sm" asChild className="h-8 px-4 text-[13px] rounded-lg shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-px transition-all duration-200">
-                  <Link to="/signup">Start Free Trial</Link>
+                  <Link to="/signup">Get Started</Link>
                 </Button>
               )}
             </div>
@@ -198,7 +198,7 @@ export default function MarketingLayout() {
                 <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
                   <Link to="/signup">
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Start Free Trial
+                    Get Started
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>

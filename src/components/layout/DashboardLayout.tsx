@@ -99,20 +99,18 @@ export default function DashboardLayout() {
     );
   }
 
-  // Billing setup gate — user must have explicitly completed the billing page
-  // Even if Stripe says "trialing", we require our own billing_setup_at flag
+  // Billing setup gate — user must have explicitly completed the payment page
   if (!profile.billing_setup_at) {
-    // User never completed the billing/payment step — send to activate trial
+    // User never completed the payment step — send to activate
     return <Navigate to="/activate-trial" replace />;
   }
 
   // Subscription gate — fail-closed: block access unless explicitly entitled
   if (!subscription.subscribed) {
-    // Has a Stripe status but it's not valid (expired, canceled, past_due, incomplete, unpaid, etc.)
-    if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing" && subscription.status !== "promo_active") {
+    if (subscription.status && subscription.status !== "active" && subscription.status !== "promo_active") {
       return <Navigate to="/billing-required" replace />;
     }
-    // No subscription status at all — needs to activate trial
+    // No status at all — needs to purchase
     return <Navigate to="/activate-trial" replace />;
   }
 

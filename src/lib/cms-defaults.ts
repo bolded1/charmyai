@@ -31,8 +31,8 @@ export const homepageDefaults = {
   benefit6: "Enterprise-grade security",
   ctaTitle: "Upload invoices. Forward emails.",
   ctaTitleFaded: "Charmy extracts the data.",
-  ctaSubtitle: "Start processing documents in minutes. 7-day free trial included.",
-  ctaButton: "Start 7-Day Trial",
+  ctaSubtitle: "Start processing documents in minutes. One-time payment, lifetime access.",
+  ctaButton: "Get Started — €29.99",
 };
 
 export const featuresDefaults = {
@@ -68,26 +68,26 @@ export const featuresDefaults = {
 
 export const pricingDefaults = {
   heroTitle: "Simple, Transparent Pricing",
-  heroSubtitle: "One powerful plan with a 7-day free trial. No hidden fees.",
-  heroBadge: "7-day free trial · No commitment",
+  heroSubtitle: "One powerful plan. One-time payment. No hidden fees.",
+  heroBadge: "One-time payment · Lifetime access",
   proTitle: "Pro",
   proDesc: "Everything you need to process invoices and manage expenses effortlessly.",
   trust1: "GDPR Compliant",
   trust2: "End-to-end encrypted",
-  trust3: "Cancel anytime",
+  trust3: "Secure payments",
   ctaTitle: "Ready to automate your invoices?",
-  ctaSubtitle: "Start your 7-day free trial today. No credit card charged until the trial ends.",
+  ctaSubtitle: "Get lifetime access to Charmy for a one-time payment of €29.99.",
   faqTitle: "Frequently Asked Questions",
-  faq1Q: "Can I switch between monthly and yearly?",
-  faq1A: "Yes, you can switch at any time. Changes take effect immediately with prorated billing.",
-  faq2Q: "What happens after my trial ends?",
-  faq2A: "After your 7-day trial, you'll be charged automatically. You can cancel anytime before the trial ends.",
+  faq1Q: "Is the Pro plan a one-time payment?",
+  faq1A: "Yes. You pay €29.99 once and get lifetime access to all Pro features. No recurring charges.",
+  faq2Q: "What document formats are supported?",
+  faq2A: "We support PDF, PNG, and JPG files. Scanned documents work too.",
   faq3Q: "What document formats are supported?",
   faq3A: "We support PDF, PNG, and JPG files. Scanned documents work too.",
   faq4Q: "Is my data secure?",
   faq4A: "Yes. All documents are encrypted at rest and in transit. We never share your data.",
-  faq5Q: "Do I need a credit card for the trial?",
-  faq5A: "Yes, a credit card is required to start the trial, but you won't be charged until the 7-day trial period ends.",
+  faq5Q: "Can I upgrade to the Firm plan later?",
+  faq5A: "Yes. You can upgrade from Pro to the Accounting Firm plan at any time to get multi-workspace support.",
 };
 
 export const aboutDefaults = {

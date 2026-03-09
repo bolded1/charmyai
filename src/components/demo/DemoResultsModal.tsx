@@ -364,7 +364,7 @@ export function DemoResultsModal({
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
                       <Button size="lg" variant="secondary" asChild className="shadow-lg">
                         <Link to="/signup">
-                          Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+                          Get Started — €29.99 <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
                       <Button

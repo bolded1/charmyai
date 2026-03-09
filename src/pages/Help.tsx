@@ -137,7 +137,7 @@ const helpArticles: HelpArticle[] = [
       "Update your personal profile including name, email, and timezone.",
       "Customize your organization's branding with a logo and primary color.",
       "Configure expense categories to match your bookkeeping structure.",
-      "Manage your subscription plan and billing details.",
+      "Manage your plan and billing details.",
       "Set up email import preferences and allowed sender domains.",
     ],
   },
