@@ -381,12 +381,12 @@ export default function ActivateTrialPage() {
             )}
           </div>
           <h1 className="text-2xl font-bold text-foreground">
-            {planChoice === "firm" ? "Get the Accounting Firm Plan" : `Start your ${trialDays}-day free trial`}
+            {planChoice === "firm" ? "Get the Accounting Firm Plan" : "Get Charmy Pro"}
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
             {planChoice === "firm"
               ? "One-time payment of €99. Manage up to 10 client workspaces — no recurring fees."
-              : "Add your payment method to begin your free trial. You will not be charged until the trial ends."}
+              : "One-time payment of €29.99. Get lifetime access to all Pro features."}
           </p>
         </div>
 
