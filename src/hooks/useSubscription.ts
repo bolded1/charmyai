@@ -47,6 +47,8 @@ export interface SubscriptionState {
   current_period_end: string | null;
   cancel_at_period_end: boolean;
   has_firm_plan: boolean;
+  amount_paid: number | null;
+  paid_currency: string;
   loading: boolean;
 }
 
