@@ -58,10 +58,17 @@ const COUNTRIES = [
 export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { updateProfile, uploadAvatar } = useProfile();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, isLoading: profileLoading, updateProfile, uploadAvatar } = useProfile();
   const { data: org } = useOrganization();
   const updateOrg = useUpdateOrganization();
+
+  // Redirect already-onboarded users away from onboarding
+  useEffect(() => {
+    if (!authLoading && !profileLoading && user && profile?.first_name) {
+      navigate("/app", { replace: true });
+    }
+  }, [authLoading, profileLoading, user, profile?.first_name, navigate]);
 
   // Pre-populate from signup metadata
   const metaFirst = user?.user_metadata?.first_name || "";

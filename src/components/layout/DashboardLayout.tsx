@@ -62,7 +62,8 @@ export default function DashboardLayout() {
     applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
   }, [org?.primary_color]);
 
-  if (loading || subscription.loading) {
+  // Block all rendering until auth, profile, and subscription checks complete
+  if (loading || subscription.loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -75,7 +76,8 @@ export default function DashboardLayout() {
   }
 
   // Onboarding guard: redirect if profile incomplete (no first name set)
-  if (profile && !profile.first_name) {
+  // Profile is guaranteed loaded at this point due to profileLoading check above
+  if (!profile || !profile.first_name) {
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -96,15 +98,15 @@ export default function DashboardLayout() {
     );
   }
 
-  // Subscription gate — block access until billing entitlement is valid
+  // Subscription gate — fail-closed: block access unless explicitly entitled
   const isBillingPage = location.pathname === "/app/settings" && searchParams.get("tab") === "billing";
-  if (!subscription.subscribed && !isBillingPage) {
-    // Has a status from Stripe but it's not valid (expired, canceled, past_due, etc.)
-    if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing") {
-      return <Navigate to="/billing-required" replace />;
-    }
-    // No subscription at all — needs to activate trial
-    if (!subscription.status) {
+  if (!isBillingPage) {
+    if (!subscription.subscribed) {
+      // Has a Stripe status but it's not valid (expired, canceled, past_due, incomplete, unpaid, etc.)
+      if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing" && subscription.status !== "promo_active") {
+        return <Navigate to="/billing-required" replace />;
+      }
+      // No subscription status at all — needs to activate trial
       return <Navigate to="/activate-trial" replace />;
     }
   }
