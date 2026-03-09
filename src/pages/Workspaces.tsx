@@ -238,38 +238,54 @@ export default function WorkspacesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showArchived, setShowArchived] = useState(false);
 
-  // Standalone invite dialog
+  // Standalone invite dialog — multiple clients
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
-  const [inviteName, setInviteName] = useState("");
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRows, setInviteRows] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
   const [inviting, setInviting] = useState(false);
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
-    setInviteName((ws as any).client_contact_name || "");
-    setInviteEmail((ws as any).client_contact_email || ws.contact_email || "");
+    setInviteRows([{
+      name: (ws as any).client_contact_name || "",
+      email: (ws as any).client_contact_email || ws.contact_email || "",
+    }]);
     setInviteOpen(true);
   };
 
-  const handleInviteClient = async () => {
-    if (!inviteWs || !inviteName.trim() || !inviteEmail.trim() || inviting) return;
+  const updateInviteRow = (idx: number, field: "name" | "email", value: string) => {
+    setInviteRows((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
+  };
+
+  const addInviteRow = () => setInviteRows((prev) => [...prev, { name: "", email: "" }]);
+
+  const removeInviteRow = (idx: number) => setInviteRows((prev) => prev.filter((_, i) => i !== idx));
+
+  const validInviteRows = inviteRows.filter((r) => r.name.trim() && r.email.trim());
+
+  const handleInviteClients = async () => {
+    if (!inviteWs || validInviteRows.length === 0 || inviting) return;
     setInviting(true);
-    try {
-      await sendClientInvitation.mutateAsync({
-        workspace_id: inviteWs.id,
-        client_name: inviteName.trim(),
-        client_email: inviteEmail.trim(),
-      });
-      setInviteOpen(false);
-      setInviteWs(null);
-      setInviteName("");
-      setInviteEmail("");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send invitation");
-    } finally {
-      setInviting(false);
+    let successCount = 0;
+    let failCount = 0;
+    for (const row of validInviteRows) {
+      try {
+        await sendClientInvitation.mutateAsync({
+          workspace_id: inviteWs.id,
+          client_name: row.name.trim(),
+          client_email: row.email.trim(),
+        });
+        successCount++;
+      } catch {
+        failCount++;
+      }
     }
+    if (successCount > 0) toast.success(`${successCount} invitation${successCount > 1 ? "s" : ""} sent`);
+    if (failCount > 0) toast.error(`${failCount} invitation${failCount > 1 ? "s" : ""} failed`);
+    setInviteOpen(false);
+    setInviteWs(null);
+    setInviteRows([{ name: "", email: "" }]);
+    setInviting(false);
   };
 
   const homeOrg = allWorkspaces.find(
@@ -979,30 +995,44 @@ export default function WorkspacesPage() {
       </AlertDialog>
 
       {/* ═══ Invite Client Dialog ═══ */}
-      <Dialog open={inviteOpen} onOpenChange={(v) => { setInviteOpen(v); if (!v) { setInviteWs(null); setInviteName(""); setInviteEmail(""); } }}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={inviteOpen} onOpenChange={(v) => { setInviteOpen(v); if (!v) { setInviteWs(null); setInviteRows([{ name: "", email: "" }]); } }}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-primary" />
-              Invite Client
+              Invite Clients
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Send a login invitation to the client for <strong>{inviteWs?.name}</strong>. They'll create an account and access only this workspace.
+              Send login invitations to clients for <strong>{inviteWs?.name}</strong>. They'll create an account and access only this workspace.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <Field label="Client Contact Name">
-              <Input value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="e.g. John Doe" />
-            </Field>
-            <Field label="Client Contact Email">
-              <Input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="client@company.com" />
-            </Field>
+          <div className="space-y-3 py-2 max-h-[50vh] overflow-y-auto">
+            {inviteRows.map((row, idx) => (
+              <div key={idx} className="flex items-end gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Name</Label>
+                  <Input value={row.name} onChange={(e) => updateInviteRow(idx, "name", e.target.value)} placeholder="e.g. John Doe" />
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <Input type="email" value={row.email} onChange={(e) => updateInviteRow(idx, "email", e.target.value)} placeholder="client@company.com" />
+                </div>
+                {inviteRows.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 text-destructive" onClick={() => removeInviteRow(idx)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="w-full" onClick={addInviteRow}>
+              <Plus className="h-3.5 w-3.5 mr-1.5" /> Add another client
+            </Button>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
-            <Button onClick={handleInviteClient} disabled={!inviteName.trim() || !inviteEmail.trim() || inviting}>
+            <Button onClick={handleInviteClients} disabled={validInviteRows.length === 0 || inviting}>
               {inviting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-              Send Invitation
+              Send {validInviteRows.length > 1 ? `${validInviteRows.length} Invitations` : "Invitation"}
             </Button>
           </DialogFooter>
         </DialogContent>
