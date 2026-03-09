@@ -132,7 +132,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     (w) => w.owner_user_id === user?.id && w.workspace_type !== "client"
   );
   const isAccountingFirm = homeOrg?.workspace_type === "accounting_firm";
-  const clientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client");
+  const clientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client" && !w.archived_at);
 
   const switchWorkspace = async (orgId: string) => {
     if (!user) return;
