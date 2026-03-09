@@ -406,7 +406,7 @@ export default function ActivateTrialPage() {
                 <CreditCard className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold text-foreground">Pro Plan</span>
               </div>
-              <p className="text-xs text-muted-foreground">€9.99/mo · 7-day free trial</p>
+              <p className="text-xs text-muted-foreground">€29.99 one-time · Lifetime access</p>
             </button>
             <button
               type="button"
