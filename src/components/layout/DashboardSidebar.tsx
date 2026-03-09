@@ -210,11 +210,11 @@ export function DashboardSidebar() {
               )}
             </div>
             {showLabels && (
-              <div className="flex gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
                 {profileMenu}
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/60 transition-colors shrink-0"
+                  className="flex items-center justify-center gap-1.5 h-8 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/60 transition-colors"
                   title="Sign Out"
                 >
                   <LogOut className="h-3 w-3" strokeWidth={2.5} />
