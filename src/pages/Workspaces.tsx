@@ -896,6 +896,36 @@ export default function WorkspacesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ═══ Invite Client Dialog ═══ */}
+      <Dialog open={inviteOpen} onOpenChange={(v) => { setInviteOpen(v); if (!v) { setInviteWs(null); setInviteName(""); setInviteEmail(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4 text-primary" />
+              Invite Client
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Send a login invitation to the client for <strong>{inviteWs?.name}</strong>. They'll create an account and access only this workspace.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Field label="Client Contact Name">
+              <Input value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="e.g. John Doe" />
+            </Field>
+            <Field label="Client Contact Email">
+              <Input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="client@company.com" />
+            </Field>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
+            <Button onClick={handleInviteClient} disabled={!inviteName.trim() || !inviteEmail.trim() || inviting}>
+              {inviting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              Send Invitation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
