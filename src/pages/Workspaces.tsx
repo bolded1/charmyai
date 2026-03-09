@@ -796,14 +796,46 @@ export default function WorkspacesPage() {
               Set up a new isolated workspace for a client company. You can always edit details later.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-5">
             {renderFormFields(formData, updateField)}
+
+            {/* Client invitation option */}
+            <div>
+              <Separator className="mb-4" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Client Access</p>
+              <div className="flex items-start gap-3 bg-accent/30 rounded-lg p-3">
+                <Checkbox
+                  id="send-invite"
+                  checked={sendInvite}
+                  onCheckedChange={(c) => setSendInvite(!!c)}
+                  className="mt-0.5"
+                />
+                <div className="space-y-1 flex-1">
+                  <label htmlFor="send-invite" className="text-sm font-medium text-foreground cursor-pointer">
+                    Send client invitation now
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Invite the client to log in and access their workspace. Leave unchecked for internal-only workspaces.
+                  </p>
+                </div>
+              </div>
+              {sendInvite && (
+                <div className="mt-3 grid sm:grid-cols-2 gap-3">
+                  <Field label="Client Contact Name">
+                    <Input value={clientContactName} onChange={(e) => setClientContactName(e.target.value)} placeholder="e.g. John Doe" />
+                  </Field>
+                  <Field label="Client Contact Email">
+                    <Input type="email" value={formData.contact_email || ""} onChange={(e) => updateField("contact_email", e.target.value)} placeholder="client@company.com" />
+                  </Field>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!formData.name.trim() || creating}>
+            <Button onClick={handleCreate} disabled={!formData.name.trim() || creating || (sendInvite && (!clientContactName.trim() || !formData.contact_email?.trim()))}>
               {creating && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-              Create Workspace
+              {sendInvite ? "Create & Invite Client" : "Create Workspace"}
             </Button>
           </DialogFooter>
         </DialogContent>
