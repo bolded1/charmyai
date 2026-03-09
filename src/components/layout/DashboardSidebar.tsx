@@ -210,13 +210,15 @@ export function DashboardSidebar() {
 
             {showLabels && (
               <div className="space-y-1">
-                <button
-                  onClick={() => navigate("/app/settings")}
-                  className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-foreground hover:bg-background/60 border border-border/60 transition-colors"
-                >
-                  <Settings className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  <span>Settings</span>
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-foreground hover:bg-background/60 border border-border/60 transition-colors focus:outline-none">
+                      <Settings className="h-3.5 w-3.5" strokeWidth={2.5} />
+                      <span>Settings</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  {profileDropdownContent}
+                </DropdownMenu>
                 <button
                   onClick={handleSignOut}
                   className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/60 transition-colors"
