@@ -143,18 +143,22 @@ export function DashboardSidebar() {
           <span className="text-[13px]">My Profile</span>
           {!isMobile && <DropdownMenuShortcut>{MOD_LABEL},</DropdownMenuShortcut>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/app/settings?tab=organization")} className="px-3 min-h-[40px]">
-          <Building2 className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">Organization Settings</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/app/settings?tab=appearance")} className="px-3 min-h-[40px]">
-          <Palette className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">Appearance</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/app/team")} className="px-3 min-h-[40px]">
-          <UsersRound className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">Team Members</span>
-        </DropdownMenuItem>
+        {!isClient && (
+          <>
+            <DropdownMenuItem onClick={() => navigate("/app/settings?tab=organization")} className="px-3 min-h-[40px]">
+              <Building2 className="h-3.5 w-3.5 mr-2" />
+              <span className="text-[13px]">Organization Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/app/settings?tab=appearance")} className="px-3 min-h-[40px]">
+              <Palette className="h-3.5 w-3.5 mr-2" />
+              <span className="text-[13px]">Appearance</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/app/team")} className="px-3 min-h-[40px]">
+              <UsersRound className="h-3.5 w-3.5 mr-2" />
+              <span className="text-[13px]">Team Members</span>
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
 
