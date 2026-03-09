@@ -320,7 +320,7 @@ export default function DashboardLayout() {
             <NPSWidget />
           </main>
 
-
+          </div>
         </div>
       </div>
 
