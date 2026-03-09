@@ -864,7 +864,13 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address: string | null
           app_icon: string | null
+          archived_at: string | null
+          company_logo: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          country: string | null
           created_at: string
           default_currency: string
           id: string
@@ -876,11 +882,20 @@ export type Database = {
           owner_user_id: string
           parent_org_id: string | null
           primary_color: string | null
+          tax_id: string | null
+          trading_name: string | null
           updated_at: string
+          vat_number: string | null
           workspace_type: string
         }
         Insert: {
+          address?: string | null
           app_icon?: string | null
+          archived_at?: string | null
+          company_logo?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
           created_at?: string
           default_currency?: string
           id?: string
@@ -892,11 +907,20 @@ export type Database = {
           owner_user_id: string
           parent_org_id?: string | null
           primary_color?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
           updated_at?: string
+          vat_number?: string | null
           workspace_type?: string
         }
         Update: {
+          address?: string | null
           app_icon?: string | null
+          archived_at?: string | null
+          company_logo?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
           created_at?: string
           default_currency?: string
           id?: string
@@ -908,7 +932,10 @@ export type Database = {
           owner_user_id?: string
           parent_org_id?: string | null
           primary_color?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
           updated_at?: string
+          vat_number?: string | null
           workspace_type?: string
         }
         Relationships: [
