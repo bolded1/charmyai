@@ -74,10 +74,8 @@ export default function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  // Onboarding guard: redirect if onboarding not completed
-  // Check both the new flag AND legacy first_name for backward compatibility
-  const onboardingDone = !!(profile?.onboarding_completed_at || profile?.first_name);
-  if (!profile || !onboardingDone) {
+  // Onboarding guard: only completed onboarding grants app access
+  if (!profile || !profile.onboarding_completed_at) {
     return <Navigate to="/onboarding" replace />;
   }
 

@@ -74,12 +74,16 @@ export default function OnboardingPage() {
     }
   }, [profileLoading, profileComplete]);
 
-  // Redirect already-onboarded users away from onboarding
+  // Redirect users who already completed onboarding
   useEffect(() => {
     if (!authLoading && !profileLoading && user && profile?.onboarding_completed_at) {
-      navigate("/app", { replace: true });
+      if (profile?.billing_setup_at) {
+        navigate("/app", { replace: true });
+      } else {
+        navigate("/activate-trial", { replace: true });
+      }
     }
-  }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, navigate]);
+  }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, profile?.billing_setup_at, navigate]);
 
   // Pre-populate from saved profile data first, then signup metadata as fallback
   const metaFirst = user?.user_metadata?.first_name || "";
