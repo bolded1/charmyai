@@ -49,3 +49,5 @@ project_id = "vhaursnvaadhxxwefxez"
     verify_jwt = false
   [functions.ai-assistant]
     verify_jwt = false
+  [functions.firm-payment-intent]
+    verify_jwt = false

@@ -95,9 +95,13 @@ export default function ActivateTrialPage() {
     }
   }, []);
 
+  // Firm plan: PaymentIntent client secret
+  const [firmClientSecret, setFirmClientSecret] = useState<string | null>(null);
+  const [firmElements, setFirmElements] = useState<any>(null);
+
   // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
-    if (!stripe || !user || planChoice === "firm") return;
+    if (!stripe || !user || planChoice !== "pro") return;
 
     const initSetup = async () => {
       try {
@@ -127,8 +131,42 @@ export default function ActivateTrialPage() {
       }
     };
 
-    // Small delay to ensure DOM element exists
     const timer = setTimeout(initSetup, 100);
+    return () => clearTimeout(timer);
+  }, [stripe, user, planChoice]);
+
+  // Create PaymentIntent and mount Elements for Firm plan
+  useEffect(() => {
+    if (!stripe || !user || planChoice !== "firm") return;
+
+    const initFirmPayment = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("firm-payment-intent");
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setFirmClientSecret(data.client_secret);
+
+        const els = stripe.elements({
+          clientSecret: data.client_secret,
+          appearance: {
+            theme: "stripe",
+            variables: {
+              colorPrimary: "#1E3A8A",
+              borderRadius: "12px",
+              fontFamily: "system-ui, sans-serif",
+            },
+          },
+        });
+        setFirmElements(els);
+
+        const pe = els.create("payment");
+        pe.mount("#stripe-firm-element");
+      } catch (err: any) {
+        setSetupError(err.message || "Failed to initialize payment form");
+      }
+    };
+
+    const timer = setTimeout(initFirmPayment, 100);
     return () => clearTimeout(timer);
   }, [stripe, user, planChoice]);
 
@@ -151,32 +189,48 @@ export default function ActivateTrialPage() {
   // Whether card is needed based on promo (only relevant for Pro plan)
   const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
 
-  // Handle Firm Plan checkout (one-time payment via Stripe Checkout)
+  // Handle Firm Plan inline payment
   const handleFirmCheckout = async () => {
+    if (!stripe || !firmElements || !firmClientSecret) return;
     setSubmitting(true);
     setSetupError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: STRIPE_PLANS.firm.price_id },
+      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+        elements: firmElements,
+        confirmParams: {
+          payment_method_data: {
+            billing_details: {
+              name: billingName || undefined,
+            },
+          },
+        },
+        redirect: "if_required",
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
 
-      // Set billing_setup_at before redirect so after payment the gate opens
-      if (user) {
-        try {
-          await supabase
-            .from("profiles")
-            .update({ billing_setup_at: new Date().toISOString() })
-            .eq("user_id", user.id);
-        } catch {}
+      if (confirmError) {
+        setSetupError(confirmError.message);
+        setSubmitting(false);
+        return;
       }
 
-      if (data?.url) {
-        window.location.href = data.url;
+      if (paymentIntent?.status === "succeeded") {
+        // Set billing_setup_at
+        if (user) {
+          try {
+            await supabase
+              .from("profiles")
+              .update({ billing_setup_at: new Date().toISOString() })
+              .eq("user_id", user.id);
+          } catch {}
+        }
+
+        toast.success("Payment successful! Your firm plan is now active.");
+        navigate("/app/workspaces");
+      } else {
+        setSetupError("Payment was not completed. Please try again.");
       }
     } catch (err: any) {
-      setSetupError(err.message || "Failed to start checkout");
+      setSetupError(err.message || "Payment failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -592,6 +646,25 @@ export default function ActivateTrialPage() {
                 </div>
               </div>
 
+              {/* Billing Name */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground">Billing Name</Label>
+                <Input
+                  placeholder="John Smith"
+                  value={billingName}
+                  onChange={(e) => setBillingName(e.target.value)}
+                />
+              </div>
+
+              {/* Inline Stripe Payment Element */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground">Payment Details</Label>
+                <div
+                  id="stripe-firm-element"
+                  className="rounded-xl border border-input bg-card/80 px-3 py-3 min-h-[44px]"
+                />
+              </div>
+
               {setupError && (
                 <p className="text-sm text-destructive">{setupError}</p>
               )}
@@ -600,7 +673,7 @@ export default function ActivateTrialPage() {
                 className="w-full"
                 size="lg"
                 onClick={handleFirmCheckout}
-                disabled={submitting}
+                disabled={submitting || !stripe || !firmClientSecret}
               >
                 {submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
