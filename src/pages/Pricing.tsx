@@ -202,27 +202,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Demo reminder */}
-      <section className="py-16">
-        <div className="container max-w-2xl">
-          <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="glass-card rounded-2xl p-8 md:p-12 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-2xl" />
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="mx-auto mb-4"
-            >
-              <Sparkles className="h-8 w-8 text-primary mx-auto" />
-            </motion.div>
-            <h3 className="text-2xl font-bold mb-2">Try Charmy before signing up</h3>
-            <p className="text-muted-foreground mb-6">Upload a sample invoice and see how Charmy extracts financial data instantly.</p>
-            <Button size="lg" className="rounded-xl" asChild>
-              <Link to="/demo">Try Demo <ArrowRight className="h-4 w-4 ml-2" /></Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
+      <MarketingCTA />
     </div>
   );
 }
