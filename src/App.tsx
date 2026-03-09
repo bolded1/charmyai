@@ -127,6 +127,7 @@ const App = () => (
             <Route path="support" element={<Support />} />
             <Route path="help" element={<Help />} />
             <Route path="assistant" element={<Assistant />} />
+            <Route path="workspaces" element={<Workspaces />} />
           </Route>
 
           {/* Admin pages */}
