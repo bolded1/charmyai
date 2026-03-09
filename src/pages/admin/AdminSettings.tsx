@@ -272,16 +272,28 @@ export default function AdminSettingsPage() {
         </TabsList>
 
         <TabsContent value="branding">
-          <Card>
-            <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, login, onboarding, and marketing pages. Provide separate versions for light and dark themes.</p>
-              <div className="grid sm:grid-cols-2 gap-6">
-                <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
-                <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, login, onboarding, and marketing pages. Provide separate versions for light and dark themes.</p>
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
+                  <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle className="text-base">PWA App Icon</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Upload a square icon (minimum 512×512px) used as the app icon when users install the app on their device. Changes apply to new installs and when existing users' devices refresh the manifest.
+                </p>
+                <PwaIconUpload />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
 
