@@ -43,11 +43,11 @@ export function PwaInstallBanner() {
             <Smartphone className="h-4 w-4 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Install Charmy</p>
+            <p className="text-sm font-semibold text-foreground">Install Charmy as a Desktop App</p>
             <p className="text-xs text-muted-foreground">
               {isIOS
                 ? "Tap Share → Add to Home Screen for a native app experience"
-                : "Install for quick access, offline support, and a native app experience"
+                : "Add Charmy to your desktop as a Progressive Web App — quick launch, offline access, and a native feel without an app store"
               }
             </p>
           </div>
