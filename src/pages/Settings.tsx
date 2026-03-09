@@ -339,8 +339,7 @@ export default function SettingsPage() {
               </Card>
             </div>
           ) : (
-          <OrgSettingsForm org={org} updateOrg={updateOrg} />
-          )
+            <OrgSettingsForm org={org} updateOrg={updateOrg} />
           )}
         </TabsContent>
 
