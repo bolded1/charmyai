@@ -177,6 +177,10 @@ export function DashboardSidebar() {
           </Link>
         </SidebarHeader>
         <SidebarContent className="px-1.5 pt-1">
+          {/* Workspace Switcher */}
+          <div className="px-1.5 mb-2">
+            <WorkspaceSwitcher compact={collapsed} />
+          </div>
           {renderGroup("Documents", financeItems)}
           {renderGroup("Finance", recordsItems)}
           {renderGroup("System", systemItems)}

@@ -481,6 +481,12 @@ export function useBulkApproveDocuments() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       for (const doc of docs) {
         if (doc.status === "approved" || doc.status === "exported") continue;
 
@@ -491,6 +497,7 @@ export function useBulkApproveDocuments() {
 
         await supabase.from("expense_records").insert({
           user_id: user.id,
+          organization_id: profile?.active_organization_id || null,
           document_id: doc.id,
           supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
           invoice_number: doc.invoice_number,
