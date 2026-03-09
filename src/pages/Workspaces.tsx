@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useWorkspace, Workspace, CreateWorkspaceData, UpdateWorkspaceData } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -134,6 +134,7 @@ export default function WorkspacesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
   const [creating, setCreating] = useState(false);
+  const creatingRef = useRef(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingWs, setEditingWs] = useState<Workspace | null>(null);
@@ -230,7 +231,8 @@ export default function WorkspacesPage() {
 
   // ── Handlers ──
   const handleCreate = async () => {
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim() || creatingRef.current) return;
+    creatingRef.current = true;
     setCreating(true);
     try {
       const ws = await createClientWorkspace({ ...formData, name: formData.name.trim() });
@@ -242,6 +244,7 @@ export default function WorkspacesPage() {
     } catch (err: any) {
       toast.error(err.message);
     } finally {
+      creatingRef.current = false;
       setCreating(false);
     }
   };
