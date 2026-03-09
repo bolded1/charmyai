@@ -33,7 +33,6 @@ export default function PricingPage() {
   const { user } = useAuth();
   const subscription = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const handleCheckout = async (priceId: string) => {
