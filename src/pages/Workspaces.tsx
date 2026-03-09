@@ -850,8 +850,21 @@ export default function WorkspacesPage() {
               Update workspace details for {editingWs?.name}.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-5">
             {renderFormFields(editData, updateEditField)}
+
+            {/* Client Access Panel */}
+            {editingWs && (
+              <>
+                <Separator />
+                <ClientAccessPanel
+                  workspaceId={editingWs.id}
+                  workspaceName={editingWs.name}
+                  contactName={(editingWs as any).client_contact_name}
+                  contactEmail={(editingWs as any).client_contact_email}
+                />
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
