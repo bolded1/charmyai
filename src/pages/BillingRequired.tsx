@@ -71,7 +71,7 @@ export default function BillingRequiredPage() {
 
   // Determine the message based on subscription status
   let title = "Complete your setup to access Charmy";
-  let description = "Your account has been created, but you need an active trial or subscription to continue using the app.";
+  let description = "Your account has been created, but you need an active plan to continue using the app.";
 
   if (subscription.status === "canceled") {
     title = "Your subscription has been canceled";
