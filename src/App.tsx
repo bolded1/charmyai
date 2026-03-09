@@ -135,6 +135,7 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="organizations" element={<AdminOrganizations />} />
+            <Route path="firm-accounts" element={<AdminFirmAccounts />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="documents" element={<AdminDocuments />} />
             <Route path="document-stats" element={<AdminDocumentStats />} />
