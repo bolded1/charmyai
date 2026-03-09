@@ -219,6 +219,13 @@ export default function WorkspacesPage() {
   } = useWorkspace();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isClient } = useClientRole();
+
+  // Clients should not access the firm dashboard
+  if (isClient) {
+    navigate("/app", { replace: true });
+    return null;
+  }
 
   const [createOpen, setCreateOpen] = useState(false);
   const [formData, setFormData] = useState<CreateWorkspaceData>({ ...emptyForm });
