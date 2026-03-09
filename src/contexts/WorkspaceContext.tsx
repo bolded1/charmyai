@@ -79,18 +79,22 @@ export function useWorkspace() {
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { effectiveUserId } = useImpersonation();
   const queryClient = useQueryClient();
+
+  // Use impersonated user if active, otherwise the real user
+  const targetUserId = effectiveUserId || user?.id;
 
   // Fetch all workspaces the user has access to
   const { data: workspacesData, isLoading: wsLoading } = useQuery({
-    queryKey: ["workspaces", user?.id],
+    queryKey: ["workspaces", targetUserId],
     queryFn: async () => {
-      if (!user) return [];
-      // Get user's own org(s) + child orgs of their accounting firm
+      if (!targetUserId) return [];
+      // Get target user's own org(s) + child orgs of their accounting firm
       const { data: ownOrgs, error: e1 } = await supabase
         .from("organizations")
         .select("*")
-        .eq("owner_user_id", user.id);
+        .eq("owner_user_id", targetUserId);
       if (e1) throw e1;
 
       // Find accounting firm org
