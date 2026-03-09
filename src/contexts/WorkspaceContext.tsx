@@ -17,8 +17,41 @@ export interface Workspace {
   app_icon: string | null;
   import_email_token: string;
   max_client_workspaces: number;
+  trading_name: string | null;
+  vat_number: string | null;
+  tax_id: string | null;
+  address: string | null;
+  country: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  company_logo: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateWorkspaceData {
+  name: string;
+  trading_name?: string;
+  vat_number?: string;
+  tax_id?: string;
+  address?: string;
+  country?: string;
+  default_currency?: string;
+  contact_email?: string;
+  contact_phone?: string;
+}
+
+export interface UpdateWorkspaceData {
+  name?: string;
+  trading_name?: string | null;
+  vat_number?: string | null;
+  tax_id?: string | null;
+  address?: string | null;
+  country?: string | null;
+  default_currency?: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
 }
 
 interface WorkspaceContextType {
