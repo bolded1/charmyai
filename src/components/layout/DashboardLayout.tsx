@@ -229,7 +229,7 @@ export default function DashboardLayout() {
               </button>
               <nav id="mobile-nav-scroll" className="flex-1 overflow-x-auto scrollbar-hide">
                 <div className="flex min-w-max">
-                  {mobileNavItems.map((item) => {
+                  {(isClient ? clientMobileNavItems : mobileNavItems).map((item) => {
                     const isActive = item.url === "/app"
                       ? location.pathname === "/app"
                       : location.pathname.startsWith(item.url);
