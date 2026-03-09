@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +63,14 @@ export default function AdminUsersPage() {
   const isMobile = useIsMobile();
   const { startImpersonating } = useImpersonation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleActAsUser = (user: UserRow) => {
     const name = displayName(user);
+    // Invalidate workspace queries BEFORE setting impersonation so fresh data loads
+    queryClient.removeQueries({ queryKey: ["workspaces"] });
+    queryClient.removeQueries({ queryKey: ["active-workspace-id"] });
+    queryClient.removeQueries({ queryKey: ["organization"] });
     startImpersonating({ userId: user.user_id, email: user.email || "Unknown", displayName: name });
     toast.success(`Now viewing as ${name}`);
     navigate("/app");

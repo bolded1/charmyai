@@ -84,7 +84,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   // Use impersonated user if active, otherwise the real user
   const targetUserId = effectiveUserId || user?.id;
-  console.log("[WorkspaceContext] effectiveUserId:", effectiveUserId, "user?.id:", user?.id, "targetUserId:", targetUserId);
+  
 
   // Fetch all workspaces the user has access to
   const { data: workspacesData, isLoading: wsLoading } = useQuery({
@@ -142,7 +142,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     (w) => w.owner_user_id === targetUserId && w.workspace_type !== "client"
   );
   const isAccountingFirm = homeOrg?.workspace_type === "accounting_firm";
-  console.log("[WorkspaceContext] homeOrg:", homeOrg?.name, homeOrg?.workspace_type, "isAccountingFirm:", isAccountingFirm, "allWorkspaces:", allWorkspaces.length);
+  
   const clientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client" && !w.archived_at);
 
   const switchWorkspace = async (orgId: string) => {
