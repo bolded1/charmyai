@@ -155,16 +155,16 @@ export default function DashboardLayout() {
   return (
     <SidebarProvider>
       <div className="h-[100dvh] flex w-full bg-background overflow-hidden">
-        {/* Desktop sidebar - hidden on mobile */}
-        <div className="hidden md:block">
+        {/* Desktop sidebar */}
+        <div className="hidden md:flex md:shrink-0 border-r border-border/40">
           <DashboardSidebar />
         </div>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
-          {/* Background gradient orbs */}
+          {/* Subtle background gradient */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
-            <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
-            <div className="absolute bottom-[-15%] right-[-8%] w-[400px] h-[400px] rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+            <div className="absolute top-[-15%] left-[-5%] w-[600px] h-[600px] rounded-full opacity-[0.07] blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(224 76% 48%), transparent 70%)' }} />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-[0.05] blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(262 83% 58%), transparent 70%)' }} />
           </div>
 
           <div className="relative z-10 flex flex-col min-h-0 flex-1">
@@ -194,7 +194,7 @@ export default function DashboardLayout() {
             )}
 
             {/* Mobile header with logo + profile */}
-            <header className="h-14 border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden">
+            <header className="h-14 border-b border-border/30 bg-card/90 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden shadow-[var(--shadow-xs)]">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {brandLogo ? (
                   <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain shrink-0" />
@@ -216,7 +216,7 @@ export default function DashboardLayout() {
             </header>
 
             {/* Mobile navigation tab bar */}
-            <div className="md:hidden border-b border-border/40 bg-card/80 backdrop-blur-xl flex items-center">
+            <div className="md:hidden border-b border-border/30 bg-card/90 backdrop-blur-xl flex items-center">
               <button
                 onClick={() => {
                   const el = document.getElementById("mobile-nav-scroll");
@@ -262,7 +262,7 @@ export default function DashboardLayout() {
               </button>
             </div>
 
-            <main className={`flex-1 min-h-0 surface-sunken ${location.pathname === "/app/assistant" ? "overflow-hidden p-0" : `overflow-auto ${layoutSettings.compactView ? "p-3 md:p-4" : "p-4 md:p-8"}`}`}>
+            <main className={`flex-1 min-h-0 surface-sunken ${location.pathname === "/app/assistant" ? "overflow-hidden p-0" : `overflow-auto scrollbar-thin ${layoutSettings.compactView ? "p-3 md:p-5" : "p-4 md:p-8"}`}`}>
               <Outlet />
               <NPSWidget />
             </main>

@@ -120,10 +120,13 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
+        "theme-xs": "var(--shadow-xs)",
         "theme-sm": "var(--shadow-sm)",
         "theme-md": "var(--shadow-md)",
         "theme-lg": "var(--shadow-lg)",
         "theme-overlay": "var(--shadow-overlay)",
+        "card": "var(--shadow-card)",
+        "card-hover": "var(--shadow-card-hover)",
       },
       keyframes: {
         "accordion-down": {

@@ -160,12 +160,12 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-5">
       {/* Client workspace indicator */}
       {isClientContext && activeWorkspace && (
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/15 bg-primary/[0.03]">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <div className="h-9 w-9 rounded-xl icon-bg-blue flex items-center justify-center shrink-0">
               <Briefcase className="h-4 w-4 text-primary" />
             </div>
             <div className="min-w-0">
@@ -185,22 +185,22 @@ export default function UploadPage() {
 
       {/* Email Import Address */}
       {importEmailAddress && (
-        <Card className="border-0 stat-card-violet">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-xl icon-bg-violet flex items-center justify-center shrink-0">
+        <Card className="border-0 stat-card-violet overflow-hidden">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-3.5">
+              <div className="h-10 w-10 rounded-xl icon-bg-violet flex items-center justify-center shrink-0 mt-0.5">
                 <Mail className="h-5 w-5 text-violet" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-bold mb-0.5">Import Expenses via Email</h3>
-                <p className="text-xs text-muted-foreground mb-2.5">
+                <p className="text-xs text-muted-foreground mb-3">
                   Forward invoices to this address and they'll be automatically processed.
                 </p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs bg-card/80 backdrop-blur-sm px-3 py-2 rounded-lg font-mono truncate border border-border/40">
+                  <code className="flex-1 text-xs bg-card px-3 py-2.5 rounded-xl font-mono truncate border border-border/40 shadow-[var(--shadow-xs)]">
                     {importEmailAddress}
                   </code>
-                  <Button variant="outline" size="sm" className="shrink-0 h-8 gap-1.5 rounded-lg" onClick={copyEmail}>
+                  <Button variant="outline" size="sm" className="shrink-0 h-9 gap-1.5 rounded-xl shadow-[var(--shadow-xs)]" onClick={copyEmail}>
                     {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     {copied ? "Copied" : "Copy"}
                   </Button>
@@ -210,20 +210,22 @@ export default function UploadPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Scan (mobile) */}
       <Card className="overflow-hidden border-0 lg:hidden">
         <CardContent className="p-0">
           <div
-            className={`relative px-4 py-5 md:p-12 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
+            className={`relative px-4 py-5 md:p-12 text-center transition-all duration-200 cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
               scanPressed
-                ? "border-primary bg-primary/5 shadow-glow"
-                : "border-border hover:border-primary/50 hover:bg-accent/30"
+                ? "border-primary bg-primary/[0.04] shadow-glow"
+                : "border-border/60 hover:border-primary/40 hover:bg-accent/20"
             }`}
             onClick={() => document.getElementById("camera-input")?.click()}
             onPointerDown={() => setScanPressed(true)}
             onPointerUp={() => setScanPressed(false)}
             onPointerLeave={() => setScanPressed(false)}
           >
-            <div className={`mx-auto mb-2 md:mb-5 h-10 w-10 md:h-16 md:w-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all ${
+            <div className={`mx-auto mb-2 md:mb-5 h-10 w-10 md:h-16 md:w-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-200 ${
               scanPressed ? "bg-gradient-sunset shadow-lg shadow-primary/25" : "icon-bg-violet"
             }`}>
               <Camera className={`h-5 w-5 md:h-7 md:w-7 transition-colors ${scanPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: scanPressed ? undefined : 'hsl(var(--violet))' }} />
@@ -253,32 +255,32 @@ export default function UploadPage() {
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            className={`relative px-4 py-5 md:px-6 md:py-6 text-center transition-all cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.98] ${
+            className={`relative px-4 py-6 md:px-8 md:py-8 text-center transition-all duration-200 cursor-pointer border-2 border-dashed rounded-2xl active:scale-[0.99] ${
               dragOver || uploadPressed
-                ? "border-primary bg-primary/5 scale-[1.01] shadow-glow"
-                : "border-border hover:border-primary/50 hover:bg-accent/30"
+                ? "border-primary bg-primary/[0.04] scale-[1.01] shadow-glow"
+                : "border-border/60 hover:border-primary/40 hover:bg-accent/20"
             }`}
             onClick={() => document.getElementById("file-input")?.click()}
             onPointerDown={() => setUploadPressed(true)}
             onPointerUp={() => setUploadPressed(false)}
             onPointerLeave={() => setUploadPressed(false)}
           >
-            <div className={`mx-auto mb-2 h-10 w-10 md:h-11 md:w-11 rounded-xl flex items-center justify-center transition-all ${
+            <div className={`mx-auto mb-3 h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-200 ${
               dragOver || uploadPressed ? "bg-hero-gradient shadow-lg shadow-primary/25" : "icon-bg-violet"
             }`}>
-              <UploadIcon className={`h-4.5 w-4.5 md:h-5 md:w-5 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
+              <UploadIcon className={`h-5 w-5 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
-            <h2 className="text-sm md:text-base font-bold text-foreground mb-0.5">
+            <h2 className="text-base font-bold text-foreground mb-1">
               {dragOver ? "Drop files to upload" : "Upload Expense Documents"}
             </h2>
-            <p className="text-[11px] text-muted-foreground mb-2.5 max-w-sm mx-auto">
+            <p className="text-xs text-muted-foreground mb-3 max-w-sm mx-auto">
               Drag and drop your invoices, receipts, or bills here.
             </p>
-            <div className="flex items-center justify-center gap-1.5 flex-wrap">
-              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-md">PDF</Badge>
-              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-md">PNG</Badge>
-              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-md">JPG</Badge>
-              <span className="text-[9px] text-muted-foreground">Up to 20MB</span>
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">PDF</Badge>
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">PNG</Badge>
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">JPG</Badge>
+              <span className="text-[10px] text-muted-foreground/70">Up to {maxFileSizeMB}MB</span>
             </div>
             <input
               id="file-input"
