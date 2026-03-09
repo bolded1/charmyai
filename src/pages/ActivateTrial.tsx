@@ -94,6 +94,9 @@ export default function ActivateTrialPage() {
     }
   }, []);
 
+  // Whether card is needed based on promo (only relevant for Pro plan)
+  const cardRequired = !(promoResult?.valid && promoResult.requires_card === false);
+
   // Firm plan: PaymentIntent client secret
   const [firmClientSecret, setFirmClientSecret] = useState<string | null>(null);
   const [firmElements, setFirmElements] = useState<any>(null);
