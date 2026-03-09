@@ -231,7 +231,8 @@ export default function WorkspacesPage() {
 
   // ── Handlers ──
   const handleCreate = async () => {
-    if (!formData.name.trim() || creating) return;
+    if (!formData.name.trim() || creatingRef.current) return;
+    creatingRef.current = true;
     setCreating(true);
     try {
       const ws = await createClientWorkspace({ ...formData, name: formData.name.trim() });
@@ -243,6 +244,7 @@ export default function WorkspacesPage() {
     } catch (err: any) {
       toast.error(err.message);
     } finally {
+      creatingRef.current = false;
       setCreating(false);
     }
   };
