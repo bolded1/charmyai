@@ -1,7 +1,5 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ChevronRight, Sparkles, HelpCircle, ArrowRight } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -124,77 +122,6 @@ export function MarketingFAQ() {
         </div>
       </section>
 
-      {/* ═══ Conversion CTA after FAQ ═══ */}
-      <section className="pb-4">
-        <div className="container max-w-3xl">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={0}
-            className="relative overflow-hidden rounded-3xl bg-hero-gradient p-8 md:p-12 text-center"
-          >
-            {/* Decorative elements */}
-            <div
-              className="absolute inset-0 opacity-[0.04]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(hsla(0,0%,100%,0.3) 1px, transparent 1px), linear-gradient(90deg, hsla(0,0%,100%,0.3) 1px, transparent 1px)",
-                backgroundSize: "40px 40px",
-              }}
-            />
-            <motion.div
-              className="absolute top-1/2 left-1/4 w-48 h-48 rounded-full pointer-events-none"
-              style={{ background: "radial-gradient(circle, hsla(0,0%,100%,0.08), transparent 70%)" }}
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            />
-
-            <div className="relative z-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-primary-foreground text-xs font-semibold mb-5"
-              >
-                <Sparkles className="h-3 w-3" />
-                See it in action
-              </motion.div>
-
-              <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-3">
-                Still spending hours entering invoice data?
-              </h3>
-              <p className="text-primary-foreground/75 max-w-md mx-auto mb-8 text-base">
-                Upload a document and see how Charmy extracts the financial information instantly.
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  asChild
-                  className="text-base px-8 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-                >
-                  <Link to="/demo">
-                    Try Demo <ArrowRight className="ml-1.5 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10 text-base px-8 border border-white/15"
-                  asChild
-                >
-                  <Link to="/signup">
-                    Start Free Trial <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
     </>
   );
 }
