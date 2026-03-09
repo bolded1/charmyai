@@ -102,7 +102,8 @@ export default function BillingSection() {
     return map[brand] || brand.charAt(0).toUpperCase() + brand.slice(1);
   };
 
-  const planName = sub.has_firm_plan ? "Accounting Firm" : sub.subscribed ? "Pro" : "Free";
+  const planName = sub.plan === "firm" ? "Accounting Firm" : sub.plan === "pro" ? "Pro" : "Free";
+  const planPrice = sub.plan === "firm" ? "€99.00" : sub.plan === "pro" ? "€29.99" : null;
 
   return (
     <div className="space-y-6">
