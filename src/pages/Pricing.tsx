@@ -77,6 +77,17 @@ export default function PricingPage() {
     current: subscription?.plan === "firm",
   };
 
+  const firmFaqs = [
+    { q: "What is included in the Accounting Firm plan?", a: "The Accounting Firm plan gives you access to a dedicated accountant dashboard inside Charmy, where you can create and manage up to 10 separate client workspaces. Each workspace represents a different client or company and keeps documents, data, and exports fully separated." },
+    { q: "How many client workspaces are included?", a: "The plan includes up to 10 client workspaces. This allows you to manage invoices, receipts, and financial documents for up to 10 different client companies from one Charmy account." },
+    { q: "Can I create separate workspaces for each customer?", a: "Yes. Each client can have their own dedicated workspace with separate documents, settings, contacts, exports, and financial data." },
+    { q: "Can my team access multiple client workspaces?", a: "Yes. You can invite team members and assign them access to one or more client workspaces depending on their role." },
+    { q: "What happens when I reach 10 workspaces?", a: "Once you reach your workspace limit, you will not be able to create additional workspaces unless extra capacity is granted. Future upgrades or additional workspace packs can be added later." },
+    { q: "Is the €99 fee one-time or recurring?", a: "The Accounting Firm plan is a €99 one-time fee. There are no recurring charges — you pay once and get lifetime access to up to 10 client workspaces." },
+    { q: "Can I buy more workspaces later?", a: "Yes. The system is designed to support future add-on workspace packs or upgraded firm plans for firms that need more capacity." },
+    { q: "Can I export data separately for each client?", a: "Yes. Each client workspace is fully isolated, so you can export financial data — invoices, expenses, and reports — separately for each company." },
+  ];
+
   const faqs = [
     { q: "Do I need to enter my card details to start the free trial?", a: "Yes. To start your 7-day free trial, you will be asked to enter your payment method. You will not be charged during the trial period. Your subscription will only begin if you decide to continue using Charmy after the trial ends. You can cancel anytime before the trial ends." },
     { q: "Can I cancel my subscription anytime?", a: "Yes. You can cancel your subscription at any time from Settings → Billing. If you cancel, your access will remain active until the end of the current billing period." },
