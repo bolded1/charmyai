@@ -38,6 +38,8 @@ export default function UploadPage() {
   const { data: documents = [] } = useDocuments();
   const { data: orgData } = useOrganization();
   const { data: limits } = usePlatformLimits();
+  const { activeWorkspace, isAccountingFirm } = useWorkspace();
+  const isClientContext = isAccountingFirm && activeWorkspace?.workspace_type === "client";
   const importEmailAddress = orgData ? getImportEmailAddress(orgData.import_email_token) : null;
 
   const maxFileSizeMB = limits?.maxFileSize ?? 20;
