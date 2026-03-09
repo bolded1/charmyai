@@ -317,7 +317,7 @@ export default function ActivateTrialPage() {
       toast.success("Your Pro plan has been activated!");
       navigate("/app");
     } catch (err: any) {
-      setSetupError(err.message || "Failed to activate trial");
+      setSetupError(err.message || "Failed to activate plan");
     } finally {
       setSubmitting(false);
     }
