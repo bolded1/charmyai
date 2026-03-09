@@ -185,6 +185,7 @@ export default function AdminPromoCodes() {
       discount_type: code.discount_type,
       discount_value: code.discount_value,
       currency: code.currency || "EUR",
+      applies_to_plans: code.applies_to_plans || ["pro", "firm"],
       applies_to_billing: code.applies_to_billing || "both",
       applies_to_first_only: code.applies_to_first_only ?? false,
       recurring_cycles: code.recurring_cycles,
