@@ -40,7 +40,6 @@ const firmFeatureIcons: Record<string, React.ElementType> = {
 };
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const { user } = useAuth();
   const subscription = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
@@ -54,18 +53,13 @@ export default function PricingPage() {
     finally { setCheckoutLoading(null); }
   };
 
-  const proPriceId = billingCycle === "yearly"
-    ? STRIPE_PLANS.pro.price_id_yearly
-    : STRIPE_PLANS.pro.price_id_monthly;
-
   const proPlan = {
     name: "Pro",
-    price: billingCycle === "monthly" ? "€9.99" : "€99",
-    period: billingCycle === "monthly" ? "/month" : "/year",
+    price: "€29.99",
+    period: "one-time",
     desc: "Everything you need to process invoices and manage expenses effortlessly.",
     features: STRIPE_PLANS.pro.features,
     current: subscription?.plan === "pro",
-    savings: billingCycle === "yearly" ? "Save €20.88/year" : null,
   };
 
   const firmPlan = {
