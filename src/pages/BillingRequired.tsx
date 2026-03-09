@@ -36,7 +36,7 @@ export default function BillingRequiredPage() {
     try {
       const { data, error } = await supabase.functions.invoke("activate-trial", {
         body: {
-          priceId: "price_1T8XiYBmkvUKJ0fulbvWmmQN", // monthly default
+          priceId: "price_1T9AklBmkvUKJ0fuE3YD85rg", // Pro one-time
           skipCard: promoResult.requires_card === false,
           promoCodeId: promoResult.promo_code_id,
           stripeCouponId: promoResult.stripe_coupon_id,
