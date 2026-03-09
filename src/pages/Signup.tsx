@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Mail, UserX, Loader2 } from "lucide-react";
+import { FileText, Mail, UserX, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
@@ -16,7 +16,16 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailSent, setEmailSent] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resending, setResending] = useState(false);
   const { data: systemSettings, isLoading: settingsLoading } = useSystemSettings();
+
+  // Countdown timer for resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   // Show loader while system settings are loading
   if (settingsLoading) {
@@ -64,6 +73,26 @@ export default function SignupPage() {
     );
   }
 
+  const handleResendEmail = async () => {
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: window.location.origin + "/onboarding",
+      },
+    });
+    setResending(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Confirmation email resent!");
+    setResendCooldown(15);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (systemSettings && !systemSettings.newSignups) {
@@ -85,6 +114,12 @@ export default function SignupPage() {
       return;
     }
 
+    // Supabase returns a user with an empty identities array when the email is already registered
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      toast.error("This email is already in use. Please sign in or use a different email.");
+      return;
+    }
+
     await logAuditEvent({
       action: "user_signup",
       userId: data.user?.id,
@@ -94,6 +129,7 @@ export default function SignupPage() {
     });
 
     setEmailSent(true);
+    setResendCooldown(15);
   };
 
   if (emailSent) {
@@ -122,6 +158,22 @@ export default function SignupPage() {
             <p className="text-sm text-muted-foreground">
               We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>. Click the link to verify your account and get started.
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full rounded-xl mt-2"
+              disabled={resendCooldown > 0 || resending}
+              onClick={handleResendEmail}
+            >
+              {resending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              {resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : "Resend confirmation email"}
+            </Button>
           </div>
           <p className="text-center text-sm text-muted-foreground mt-5">
             Already verified?{" "}
