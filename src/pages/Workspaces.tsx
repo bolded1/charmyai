@@ -272,7 +272,18 @@ export default function WorkspacesPage() {
     setInviting(true);
     let successCount = 0;
     let failCount = 0;
+    let skippedCount = 0;
+
+    // Get existing invitation emails to avoid resending
+    const existingEmails = new Set(
+      (existingInvitations || []).map((inv: any) => inv.client_email?.toLowerCase())
+    );
+
     for (const row of validInviteRows) {
+      if (existingEmails.has(row.email.trim().toLowerCase())) {
+        skippedCount++;
+        continue;
+      }
       try {
         await sendClientInvitation.mutateAsync({
           workspace_id: inviteWs.id,
@@ -285,6 +296,7 @@ export default function WorkspacesPage() {
       }
     }
     if (successCount > 0) toast.success(`${successCount} invitation${successCount > 1 ? "s" : ""} sent`);
+    if (skippedCount > 0) toast.info(`${skippedCount} already invited — skipped`);
     if (failCount > 0) toast.error(`${failCount} invitation${failCount > 1 ? "s" : ""} failed`);
     setInviteOpen(false);
     setInviteWs(null);
