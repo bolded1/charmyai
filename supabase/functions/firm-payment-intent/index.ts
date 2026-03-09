@@ -64,7 +64,7 @@ serve(async (req) => {
         plan_type: "firm",
         price_id: "price_1T9A0dBmkvUKJ0fuiFeIMzov",
       },
-      automatic_payment_methods: { enabled: true },
+      payment_method_types: ["card"],
     });
 
     logStep("PaymentIntent created", { id: paymentIntent.id });
