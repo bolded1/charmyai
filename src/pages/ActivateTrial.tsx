@@ -37,7 +37,6 @@ export default function ActivateTrialPage() {
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
-  const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
 
