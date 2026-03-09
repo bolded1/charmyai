@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState, useRef, useCallback, useEffect } from "react";
 
-import { Upload, X, Sun, Moon, Check } from "lucide-react";
+import { Upload, X, Sun, Moon, Check, Smartphone } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 
 // ── Auto-save hook with debounce ──
 function useAutoSave<T>(key: string, initialValue: T, delay = 800) {
@@ -220,6 +221,109 @@ function LogoUploadField({ label, storageKey, icon: Icon }: { label: string; sto
   );
 }
 
+// ── PWA Icon Upload ──
+function PwaIconUpload() {
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    supabase
+      .from("demo_settings")
+      .select("value")
+      .eq("key", "pwa-icon")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value && typeof data.value === "string" && data.value.startsWith("http")) {
+          setIconUrl(data.value);
+        }
+      });
+  }, []);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Icon must be under 2MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const filePath = `pwa/app-icon-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl;
+
+      await supabase
+        .from("demo_settings")
+        .upsert({ key: "pwa-icon", value: publicUrl }, { onConflict: "key" });
+
+      setIconUrl(publicUrl);
+      window.dispatchEvent(new Event("pwa-icon-changed"));
+      toast.success("PWA icon updated. Users will see the new icon on next app refresh.");
+    } catch (err: any) {
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const handleRemove = async () => {
+    await supabase.from("demo_settings").delete().eq("key", "pwa-icon");
+    setIconUrl(null);
+    window.dispatchEvent(new Event("pwa-icon-changed"));
+    toast.success("PWA icon reset to default");
+  };
+
+  return (
+    <div className="space-y-3">
+      {iconUrl ? (
+        <div className="flex items-center gap-4">
+          <div className="relative inline-block border rounded-xl p-3 bg-muted/30">
+            <img src={iconUrl} alt="PWA Icon" className="h-16 w-16 rounded-lg object-cover" />
+            <button
+              onClick={handleRemove}
+              className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:bg-destructive/90"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Custom icon active</p>
+            <p>Devices will update on next app reload.</p>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-2 border border-dashed rounded-lg px-4 py-4 text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors w-full justify-center"
+        >
+          <Smartphone className="h-4 w-4" />
+          {uploading ? "Uploading…" : "Upload PWA icon (512×512 PNG recommended)"}
+        </button>
+      )}
+      <input ref={inputRef} type="file" accept="image/png,image/jpg,image/jpeg,image/webp" className="hidden" onChange={handleUpload} />
+    </div>
+  );
+}
+
 export default function AdminSettingsPage() {
   // Limits & Upload (DB-backed)
   const [maxFileSize, setMaxFileSize, mfsSaving] = useDbAutoSave("max-file-size", "20");
@@ -272,16 +376,28 @@ export default function AdminSettingsPage() {
         </TabsList>
 
         <TabsContent value="branding">
-          <Card>
-            <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, login, onboarding, and marketing pages. Provide separate versions for light and dark themes.</p>
-              <div className="grid sm:grid-cols-2 gap-6">
-                <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
-                <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Application Logo</CardTitle></CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-sm text-muted-foreground">Upload logos used across the homepage, sidebar, login, onboarding, and marketing pages. Provide separate versions for light and dark themes.</p>
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <LogoUploadField label="Light Mode Logo" storageKey="brand-logo-light" icon={Sun} />
+                  <LogoUploadField label="Dark Mode Logo" storageKey="brand-logo-dark" icon={Moon} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle className="text-base">PWA App Icon</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Upload a square icon (minimum 512×512px) used as the app icon when users install the app on their device. Changes apply to new installs and when existing users' devices refresh the manifest.
+                </p>
+                <PwaIconUpload />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
 

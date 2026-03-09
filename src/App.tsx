@@ -61,12 +61,18 @@ import AdminAISettings from "./pages/admin/AdminAISettings";
 import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
 import Assistant from "./pages/Assistant";
 import NotFound from "./pages/NotFound";
+import { useDynamicPwaManifest } from "./hooks/useDynamicPwaManifest";
 
 const queryClient = new QueryClient();
 
 // Ensure dark mode class is never applied
 document.documentElement.classList.remove("dark");
 localStorage.removeItem("theme-mode");
+
+function PwaManifestUpdater() {
+  useDynamicPwaManifest();
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -75,6 +81,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PwaManifestUpdater />
       <BrowserRouter>
         <ScrollToTop />
         <Routes>
