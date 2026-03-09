@@ -106,10 +106,6 @@ serve(async (req) => {
     if (paymentMethodId) {
       subParams.default_payment_method = paymentMethodId;
     }
-      payment_settings: {
-        save_default_payment_method: "on_subscription",
-      },
-    };
 
     // Apply Stripe coupon if provided
     if (stripeCouponId) {
