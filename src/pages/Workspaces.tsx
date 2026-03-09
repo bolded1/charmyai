@@ -152,6 +152,40 @@ export default function WorkspacesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showArchived, setShowArchived] = useState(false);
 
+  // Standalone invite dialog
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteWs, setInviteWs] = useState<Workspace | null>(null);
+  const [inviteName, setInviteName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+
+  const openInviteDialog = (ws: Workspace) => {
+    setInviteWs(ws);
+    setInviteName((ws as any).client_contact_name || "");
+    setInviteEmail((ws as any).client_contact_email || ws.contact_email || "");
+    setInviteOpen(true);
+  };
+
+  const handleInviteClient = async () => {
+    if (!inviteWs || !inviteName.trim() || !inviteEmail.trim() || inviting) return;
+    setInviting(true);
+    try {
+      await sendClientInvitation.mutateAsync({
+        workspace_id: inviteWs.id,
+        client_name: inviteName.trim(),
+        client_email: inviteEmail.trim(),
+      });
+      setInviteOpen(false);
+      setInviteWs(null);
+      setInviteName("");
+      setInviteEmail("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation");
+    } finally {
+      setInviting(false);
+    }
+  };
+
   const homeOrg = allWorkspaces.find(
     (w) => w.workspace_type === "accounting_firm" || w.workspace_type === "standard"
   );
@@ -569,6 +603,9 @@ export default function WorkspacesPage() {
                               <Button variant="ghost" size="sm" className="flex-1 h-7 text-[11px]" onClick={() => handleOpenWorkspace(ws)}>
                                 <ArrowRight className="h-3 w-3 mr-1" /> Open
                               </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={() => openInviteDialog(ws)} title="Invite Client">
+                                <UserPlus className="h-3 w-3" />
+                              </Button>
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(ws)}>
                                 <Pencil className="h-3 w-3" />
                               </Button>
@@ -673,6 +710,9 @@ export default function WorkspacesPage() {
                                 <>
                                   <Button variant="ghost" size="sm" className="h-7 text-[11px]" onClick={() => handleOpenWorkspace(ws)}>
                                     <ArrowRight className="h-3 w-3 mr-1" /> Open
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={() => openInviteDialog(ws)} title="Invite Client">
+                                    <UserPlus className="h-3 w-3" />
                                   </Button>
                                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(ws)}>
                                     <Pencil className="h-3 w-3" />
@@ -856,6 +896,36 @@ export default function WorkspacesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ═══ Invite Client Dialog ═══ */}
+      <Dialog open={inviteOpen} onOpenChange={(v) => { setInviteOpen(v); if (!v) { setInviteWs(null); setInviteName(""); setInviteEmail(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4 text-primary" />
+              Invite Client
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Send a login invitation to the client for <strong>{inviteWs?.name}</strong>. They'll create an account and access only this workspace.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Field label="Client Contact Name">
+              <Input value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="e.g. John Doe" />
+            </Field>
+            <Field label="Client Contact Email">
+              <Input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="client@company.com" />
+            </Field>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
+            <Button onClick={handleInviteClient} disabled={!inviteName.trim() || !inviteEmail.trim() || inviting}>
+              {inviting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              Send Invitation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
