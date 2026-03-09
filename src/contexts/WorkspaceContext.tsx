@@ -143,6 +143,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   );
   const isAccountingFirm = homeOrg?.workspace_type === "accounting_firm";
   
+  // Debug impersonation workspace resolution
+  console.log("[WorkspaceContext] targetUserId:", targetUserId, "| allWorkspaces:", allWorkspaces.map(w => ({ id: w.id, name: w.name, type: w.workspace_type, owner: w.owner_user_id })), "| homeOrg:", homeOrg?.name, homeOrg?.workspace_type, "| isAccountingFirm:", isAccountingFirm, "| activeOrgId:", activeOrgId);
+  
   const clientWorkspaces = allWorkspaces.filter((w) => w.workspace_type === "client" && !w.archived_at);
 
   const switchWorkspace = async (orgId: string) => {
