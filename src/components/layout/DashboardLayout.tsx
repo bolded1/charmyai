@@ -46,6 +46,15 @@ const mobileNavItems = [
   { title: "Settings", url: "/app/settings", icon: Settings },
 ];
 
+const clientMobileNavItems = [
+  { title: "Capture", url: "/app", icon: Upload },
+  { title: "Documents", url: "/app/documents", icon: FileText },
+  { title: "Expenses", url: "/app/expenses", icon: Receipt },
+  { title: "Exports", url: "/app/exports", icon: Download },
+  { title: "Support", url: "/app/support", icon: LifeBuoy },
+  { title: "Help", url: "/app/help", icon: HelpCircle },
+];
+
 export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
