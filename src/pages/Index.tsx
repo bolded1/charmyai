@@ -288,7 +288,7 @@ export default function HomePage() {
                 className="glass-card rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
                 <motion.div
                   animate={floatAnimation}
-                  transition={{ ...floatAnimation.transition, delay: i * 0.3 }}
+                  transition={{ ...floatAnimation.transition, delay: i * 0.3 } as const}
                   className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/15 transition-colors"
                 >
                   <item.icon className="h-5 w-5 text-primary" />
