@@ -40,7 +40,6 @@ serve(async (req) => {
 
     const { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays, skipCard } = await req.json();
     if (!priceId) throw new Error("priceId is required");
-    if (!paymentMethodId && !skipCard) throw new Error("paymentMethodId is required");
     logStep("Params received", { priceId, paymentMethodId, promoCodeId, stripeCouponId, extraTrialDays, skipCard });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -61,102 +60,129 @@ serve(async (req) => {
 
     // Set default payment method on customer (only if card provided)
     if (paymentMethodId) {
+      await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
       await stripe.customers.update(customerId, {
         invoice_settings: { default_payment_method: paymentMethodId },
       });
-      logStep("Default payment method set");
+      logStep("Payment method attached and set as default");
     }
 
-    // Check for existing active subscription
-    const existingSubs = await stripe.subscriptions.list({
-      customer: customerId,
-      limit: 1,
-    });
-
-    if (existingSubs.data.length > 0) {
-      const existing = existingSubs.data[0];
-      if (existing.status === "active" || existing.status === "trialing") {
-        logStep("Already has active subscription", { id: existing.id, status: existing.status });
+    // Check for existing active entitlement (one-time purchase or promo)
+    const sessions = await stripe.checkout.sessions.list({ customer: customerId, limit: 100 });
+    for (const session of sessions.data) {
+      if (session.payment_status === "paid" && session.mode === "payment") {
+        logStep("Already has a completed payment", { sessionId: session.id });
         return new Response(JSON.stringify({
           success: true,
-          subscription_id: existing.id,
-          status: existing.status,
-          message: "Already subscribed",
+          status: "active",
+          message: "Already has active plan",
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
 
-    // No trial - direct activation
-    logStep("Creating subscription without trial");
+    let resultStatus = "active";
+    let paymentIntentId: string | null = null;
 
-    // Build subscription params
-    const subParams: any = {
-      customer: customerId,
-      items: [{ price: priceId }],
-      payment_settings: {
-        save_default_payment_method: "on_subscription",
-      },
-    };
+    if (skipCard) {
+      // Free access via promo code — no Stripe payment needed
+      // Just record the promo redemption; check-subscription reads promo_code_redemptions
+      logStep("Skip card flow — free promo activation");
+    } else if (paymentMethodId) {
+      // One-time payment with card
+      logStep("Creating one-time payment intent");
 
-    // Only set payment method if provided
-    if (paymentMethodId) {
-      subParams.default_payment_method = paymentMethodId;
+      // Get price details to determine amount
+      const price = await stripe.prices.retrieve(priceId);
+      const amount = price.unit_amount;
+      if (!amount) throw new Error("Could not determine price amount");
+
+      const piParams: any = {
+        amount,
+        currency: price.currency || "eur",
+        customer: customerId,
+        payment_method: paymentMethodId,
+        confirm: true,
+        off_session: true,
+        metadata: {
+          supabase_user_id: user.id,
+          price_id: priceId,
+          product_id: typeof price.product === "string" ? price.product : "",
+        },
+      };
+
+      // Apply coupon discount if provided
+      if (stripeCouponId) {
+        try {
+          const coupon = await stripe.coupons.retrieve(stripeCouponId);
+          if (coupon.percent_off) {
+            piParams.amount = Math.round(amount * (1 - coupon.percent_off / 100));
+          } else if (coupon.amount_off) {
+            piParams.amount = Math.max(0, amount - coupon.amount_off);
+          }
+          logStep("Coupon applied to payment", { stripeCouponId, originalAmount: amount, newAmount: piParams.amount });
+        } catch (couponErr) {
+          logStep("Warning: coupon retrieval failed, charging full price", { error: String(couponErr) });
+        }
+      }
+
+      if (piParams.amount <= 0) {
+        // Fully discounted — treat as free
+        logStep("Fully discounted — skipping payment");
+      } else {
+        const paymentIntent = await stripe.paymentIntents.create(piParams);
+        paymentIntentId = paymentIntent.id;
+
+        if (paymentIntent.status !== "succeeded") {
+          logStep("Payment not succeeded", { status: paymentIntent.status });
+          return new Response(JSON.stringify({
+            error: "Payment was not completed. Please try again.",
+            status: paymentIntent.status,
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          });
+        }
+
+        logStep("Payment succeeded", { paymentIntentId });
+      }
+    } else {
+      throw new Error("paymentMethodId is required when skipCard is not set");
     }
-
-    // Apply Stripe coupon if provided
-    if (stripeCouponId) {
-      subParams.coupon = stripeCouponId;
-      logStep("Stripe coupon applied", { stripeCouponId });
-    }
-
-    // Create subscription
-    const subscription = await stripe.subscriptions.create(subParams);
-
-    logStep("Subscription created", {
-      id: subscription.id,
-      status: subscription.status,
-      trialEnd: subscription.trial_end,
-    });
 
     // Record promo code redemption if applicable
     if (promoCodeId) {
       try {
-        // Insert redemption record
         await supabaseClient.from("promo_code_redemptions").insert({
           promo_code_id: promoCodeId,
           user_id: user.id,
-          subscription_id: subscription.id,
+          subscription_id: paymentIntentId,
           discount_snapshot: { stripeCouponId, extraTrialDays, priceId },
           status: "active",
         });
 
-        // Increment redemption counter
-        await supabaseClient.rpc("increment_promo_redemptions" as any, { _promo_code_id: promoCodeId });
-        
-        logStep("Promo redemption recorded", { promoCodeId });
-      } catch (redeemErr) {
-        // Non-blocking: log but don't fail the subscription
-        logStep("Warning: failed to record redemption", { error: String(redeemErr) });
-        
-        // Fallback: try direct update
+        // Increment redemption counter (fallback approach)
         try {
           const { data: currentCode } = await supabaseClient
             .from("promo_codes")
             .select("current_redemptions")
             .eq("id", promoCodeId)
             .single();
-          
+
           if (currentCode) {
             await supabaseClient
               .from("promo_codes")
               .update({ current_redemptions: (currentCode.current_redemptions || 0) + 1 })
               .eq("id", promoCodeId);
           }
-        } catch (fallbackErr) {
-          logStep("Warning: fallback redemption update also failed", { error: String(fallbackErr) });
+        } catch (counterErr) {
+          logStep("Warning: redemption counter update failed", { error: String(counterErr) });
         }
+
+        logStep("Promo redemption recorded", { promoCodeId });
+      } catch (redeemErr) {
+        logStep("Warning: failed to record redemption", { error: String(redeemErr) });
       }
     }
 
@@ -171,18 +197,18 @@ serve(async (req) => {
       logStep("Warning: failed to set billing_setup_at", { error: String(profileErr) });
     }
 
-    // Log audit event for trial activation
+    // Log audit event
     try {
       await supabaseClient.from("audit_logs").insert({
         user_id: user.id,
         user_email: user.email,
         action: "plan_activated",
-        entity_type: "subscription",
-        entity_id: subscription.id,
-        details: `Plan activated${promoCodeId ? ' with promo code' : ''}`,
+        entity_type: "payment",
+        entity_id: paymentIntentId || "promo_free",
+        details: `Plan activated${promoCodeId ? ' with promo code' : ''}${skipCard ? ' (free access)' : ''}`,
         metadata: {
-          subscription_id: subscription.id,
-          status: subscription.status,
+          payment_intent_id: paymentIntentId,
+          status: resultStatus,
           price_id: priceId,
           promo_code_id: promoCodeId || null,
           skip_card: skipCard || false,
@@ -194,11 +220,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      subscription_id: subscription.id,
-      status: subscription.status,
-      trial_end: subscription.trial_end
-        ? new Date(subscription.trial_end * 1000).toISOString()
-        : null,
+      status: resultStatus,
+      payment_intent_id: paymentIntentId,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
