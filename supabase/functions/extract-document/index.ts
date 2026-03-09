@@ -45,7 +45,7 @@ serve(async (req) => {
     // Billing entitlement check
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (stripeKey && userEmail) {
-      const entitlement = await checkBillingEntitlement(userEmail, stripeKey);
+      const entitlement = await checkBillingEntitlement(userEmail, stripeKey, userId);
       if (!entitlement.valid) {
         return new Response(JSON.stringify({ error: "Active subscription required to process documents." }), {
           status: 403,
