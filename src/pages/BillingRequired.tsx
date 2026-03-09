@@ -74,8 +74,8 @@ export default function BillingRequiredPage() {
   let description = "Your account has been created, but you need an active plan to continue using the app.";
 
   if (subscription.status === "canceled") {
-    title = "Your subscription has been canceled";
-    description = "Your subscription is no longer active. Reactivate or start a new plan to continue using Charmy.";
+    title = "Your plan access has expired";
+    description = "Your plan is no longer active. Purchase a new plan to continue using Charmy.";
   } else if (subscription.status === "past_due") {
     title = "Payment past due";
     description = "Your subscription payment failed. Please update your payment method to restore access.";
