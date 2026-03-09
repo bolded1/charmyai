@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkBillingEntitlement } from "../_shared/check-billing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,6 +40,19 @@ serve(async (req) => {
       });
     }
     const userId = claimsData.claims.sub;
+    const userEmail = claimsData.claims.email as string;
+
+    // Billing entitlement check
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (stripeKey && userEmail) {
+      const entitlement = await checkBillingEntitlement(userEmail, stripeKey, userId);
+      if (!entitlement.valid) {
+        return new Response(JSON.stringify({ error: "Active subscription required to process documents." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     const { documentId } = await req.json();
     if (!documentId) {

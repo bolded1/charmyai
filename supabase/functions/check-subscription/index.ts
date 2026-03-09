@@ -42,7 +42,30 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
-      logStep("No Stripe customer found");
+      logStep("No Stripe customer found, checking promo entitlements");
+
+      // Check for promo-based free access (no Stripe subscription needed)
+      const { data: promoAccess } = await supabaseClient
+        .from("promo_code_redemptions")
+        .select("id, status, promo_code_id, discount_snapshot")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1);
+
+      if (promoAccess && promoAccess.length > 0) {
+        logStep("Active promo entitlement found", { redemptionId: promoAccess[0].id });
+        return new Response(JSON.stringify({
+          subscribed: true,
+          plan: "pro",
+          status: "promo_active",
+          trial_end: null,
+          current_period_end: null,
+          cancel_at_period_end: false,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       return new Response(JSON.stringify({
         subscribed: false,
         plan: "free",
@@ -58,14 +81,37 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Customer found", { customerId });
 
-    // Check active or trialing subscriptions
+    // Check subscriptions (any status, not just active)
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
     });
 
     if (subscriptions.data.length === 0) {
-      logStep("No subscriptions found");
+      logStep("No subscriptions found, checking promo entitlements");
+
+      // Fallback: check promo-based access
+      const { data: promoAccess } = await supabaseClient
+        .from("promo_code_redemptions")
+        .select("id, status, promo_code_id, discount_snapshot")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1);
+
+      if (promoAccess && promoAccess.length > 0) {
+        logStep("Active promo entitlement found (no Stripe sub)", { redemptionId: promoAccess[0].id });
+        return new Response(JSON.stringify({
+          subscribed: true,
+          plan: "pro",
+          status: "promo_active",
+          trial_end: null,
+          current_period_end: null,
+          cancel_at_period_end: false,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       return new Response(JSON.stringify({
         subscribed: false,
         plan: "free",

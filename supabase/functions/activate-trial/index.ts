@@ -162,6 +162,28 @@ serve(async (req) => {
       }
     }
 
+    // Log audit event for trial activation
+    try {
+      await supabaseClient.from("audit_logs").insert({
+        user_id: user.id,
+        user_email: user.email,
+        action: "trial_activated",
+        entity_type: "subscription",
+        entity_id: subscription.id,
+        details: `Trial activated (${trialDays} days)${promoCodeId ? ' with promo code' : ''}`,
+        metadata: {
+          subscription_id: subscription.id,
+          status: subscription.status,
+          trial_days: trialDays,
+          price_id: priceId,
+          promo_code_id: promoCodeId || null,
+          skip_card: skipCard || false,
+        },
+      });
+    } catch (auditErr) {
+      logStep("Warning: audit log insert failed", { error: String(auditErr) });
+    }
+
     return new Response(JSON.stringify({
       success: true,
       subscription_id: subscription.id,

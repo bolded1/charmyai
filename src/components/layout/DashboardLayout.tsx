@@ -62,7 +62,7 @@ export default function DashboardLayout() {
     applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
   }, [org?.primary_color]);
 
-  if (loading) {
+  if (loading || subscription.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -72,6 +72,11 @@ export default function DashboardLayout() {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Onboarding guard: redirect if profile incomplete (no first name set)
+  if (profile && !profile.first_name) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   // Maintenance mode: block non-admin users
@@ -91,12 +96,14 @@ export default function DashboardLayout() {
     );
   }
 
-  // Subscription gate
+  // Subscription gate — block access until billing entitlement is valid
   const isBillingPage = location.pathname === "/app/settings" && searchParams.get("tab") === "billing";
-  if (!subscription.loading && !subscription.subscribed && !isBillingPage) {
+  if (!subscription.subscribed && !isBillingPage) {
+    // Has a status from Stripe but it's not valid (expired, canceled, past_due, etc.)
     if (subscription.status && subscription.status !== "active" && subscription.status !== "trialing") {
       return <Navigate to="/billing-required" replace />;
     }
+    // No subscription at all — needs to activate trial
     if (!subscription.status) {
       return <Navigate to="/activate-trial" replace />;
     }
