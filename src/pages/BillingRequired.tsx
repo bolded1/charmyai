@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 export default function BillingRequiredPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const brandLogo = useBrandLogo();
   const subscription = useSubscription();
   const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
