@@ -56,7 +56,7 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://charmyai.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
@@ -65,7 +65,15 @@ serve(async (req) => {
       },
       success_url: `${origin}/app/settings?tab=billing&checkout=success`,
       cancel_url: `${origin}/app/settings?tab=billing&checkout=cancelled`,
-    });
+    };
+
+    // Apply Stripe coupon/discount if provided
+    if (stripeCouponId) {
+      sessionParams.discounts = [{ coupon: stripeCouponId }];
+      logStep("Coupon applied to checkout", { stripeCouponId });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     logStep("Checkout session created", { sessionId: session.id });
 
