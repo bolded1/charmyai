@@ -253,10 +253,7 @@ export default function WorkspacesPage() {
 
   const openInviteDialog = (ws: Workspace) => {
     setInviteWs(ws);
-    setInviteRows([{
-      name: (ws as any).client_contact_name || "",
-      email: (ws as any).client_contact_email || ws.contact_email || "",
-    }]);
+    setInviteRows([{ name: "", email: "" }]);
     setInviteOpen(true);
   };
 
