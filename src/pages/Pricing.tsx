@@ -83,16 +83,14 @@ export default function PricingPage() {
   ];
 
   const faqs = [
-    { q: "Do I need to enter my card details to start the free trial?", a: "Yes. To start your 7-day free trial, you will be asked to enter your payment method. You will not be charged during the trial period. Your subscription will only begin if you decide to continue using Charmy after the trial ends. You can cancel anytime before the trial ends." },
-    { q: "Can I cancel my subscription anytime?", a: "Yes. You can cancel your subscription at any time from Settings → Billing. If you cancel, your access will remain active until the end of the current billing period." },
-    { q: "What happens when my trial ends?", a: "When your 7-day trial ends, your subscription will automatically continue on the selected plan. If you cancel before the trial ends, no charges will be made." },
-    { q: "What counts as a processed document?", a: "A processed document is any invoice, receipt, or financial document that Charmy reads and extracts financial data from — including supplier invoices, purchase receipts, expense documents, and income invoices. Each document processed by the AI counts toward your monthly document limit." },
-    { q: "What happens if I reach my monthly document limit?", a: "If you reach your plan's document limit, you can upgrade to a higher plan, wait until the next billing cycle, or purchase additional document credits (if available). Your existing documents and data will always remain accessible." },
+    { q: "Is the Pro plan a one-time payment?", a: "Yes. The Pro plan is a one-time payment of €29.99. There are no recurring charges — you pay once and get lifetime access to all Pro features." },
+    { q: "Can I cancel or get a refund?", a: "Since the Pro plan is a one-time purchase, there are no recurring charges to cancel. If you have any issues, please contact our support team." },
+    { q: "What counts as a processed document?", a: "A processed document is any invoice, receipt, or financial document that Charmy reads and extracts financial data from — including supplier invoices, purchase receipts, expense documents, and income invoices." },
     { q: "Can accountants use Charmy for multiple clients?", a: "Yes. With the Accounting Firm plan, you get up to 10 separate client workspaces. Each workspace is fully isolated — documents, expenses, and exports stay separate per client." },
     { q: "What is the Accounting Firm plan?", a: "The Accounting Firm plan is a one-time purchase of €99 that gives you access to up to 10 client workspaces inside Charmy. It includes all Pro features plus multi-workspace management, an accountant dashboard, and team access." },
-    { q: "Can I change my plan later?", a: "Yes. You can upgrade or downgrade your plan anytime from the Billing settings page. Plan changes take effect immediately or at the next billing cycle depending on the change." },
+    { q: "Can I change my plan later?", a: "Yes. You can upgrade from Pro to the Accounting Firm plan at any time to get multi-workspace support." },
     { q: "Is my financial data secure?", a: "Yes. Charmy processes documents using secure cloud infrastructure and encrypted connections. Security measures include SSL encrypted data transfer, secure cloud infrastructure, and GDPR-compliant data handling. Your financial documents are only accessible to your account." },
-    { q: "Can I try Charmy before paying?", a: "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo. This allows you to see how the AI extracts financial data before starting your trial." },
+    { q: "Can I try Charmy before paying?", a: "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo. This allows you to see how the AI extracts financial data before purchasing." },
   ];
 
   return (
