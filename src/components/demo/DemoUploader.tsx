@@ -221,10 +221,10 @@ export function DemoUploader() {
                     </div>
                     <div>
                       <p className="font-medium text-sm">
-                        Drag and drop a file or click to upload
+                        {t("demoUploader.dragDrop")}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        PDF · PNG · JPG — up to {MAX_SIZE_MB}MB
+                        PDF · PNG · JPG — {t("demoUploader.upTo")} {MAX_SIZE_MB}MB
                       </p>
                     </div>
                   </motion.div>
