@@ -211,6 +211,7 @@ export default function DashboardLayout() {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <LanguageSwitcher variant="ghost" />
                 <NotificationsPopover />
                 {mobileProfileMenu}
               </div>
