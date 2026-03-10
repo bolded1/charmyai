@@ -160,10 +160,10 @@ export function DemoUploader() {
 
             <div className="text-center mb-5 relative z-10">
               <h2 className="text-lg font-semibold mb-1">
-                Try Charmy — <span className="text-gradient">No Account Needed</span>
+                {t("demoUploader.title")} — <span className="text-gradient">{t("demoUploader.noAccount")}</span>
               </h2>
               <p className="text-sm text-muted-foreground">
-                Upload an invoice or receipt and see how Charmy extracts financial data instantly.
+                {t("demoUploader.subtitle")}
               </p>
             </div>
 
