@@ -73,29 +73,29 @@ export default function LoginPage() {
               </>
             )}
           </Link>
-          <p className="text-sm text-muted-foreground mt-3">Sign in to your account</p>
+          <p className="text-sm text-muted-foreground mt-3">{t("auth.loginTitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-7 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs font-medium">Email</Label>
+            <Label htmlFor="email" className="text-xs font-medium">{t("auth.email")}</Label>
             <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-              <button type="button" onClick={() => { setForgotOpen(true); setForgotSent(false); setForgotEmail(email); }} className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</button>
+              <Label htmlFor="password" className="text-xs font-medium">{t("auth.password")}</Label>
+              <button type="button" onClick={() => { setForgotOpen(true); setForgotSent(false); setForgotEmail(email); }} className="text-xs text-primary cursor-pointer hover:underline">{t("auth.forgotPassword")}</button>
             </div>
             <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity shadow-lg shadow-primary/20" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? t("auth.signingIn") : t("auth.login")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-5">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-primary font-semibold hover:underline">Get Started</Link>
+          {t("auth.dontHaveAccount")}{" "}
+          <Link to="/signup" className="text-primary font-semibold hover:underline">{t("auth.getStarted")}</Link>
         </p>
       </div>
 
