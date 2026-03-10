@@ -303,7 +303,7 @@ export default function UploadPage() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Loader2 className={`h-4 w-4 ${files.some((f) => f.status === "uploading" || f.status === "processing") ? "animate-spin text-primary" : "text-muted-foreground"}`} />
-              Uploading
+               {t("upload.uploading")}
               <Badge variant="secondary" className="text-[10px] ml-1">{files.length}</Badge>
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
             </CardTitle>
