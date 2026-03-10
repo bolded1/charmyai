@@ -327,10 +327,10 @@ export default function UploadPage() {
                   </div>
                   <Progress value={file.progress} className="h-1.5" />
                   <p className="text-[11px] text-muted-foreground">
-                    {file.status === "uploading" && "Uploading..."}
-                    {file.status === "processing" && "AI is extracting data..."}
-                    {file.status === "done" && "Ready for review"}
-                    {file.status === "error" && (file.error || "Upload failed")}
+                    {file.status === "uploading" && t("upload.uploadingStatus")}
+                    {file.status === "processing" && t("upload.aiExtracting")}
+                    {file.status === "done" && t("upload.readyForReview")}
+                    {file.status === "error" && (file.error || t("upload.uploadFailed"))}
                   </p>
                 </div>
                 <Button
