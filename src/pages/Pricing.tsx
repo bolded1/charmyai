@@ -10,6 +10,7 @@ import {
 import { useSubscription, STRIPE_PLANS } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import {
   Accordion,
   AccordionContent,
@@ -40,6 +41,7 @@ const firmFeatureIcons: Record<string, React.ElementType> = {
 };
 
 export default function PricingPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const subscription = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
@@ -54,43 +56,43 @@ export default function PricingPage() {
   };
 
   const proPlan = {
-    name: "Pro",
+    name: t("pricing.proPlan"),
     price: "€29.99",
-    period: "one-time",
-    desc: "Everything you need to process invoices and manage expenses effortlessly.",
+    period: t("pricing.oneTime"),
+    desc: t("pricing.proDesc"),
     features: STRIPE_PLANS.pro.features,
     current: subscription?.plan === "pro",
   };
 
   const firmPlan = {
-    name: "Accounting Firm",
+    name: t("pricing.firmPlan"),
     price: "€99",
-    period: "one-time",
-    desc: "For accountants and bookkeeping firms. Manage up to 10 client companies from one account.",
+    period: t("pricing.oneTime"),
+    desc: t("pricing.firmDesc"),
     features: STRIPE_PLANS.firm.features,
     current: subscription?.plan === "firm",
   };
 
   const firmFaqs = [
-    { q: "What is included in the Accounting Firm plan?", a: "The Accounting Firm plan gives you access to a dedicated accountant dashboard inside Charmy, where you can create and manage up to 10 separate client workspaces. Each workspace represents a different client or company and keeps documents, data, and exports fully separated." },
-    { q: "How many client workspaces are included?", a: "The plan includes up to 10 client workspaces. This allows you to manage invoices, receipts, and financial documents for up to 10 different client companies from one Charmy account." },
-    { q: "Can I create separate workspaces for each customer?", a: "Yes. Each client can have their own dedicated workspace with separate documents, settings, contacts, exports, and financial data." },
-    { q: "Can my team access multiple client workspaces?", a: "Yes. You can invite team members and assign them access to one or more client workspaces depending on their role." },
-    { q: "What happens when I reach 10 workspaces?", a: "Once you reach your workspace limit, you will not be able to create additional workspaces unless extra capacity is granted. Future upgrades or additional workspace packs can be added later." },
-    { q: "Is the €99 fee one-time or recurring?", a: "The Accounting Firm plan is a €99 one-time fee. There are no recurring charges — you pay once and get lifetime access to up to 10 client workspaces." },
-    { q: "Can I buy more workspaces later?", a: "Yes. The system is designed to support future add-on workspace packs or upgraded firm plans for firms that need more capacity." },
-    { q: "Can I export data separately for each client?", a: "Yes. Each client workspace is fully isolated, so you can export financial data — invoices, expenses, and reports — separately for each company." },
+    { q: t("pricing.firmFaq1Q"), a: t("pricing.firmFaq1A") },
+    { q: t("pricing.firmFaq2Q"), a: t("pricing.firmFaq2A") },
+    { q: t("pricing.firmFaq3Q"), a: t("pricing.firmFaq3A") },
+    { q: t("pricing.firmFaq4Q"), a: t("pricing.firmFaq4A") },
+    { q: t("pricing.firmFaq5Q"), a: t("pricing.firmFaq5A") },
+    { q: t("pricing.firmFaq6Q"), a: t("pricing.firmFaq6A") },
+    { q: t("pricing.firmFaq7Q"), a: t("pricing.firmFaq7A") },
+    { q: t("pricing.firmFaq8Q"), a: t("pricing.firmFaq8A") },
   ];
 
   const faqs = [
-    { q: "Is the Pro plan a one-time payment?", a: "Yes. The Pro plan is a one-time payment of €29.99. There are no recurring charges — you pay once and get lifetime access to all Pro features." },
-    { q: "Can I cancel or get a refund?", a: "Since the Pro plan is a one-time purchase, there are no recurring charges to cancel. If you have any issues, please contact our support team." },
-    { q: "What counts as a processed document?", a: "A processed document is any invoice, receipt, or financial document that Charmy reads and extracts financial data from — including supplier invoices, purchase receipts, expense documents, and income invoices." },
-    { q: "Can accountants use Charmy for multiple clients?", a: "Yes. With the Accounting Firm plan, you get up to 10 separate client workspaces. Each workspace is fully isolated — documents, expenses, and exports stay separate per client." },
-    { q: "What is the Accounting Firm plan?", a: "The Accounting Firm plan is a one-time purchase of €99 that gives you access to up to 10 client workspaces inside Charmy. It includes all Pro features plus multi-workspace management, an accountant dashboard, and team access." },
-    { q: "Can I change my plan later?", a: "Yes. You can upgrade from Pro to the Accounting Firm plan at any time to get multi-workspace support." },
-    { q: "Is my financial data secure?", a: "Yes. Charmy processes documents using secure cloud infrastructure and encrypted connections. Security measures include SSL encrypted data transfer, secure cloud infrastructure, and GDPR-compliant data handling. Your financial documents are only accessible to your account." },
-    { q: "Can I try Charmy before paying?", a: "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo. This allows you to see how the AI extracts financial data before purchasing." },
+    { q: t("pricing.faq1Q"), a: t("pricing.faq1A") },
+    { q: t("pricing.faq2Q"), a: t("pricing.faq2A") },
+    { q: t("pricing.faq3Q"), a: t("pricing.faq3A") },
+    { q: t("pricing.faq4Q"), a: t("pricing.faq4A") },
+    { q: t("pricing.faq5Q"), a: t("pricing.faq5A") },
+    { q: t("pricing.faq6Q"), a: t("pricing.faq6A") },
+    { q: t("pricing.faq7Q"), a: t("pricing.faq7A") },
+    { q: t("pricing.faq8Q"), a: t("pricing.faq8A") },
   ];
 
   return (
@@ -103,13 +105,13 @@ export default function PricingPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-6">
               <Sparkles className="h-3.5 w-3.5" />
-              One-time payment · Lifetime access
+              {t("pricing.badge")}
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
-              Save hours of manual bookkeeping
+              {t("pricing.heroTitle")}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Let Charmy process your invoices automatically so you can focus on more important work.
+              {t("pricing.heroDesc")}
             </p>
           </motion.div>
         </div>
@@ -125,7 +127,7 @@ export default function PricingPage() {
               <div className="relative glass-card rounded-2xl p-8 border border-primary/20 h-full flex flex-col">
                 {proPlan.current && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold shadow-lg">Your Current Plan</span>
+                    <span className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold shadow-lg">{t("pricing.yourCurrentPlan")}</span>
                   </div>
                 )}
                 <div className="text-center mb-8">
@@ -141,20 +143,20 @@ export default function PricingPage() {
                     <span className="text-muted-foreground text-lg">{proPlan.period}</span>
                   </div>
                 </div>
-                <p className="text-center text-xs text-muted-foreground mb-8">One-time payment · Lifetime access</p>
+                <p className="text-center text-xs text-muted-foreground mb-8">{t("billing.oneTimePayment")}</p>
                 {proPlan.current ? (
                   <Button className="w-full h-12 text-base rounded-xl" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
-                    Manage Plan
+                    {t("billing.managePlan")}
                   </Button>
                 ) : (
                   <Button className="w-full h-12 text-base rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
                     onClick={() => handleCheckout(STRIPE_PLANS.pro.price_id)}>
-                    {checkoutLoading === STRIPE_PLANS.pro.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Get Lifetime Access <ArrowRight className="h-4 w-4 ml-2" /></>}
+                    {checkoutLoading === STRIPE_PLANS.pro.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("common.processing")}</> : <>{t("billing.getLifetimeAccess")} <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
                 )}
                 <div className="relative my-8">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/50" /></div>
-                  <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground font-medium">Everything included</span></div>
+                  <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground font-medium">{t("billing.everythingIncluded")}</span></div>
                 </div>
                 <div className="grid grid-cols-1 gap-3 flex-1">
                   {proPlan.features.map((f) => {
@@ -178,13 +180,13 @@ export default function PricingPage() {
               <div className="relative glass-card rounded-2xl p-8 border border-amber-500/20 h-full flex flex-col">
                 {firmPlan.current && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full bg-amber-600 text-white text-xs font-semibold shadow-lg">Your Current Plan</span>
+                    <span className="px-4 py-1.5 rounded-full bg-amber-600 text-white text-xs font-semibold shadow-lg">{t("pricing.yourCurrentPlan")}</span>
                   </div>
                 )}
                 <div className="text-center mb-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-[11px] font-semibold mb-4">
                     <Building2 className="h-3.5 w-3.5" />
-                    For accountants & bookkeeping firms
+                    {t("pricing.firmBadge")}
                   </div>
                   <h3 className="text-2xl font-bold">{firmPlan.name}</h3>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{firmPlan.desc}</p>
@@ -195,20 +197,20 @@ export default function PricingPage() {
                     <span className="text-muted-foreground text-lg">{firmPlan.period}</span>
                   </div>
                 </div>
-                <p className="text-center text-xs text-muted-foreground mb-8">One-time payment · Lifetime access</p>
+                <p className="text-center text-xs text-muted-foreground mb-8">{t("billing.oneTimePayment")}</p>
                 {firmPlan.current ? (
                   <Button className="w-full h-12 text-base rounded-xl border-amber-500/30" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
-                    Manage Plan
+                    {t("billing.managePlan")}
                   </Button>
                 ) : (
                   <Button className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
                     onClick={() => handleCheckout(STRIPE_PLANS.firm.price_id)}>
-                    {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : <>Start with 10 Client Workspaces <ArrowRight className="h-4 w-4 ml-2" /></>}
+                    {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("common.processing")}</> : <>{t("pricing.startWith10")} <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
                 )}
                 <div className="relative my-8">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/50" /></div>
-                  <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground font-medium">Everything included</span></div>
+                  <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground font-medium">{t("billing.everythingIncluded")}</span></div>
                 </div>
                 <div className="grid grid-cols-1 gap-3 flex-1">
                   {firmPlan.features.map((f) => {
@@ -237,15 +239,13 @@ export default function PricingPage() {
             <div className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-amber-500/10 mx-auto">
               <Building2 className="h-5 w-5 text-amber-600" />
             </div>
-            <h3 className="text-lg font-bold">Why accountants choose Charmy</h3>
+            <h3 className="text-lg font-bold">{t("pricing.whyAccountants")}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
-              Accountants often receive piles of invoices from multiple clients. Instead of chasing files across emails, folders, and spreadsheets — process client invoices in dedicated workspaces and export clean financial data faster.
+              {t("pricing.whyAccountantsDesc1")}
             </p>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
-              The <span className="font-semibold text-foreground">Accounting Firm</span> plan is a one-time purchase of <span className="font-semibold text-foreground">€99</span> that gives you access to up to 10 client workspaces inside Charmy. Each workspace keeps documents fully separated, searchable, and ready to export.
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto" dangerouslySetInnerHTML={{ __html: t("pricing.whyAccountantsDesc2") }} />
             <p className="text-xs text-muted-foreground pt-1">
-              Ideal for firms managing documents for multiple clients from one central platform.
+              {t("pricing.whyAccountantsNote")}
             </p>
           </motion.div>
         </div>
@@ -256,7 +256,7 @@ export default function PricingPage() {
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
             className="flex flex-wrap items-center justify-center gap-6 md:gap-10 text-muted-foreground">
-            {["GDPR Compliant", "End-to-end encrypted", "Secure payments"].map((text) => (
+            {[t("pricing.gdprCompliant"), t("pricing.encrypted"), t("pricing.securePayments")].map((text) => (
               <div key={text} className="flex items-center gap-2 text-sm">
                 <Shield className="h-4 w-4 text-primary" />
                 <span>{text}</span>
@@ -272,13 +272,13 @@ export default function PricingPage() {
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-semibold mb-5">
               <Building2 className="h-3.5 w-3.5" />
-              Accounting Firm Plan
+              {t("pricing.firmPlan")}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Firm Plan <span className="text-gradient">FAQ</span>
+              {t("pricing.firmFaqTitle")}
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Everything you need to know about managing multiple client workspaces.
+              {t("pricing.firmFaqDesc")}
             </p>
           </motion.div>
 
@@ -305,13 +305,13 @@ export default function PricingPage() {
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-5">
               <HelpCircle className="h-3.5 w-3.5" />
-              Common Questions
+              {t("faq.badge")}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Frequently Asked <span className="text-gradient">Questions</span>
+              {t("pricing.generalFaqTitle")}
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Everything you need to know about pricing and billing.
+              {t("pricing.generalFaqDesc")}
             </p>
           </motion.div>
 
