@@ -143,11 +143,11 @@ export default function DashboardLayout() {
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={() => navigate("/app/settings")} className="px-3">
           <User className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">My Profile</span>
+          <span className="text-[13px]">{t("common.myProfile")}</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSignOut} className="px-3 text-muted-foreground">
           <LogOut className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">Sign Out</span>
+          <span className="text-[13px]">{t("auth.logout")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
