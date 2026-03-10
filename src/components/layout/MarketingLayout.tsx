@@ -118,12 +118,14 @@ export default function MarketingLayout() {
               )}
             </div>
 
-            {/* Mobile hamburger */}
-            <button
-              className="lg:hidden relative z-50 h-9 w-9 flex items-center justify-center rounded-lg hover:bg-accent transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            >
+            {/* Mobile: language + hamburger */}
+            <div className="lg:hidden flex items-center gap-1">
+              <LanguageSwitcher variant="ghost" />
+              <button
+                className="relative z-50 h-9 w-9 flex items-center justify-center rounded-lg hover:bg-accent transition-colors"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              >
               <AnimatePresence mode="wait">
                 {mobileOpen ? (
                   <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
