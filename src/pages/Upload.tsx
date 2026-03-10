@@ -182,8 +182,6 @@ export default function UploadPage() {
         </Card>
       )}
 
-      {/* Onboarding Checklist */}
-      <OnboardingChecklist />
 
       {/* Email Import Address */}
       {importEmailAddress && (
