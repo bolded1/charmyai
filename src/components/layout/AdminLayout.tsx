@@ -8,11 +8,42 @@ import { Shield, Loader2, Search, Bell } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function AdminLayout() {
   const location = useLocation();
-  const pageTitle = getPageTitle(location.pathname);
   const isAdmin = useIsAdmin();
+  const { t } = useTranslation();
+
+  const getPageTitle = (path: string): string => {
+    const map: Record<string, string> = {
+      '/admin': t("admin.dashboard"),
+      '/admin/organizations': t("admin.organizations"),
+      '/admin/users': t("admin.users"),
+      '/admin/documents': t("admin.documents"),
+      '/admin/usage': t("admin.usageActivity"),
+      '/admin/subscriptions': t("admin.subscriptions"),
+      '/admin/audit': t("admin.auditLogs"),
+      '/admin/settings': t("admin.systemSettings"),
+      '/admin/support': t("admin.support"),
+      '/admin/revenue': t("admin.revenue"),
+      '/admin/storage': t("admin.storage"),
+      '/admin/email-templates': t("admin.emailTemplates"),
+      '/admin/broadcast': t("admin.broadcast"),
+      '/admin/demo-settings': t("admin.demoSettings"),
+      '/admin/system-health': t("admin.systemHealth"),
+      '/admin/feature-flags': t("admin.featureFlags"),
+      '/admin/scheduled-jobs': t("admin.scheduledJobs"),
+      '/admin/login-activity': t("admin.loginActivity"),
+      '/admin/gdpr': t("admin.gdprData"),
+      '/admin/document-stats': t("admin.docProcessing"),
+      '/admin/feedback': t("admin.userFeedback"),
+      '/admin/ai-settings': t("admin.aiSettings"),
+    };
+    return map[path] || t("admin.title");
+  };
+
+  const pageTitle = getPageTitle(location.pathname);
 
   if (isAdmin === null) {
     return (
@@ -28,7 +59,7 @@ export default function AdminLayout() {
 
   const profileBadge = (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-muted-foreground hidden sm:block">Platform Admin</span>
+      <span className="text-xs text-muted-foreground hidden sm:block">{t("admin.platformAdmin")}</span>
       <Avatar className="h-7 w-7">
         <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">SA</AvatarFallback>
       </Avatar>
@@ -63,7 +94,7 @@ export default function AdminLayout() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Search..."
+                  placeholder={t("admin.searchPlaceholder")}
                   className="w-48 pl-9 h-9 bg-muted/50 border-transparent focus:border-primary/30 rounded-xl text-sm"
                 />
               </div>
@@ -73,8 +104,8 @@ export default function AdminLayout() {
               <div className="h-6 w-px bg-border/60" />
               <div className="flex items-center gap-2.5">
                 <div className="text-right hidden lg:block">
-                  <p className="text-xs font-semibold text-foreground">Platform Admin</p>
-                  <p className="text-[10px] text-muted-foreground">Super Admin</p>
+                  <p className="text-xs font-semibold text-foreground">{t("admin.platformAdmin")}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("admin.superAdmin")}</p>
                 </div>
                 <Avatar className="h-9 w-9 ring-2 ring-primary/20 ring-offset-2 ring-offset-card">
                   <AvatarFallback className="bg-gradient-to-br from-primary to-[hsl(var(--violet))] text-primary-foreground text-xs font-bold">SA</AvatarFallback>
@@ -90,33 +121,4 @@ export default function AdminLayout() {
       </div>
     </SidebarProvider>
   );
-}
-
-function getPageTitle(path: string): string {
-  const map: Record<string, string> = {
-    '/admin': 'Dashboard',
-    '/admin/organizations': 'Organizations',
-    '/admin/users': 'Users',
-    '/admin/documents': 'Documents',
-    '/admin/usage': 'Usage & Activity',
-    '/admin/subscriptions': 'Subscriptions',
-    '/admin/audit': 'Audit Logs',
-    '/admin/settings': 'System Settings',
-    '/admin/support': 'Support Tools',
-    '/admin/revenue': 'Revenue',
-    '/admin/storage': 'Storage',
-    
-    '/admin/email-templates': 'Email Templates',
-    '/admin/broadcast': 'Broadcast',
-    '/admin/demo-settings': 'Demo Settings',
-    '/admin/system-health': 'System Health',
-    '/admin/feature-flags': 'Feature Flags',
-    '/admin/scheduled-jobs': 'Scheduled Jobs',
-    '/admin/login-activity': 'Login Activity',
-    '/admin/gdpr': 'GDPR / Data',
-    '/admin/document-stats': 'Doc Processing',
-    '/admin/feedback': 'User Feedback',
-    '/admin/ai-settings': 'AI Settings',
-  };
-  return map[path] || 'Admin';
 }

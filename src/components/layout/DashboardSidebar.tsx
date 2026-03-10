@@ -24,43 +24,14 @@ import { useState } from "react";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { useClientRole } from "@/hooks/useClientRole";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
   DropdownMenuGroup, DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { User, Building2, Palette, Keyboard, HelpCircle as HelpIcon } from "lucide-react";
-
-const financeItems = [
-  { title: "Capture", url: "/app", icon: Upload },
-  { title: "Documents", url: "/app/documents", icon: FileText },
-];
-
-const recordsItems = [
-  { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Income", url: "/app/income", icon: TrendingUp },
-  { title: "Categories", url: "/app/categories", icon: Tag },
-  { title: "Exports", url: "/app/exports", icon: Download },
-];
-
-const firmItems = [
-  { title: "Firm Dashboard", url: "/app/workspaces", icon: BarChart3 },
-  { title: "Team", url: "/app/team", icon: UsersRound },
-];
-
-const clientItems = [
-  { title: "Capture", url: "/app", icon: Upload },
-  { title: "Documents", url: "/app/documents", icon: FileText },
-  { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Exports", url: "/app/exports", icon: Download },
-];
-
-const systemItems = [
-  { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
-  { title: "Settings", url: "/app/settings", icon: Settings },
-  { title: "Support", url: "/app/support", icon: LifeBuoy },
-  { title: "Help & Documentation", url: "/app/help", icon: HelpCircle },
-];
 
 export function DashboardSidebar() {
   const { state } = useSidebar();
@@ -77,9 +48,34 @@ export function DashboardSidebar() {
   const { activeWorkspace, isAccountingFirm, clientWorkspaces, allWorkspaces } = useWorkspace();
   const { isClient } = useClientRole();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const { t } = useTranslation();
   
   const isClientContext = isAccountingFirm && activeWorkspace?.workspace_type === "client";
   const isFirmContext = isAccountingFirm && !isClientContext;
+
+  const financeItems = [
+    { title: t("navigation.capture"), url: "/app", icon: Upload },
+    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
+  ];
+
+  const recordsItems = [
+    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
+    { title: t("navigation.income"), url: "/app/income", icon: TrendingUp },
+    { title: t("navigation.categories"), url: "/app/categories", icon: Tag },
+    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+  ];
+
+  const firmItems = [
+    { title: t("navigation.firmDashboard"), url: "/app/workspaces", icon: BarChart3 },
+    { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
+  ];
+
+  const systemItems = [
+    { title: t("navigation.aiAssistant"), url: "/app/assistant", icon: Sparkles },
+    { title: t("navigation.settings"), url: "/app/settings", icon: Settings },
+    { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
+    { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
+  ];
 
   const shortcuts = useKeyboardShortcuts(() => setShortcutsOpen(true));
 
@@ -129,7 +125,7 @@ export function DashboardSidebar() {
       <DropdownMenuSeparator />
 
       <DropdownMenuLabel className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
-        Workspace
+        {t("sidebarGroups.workspace")}
       </DropdownMenuLabel>
       <DropdownMenuItem className="text-xs text-muted-foreground px-3 cursor-default" disabled>
         <Building2 className="h-3.5 w-3.5 mr-2" />
@@ -140,22 +136,22 @@ export function DashboardSidebar() {
       <DropdownMenuGroup>
         <DropdownMenuItem onClick={() => navigate("/app/settings")} className="px-3 min-h-[40px]">
           <User className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">My Profile</span>
+          <span className="text-[13px]">{t("settings.myProfile")}</span>
           {!isMobile && <DropdownMenuShortcut>{MOD_LABEL},</DropdownMenuShortcut>}
         </DropdownMenuItem>
         {!isClient && (
           <>
             <DropdownMenuItem onClick={() => navigate("/app/settings?tab=organization")} className="px-3 min-h-[40px]">
               <Building2 className="h-3.5 w-3.5 mr-2" />
-              <span className="text-[13px]">Organization Settings</span>
+              <span className="text-[13px]">{t("settings.organizationSettings")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/app/settings?tab=appearance")} className="px-3 min-h-[40px]">
               <Palette className="h-3.5 w-3.5 mr-2" />
-              <span className="text-[13px]">Appearance</span>
+              <span className="text-[13px]">{t("settings.appearance")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/app/team")} className="px-3 min-h-[40px]">
               <UsersRound className="h-3.5 w-3.5 mr-2" />
-              <span className="text-[13px]">Team Members</span>
+              <span className="text-[13px]">{t("settings.teamMembers")}</span>
             </DropdownMenuItem>
           </>
         )}
@@ -165,12 +161,12 @@ export function DashboardSidebar() {
       <DropdownMenuGroup>
         <DropdownMenuItem className="px-3 min-h-[40px]" onClick={() => navigate("/app/help")}>
           <HelpCircle className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">Help & Documentation</span>
+          <span className="text-[13px]">{t("navigation.help")}</span>
         </DropdownMenuItem>
         {!isMobile && (
           <DropdownMenuItem className="px-3 min-h-[40px]" onClick={() => setShortcutsOpen(true)}>
             <Keyboard className="h-3.5 w-3.5 mr-2" />
-            <span className="text-[13px]">Keyboard Shortcuts</span>
+            <span className="text-[13px]">{t("settings.keyboardShortcuts")}</span>
             <DropdownMenuShortcut>{MOD_LABEL}/</DropdownMenuShortcut>
           </DropdownMenuItem>
         )}
@@ -179,7 +175,7 @@ export function DashboardSidebar() {
 
       <DropdownMenuItem onClick={handleSignOut} className="px-3 text-muted-foreground min-h-[40px]">
         <LogOut className="h-3.5 w-3.5 mr-2" />
-        <span className="text-[13px]">Sign Out</span>
+        <span className="text-[13px]">{t("auth.logout")}</span>
       </DropdownMenuItem>
     </DropdownMenuContent>
   );
@@ -205,16 +201,15 @@ export function DashboardSidebar() {
             <WorkspaceSwitcher compact={collapsed} />
           </div>
           {(() => {
-            // Clients get the same sidebar as pro users (no firm section)
             return (
               <>
-                {renderGroup("Documents", financeItems)}
-                {renderGroup("Finance", recordsItems)}
+                {renderGroup(t("sidebarGroups.documents"), financeItems)}
+                {renderGroup(t("sidebarGroups.finance"), recordsItems)}
                 {!isClient && isAccountingFirm && (
                   <SidebarGroup className="py-1">
                     {showLabels && (
                       <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
-                        Firm
+                        {t("sidebarGroups.firm")}
                       </SidebarGroupLabel>
                     )}
                     <SidebarGroupContent>
@@ -224,7 +219,7 @@ export function DashboardSidebar() {
                             (w) => w.workspace_type === "accounting_firm" || w.workspace_type === "standard"
                           );
                           const maxWs = homeOrg?.max_client_workspaces || 10;
-                          const showBadge = item.title === "Firm Dashboard";
+                          const showBadge = item.title === t("navigation.firmDashboard");
                           return (
                             <SidebarMenuItem key={item.title}>
                               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
@@ -249,21 +244,28 @@ export function DashboardSidebar() {
                     </SidebarGroupContent>
                   </SidebarGroup>
                 )}
-                {renderGroup("System", systemItems)}
+                {renderGroup(t("sidebarGroups.system"), systemItems)}
               </>
             );
           })()}
         </SidebarContent>
         <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/30 space-y-3">
+          {/* Language switcher */}
+          {showLabels && (
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("language.switchLanguage")}</span>
+              <LanguageSwitcher variant="ghost" />
+            </div>
+          )}
+
           {/* Notifications row */}
           <div className="flex items-center justify-between px-1">
-            {showLabels && <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Notifications</span>}
+            {showLabels && <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("navigation.notifications")}</span>}
             <NotificationsPopover />
           </div>
 
           {/* User card */}
           <div className="rounded-xl bg-accent/40 border border-border/30 p-2.5 space-y-2">
-            {/* Avatar + name — clickable, opens profile dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2.5 w-full rounded-lg px-1 py-1 hover:bg-background/70 transition-all duration-150 focus:outline-none">
@@ -288,7 +290,7 @@ export function DashboardSidebar() {
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-foreground hover:bg-background/70 border border-border/40 transition-all duration-150 focus:outline-none">
                       <Settings className="h-3.5 w-3.5" strokeWidth={2} />
-                      <span>Settings</span>
+                      <span>{t("navigation.settings")}</span>
                     </button>
                   </DropdownMenuTrigger>
                   {profileDropdownContent}
@@ -298,7 +300,7 @@ export function DashboardSidebar() {
                   className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/8 border border-border/40 transition-all duration-150"
                 >
                   <LogOut className="h-3.5 w-3.5" strokeWidth={2} />
-                  <span>Sign Out</span>
+                  <span>{t("auth.logout")}</span>
                 </button>
               </div>
             )}
