@@ -192,7 +192,8 @@ export default function DocumentsPage() {
             className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/15"
           >
             <span className="text-sm font-semibold text-primary">
-              {selectedIds.size} selected
+              {selectedIds.size} {t("common.selected")}
+            </span>
             </span>
             <div className="flex-1" />
             {approvableCount > 0 && (
