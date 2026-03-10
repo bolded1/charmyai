@@ -6,14 +6,8 @@ import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookieConsent } from "@/components/CookieConsent";
 import { useAuth } from "@/hooks/useAuth";
-
-const navLinks = [
-  { label: "Features", to: "/features", description: "See what Charmy can do" },
-  { label: "Pricing", to: "/pricing", description: "Plans that scale with you" },
-  { label: "Try Demo", to: "/demo", description: "Test Charmy instantly" },
-  { label: "About", to: "/about", description: "Our story and mission" },
-  { label: "Contact", to: "/contact", description: "Get in touch with us" },
-];
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function MarketingLayout() {
   const brandLogo = useBrandLogo();
@@ -22,6 +16,15 @@ export default function MarketingLayout() {
   const location = useLocation();
   const { openPreferences } = useCookieConsent();
   const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const navLinks = [
+    { label: t("marketing.features"), to: "/features", description: t("features.heroDesc") },
+    { label: t("marketing.pricing"), to: "/pricing", description: t("pricing.heroDesc") },
+    { label: t("marketing.tryDemo"), to: "/demo", description: t("marketing.tryDemo") },
+    { label: t("marketing.about"), to: "/about", description: t("marketing.about") },
+    { label: t("marketing.contact"), to: "/contact", description: t("marketing.contact") },
+  ];
 
   useEffect(() => {
     setMobileOpen(false);
@@ -101,15 +104,16 @@ export default function MarketingLayout() {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-2">
+              <LanguageSwitcher variant="ghost" />
               <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground h-8 px-3 text-[13px]">
                 <Link to={user ? "/app" : "/login"}>
                   {user ? <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" /> : <LogIn className="h-3.5 w-3.5 mr-1.5" />}
-                  {user ? "Dashboard" : "Log In"}
+                  {user ? t("marketing.dashboard") : t("marketing.login")}
                 </Link>
               </Button>
               {!user && (
                 <Button size="sm" asChild className="h-8 px-4 text-[13px] rounded-lg shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-px transition-all duration-200">
-                  <Link to="/signup">Get Started</Link>
+                  <Link to="/signup">{t("common.getStarted")}</Link>
                 </Button>
               )}
             </div>
@@ -177,7 +181,6 @@ export default function MarketingLayout() {
                           <span className={`block text-base font-semibold ${isActive ? "text-primary" : "text-foreground"}`}>
                             {l.label}
                           </span>
-                          <span className="block text-xs text-muted-foreground mt-0.5">{l.description}</span>
                         </div>
                         <ChevronRight className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? "text-primary" : "text-muted-foreground/50"}`} />
                       </Link>
@@ -192,13 +195,16 @@ export default function MarketingLayout() {
                 transition={{ duration: 0.3, delay: 0.3 }}
                 className="space-y-3 pt-6 border-t border-border/50"
               >
+                <div className="flex justify-center mb-3">
+                  <LanguageSwitcher variant="outline" />
+                </div>
                 <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
-                  <Link to={user ? "/app" : "/login"}>{user ? "Dashboard" : "Log In"}</Link>
+                  <Link to={user ? "/app" : "/login"}>{user ? t("marketing.dashboard") : t("marketing.login")}</Link>
                 </Button>
                 <Button size="lg" asChild className="w-full h-12 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
                   <Link to="/signup">
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Get Started
+                    {t("common.getStarted")}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
@@ -229,37 +235,37 @@ export default function MarketingLayout() {
                   </>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">AI-powered financial document processing for modern businesses.</p>
+              <p className="text-sm text-muted-foreground">{t("marketing.footerDesc")}</p>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-3">Product</h4>
+              <h4 className="font-semibold text-sm mb-3">{t("marketing.product")}</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <Link to="/features" className="block hover:text-foreground">Features</Link>
-                <Link to="/pricing" className="block hover:text-foreground">Pricing</Link>
-                <Link to="/demo" className="block hover:text-foreground">Try Demo</Link>
+                <Link to="/features" className="block hover:text-foreground">{t("marketing.features")}</Link>
+                <Link to="/pricing" className="block hover:text-foreground">{t("marketing.pricing")}</Link>
+                <Link to="/demo" className="block hover:text-foreground">{t("marketing.tryDemo")}</Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-3">Company</h4>
+              <h4 className="font-semibold text-sm mb-3">{t("marketing.company")}</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <Link to="/about" className="block hover:text-foreground">About</Link>
-                <Link to="/contact" className="block hover:text-foreground">Contact</Link>
-                <Link to="/help" className="block hover:text-foreground">Help & Documentation</Link>
+                <Link to="/about" className="block hover:text-foreground">{t("marketing.about")}</Link>
+                <Link to="/contact" className="block hover:text-foreground">{t("marketing.contact")}</Link>
+                <Link to="/help" className="block hover:text-foreground">{t("navigation.help")}</Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-3">Legal</h4>
+              <h4 className="font-semibold text-sm mb-3">{t("marketing.legal")}</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <Link to="/privacy" className="block hover:text-foreground">Privacy Policy</Link>
-                <Link to="/terms" className="block hover:text-foreground">Terms of Service</Link>
-                <Link to="/acceptable-use" className="block hover:text-foreground">Acceptable Use</Link>
-                <button onClick={openPreferences} className="block hover:text-foreground text-left">Cookie Preferences</button>
+                <Link to="/privacy" className="block hover:text-foreground">{t("marketing.privacyPolicy")}</Link>
+                <Link to="/terms" className="block hover:text-foreground">{t("marketing.termsOfService")}</Link>
+                <Link to="/acceptable-use" className="block hover:text-foreground">{t("marketing.acceptableUse")}</Link>
+                <button onClick={openPreferences} className="block hover:text-foreground text-left">{t("marketing.cookiePreferences")}</button>
               </div>
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-sm text-muted-foreground text-center space-y-1">
-            <p>© {new Date().getFullYear()} Charmy. All rights reserved.</p>
-            <p className="text-xs">Designed with <span className="text-rose inline-block animate-pulse">♥</span> by <a href="https://devitus.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors underline underline-offset-2">Devitus Digital Ltd</a></p>
+            <p>© {new Date().getFullYear()} Charmy. {t("marketing.allRightsReserved")}</p>
+            <p className="text-xs">{t("marketing.designedBy")} <a href="https://devitus.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors underline underline-offset-2">Devitus Digital Ltd</a></p>
           </div>
         </div>
       </footer>

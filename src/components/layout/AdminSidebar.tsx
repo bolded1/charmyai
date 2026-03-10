@@ -11,75 +11,77 @@ import {
   CreditCard, ScrollText, Cog, LifeBuoy, Shield, ArrowLeft, Sparkles, PenLine, Mail, Megaphone,
   KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Brain, MailPlus, Tag, Briefcase,
 } from "lucide-react";
-
-const navGroups = [
-  {
-    label: "Overview",
-    items: [
-      { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "Users & Access",
-    items: [
-      { title: "Organizations", url: "/admin/organizations", icon: Building2 },
-      { title: "Firm Accounts", url: "/admin/firm-accounts", icon: Briefcase },
-      { title: "Users", url: "/admin/users", icon: Users },
-      { title: "Login Activity", url: "/admin/login-activity", icon: KeyRound },
-      { title: "GDPR / Data", url: "/admin/gdpr", icon: UserX },
-    ],
-  },
-  {
-    label: "Documents & Data",
-    items: [
-      { title: "Documents", url: "/admin/documents", icon: FileText },
-      { title: "Doc Processing", url: "/admin/document-stats", icon: Activity },
-      { title: "Storage", url: "/admin/storage", icon: HardDrive },
-    ],
-  },
-  {
-    label: "Analytics & Revenue",
-    items: [
-      { title: "Usage & Activity", url: "/admin/usage", icon: BarChart3 },
-      { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
-      { title: "Promo Codes", url: "/admin/promo-codes", icon: Tag },
-      { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
-      { title: "User Feedback", url: "/admin/feedback", icon: MessageSquareHeart },
-    ],
-  },
-  {
-    label: "Content & Comms",
-    items: [
-      
-      { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
-      { title: "Broadcast", url: "/admin/broadcast", icon: Megaphone },
-      { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },
-      { title: "Marketing Email", url: "/admin/marketing-email", icon: MailPlus },
-    ],
-  },
-  {
-    label: "System & Ops",
-    items: [
-      { title: "System Health", url: "/admin/system-health", icon: HeartPulse },
-      { title: "AI Settings", url: "/admin/ai-settings", icon: Brain },
-      { title: "Feature Flags", url: "/admin/feature-flags", icon: ToggleLeft },
-      { title: "Scheduled Jobs", url: "/admin/scheduled-jobs", icon: Clock },
-      { title: "Audit Logs", url: "/admin/audit", icon: ScrollText },
-      { title: "System Settings", url: "/admin/settings", icon: Cog },
-    ],
-  },
-  {
-    label: "Help",
-    items: [
-      { title: "Support", url: "/admin/support", icon: LifeBuoy },
-    ],
-  },
-];
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { t } = useTranslation();
+
+  const navGroups = [
+    {
+      label: t("admin.overview"),
+      items: [
+        { title: t("admin.dashboard"), url: "/admin", icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: t("admin.usersAccess"),
+      items: [
+        { title: t("admin.organizations"), url: "/admin/organizations", icon: Building2 },
+        { title: t("admin.firmAccounts"), url: "/admin/firm-accounts", icon: Briefcase },
+        { title: t("admin.users"), url: "/admin/users", icon: Users },
+        { title: t("admin.loginActivity"), url: "/admin/login-activity", icon: KeyRound },
+        { title: t("admin.gdprData"), url: "/admin/gdpr", icon: UserX },
+      ],
+    },
+    {
+      label: t("admin.documentsData"),
+      items: [
+        { title: t("admin.documents"), url: "/admin/documents", icon: FileText },
+        { title: t("admin.docProcessing"), url: "/admin/document-stats", icon: Activity },
+        { title: t("admin.storage"), url: "/admin/storage", icon: HardDrive },
+      ],
+    },
+    {
+      label: t("admin.analyticsRevenue"),
+      items: [
+        { title: t("admin.usageActivity"), url: "/admin/usage", icon: BarChart3 },
+        { title: t("admin.subscriptions"), url: "/admin/subscriptions", icon: CreditCard },
+        { title: t("admin.promoCodes"), url: "/admin/promo-codes", icon: Tag },
+        { title: t("admin.revenue"), url: "/admin/revenue", icon: TrendingUp },
+        { title: t("admin.userFeedback"), url: "/admin/feedback", icon: MessageSquareHeart },
+      ],
+    },
+    {
+      label: t("admin.contentComms"),
+      items: [
+        { title: t("admin.emailTemplates"), url: "/admin/email-templates", icon: Mail },
+        { title: t("admin.broadcast"), url: "/admin/broadcast", icon: Megaphone },
+        { title: t("admin.demoSettings"), url: "/admin/demo-settings", icon: Sparkles },
+        { title: t("admin.marketingEmail"), url: "/admin/marketing-email", icon: MailPlus },
+      ],
+    },
+    {
+      label: t("admin.systemOps"),
+      items: [
+        { title: t("admin.systemHealth"), url: "/admin/system-health", icon: HeartPulse },
+        { title: t("admin.aiSettings"), url: "/admin/ai-settings", icon: Brain },
+        { title: t("admin.featureFlags"), url: "/admin/feature-flags", icon: ToggleLeft },
+        { title: t("admin.scheduledJobs"), url: "/admin/scheduled-jobs", icon: Clock },
+        { title: t("admin.auditLogs"), url: "/admin/audit", icon: ScrollText },
+        { title: t("admin.systemSettings"), url: "/admin/settings", icon: Cog },
+      ],
+    },
+    {
+      label: t("admin.help"),
+      items: [
+        { title: t("admin.support"), url: "/admin/support", icon: LifeBuoy },
+      ],
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/40 bg-card">
@@ -90,8 +92,8 @@ export function AdminSidebar() {
           </div>
           {!collapsed && (
             <div>
-              <span className="font-bold text-sm text-foreground tracking-tight">Admin</span>
-              <p className="text-[10px] text-muted-foreground -mt-0.5">Control Panel</p>
+              <span className="font-bold text-sm text-foreground tracking-tight">{t("admin.title")}</span>
+              <p className="text-[10px] text-muted-foreground -mt-0.5">{t("admin.controlPanel")}</p>
             </div>
           )}
         </Link>
@@ -181,13 +183,18 @@ export function AdminSidebar() {
         })}
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-border/40">
+      <SidebarFooter className="p-3 border-t border-border/40 space-y-2">
+        {!collapsed && (
+          <div className="flex justify-center">
+            <LanguageSwitcher variant="ghost" />
+          </div>
+        )}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="text-foreground/80 hover:text-foreground hover:bg-muted/60 rounded-xl">
               <Link to="/app" className="text-foreground hover:text-foreground hover:bg-muted/60 rounded-xl">
                 <ArrowLeft className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-                {!collapsed && <span className="text-[11.5px] font-semibold">Back to App</span>}
+                {!collapsed && <span className="text-[11.5px] font-semibold">{t("navigation.backToApp")}</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
