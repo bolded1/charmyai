@@ -273,10 +273,10 @@ export default function UploadPage() {
               <UploadIcon className={`h-5 w-5 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
             <h2 className="text-base font-bold text-foreground mb-1">
-              {dragOver ? "Drop files to upload" : "Upload Expense Documents"}
+              {dragOver ? t("upload.dropFilesUpload") : t("upload.uploadExpenseDocs")}
             </h2>
             <p className="text-xs text-muted-foreground mb-3 max-w-sm mx-auto">
-              Drag and drop your invoices, receipts, or bills here.
+              {t("upload.dragDropInvoices")}
             </p>
             <div className="flex items-center justify-center gap-2 flex-wrap">
               <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">PDF</Badge>
