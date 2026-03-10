@@ -9,9 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { logAuditEvent } from "@/lib/audit-log-client";
+import { useTranslation } from "react-i18next";
 
 export default function LoginPage() {
   const brandLogo = useBrandLogo();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,43 +73,43 @@ export default function LoginPage() {
               </>
             )}
           </Link>
-          <p className="text-sm text-muted-foreground mt-3">Sign in to your account</p>
+          <p className="text-sm text-muted-foreground mt-3">{t("auth.loginTitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-7 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs font-medium">Email</Label>
+            <Label htmlFor="email" className="text-xs font-medium">{t("auth.email")}</Label>
             <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-              <button type="button" onClick={() => { setForgotOpen(true); setForgotSent(false); setForgotEmail(email); }} className="text-xs text-primary cursor-pointer hover:underline">Forgot password?</button>
+              <Label htmlFor="password" className="text-xs font-medium">{t("auth.password")}</Label>
+              <button type="button" onClick={() => { setForgotOpen(true); setForgotSent(false); setForgotEmail(email); }} className="text-xs text-primary cursor-pointer hover:underline">{t("auth.forgotPassword")}</button>
             </div>
             <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity shadow-lg shadow-primary/20" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? t("auth.signingIn") : t("auth.login")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-5">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-primary font-semibold hover:underline">Get Started</Link>
+          {t("auth.dontHaveAccount")}{" "}
+          <Link to="/signup" className="text-primary font-semibold hover:underline">{t("auth.getStarted")}</Link>
         </p>
       </div>
 
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Reset your password</DialogTitle>
+            <DialogTitle>{t("auth.resetPassword")}</DialogTitle>
           </DialogHeader>
           {forgotSent ? (
             <div className="text-center space-y-3 py-2">
               <div className="h-12 w-12 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                 <Mail className="h-6 w-6 text-primary-foreground" />
               </div>
-              <p className="text-sm text-muted-foreground">We've sent a reset link to <span className="font-semibold text-foreground">{forgotEmail}</span>. Check your inbox.</p>
+              <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("auth.resetSent", { email: forgotEmail }) }} />
             </div>
           ) : (
             <form onSubmit={async (e) => {
@@ -129,11 +131,11 @@ export default function LoginPage() {
               setForgotSent(true);
             }} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="forgot-email" className="text-xs font-medium">Email</Label>
+                <Label htmlFor="forgot-email" className="text-xs font-medium">{t("auth.email")}</Label>
                 <Input id="forgot-email" type="email" placeholder="you@company.com" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="h-10 rounded-xl" />
               </div>
               <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity" disabled={forgotLoading}>
-                {forgotLoading ? "Sending..." : "Send Reset Link"}
+                {forgotLoading ? t("auth.sendingReset") : t("auth.resetPasswordBtn")}
               </Button>
             </form>
           )}
