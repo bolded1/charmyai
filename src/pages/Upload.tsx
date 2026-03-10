@@ -171,11 +171,11 @@ export default function UploadPage() {
               <Briefcase className="h-4 w-4 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-foreground">
-                Uploading to: {activeWorkspace.name}
+             <p className="text-xs font-semibold text-foreground">
+                {t("upload.uploadingTo", { name: activeWorkspace.name })}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Documents will be stored in this client's workspace
+                {t("upload.storedInWorkspace")}
               </p>
             </div>
           </CardContent>
