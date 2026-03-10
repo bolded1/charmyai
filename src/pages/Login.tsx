@@ -131,7 +131,7 @@ export default function LoginPage() {
               setForgotSent(true);
             }} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="forgot-email" className="text-xs font-medium">Email</Label>
+                <Label htmlFor="forgot-email" className="text-xs font-medium">{t("auth.email")}</Label>
                 <Input id="forgot-email" type="email" placeholder="you@company.com" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="h-10 rounded-xl" />
               </div>
               <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity" disabled={forgotLoading}>
