@@ -78,6 +78,11 @@ export default function IndexPage() {
               <span className="text-xs text-muted-foreground">{t("marketing.noCreditCard")}</span>
             </motion.div>
           </div>
+
+          {/* Demo uploader embedded in hero */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-12">
+            <DemoUploader />
+          </motion.div>
         </div>
       </section>
 
