@@ -204,7 +204,7 @@ export function DemoUploader() {
                     <div>
                       <p className="font-medium text-sm">{processingStep}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        This usually takes a few seconds
+                        {t("demoUploader.fewSeconds")}
                       </p>
                     </div>
                   </motion.div>
