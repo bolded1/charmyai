@@ -28,6 +28,7 @@ interface UploadingFile {
 }
 
 export default function UploadPage() {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [scanPressed, setScanPressed] = useState(false);
