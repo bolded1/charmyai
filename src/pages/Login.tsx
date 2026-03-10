@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 
 export default function LoginPage() {
   const brandLogo = useBrandLogo();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
