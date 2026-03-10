@@ -156,7 +156,6 @@ export default function DocumentsPage() {
       default: return status;
     }
   };
-  }
 
 
   return (
