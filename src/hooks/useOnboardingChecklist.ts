@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useDocuments, useExpenseRecords } from "@/hooks/useDocuments";
+import { useTranslation } from "react-i18next";
 
 export interface ChecklistStep {
   id: string;
@@ -12,6 +13,7 @@ export interface ChecklistStep {
 export function useOnboardingChecklist() {
   const { data: documents = [] } = useDocuments();
   const { data: expenses = [] } = useExpenseRecords();
+  const { t } = useTranslation();
 
   const steps = useMemo<ChecklistStep[]>(() => {
     const hasUploaded = documents.length > 0;
@@ -26,34 +28,34 @@ export function useOnboardingChecklist() {
     return [
       {
         id: "upload",
-        title: "Upload your first document",
-        description: "Upload an invoice, receipt, or bill to get started",
+        title: t("onboarding.step1Title"),
+        description: t("onboarding.step1Desc"),
         completed: hasUploaded,
         link: "/app",
       },
       {
         id: "review",
-        title: "Review extracted data",
-        description: "Check the AI-extracted fields and make corrections",
+        title: t("onboarding.step2Title"),
+        description: t("onboarding.step2Desc"),
         completed: hasReviewed,
         link: "/app/documents",
       },
       {
         id: "approve",
-        title: "Approve a document",
-        description: "Approve a document to create an expense or income record",
+        title: t("onboarding.step3Title"),
+        description: t("onboarding.step3Desc"),
         completed: hasApproved,
         link: "/app/documents",
       },
       {
         id: "export",
-        title: "Export your records",
-        description: "Export expenses or income as PDF, CSV, or Excel",
+        title: t("onboarding.step4Title"),
+        description: t("onboarding.step4Desc"),
         completed: hasExported,
         link: "/app/exports",
       },
     ];
-  }, [documents, expenses]);
+  }, [documents, expenses, t]);
 
   const completedCount = steps.filter((s) => s.completed).length;
   const allDone = completedCount === steps.length;

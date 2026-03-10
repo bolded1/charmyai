@@ -250,17 +250,9 @@ export function DashboardSidebar() {
           })()}
         </SidebarContent>
         <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/30 space-y-3">
-          {/* Language switcher */}
-          {showLabels && (
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("language.switchLanguage")}</span>
-              <LanguageSwitcher variant="ghost" />
-            </div>
-          )}
-
-          {/* Notifications row */}
-          <div className="flex items-center justify-between px-1">
-            {showLabels && <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("navigation.notifications")}</span>}
+          {/* Language + Notifications row */}
+          <div className="flex items-center justify-end gap-1 px-1">
+            <LanguageSwitcher variant="ghost" />
             <NotificationsPopover />
           </div>
 

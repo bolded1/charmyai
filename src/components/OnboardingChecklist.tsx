@@ -7,14 +7,15 @@ import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useTranslation } from "react-i18next";
 
 export function OnboardingChecklist() {
   const { isAccountingFirm } = useWorkspace();
   const { steps, completedCount, allDone, progress } = useOnboardingChecklist();
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(false);
+  const { t } = useTranslation();
 
-  // Persist dismissal per session
   useEffect(() => {
     const stored = sessionStorage.getItem("onboarding-dismissed");
     if (stored === "true") setDismissed(true);
@@ -35,7 +36,7 @@ export function OnboardingChecklist() {
             <div className="h-8 w-8 rounded-xl bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
               <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
-            Getting Started
+            {t("onboarding.gettingStarted")}
           </CardTitle>
           <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={handleDismiss}>
             <X className="h-4 w-4" />
@@ -43,7 +44,7 @@ export function OnboardingChecklist() {
         </div>
         <div className="space-y-1.5 pt-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{completedCount} of {steps.length} completed</span>
+            <span>{t("onboarding.completedOf", { completed: completedCount, total: steps.length })}</span>
             <span className="font-medium">{progress}%</span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -58,9 +59,7 @@ export function OnboardingChecklist() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               className={`flex items-center gap-3 p-3 rounded-xl transition-colors cursor-pointer group ${
-                step.completed
-                  ? "bg-primary/5"
-                  : "hover:bg-accent/50"
+                step.completed ? "bg-primary/5" : "hover:bg-accent/50"
               }`}
               onClick={() => !step.completed && navigate(step.link)}
             >

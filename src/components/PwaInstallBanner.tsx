@@ -3,14 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Download, Smartphone, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export function PwaInstallBanner() {
   const { canInstall, isInstalled, promptInstall } = usePwaInstall();
   const [dismissed, setDismissed] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
-    // Show banner after a short delay post-login
     const wasDismissed = sessionStorage.getItem("pwa-install-dismissed");
     if (wasDismissed) {
       setDismissed(true);
@@ -27,7 +28,6 @@ export function PwaInstallBanner() {
 
   if (isInstalled || dismissed || !showBanner) return null;
 
-  // On iOS, show instructions since beforeinstallprompt isn't supported
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   return (
@@ -43,28 +43,18 @@ export function PwaInstallBanner() {
             <Smartphone className="h-4 w-4 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Install Charmy as a Desktop App</p>
+            <p className="text-sm font-semibold text-foreground">{t("pwa.installTitle")}</p>
             <p className="text-xs text-muted-foreground">
-              {isIOS
-                ? "Tap Share → Add to Home Screen for a native app experience"
-                : "Add Charmy to your desktop as a Progressive Web App — quick launch, offline access, and a native feel without an app store"
-              }
+              {isIOS ? t("pwa.iosInstructions") : t("pwa.desktopInstructions")}
             </p>
           </div>
           {canInstall && (
-            <Button
-              size="sm"
-              className="h-8 text-xs shrink-0 gap-1.5"
-              onClick={promptInstall}
-            >
+            <Button size="sm" className="h-8 text-xs shrink-0 gap-1.5" onClick={promptInstall}>
               <Download className="h-3.5 w-3.5" />
-              Install
+              {t("pwa.installButton")}
             </Button>
           )}
-          <button
-            onClick={handleDismiss}
-            className="text-muted-foreground hover:text-foreground p-1 shrink-0"
-          >
+          <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground p-1 shrink-0">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>

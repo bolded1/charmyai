@@ -137,7 +137,8 @@ export default function MarketingLayout() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
       </header>
