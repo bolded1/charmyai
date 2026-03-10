@@ -241,7 +241,7 @@ export default function DocumentsPage() {
       ) : filtered.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12 text-muted-foreground text-sm">
-            No documents found. Upload your first document to get started.
+            {t("documents.noDocuments")}
           </CardContent>
         </Card>
       ) : isMobile ? (
