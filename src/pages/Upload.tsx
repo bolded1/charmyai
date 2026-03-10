@@ -235,8 +235,8 @@ export default function UploadPage() {
             <h2 className="text-sm md:text-xl font-bold text-foreground mb-0.5 md:mb-2">{t("upload.scanDocument")}</h2>
             <p className="text-[11px] md:text-sm text-muted-foreground mb-2.5 md:mb-6 max-w-md mx-auto">{t("upload.captureCamera")}</p>
             <div className="flex items-center justify-center gap-1.5">
-              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">Photo</Badge>
-              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">Auto-process</Badge>
+              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">{t("upload.photo")}</Badge>
+              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">{t("upload.autoProcess")}</Badge>
             </div>
             <input
               id="camera-input"
