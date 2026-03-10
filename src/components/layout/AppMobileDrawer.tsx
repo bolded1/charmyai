@@ -1,27 +1,28 @@
 import { NavLink } from "@/components/NavLink";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
+import { useTranslation } from "react-i18next";
 import {
   Upload, FileText, Receipt, TrendingUp, Tag,
   Download, UsersRound, Settings,
 } from "lucide-react";
 
-const navItems = [
-  { title: "Capture", url: "/app", icon: Upload },
-  { title: "Documents", url: "/app/documents", icon: FileText },
-  { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Income", url: "/app/income", icon: TrendingUp },
-  { title: "Categories", url: "/app/categories", icon: Tag },
-  { title: "Exports", url: "/app/exports", icon: Download },
-  { title: "Team", url: "/app/team", icon: UsersRound },
-  { title: "Settings", url: "/app/settings", icon: Settings },
-];
-
 export function AppMobileDrawer() {
   const brandLogo = useBrandLogo();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { title: t("navigation.capture"), url: "/app", icon: Upload },
+    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
+    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
+    { title: t("navigation.income"), url: "/app/income", icon: TrendingUp },
+    { title: t("navigation.categories"), url: "/app/categories", icon: Tag },
+    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+    { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
+    { title: t("navigation.settings"), url: "/app/settings", icon: Settings },
+  ];
 
   return (
     <div className="flex flex-col h-full">
-      {/* Drawer Header */}
       <div className="p-4 border-b border-border">
         {brandLogo ? (
           <img src={brandLogo} alt="Logo" className="h-8 max-w-[8rem] object-contain" />
@@ -34,8 +35,6 @@ export function AppMobileDrawer() {
           </div>
         )}
       </div>
-
-      {/* Nav Items */}
       <nav className="flex-1 py-2 px-2 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink

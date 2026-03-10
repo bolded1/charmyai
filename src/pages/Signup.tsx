@@ -9,8 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { logAuditEvent } from "@/lib/audit-log-client";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
+import { useTranslation } from "react-i18next";
 
 export default function SignupPage() {
+  const { t } = useTranslation();
   const brandLogo = useBrandLogo();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -20,14 +22,12 @@ export default function SignupPage() {
   const [resending, setResending] = useState(false);
   const { data: systemSettings, isLoading: settingsLoading } = useSystemSettings();
 
-  // Countdown timer for resend cooldown
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  // Show loader while system settings are loading
   if (settingsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -36,7 +36,6 @@ export default function SignupPage() {
     );
   }
 
-  // Block signups if disabled by admin
   if (systemSettings && !systemSettings.newSignups) {
     return (
       <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
@@ -59,14 +58,12 @@ export default function SignupPage() {
             <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mx-auto">
               <UserX className="h-7 w-7 text-muted-foreground" />
             </div>
-            <h2 className="text-lg font-bold">Signups Closed</h2>
-            <p className="text-sm text-muted-foreground">
-              New registrations are currently disabled. Please check back later or contact support.
-            </p>
+            <h2 className="text-lg font-bold">{t("auth.signupsClosed")}</h2>
+            <p className="text-sm text-muted-foreground">{t("auth.signupsClosedDesc")}</p>
           </div>
           <p className="text-center text-sm text-muted-foreground mt-5">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-semibold hover:underline">Sign In</Link>
+            {t("auth.alreadyHaveAccount")}{" "}
+            <Link to="/login" className="text-primary font-semibold hover:underline">{t("auth.login")}</Link>
           </p>
         </div>
       </div>
@@ -78,56 +75,36 @@ export default function SignupPage() {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
-      options: {
-        emailRedirectTo: window.location.origin + "/onboarding",
-      },
+      options: { emailRedirectTo: window.location.origin + "/onboarding" },
     });
     setResending(false);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    toast.success("Confirmation email resent!");
+    if (error) { toast.error(error.message); return; }
+    toast.success(t("auth.emailSentSuccess"));
     setResendCooldown(15);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (systemSettings && !systemSettings.newSignups) {
-      toast.error("New registrations are currently disabled.");
+      toast.error(t("auth.signupsClosedDesc"));
       return;
     }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin + "/onboarding",
-      },
+      email, password,
+      options: { emailRedirectTo: window.location.origin + "/onboarding" },
     });
     setLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    // Supabase returns a user with an empty identities array when the email is already registered
+    if (error) { toast.error(error.message); return; }
     if (data.user && data.user.identities && data.user.identities.length === 0) {
-      toast.error("This email is already in use. Please sign in or use a different email.");
+      toast.error(t("auth.emailAlreadyUsed"));
       return;
     }
-
     await logAuditEvent({
-      action: "user_signup",
-      userId: data.user?.id,
-      userEmail: data.user?.email ?? email,
-      details: "Signup submitted",
+      action: "user_signup", userId: data.user?.id,
+      userEmail: data.user?.email ?? email, details: "Signup submitted",
       metadata: { source: "signup_page" },
     });
-
     setEmailSent(true);
     setResendCooldown(15);
   };
@@ -154,30 +131,16 @@ export default function SignupPage() {
             <div className="h-14 w-14 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
               <Mail className="h-7 w-7 text-primary-foreground" />
             </div>
-            <h2 className="text-lg font-bold">Check your email</h2>
-            <p className="text-sm text-muted-foreground">
-              We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>. Click the link to verify your account and get started.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full rounded-xl mt-2"
-              disabled={resendCooldown > 0 || resending}
-              onClick={handleResendEmail}
-            >
-              {resending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <RefreshCw className="h-4 w-4 mr-2" />
-              )}
-              {resendCooldown > 0
-                ? `Resend in ${resendCooldown}s`
-                : "Resend confirmation email"}
+            <h2 className="text-lg font-bold">{t("auth.checkEmail")}</h2>
+            <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("auth.checkEmailDesc", { email }) }} />
+            <Button variant="outline" size="sm" className="w-full rounded-xl mt-2" disabled={resendCooldown > 0 || resending} onClick={handleResendEmail}>
+              {resending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+              {resendCooldown > 0 ? t("auth.resendIn", { seconds: resendCooldown }) : t("auth.resendEmail")}
             </Button>
           </div>
           <p className="text-center text-sm text-muted-foreground mt-5">
-            Already verified?{" "}
-            <Link to="/login" className="text-primary font-semibold hover:underline">Sign In</Link>
+            {t("auth.alreadyVerified")}{" "}
+            <Link to="/login" className="text-primary font-semibold hover:underline">{t("auth.login")}</Link>
           </p>
         </div>
       </div>
@@ -204,32 +167,29 @@ export default function SignupPage() {
               </>
             )}
           </Link>
-          <p className="text-sm text-muted-foreground mt-3">Create your account</p>
+          <p className="text-sm text-muted-foreground mt-3">{t("auth.signupTitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="glass-auth rounded-2xl p-7 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs font-medium">Work Email</Label>
+            <Label htmlFor="email" className="text-xs font-medium">{t("auth.workEmail")}</Label>
             <Input id="email" type="email" placeholder="you@company.com" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-xs font-medium">Password</Label>
+            <Label htmlFor="password" className="text-xs font-medium">{t("auth.password")}</Label>
             <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 rounded-xl" />
           </div>
           <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity shadow-lg shadow-primary/20" disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
+            {loading ? t("auth.creatingAccount") : t("auth.createAccount")}
           </Button>
-          <p className="text-xs text-center text-muted-foreground">
-            By signing up, you agree to our Terms of Service and Privacy Policy.
-          </p>
+          <p className="text-xs text-center text-muted-foreground">{t("auth.termsAgree")}</p>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-5">
-          Already have an account?{" "}
-          <Link to="/login" className="text-primary font-semibold hover:underline">Sign In</Link>
+          {t("auth.alreadyHaveAccount")}{" "}
+          <Link to="/login" className="text-primary font-semibold hover:underline">{t("auth.login")}</Link>
         </p>
       </div>
     </div>
   );
 }
-
