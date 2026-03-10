@@ -26,6 +26,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function DocumentsPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
