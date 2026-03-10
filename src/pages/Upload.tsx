@@ -194,9 +194,9 @@ export default function UploadPage() {
                 <Mail className="h-5 w-5 text-violet" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold mb-0.5">Import Expenses via Email</h3>
+                <h3 className="text-sm font-bold mb-0.5">{t("upload.importViaEmail")}</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Forward invoices to this address and they'll be automatically processed.
+                  {t("upload.forwardInvoices")}
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-xs bg-card px-3 py-2.5 rounded-xl font-mono truncate border border-border/40 shadow-[var(--shadow-xs)]">
