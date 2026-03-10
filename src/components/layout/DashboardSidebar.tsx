@@ -273,7 +273,7 @@ export function DashboardSidebar() {
             {showLabels && (
               <div className="space-y-1">
                 {/* Language + Notifications row */}
-                <div className="flex items-center justify-end gap-1 px-0.5">
+                <div className="flex items-center justify-center gap-1 px-0.5">
                   <LanguageSwitcher variant="ghost" />
                   <NotificationsPopover />
                 </div>
