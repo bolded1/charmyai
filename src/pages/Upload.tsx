@@ -152,11 +152,11 @@ export default function UploadPage() {
 
   const statusLabel = (status: string) => {
     switch (status) {
-      case "processing": return "Processing";
+      case "processing": return t("common.processing");
       case "processed":
-      case "needs_review": return "Needs Review";
-      case "approved": return "Approved";
-      case "exported": return "Exported";
+      case "needs_review": return t("documents.needsReview");
+      case "approved": return t("documents.approved");
+      case "exported": return t("documents.exported");
       default: return status;
     }
   };
