@@ -158,16 +158,6 @@ export default function DocumentsPage() {
   };
   }
 
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case "processing": return "Processing";
-      case "processed":
-      case "needs_review": return "Needs Review";
-      case "approved": return "Approved";
-      case "exported": return "Exported";
-      default: return status;
-    }
-  };
 
   return (
     <div className="space-y-4">
