@@ -27,7 +27,7 @@ interface ExtractedData {
 }
 
 export function DemoUploader() {
-  const [isDragging, setIsDragging] = useState(false);
+  const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState("");
   const [showResults, setShowResults] = useState(false);
