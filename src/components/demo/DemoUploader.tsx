@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DemoResultsModal } from "./DemoResultsModal";
+import { useTranslation } from "react-i18next";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 const MAX_SIZE_MB = 10;
