@@ -77,7 +77,7 @@ export function DemoUploader() {
       const sessionId = crypto.randomUUID();
       const filePath = `demo/${sessionId}/${file.name}`;
 
-      setProcessingStep("Uploading document...");
+      setProcessingStep(t("demoUploader.uploading"));
       const { error: uploadErr } = await supabase.storage
         .from("demo-uploads")
         .upload(filePath, file, { contentType: file.type });
