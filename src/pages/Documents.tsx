@@ -220,7 +220,7 @@ export default function DocumentsPage() {
               disabled={bulkDelete.isPending}
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Delete
+              {t("common.delete")}
             </Button>
             <Button
               size="sm"
