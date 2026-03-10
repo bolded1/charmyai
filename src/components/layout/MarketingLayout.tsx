@@ -49,8 +49,12 @@ export default function MarketingLayout() {
     <div className="marketing min-h-screen flex flex-col">
       {/* Floating Header */}
       <header className="fixed inset-x-0 top-0 z-50 w-full pointer-events-none">
-        <div className="pointer-events-auto transition-all duration-300 max-w-5xl mx-4 md:mx-auto rounded-2xl border border-transparent" style={{
+        <div className="pointer-events-auto transition-all duration-300 max-w-5xl mx-4 md:mx-auto rounded-2xl border border-white/30" style={{
           marginTop: '0.75rem',
+          background: 'hsla(0, 0%, 100%, 0.55)',
+          backdropFilter: 'blur(24px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+          boxShadow: '0 8px 32px -8px hsla(224, 76%, 48%, 0.07), inset 0 1px 0 0 hsla(0, 0%, 100%, 0.6)',
         }}>
           <div className="flex h-14 items-center justify-between px-4 md:px-6">
             {/* Logo */}
