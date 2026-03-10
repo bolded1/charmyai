@@ -16,6 +16,7 @@ import { useOrganization, getImportEmailAddress } from "@/hooks/useOrganization"
 import { toast } from "sonner";
 import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useTranslation } from "react-i18next";
 
 interface UploadingFile {
   id: string;
@@ -27,6 +28,7 @@ interface UploadingFile {
 }
 
 export default function UploadPage() {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [scanPressed, setScanPressed] = useState(false);
@@ -150,11 +152,11 @@ export default function UploadPage() {
 
   const statusLabel = (status: string) => {
     switch (status) {
-      case "processing": return "Processing";
+      case "processing": return t("common.processing");
       case "processed":
-      case "needs_review": return "Needs Review";
-      case "approved": return "Approved";
-      case "exported": return "Exported";
+      case "needs_review": return t("documents.needsReview");
+      case "approved": return t("documents.approved");
+      case "exported": return t("documents.exported");
       default: return status;
     }
   };
@@ -169,11 +171,11 @@ export default function UploadPage() {
               <Briefcase className="h-4 w-4 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-foreground">
-                Uploading to: {activeWorkspace.name}
+             <p className="text-xs font-semibold text-foreground">
+                {t("upload.uploadingTo", { name: activeWorkspace.name })}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Documents will be stored in this client's workspace
+                {t("upload.storedInWorkspace")}
               </p>
             </div>
           </CardContent>
@@ -192,9 +194,9 @@ export default function UploadPage() {
                 <Mail className="h-5 w-5 text-violet" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold mb-0.5">Import Expenses via Email</h3>
+                <h3 className="text-sm font-bold mb-0.5">{t("upload.importViaEmail")}</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Forward invoices to this address and they'll be automatically processed.
+                  {t("upload.forwardInvoices")}
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-xs bg-card px-3 py-2.5 rounded-xl font-mono truncate border border-border/40 shadow-[var(--shadow-xs)]">
@@ -202,7 +204,7 @@ export default function UploadPage() {
                   </code>
                   <Button variant="outline" size="sm" className="shrink-0 h-9 gap-1.5 rounded-xl shadow-[var(--shadow-xs)]" onClick={copyEmail}>
                     {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? t("common.copied") : t("common.copy")}
                   </Button>
                 </div>
               </div>
@@ -230,11 +232,11 @@ export default function UploadPage() {
             }`}>
               <Camera className={`h-5 w-5 md:h-7 md:w-7 transition-colors ${scanPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: scanPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
-            <h2 className="text-sm md:text-xl font-bold text-foreground mb-0.5 md:mb-2">Scan Expense Document</h2>
-            <p className="text-[11px] md:text-sm text-muted-foreground mb-2.5 md:mb-6 max-w-md mx-auto">Capture with your camera</p>
+            <h2 className="text-sm md:text-xl font-bold text-foreground mb-0.5 md:mb-2">{t("upload.scanDocument")}</h2>
+            <p className="text-[11px] md:text-sm text-muted-foreground mb-2.5 md:mb-6 max-w-md mx-auto">{t("upload.captureCamera")}</p>
             <div className="flex items-center justify-center gap-1.5">
-              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">Photo</Badge>
-              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">Auto-process</Badge>
+              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">{t("upload.photo")}</Badge>
+              <Badge variant="secondary" className="text-[9px] md:text-xs px-1.5 md:px-2.5 py-0 md:py-0.5 rounded-md md:rounded-lg">{t("upload.autoProcess")}</Badge>
             </div>
             <input
               id="camera-input"
@@ -271,10 +273,10 @@ export default function UploadPage() {
               <UploadIcon className={`h-5 w-5 transition-colors ${dragOver || uploadPressed ? "text-primary-foreground" : "text-violet"}`} style={{ color: dragOver || uploadPressed ? undefined : 'hsl(var(--violet))' }} />
             </div>
             <h2 className="text-base font-bold text-foreground mb-1">
-              {dragOver ? "Drop files to upload" : "Upload Expense Documents"}
+              {dragOver ? t("upload.dropFilesUpload") : t("upload.uploadExpenseDocs")}
             </h2>
             <p className="text-xs text-muted-foreground mb-3 max-w-sm mx-auto">
-              Drag and drop your invoices, receipts, or bills here.
+              {t("upload.dragDropInvoices")}
             </p>
             <div className="flex items-center justify-center gap-2 flex-wrap">
               <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">PDF</Badge>
@@ -301,7 +303,7 @@ export default function UploadPage() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Loader2 className={`h-4 w-4 ${files.some((f) => f.status === "uploading" || f.status === "processing") ? "animate-spin text-primary" : "text-muted-foreground"}`} />
-              Uploading
+               {t("upload.uploading")}
               <Badge variant="secondary" className="text-[10px] ml-1">{files.length}</Badge>
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
             </CardTitle>
@@ -325,10 +327,10 @@ export default function UploadPage() {
                   </div>
                   <Progress value={file.progress} className="h-1.5" />
                   <p className="text-[11px] text-muted-foreground">
-                    {file.status === "uploading" && "Uploading..."}
-                    {file.status === "processing" && "AI is extracting data..."}
-                    {file.status === "done" && "Ready for review"}
-                    {file.status === "error" && (file.error || "Upload failed")}
+                    {file.status === "uploading" && t("upload.uploadingStatus")}
+                    {file.status === "processing" && t("upload.aiExtracting")}
+                    {file.status === "done" && t("upload.readyForReview")}
+                    {file.status === "error" && (file.error || t("upload.uploadFailed"))}
                   </p>
                 </div>
                 <Button

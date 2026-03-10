@@ -16,6 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const statusColors: Record<string, string> = {
   processing: "bg-muted text-muted-foreground",
@@ -25,6 +26,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function DocumentsPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
@@ -139,28 +141,29 @@ export default function DocumentsPage() {
   if (!user) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        Please log in to view documents.
+        {t("documents.pleaseLogin")}
       </div>
     );
   }
 
   const statusLabel = (status: string) => {
     switch (status) {
-      case "processing": return "Processing";
+      case "processing": return t("common.processing");
       case "processed":
-      case "needs_review": return "Needs Review";
-      case "approved": return "Approved";
-      case "exported": return "Exported";
+      case "needs_review": return t("documents.needsReview");
+      case "approved": return t("documents.approved");
+      case "exported": return t("documents.exported");
       default: return status;
     }
   };
+
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search documents..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder={t("documents.searchDocuments")} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[180px]">
@@ -168,11 +171,11 @@ export default function DocumentsPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="needs_review">Needs Review</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="exported">Exported</SelectItem>
+            <SelectItem value="all">{t("documents.allStatus")}</SelectItem>
+            <SelectItem value="processing">{t("common.processing")}</SelectItem>
+            <SelectItem value="needs_review">{t("documents.needsReview")}</SelectItem>
+            <SelectItem value="approved">{t("documents.approved")}</SelectItem>
+            <SelectItem value="exported">{t("documents.exported")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -188,7 +191,7 @@ export default function DocumentsPage() {
             className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/15"
           >
             <span className="text-sm font-semibold text-primary">
-              {selectedIds.size} selected
+              {selectedIds.size} {t("common.selected")}
             </span>
             <div className="flex-1" />
             {approvableCount > 0 && (
@@ -215,7 +218,7 @@ export default function DocumentsPage() {
               disabled={bulkDelete.isPending}
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Delete
+              {t("common.delete")}
             </Button>
             <Button
               size="sm"
@@ -236,7 +239,7 @@ export default function DocumentsPage() {
       ) : filtered.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12 text-muted-foreground text-sm">
-            No documents found. Upload your first document to get started.
+            {t("documents.noDocuments")}
           </CardContent>
         </Card>
       ) : isMobile ? (

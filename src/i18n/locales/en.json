@@ -154,6 +154,13 @@
     "emailAlreadyUsed": "This email is already in use. Please sign in or use a different email.",
     "viewingAs": "Viewing as:"
   },
+  "resetPassword": {
+    "chooseNew": "Choose a new password",
+    "successDesc": "Your password has been reset successfully.",
+    "backToSignIn": "Back to Sign In",
+    "invalidLink": "Invalid or expired link",
+    "invalidLinkDesc": "This password reset link is no longer valid. Please request a new one."
+  },
   "dashboard": {
     "title": "Dashboard",
     "recentDocuments": "Recent Documents",

@@ -31,31 +31,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, User } from "lucide-react";
-
-const mobileNavItems = [
-  { title: "Capture", url: "/app", icon: Upload },
-  { title: "Documents", url: "/app/documents", icon: FileText },
-  { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Income", url: "/app/income", icon: TrendingUp },
-  { title: "Exports", url: "/app/exports", icon: Download },
-  { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
-  { title: "Workspaces", url: "/app/workspaces", icon: Briefcase },
-  { title: "Team", url: "/app/team", icon: UsersRound },
-  { title: "Help & Documentation", url: "/app/help", icon: HelpCircle },
-  { title: "Support", url: "/app/support", icon: LifeBuoy },
-  { title: "Settings", url: "/app/settings", icon: Settings },
-];
-
-const clientMobileNavItems = [
-  { title: "Capture", url: "/app", icon: Upload },
-  { title: "Documents", url: "/app/documents", icon: FileText },
-  { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Exports", url: "/app/exports", icon: Download },
-  { title: "Support", url: "/app/support", icon: LifeBuoy },
-  { title: "Help", url: "/app/help", icon: HelpCircle },
-];
+import { useTranslation } from "react-i18next";
 
 export default function DashboardLayout() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
@@ -70,7 +49,28 @@ export default function DashboardLayout() {
   const isAdmin = useIsAdmin();
   const { isClient } = useClientRole();
 
-  // Apply org accent color
+  const mobileNavItems = [
+    { title: t("navigation.capture"), url: "/app", icon: Upload },
+    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
+    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
+    { title: t("navigation.income"), url: "/app/income", icon: TrendingUp },
+    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+    { title: t("navigation.aiAssistant"), url: "/app/assistant", icon: Sparkles },
+    { title: t("navigation.workspaces"), url: "/app/workspaces", icon: Briefcase },
+    { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
+    { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
+    { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
+    { title: t("navigation.settings"), url: "/app/settings", icon: Settings },
+  ];
+
+  const clientMobileNavItems = [
+    { title: t("navigation.capture"), url: "/app", icon: Upload },
+    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
+    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
+    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+    { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
+    { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
+  ];
   useEffect(() => {
     applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
   }, [org?.primary_color]);
@@ -143,11 +143,11 @@ export default function DashboardLayout() {
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={() => navigate("/app/settings")} className="px-3">
           <User className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">My Profile</span>
+          <span className="text-[13px]">{t("common.myProfile")}</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSignOut} className="px-3 text-muted-foreground">
           <LogOut className="h-3.5 w-3.5 mr-2" />
-          <span className="text-[13px]">Sign Out</span>
+          <span className="text-[13px]">{t("auth.logout")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
