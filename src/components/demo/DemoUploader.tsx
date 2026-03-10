@@ -84,7 +84,7 @@ export function DemoUploader() {
 
       if (uploadErr) throw new Error("Upload failed: " + uploadErr.message);
 
-      setProcessingStep("Preparing for AI analysis...");
+      setProcessingStep(t("demoUploader.preparing"));
       const { data: demoRecord, error: insertErr } = await (supabase as any)
         .from("demo_uploads")
         .insert({
