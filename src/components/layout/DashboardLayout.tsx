@@ -49,7 +49,28 @@ export default function DashboardLayout() {
   const isAdmin = useIsAdmin();
   const { isClient } = useClientRole();
 
-  // Apply org accent color
+  const mobileNavItems = [
+    { title: t("navigation.capture"), url: "/app", icon: Upload },
+    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
+    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
+    { title: t("navigation.income"), url: "/app/income", icon: TrendingUp },
+    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+    { title: t("navigation.aiAssistant"), url: "/app/assistant", icon: Sparkles },
+    { title: t("navigation.workspaces"), url: "/app/workspaces", icon: Briefcase },
+    { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
+    { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
+    { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
+    { title: t("navigation.settings"), url: "/app/settings", icon: Settings },
+  ];
+
+  const clientMobileNavItems = [
+    { title: t("navigation.capture"), url: "/app", icon: Upload },
+    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
+    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
+    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+    { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
+    { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
+  ];
   useEffect(() => {
     applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
   }, [org?.primary_color]);
