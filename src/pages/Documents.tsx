@@ -141,9 +141,21 @@ export default function DocumentsPage() {
   if (!user) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        Please log in to view documents.
+        {t("documents.pleaseLogin")}
       </div>
     );
+  }
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "processing": return t("common.processing");
+      case "processed":
+      case "needs_review": return t("documents.needsReview");
+      case "approved": return t("documents.approved");
+      case "exported": return t("documents.exported");
+      default: return status;
+    }
+  };
   }
 
   const statusLabel = (status: string) => {
