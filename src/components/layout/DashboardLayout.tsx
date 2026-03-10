@@ -32,6 +32,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function DashboardLayout() {
   const { t } = useTranslation();
@@ -211,6 +212,7 @@ export default function DashboardLayout() {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <LanguageSwitcher variant="ghost" />
                 <NotificationsPopover />
                 {mobileProfileMenu}
               </div>

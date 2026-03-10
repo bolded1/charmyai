@@ -6,6 +6,7 @@ import { Bell, FileText, AlertTriangle, Check, Download, Users2, MessageSquare, 
 import { useNotifications, type Notification } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const ICON_MAP: Record<string, { icon: typeof FileText; className: string }> = {
   document_processed: { icon: FileText, className: "text-primary bg-primary/10" },
@@ -29,6 +30,7 @@ function NotificationIcon({ type }: { type: string }) {
 }
 
 export function NotificationsPopover() {
+  const { t } = useTranslation();
   const { data: notifications = [], unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -56,10 +58,9 @@ export function NotificationsPopover() {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[380px] p-0" sideOffset={8}>
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold">Notifications</h3>
+            <h3 className="text-sm font-semibold">{t("navigation.notifications")}</h3>
             {unreadCount > 0 && (
               <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium flex items-center justify-center">
                 {unreadCount}
@@ -73,20 +74,19 @@ export function NotificationsPopover() {
               className="text-xs h-7 text-muted-foreground"
               onClick={(e) => { e.stopPropagation(); markAllAsRead.mutate(); }}
             >
-              Mark all read
+              {t("notifications.markAllRead")}
             </Button>
           )}
         </div>
 
-        {/* List */}
         <ScrollArea className="max-h-[400px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4">
               <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-3">
                 <Bell className="h-4 w-4 text-muted-foreground" />
               </div>
-              <p className="text-sm font-medium text-muted-foreground">No notifications yet</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">Upload a document to get started</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("notifications.noNotifications")}</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">{t("notifications.uploadToStart")}</p>
             </div>
           ) : (
             <div className="divide-y divide-border">

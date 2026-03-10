@@ -5,11 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { X, MessageSquareHeart, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const NPS_COOLDOWN_DAYS = 30;
 const NPS_STORAGE_KEY = "charmy_nps_last";
 
 export function NPSWidget() {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [comment, setComment] = useState("");
@@ -22,7 +24,6 @@ export function NPSWidget() {
       const daysSince = (Date.now() - Number(lastShown)) / (1000 * 60 * 60 * 24);
       if (daysSince < NPS_COOLDOWN_DAYS) return;
     }
-    // Show after 60s delay
     const timer = setTimeout(() => setVisible(true), 60000);
     return () => clearTimeout(timer);
   }, []);
@@ -51,16 +52,10 @@ export function NPSWidget() {
       localStorage.setItem(NPS_STORAGE_KEY, String(Date.now()));
       setTimeout(() => setVisible(false), 2500);
     } catch (err: any) {
-      toast.error("Failed to submit feedback");
+      toast.error(t("nps.submitFailed"));
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const scoreLabels: Record<number, string> = {
-    0: "Not at all likely",
-    5: "Neutral",
-    10: "Extremely likely",
   };
 
   return (
@@ -76,7 +71,7 @@ export function NPSWidget() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <MessageSquareHeart className="h-4 w-4 text-primary" />
-                <p className="text-sm font-semibold">Quick feedback</p>
+                <p className="text-sm font-semibold">{t("nps.title")}</p>
               </div>
               <button onClick={dismiss} className="text-muted-foreground hover:text-foreground transition-colors">
                 <X className="h-4 w-4" />
@@ -85,13 +80,13 @@ export function NPSWidget() {
 
             {submitted ? (
               <div className="text-center py-4">
-                <p className="text-sm font-medium text-primary">Thank you for your feedback! 🎉</p>
-                <p className="text-xs text-muted-foreground mt-1">Your input helps us improve Charmy.</p>
+                <p className="text-sm font-medium text-primary">{t("nps.thankYou")} 🎉</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("nps.thankYouDesc")}</p>
               </div>
             ) : (
               <>
                 <p className="text-xs text-muted-foreground mb-3">
-                  How likely are you to recommend Charmy to a colleague?
+                  {t("nps.question")}
                 </p>
                 <div className="flex gap-1 mb-1">
                   {Array.from({ length: 11 }, (_, i) => (
@@ -113,14 +108,14 @@ export function NPSWidget() {
                   ))}
                 </div>
                 <div className="flex justify-between mb-3">
-                  <span className="text-[10px] text-muted-foreground">Not likely</span>
-                  <span className="text-[10px] text-muted-foreground">Very likely</span>
+                  <span className="text-[10px] text-muted-foreground">{t("nps.notLikely")}</span>
+                  <span className="text-[10px] text-muted-foreground">{t("nps.veryLikely")}</span>
                 </div>
 
                 {score !== null && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}>
                     <Textarea
-                      placeholder="What could we do better? (optional)"
+                      placeholder={t("nps.placeholder")}
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       rows={2}
@@ -128,7 +123,7 @@ export function NPSWidget() {
                     />
                     <Button onClick={handleSubmit} disabled={submitting} size="sm" className="w-full">
                       {submitting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                      Submit Feedback
+                      {t("nps.submitButton")}
                     </Button>
                   </motion.div>
                 )}
