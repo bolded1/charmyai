@@ -11,6 +11,7 @@ import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { useTranslation } from "react-i18next";
 import { MarketingFAQ } from "@/components/MarketingFAQ";
 import { MarketingCTA } from "@/components/MarketingCTA";
+import { DemoUploader } from "@/components/demo/DemoUploader";
 
 export default function IndexPage() {
   const { t } = useTranslation();
