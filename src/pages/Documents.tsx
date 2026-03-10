@@ -16,6 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const statusColors: Record<string, string> = {
   processing: "bg-muted text-muted-foreground",
