@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DemoResultsModal } from "./DemoResultsModal";
+import { useTranslation } from "react-i18next";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 const MAX_SIZE_MB = 10;
@@ -26,6 +27,7 @@ interface ExtractedData {
 }
 
 export function DemoUploader() {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState("");
@@ -59,31 +61,31 @@ export function DemoUploader() {
 
   const processFile = async (file: File) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Unsupported file type. Please upload a PDF, PNG, or JPG.");
+      toast.error(t("demoUploader.unsupportedType"));
       return;
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.error(`File too large. Maximum size is ${MAX_SIZE_MB}MB.`);
+      toast.error(t("demoUploader.fileTooLarge", { size: MAX_SIZE_MB }));
       return;
     }
 
     setIsProcessing(true);
     setShowResults(true);
     setFileName(file.name);
-    setProcessingStep("Uploading document...");
+    setProcessingStep(t("demoUploader.uploading"));
 
     try {
       const sessionId = crypto.randomUUID();
       const filePath = `demo/${sessionId}/${file.name}`;
 
-      setProcessingStep("Uploading document...");
+      setProcessingStep(t("demoUploader.uploading"));
       const { error: uploadErr } = await supabase.storage
         .from("demo-uploads")
         .upload(filePath, file, { contentType: file.type });
 
       if (uploadErr) throw new Error("Upload failed: " + uploadErr.message);
 
-      setProcessingStep("Preparing for AI analysis...");
+      setProcessingStep(t("demoUploader.preparing"));
       const { data: demoRecord, error: insertErr } = await (supabase as any)
         .from("demo_uploads")
         .insert({
@@ -105,7 +107,7 @@ export function DemoUploader() {
         setFilePreviewUrl(null);
       }
 
-      setProcessingStep("AI is reading your document...");
+      setProcessingStep(t("demoUploader.aiReading"));
       const { data: result, error: fnErr } = await supabase.functions.invoke("demo-extract", {
         body: { demoUploadId: demoRecord.id },
       });
@@ -113,12 +115,12 @@ export function DemoUploader() {
       if (fnErr) throw new Error("Extraction failed");
       if (result?.error) throw new Error(result.error);
 
-      setProcessingStep("Extraction complete!");
+      setProcessingStep(t("demoUploader.complete"));
       setExtractedData(result.extracted);
       setShowResults(true);
     } catch (err: any) {
       console.error("Demo processing error:", err);
-      toast.error(err.message || "Something went wrong. Please try again.");
+      toast.error(err.message || t("demoUploader.error"));
     } finally {
       setIsProcessing(false);
       setProcessingStep("");
@@ -159,10 +161,10 @@ export function DemoUploader() {
 
             <div className="text-center mb-5 relative z-10">
               <h2 className="text-lg font-semibold mb-1">
-                Try Charmy — <span className="text-gradient">No Account Needed</span>
+                {t("demoUploader.title")} — <span className="text-gradient">{t("demoUploader.noAccount")}</span>
               </h2>
               <p className="text-sm text-muted-foreground">
-                Upload an invoice or receipt and see how Charmy extracts financial data instantly.
+                {t("demoUploader.subtitle")}
               </p>
             </div>
 
@@ -203,7 +205,7 @@ export function DemoUploader() {
                     <div>
                       <p className="font-medium text-sm">{processingStep}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        This usually takes a few seconds
+                        {t("demoUploader.fewSeconds")}
                       </p>
                     </div>
                   </motion.div>
@@ -220,10 +222,10 @@ export function DemoUploader() {
                     </div>
                     <div>
                       <p className="font-medium text-sm">
-                        Drag and drop a file or click to upload
+                        {t("demoUploader.dragDrop")}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        PDF · PNG · JPG — up to {MAX_SIZE_MB}MB
+                        PDF · PNG · JPG — {t("demoUploader.upTo")} {MAX_SIZE_MB}MB
                       </p>
                     </div>
                   </motion.div>
@@ -233,7 +235,7 @@ export function DemoUploader() {
 
             {/* Sample link */}
             <div className="flex items-center justify-center mt-4 gap-1.5">
-              <span className="text-xs text-muted-foreground">No file handy?</span>
+              <span className="text-xs text-muted-foreground">{t("demoUploader.noFile")}</span>
               <Button
                 variant="link"
                 size="sm"
@@ -242,7 +244,7 @@ export function DemoUploader() {
                 disabled={isProcessing}
               >
                 <FileText className="h-3 w-3 mr-1" />
-                Try a sample invoice
+                {t("demoUploader.trySample")}
               </Button>
             </div>
           </div>

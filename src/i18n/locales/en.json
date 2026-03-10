@@ -842,6 +842,23 @@
     "notFound": "Page not found",
     "notFoundDesc": "The page you're looking for doesn't exist or has been moved."
   },
+  "demoUploader": {
+    "title": "Try Charmy",
+    "noAccount": "No Account Needed",
+    "subtitle": "Upload an invoice or receipt and see how Charmy extracts financial data instantly.",
+    "unsupportedType": "Unsupported file type. Please upload a PDF, PNG, or JPG.",
+    "fileTooLarge": "File too large. Maximum size is {{size}}MB.",
+    "uploading": "Uploading document...",
+    "preparing": "Preparing for AI analysis...",
+    "aiReading": "AI is reading your document...",
+    "complete": "Extraction complete!",
+    "error": "Something went wrong. Please try again.",
+    "fewSeconds": "This usually takes a few seconds",
+    "dragDrop": "Drag and drop a file or click to upload",
+    "upTo": "up to",
+    "noFile": "No file handy?",
+    "trySample": "Try a sample invoice"
+  },
   "language": {
     "en": "English",
     "el": "Ελληνικά",

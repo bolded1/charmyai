@@ -11,6 +11,7 @@ import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { useTranslation } from "react-i18next";
 import { MarketingFAQ } from "@/components/MarketingFAQ";
 import { MarketingCTA } from "@/components/MarketingCTA";
+import { DemoUploader } from "@/components/demo/DemoUploader";
 
 export default function IndexPage() {
   const { t } = useTranslation();
@@ -77,6 +78,11 @@ export default function IndexPage() {
               <span className="text-xs text-muted-foreground">{t("marketing.noCreditCard")}</span>
             </motion.div>
           </div>
+
+          {/* Demo uploader embedded in hero */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-12">
+            <DemoUploader />
+          </motion.div>
         </div>
       </section>
 
