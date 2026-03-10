@@ -9,6 +9,7 @@ import { Search, FileText, Loader2, RefreshCw, Image as ImageIcon } from "lucide
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const statusColors: Record<string, string> = {
   processing: "bg-muted text-muted-foreground",
@@ -20,6 +21,7 @@ const statusColors: Record<string, string> = {
 const isImageType = (type: string) => type?.startsWith("image/");
 
 export default function AdminDocumentsPage() {
+  const { t } = useTranslation();
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -58,20 +60,20 @@ export default function AdminDocumentsPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search documents..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder={t("admin.searchDocuments")} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="All Status" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder={t("admin.allStatus")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="processed">Processed</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="all">{t("admin.allStatus")}</SelectItem>
+            <SelectItem value="processing">{t("common.processing")}</SelectItem>
+            <SelectItem value="processed">{t("common.processed")}</SelectItem>
+            <SelectItem value="approved">{t("documents.approved")}</SelectItem>
+            <SelectItem value="failed">{t("admin.failed")}</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" size="sm" onClick={fetchDocs} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Refresh
+          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> {t("admin.refresh")}
         </Button>
       </div>
 
@@ -82,7 +84,7 @@ export default function AdminDocumentsPage() {
       ) : filtered.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            {docs.length === 0 ? "No documents found" : "No documents match your filters"}
+            {docs.length === 0 ? t("admin.noDocumentsFound") : t("admin.noDocumentsMatch")}
           </CardContent>
         </Card>
       ) : isMobile ? (
@@ -94,10 +96,10 @@ export default function AdminDocumentsPage() {
               subtitle={doc.supplier_name || "—"}
               badge={{ label: doc.status, className: statusColors[doc.status] || "" }}
               fields={[
-                { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
-                { label: "Date", value: new Date(doc.created_at).toLocaleDateString() },
-                { label: "Total", value: doc.total_amount ? `${doc.currency || "€"}${doc.total_amount}` : "—" },
-                { label: "Confidence", value: doc.confidence_score ? `${Math.round(doc.confidence_score)}%` : "—" },
+                { label: t("admin.type"), value: (doc.document_type || "—").replace("_", " ") },
+                { label: t("admin.date"), value: new Date(doc.created_at).toLocaleDateString() },
+                { label: t("admin.total"), value: doc.total_amount ? `${doc.currency || "€"}${doc.total_amount}` : "—" },
+                { label: t("admin.confidence"), value: doc.confidence_score ? `${Math.round(doc.confidence_score)}%` : "—" },
               ]}
             />
           ))}
@@ -109,13 +111,13 @@ export default function AdminDocumentsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="p-3 text-xs font-medium text-muted-foreground">File</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Supplier</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Total</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Confidence</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.file")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.supplier")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.type")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.status")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.total")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.confidence")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.date")}</th>
                   </tr>
                 </thead>
                 <tbody>
