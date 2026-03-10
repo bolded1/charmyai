@@ -34,6 +34,7 @@ import { LogOut, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export default function DashboardLayout() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
