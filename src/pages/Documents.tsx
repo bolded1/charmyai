@@ -172,11 +172,11 @@ export default function DocumentsPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="needs_review">Needs Review</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="exported">Exported</SelectItem>
+            <SelectItem value="all">{t("documents.allStatus")}</SelectItem>
+            <SelectItem value="processing">{t("common.processing")}</SelectItem>
+            <SelectItem value="needs_review">{t("documents.needsReview")}</SelectItem>
+            <SelectItem value="approved">{t("documents.approved")}</SelectItem>
+            <SelectItem value="exported">{t("documents.exported")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
