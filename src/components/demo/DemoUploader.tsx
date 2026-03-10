@@ -71,7 +71,7 @@ export function DemoUploader() {
     setIsProcessing(true);
     setShowResults(true);
     setFileName(file.name);
-    setProcessingStep("Uploading document...");
+    setProcessingStep(t("demoUploader.uploading"));
 
     try {
       const sessionId = crypto.randomUUID();
