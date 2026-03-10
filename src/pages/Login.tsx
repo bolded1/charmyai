@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { logAuditEvent } from "@/lib/audit-log-client";
+import { useTranslation } from "react-i18next";
 
 export default function LoginPage() {
   const brandLogo = useBrandLogo();
