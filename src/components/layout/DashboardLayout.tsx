@@ -31,29 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, User } from "lucide-react";
-
-const mobileNavItems = [
-  { title: "Capture", url: "/app", icon: Upload },
-  { title: "Documents", url: "/app/documents", icon: FileText },
-  { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Income", url: "/app/income", icon: TrendingUp },
-  { title: "Exports", url: "/app/exports", icon: Download },
-  { title: "AI Assistant", url: "/app/assistant", icon: Sparkles },
-  { title: "Workspaces", url: "/app/workspaces", icon: Briefcase },
-  { title: "Team", url: "/app/team", icon: UsersRound },
-  { title: "Help & Documentation", url: "/app/help", icon: HelpCircle },
-  { title: "Support", url: "/app/support", icon: LifeBuoy },
-  { title: "Settings", url: "/app/settings", icon: Settings },
-];
-
-const clientMobileNavItems = [
-  { title: "Capture", url: "/app", icon: Upload },
-  { title: "Documents", url: "/app/documents", icon: FileText },
-  { title: "Expenses", url: "/app/expenses", icon: Receipt },
-  { title: "Exports", url: "/app/exports", icon: Download },
-  { title: "Support", url: "/app/support", icon: LifeBuoy },
-  { title: "Help", url: "/app/help", icon: HelpCircle },
-];
+import { useTranslation } from "react-i18next";
 
 export default function DashboardLayout() {
   const location = useLocation();
