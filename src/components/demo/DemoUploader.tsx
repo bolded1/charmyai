@@ -60,11 +60,11 @@ export function DemoUploader() {
 
   const processFile = async (file: File) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Unsupported file type. Please upload a PDF, PNG, or JPG.");
+      toast.error(t("demoUploader.unsupportedType"));
       return;
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.error(`File too large. Maximum size is ${MAX_SIZE_MB}MB.`);
+      toast.error(t("demoUploader.fileTooLarge", { size: MAX_SIZE_MB }));
       return;
     }
 
