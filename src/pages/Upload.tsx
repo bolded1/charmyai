@@ -16,6 +16,7 @@ import { useOrganization, getImportEmailAddress } from "@/hooks/useOrganization"
 import { toast } from "sonner";
 import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useTranslation } from "react-i18next";
 
 interface UploadingFile {
   id: string;
