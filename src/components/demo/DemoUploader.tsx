@@ -234,7 +234,7 @@ export function DemoUploader() {
 
             {/* Sample link */}
             <div className="flex items-center justify-center mt-4 gap-1.5">
-              <span className="text-xs text-muted-foreground">No file handy?</span>
+              <span className="text-xs text-muted-foreground">{t("demoUploader.noFile")}</span>
               <Button
                 variant="link"
                 size="sm"
@@ -243,7 +243,7 @@ export function DemoUploader() {
                 disabled={isProcessing}
               >
                 <FileText className="h-3 w-3 mr-1" />
-                Try a sample invoice
+                {t("demoUploader.trySample")}
               </Button>
             </div>
           </div>
