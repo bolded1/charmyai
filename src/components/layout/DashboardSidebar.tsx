@@ -249,13 +249,7 @@ export function DashboardSidebar() {
             );
           })()}
         </SidebarContent>
-        <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/30 space-y-3">
-          {/* Language + Notifications row */}
-          <div className="flex items-center justify-end gap-1 px-1">
-            <LanguageSwitcher variant="ghost" />
-            <NotificationsPopover />
-          </div>
-
+        <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/30">
           {/* User card */}
           <div className="rounded-xl bg-accent/40 border border-border/30 p-2.5 space-y-2">
             <DropdownMenu>
@@ -278,6 +272,11 @@ export function DashboardSidebar() {
 
             {showLabels && (
               <div className="space-y-1">
+                {/* Language + Notifications row */}
+                <div className="flex items-center justify-end gap-1 px-0.5">
+                  <LanguageSwitcher variant="ghost" />
+                  <NotificationsPopover />
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2 w-full h-8 px-2.5 rounded-lg text-[12px] font-medium text-foreground hover:bg-background/70 border border-border/40 transition-all duration-150 focus:outline-none">
