@@ -106,7 +106,7 @@ export function DemoUploader() {
         setFilePreviewUrl(null);
       }
 
-      setProcessingStep("AI is reading your document...");
+      setProcessingStep(t("demoUploader.aiReading"));
       const { data: result, error: fnErr } = await supabase.functions.invoke("demo-extract", {
         body: { demoUploadId: demoRecord.id },
       });
