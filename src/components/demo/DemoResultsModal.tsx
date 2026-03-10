@@ -10,6 +10,7 @@ import {
   ArrowRight, CheckCircle2, FileText, Building2, Calendar,
   Hash, Shield, Sparkles, Zap, Lock, BarChart3,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ExtractedData {
   document_type?: string;
@@ -60,13 +61,6 @@ function formatDate(date: string | undefined) {
   }
 }
 
-const docTypeLabels: Record<string, string> = {
-  expense_invoice: "Expense Invoice",
-  sales_invoice: "Sales Invoice",
-  receipt: "Receipt",
-  credit_note: "Credit Note",
-};
-
 const stagger = {
   container: {
     hidden: { opacity: 0 },
@@ -81,13 +75,6 @@ const stagger = {
   },
 };
 
-const processingSteps = [
-  { label: "Uploading document", icon: FileText },
-  { label: "Analyzing layout", icon: BarChart3 },
-  { label: "Extracting fields", icon: Sparkles },
-  { label: "Validating data", icon: Shield },
-];
-
 export function DemoResultsModal({
   open,
   onClose,
@@ -97,8 +84,23 @@ export function DemoResultsModal({
   isProcessing = false,
   processingStep = "",
 }: DemoResultsModalProps) {
+  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const [showResults, setShowResults] = useState(false);
+
+  const docTypeLabels: Record<string, string> = {
+    expense_invoice: t("demoResults.expenseInvoice"),
+    sales_invoice: t("demoResults.salesInvoice"),
+    receipt: t("demoResults.receipt"),
+    credit_note: t("demoResults.creditNote"),
+  };
+
+  const processingSteps = [
+    { label: t("demoResults.stepUploading"), icon: FileText },
+    { label: t("demoResults.stepAnalyzing"), icon: BarChart3 },
+    { label: t("demoResults.stepExtracting"), icon: Sparkles },
+    { label: t("demoResults.stepValidating"), icon: Shield },
+  ];
 
   // Animate through processing steps
   useEffect(() => {
@@ -145,7 +147,7 @@ export function DemoResultsModal({
                 >
                   <Sparkles className="h-7 w-7 text-primary" />
                 </motion.div>
-                <h3 className="text-lg font-semibold mb-1">Analyzing Your Document</h3>
+                <h3 className="text-lg font-semibold mb-1">{t("demoResults.analyzingTitle")}</h3>
                 <p className="text-sm text-muted-foreground">{fileName}</p>
               </div>
 
@@ -222,8 +224,8 @@ export function DemoResultsModal({
                       <CheckCircle2 className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold">Extraction Complete</h3>
-                      <p className="text-xs text-muted-foreground">AI processed in seconds</p>
+                      <h3 className="text-sm font-semibold">{t("demoResults.extractionComplete")}</h3>
+                      <p className="text-xs text-muted-foreground">{t("demoResults.aiProcessed")}</p>
                     </div>
                   </div>
                   <ConfidenceBadge value={confidence} />
@@ -242,7 +244,7 @@ export function DemoResultsModal({
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-medium truncate">{fileName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {docTypeLabels[extractedData.document_type || ""] || "Document"}
+                      {docTypeLabels[extractedData.document_type || ""] || t("demoResults.document")}
                       {extractedData.category && (
                         <span className="ml-1.5 inline-flex items-center">
                           · <span className="ml-1.5 px-1.5 py-0.5 rounded bg-accent text-[10px] font-medium">{extractedData.category}</span>
@@ -274,16 +276,16 @@ export function DemoResultsModal({
               >
                 <motion.div variants={stagger.item}>
                   <h4 className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-2.5">
-                    Extracted Fields
+                    {t("demoResults.extractedFields")}
                   </h4>
                 </motion.div>
                 <div className="grid grid-cols-2 gap-2">
-                  <AnimatedField icon={Building2} label="Supplier" value={extractedData.supplier_name} delay={0} />
-                  <AnimatedField icon={Building2} label="Customer" value={extractedData.customer_name} delay={1} />
-                  <AnimatedField icon={Hash} label="Invoice #" value={extractedData.invoice_number} delay={2} />
-                  <AnimatedField icon={Calendar} label="Invoice Date" value={formatDate(extractedData.invoice_date)} delay={3} />
-                  <AnimatedField icon={Calendar} label="Due Date" value={formatDate(extractedData.due_date)} delay={4} />
-                  <AnimatedField icon={Shield} label="VAT Number" value={extractedData.vat_number} delay={5} />
+                  <AnimatedField icon={Building2} label={t("demoResults.supplier")} value={extractedData.supplier_name} delay={0} />
+                  <AnimatedField icon={Building2} label={t("demoResults.customer")} value={extractedData.customer_name} delay={1} />
+                  <AnimatedField icon={Hash} label={t("demoResults.invoiceNum")} value={extractedData.invoice_number} delay={2} />
+                  <AnimatedField icon={Calendar} label={t("demoResults.invoiceDate")} value={formatDate(extractedData.invoice_date)} delay={3} />
+                  <AnimatedField icon={Calendar} label={t("demoResults.dueDate")} value={formatDate(extractedData.due_date)} delay={4} />
+                  <AnimatedField icon={Shield} label={t("demoResults.vatNumber")} value={extractedData.vat_number} delay={5} />
                 </div>
 
                 {/* Amounts Card */}
@@ -291,25 +293,25 @@ export function DemoResultsModal({
                   <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
                     <div className="px-4 py-2.5 border-b border-border/40 bg-accent/30">
                       <h4 className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-                        Financial Summary
+                        {t("demoResults.financialSummary")}
                       </h4>
                     </div>
                     <div className="p-4 space-y-2.5">
                       <div className="flex justify-between items-center">
-                        <span className="text-[13px] text-muted-foreground">Subtotal</span>
+                        <span className="text-[13px] text-muted-foreground">{t("demoResults.subtotal")}</span>
                         <span className="text-[13px] font-medium tabular-nums">
                           {formatCurrency(extractedData.net_amount, currency)}
                         </span>
                       </div>
                        <div className="flex justify-between items-center">
-                        <span className="text-[13px] text-muted-foreground">VAT</span>
+                        <span className="text-[13px] text-muted-foreground">{t("demoResults.vat")}</span>
                         <span className="text-[13px] font-medium tabular-nums">
                           {formatCurrency(extractedData.vat_amount, currency)}
                         </span>
                       </div>
                       {extractedData.discount_amount != null && extractedData.discount_amount !== 0 && (
                         <div className="flex justify-between items-center">
-                          <span className="text-[13px] text-muted-foreground">Discount</span>
+                          <span className="text-[13px] text-muted-foreground">{t("demoResults.discount")}</span>
                           <span className="text-[13px] font-medium tabular-nums text-green-600">
                             -{formatCurrency(Math.abs(extractedData.discount_amount), currency)}
                           </span>
@@ -317,7 +319,7 @@ export function DemoResultsModal({
                       )}
                       <Separator className="!my-2" />
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold">Total</span>
+                        <span className="text-sm font-semibold">{t("demoResults.total")}</span>
                         <motion.span
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -338,8 +340,8 @@ export function DemoResultsModal({
                 >
                   <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
                   <p className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">With a free account:</span>{" "}
-                    Save records, edit fields, manage contacts, and export CSV for your accountant.
+                    <span className="font-medium text-foreground">{t("demoResults.withFreeAccount")}</span>{" "}
+                    {t("demoResults.freeAccountFeatures")}
                   </p>
                 </motion.div>
 
@@ -353,18 +355,18 @@ export function DemoResultsModal({
                   <div className="relative">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-foreground/15 text-primary-foreground text-xs font-medium mb-3">
                       <Zap className="h-3 w-3" />
-                      Free to start · No credit card
+                      {t("demoResults.freeToStart")}
                     </div>
                     <h3 className="text-lg font-bold text-primary-foreground mb-1.5">
-                      Ready to automate your accounting?
+                      {t("demoResults.ctaTitle")}
                     </h3>
                     <p className="text-primary-foreground/75 text-sm mb-5 max-w-sm mx-auto">
-                      Process hundreds of invoices in minutes. Save, review, and export — all in one place.
+                      {t("demoResults.ctaDesc")}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
                       <Button size="lg" variant="secondary" asChild className="shadow-lg">
                         <Link to="/signup">
-                          Get Started — €29.99 <ArrowRight className="ml-2 h-4 w-4" />
+                          {t("demoResults.getStarted")} <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
                       <Button
@@ -373,14 +375,14 @@ export function DemoResultsModal({
                         className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10"
                         asChild
                       >
-                        <Link to="/contact">Book a Demo</Link>
+                        <Link to="/contact">{t("demoResults.bookDemo")}</Link>
                       </Button>
                     </div>
                   </div>
                 </motion.div>
 
                 <p className="text-[11px] text-center text-muted-foreground pt-1">
-                  Demo only — your file is automatically deleted within 1 hour.
+                  {t("demoResults.autoDeleted")}
                 </p>
               </motion.div>
             </motion.div>
@@ -392,6 +394,7 @@ export function DemoResultsModal({
 }
 
 function ConfidenceBadge({ value }: { value: number }) {
+  const { t } = useTranslation();
   const color =
     value >= 90
       ? "bg-success-soft text-success border-success/20"
@@ -406,7 +409,7 @@ function ConfidenceBadge({ value }: { value: number }) {
       transition={{ delay: 0.3, type: "spring" }}
     >
       <Badge variant="outline" className={`${color} text-xs font-semibold px-2.5 py-1`}>
-        {value}% confidence
+        {value}% {t("demoResults.confidence")}
       </Badge>
     </motion.div>
   );
