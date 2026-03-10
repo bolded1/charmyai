@@ -102,7 +102,7 @@ export default function LoginPage() {
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Reset your password</DialogTitle>
+            <DialogTitle>{t("auth.resetPassword")}</DialogTitle>
           </DialogHeader>
           {forgotSent ? (
             <div className="text-center space-y-3 py-2">
