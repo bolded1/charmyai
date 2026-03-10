@@ -193,7 +193,6 @@ export default function DocumentsPage() {
             <span className="text-sm font-semibold text-primary">
               {selectedIds.size} {t("common.selected")}
             </span>
-            </span>
             <div className="flex-1" />
             {approvableCount > 0 && (
               <Button
