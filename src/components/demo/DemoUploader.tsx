@@ -114,7 +114,7 @@ export function DemoUploader() {
       if (fnErr) throw new Error("Extraction failed");
       if (result?.error) throw new Error(result.error);
 
-      setProcessingStep("Extraction complete!");
+      setProcessingStep(t("demoUploader.complete"));
       setExtractedData(result.extracted);
       setShowResults(true);
     } catch (err: any) {
