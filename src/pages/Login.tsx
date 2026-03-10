@@ -135,7 +135,7 @@ export default function LoginPage() {
                 <Input id="forgot-email" type="email" placeholder="you@company.com" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="h-10 rounded-xl" />
               </div>
               <Button type="submit" className="w-full h-10 rounded-xl bg-hero-gradient hover:opacity-90 transition-opacity" disabled={forgotLoading}>
-                {forgotLoading ? "Sending..." : "Send Reset Link"}
+                {forgotLoading ? t("auth.sendingReset") : t("auth.resetPasswordBtn")}
               </Button>
             </form>
           )}
