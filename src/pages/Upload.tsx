@@ -204,7 +204,7 @@ export default function UploadPage() {
                   </code>
                   <Button variant="outline" size="sm" className="shrink-0 h-9 gap-1.5 rounded-xl shadow-[var(--shadow-xs)]" onClick={copyEmail}>
                     {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? t("common.copied") : t("common.copy")}
                   </Button>
                 </div>
               </div>
