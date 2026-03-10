@@ -109,7 +109,7 @@ export default function LoginPage() {
               <div className="h-12 w-12 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                 <Mail className="h-6 w-6 text-primary-foreground" />
               </div>
-              <p className="text-sm text-muted-foreground">We've sent a reset link to <span className="font-semibold text-foreground">{forgotEmail}</span>. Check your inbox.</p>
+              <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("auth.resetSent", { email: forgotEmail }) }} />
             </div>
           ) : (
             <form onSubmit={async (e) => {
