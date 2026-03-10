@@ -198,9 +198,6 @@ export default function MarketingLayout() {
                 transition={{ duration: 0.3, delay: 0.3 }}
                 className="space-y-3 pt-6 border-t border-border/50"
               >
-                <div className="flex justify-center mb-3">
-                  <LanguageSwitcher variant="outline" />
-                </div>
                 <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
                   <Link to={user ? "/app" : "/login"}>{user ? t("marketing.dashboard") : t("marketing.login")}</Link>
                 </Button>
