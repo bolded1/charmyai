@@ -119,7 +119,7 @@ export function DemoUploader() {
       setShowResults(true);
     } catch (err: any) {
       console.error("Demo processing error:", err);
-      toast.error(err.message || "Something went wrong. Please try again.");
+      toast.error(err.message || t("demoUploader.error"));
     } finally {
       setIsProcessing(false);
       setProcessingStep("");
