@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, FileText, CheckCircle2, AlertCircle, Loader2, TrendingUp, ArrowUpRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
+import { useTranslation } from "react-i18next";
 
 const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--border))"];
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalOrgs: 0, totalUsers: 0, totalDocs: 0, totalProcessed: 0, awaitingReview: 0, failedDocs: 0,
@@ -88,12 +90,12 @@ export default function AdminDashboard() {
   ];
 
   const statCards = [
-    { label: "Organizations", value: stats.totalOrgs, icon: Building2, color: "from-primary to-[hsl(var(--violet))]", iconBg: "bg-primary/10 text-primary" },
-    { label: "Total Users", value: stats.totalUsers, icon: Users, color: "from-[hsl(var(--violet))] to-[hsl(var(--rose))]", iconBg: "bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" },
-    { label: "Documents", value: stats.totalDocs.toLocaleString(), icon: FileText, color: "from-[hsl(var(--teal))] to-[hsl(var(--emerald))]", iconBg: "bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]" },
-    { label: "Processed", value: stats.totalProcessed.toLocaleString(), icon: CheckCircle2, color: "from-[hsl(var(--emerald))] to-[hsl(var(--teal))]", iconBg: "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]" },
-    { label: "Awaiting Review", value: stats.awaitingReview, icon: AlertCircle, color: "from-[hsl(var(--amber))] to-[hsl(var(--rose))]", iconBg: "bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))]" },
-    { label: "Failed", value: stats.failedDocs, icon: AlertCircle, color: "from-[hsl(var(--rose))] to-destructive", iconBg: "bg-[hsl(var(--rose-soft))] text-[hsl(var(--rose))]" },
+    { label: t("admin.organizations"), value: stats.totalOrgs, icon: Building2, color: "from-primary to-[hsl(var(--violet))]", iconBg: "bg-primary/10 text-primary" },
+    { label: t("admin.totalUsers"), value: stats.totalUsers, icon: Users, color: "from-[hsl(var(--violet))] to-[hsl(var(--rose))]", iconBg: "bg-[hsl(var(--violet-soft))] text-[hsl(var(--violet))]" },
+    { label: t("admin.documents"), value: stats.totalDocs.toLocaleString(), icon: FileText, color: "from-[hsl(var(--teal))] to-[hsl(var(--emerald))]", iconBg: "bg-[hsl(var(--teal-soft))] text-[hsl(var(--teal))]" },
+    { label: t("admin.processed"), value: stats.totalProcessed.toLocaleString(), icon: CheckCircle2, color: "from-[hsl(var(--emerald))] to-[hsl(var(--teal))]", iconBg: "bg-[hsl(var(--emerald-soft))] text-[hsl(var(--emerald))]" },
+    { label: t("admin.awaitingReview"), value: stats.awaitingReview, icon: AlertCircle, color: "from-[hsl(var(--amber))] to-[hsl(var(--rose))]", iconBg: "bg-[hsl(var(--amber-soft))] text-[hsl(var(--amber))]" },
+    { label: t("admin.failed"), value: stats.failedDocs, icon: AlertCircle, color: "from-[hsl(var(--rose))] to-destructive", iconBg: "bg-[hsl(var(--rose-soft))] text-[hsl(var(--rose))]" },
   ];
 
   return (
@@ -102,8 +104,8 @@ export default function AdminDashboard() {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-[hsl(var(--violet))] to-[hsl(var(--rose))] p-6 text-primary-foreground">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
         <div className="relative z-10">
-          <h2 className="text-xl font-bold">Welcome back, Admin</h2>
-          <p className="text-sm text-primary-foreground/80 mt-1">Here's what's happening across your platform today.</p>
+          <h2 className="text-xl font-bold">{t("admin.welcomeBack")}</h2>
+          <p className="text-sm text-primary-foreground/80 mt-1">{t("admin.platformToday")}</p>
         </div>
       </div>
 
@@ -121,7 +123,7 @@ export default function AdminDashboard() {
               <div className="text-3xl font-bold tracking-tight text-foreground">{s.value}</div>
               <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                 <ArrowUpRight className="h-3 w-3 text-[hsl(var(--emerald))]" />
-                <span className="text-[hsl(var(--emerald))]">Last 7 days</span>
+                <span className="text-[hsl(var(--emerald))]">{t("admin.last7days")}</span>
               </div>
             </CardContent>
             <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${s.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
@@ -134,8 +136,8 @@ export default function AdminDashboard() {
         <Card className="lg:col-span-2 border-border/40">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">Document Activity</CardTitle>
-              <Badge variant="outline" className="text-xs text-muted-foreground border-border/60">Last 7 days</Badge>
+              <CardTitle className="text-base font-semibold">{t("admin.documentActivity")}</CardTitle>
+              <Badge variant="outline" className="text-xs text-muted-foreground border-border/60">{t("admin.last7days")}</Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -164,8 +166,8 @@ export default function AdminDashboard() {
                       fontSize: "12px",
                     }}
                   />
-                  <Area type="monotone" dataKey="processed" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#colorProcessed)" name="Processed" />
-                  <Area type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2.5} fill="url(#colorFailed)" name="Failed" />
+                  <Area type="monotone" dataKey="processed" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#colorProcessed)" name={t("admin.processed")} />
+                  <Area type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2.5} fill="url(#colorFailed)" name={t("admin.failed")} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -174,7 +176,7 @@ export default function AdminDashboard() {
 
         <Card className="border-border/40">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Success Rate</CardTitle>
+            <CardTitle className="text-base font-semibold">{t("admin.successRate")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-48 flex items-center justify-center relative">
@@ -189,17 +191,17 @@ export default function AdminDashboard() {
               </ResponsiveContainer>
               <div className="absolute inset-0 flex items-center justify-center flex-col">
                 <span className="text-3xl font-bold text-foreground">{successRate}%</span>
-                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Success</p>
+                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("admin.successRate")}</p>
               </div>
             </div>
             <div className="flex justify-center gap-4 mt-2">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-                Processed
+                {t("admin.processed")}
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <div className="h-2.5 w-2.5 rounded-full bg-border" />
-                Other
+                {t("common.other", "Other")}
               </div>
             </div>
           </CardContent>
@@ -211,13 +213,13 @@ export default function AdminDashboard() {
         <Card className="border-border/40">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">Top Organizations</CardTitle>
+              <CardTitle className="text-base font-semibold">{t("admin.topOrganizations")}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardHeader>
           <CardContent>
             {orgActivity.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No organizations yet</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t("admin.noOrganizationsYet")}</p>
             ) : (
               <div className="space-y-4">
                 {orgActivity.map((org, idx) => (
@@ -245,13 +247,13 @@ export default function AdminDashboard() {
         <Card className="border-border/40">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
-              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">Live</Badge>
+              <CardTitle className="text-base font-semibold">{t("admin.recentActivity")}</CardTitle>
+              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">{t("admin.live")}</Badge>
             </div>
           </CardHeader>
           <CardContent>
             {recentLogs.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No activity yet</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t("admin.noActivityYet")}</p>
             ) : (
               <div className="space-y-3">
                 {recentLogs.map((entry, idx) => (
@@ -265,7 +267,7 @@ export default function AdminDashboard() {
                     <div className="min-w-0 flex-1 pb-1">
                       <p className="text-sm font-medium text-foreground">{entry.details || entry.action.replace(/_/g, " ")}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        {entry.user_email || "System"} · {new Date(entry.created_at).toLocaleString()}
+                        {entry.user_email || t("admin.system")} · {new Date(entry.created_at).toLocaleString()}
                       </p>
                     </div>
                   </div>

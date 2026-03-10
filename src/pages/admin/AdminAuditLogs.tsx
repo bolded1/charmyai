@@ -9,6 +9,7 @@ import { Search, Loader2, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const actionColors: Record<string, string> = {
   document_uploaded: "bg-accent text-accent-foreground",
@@ -35,6 +36,7 @@ interface AuditLog {
 }
 
 export default function AdminAuditLogsPage() {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -76,19 +78,19 @@ export default function AdminAuditLogsPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search logs..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder={t("admin.searchLogs")} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={actionFilter} onValueChange={setActionFilter}>
-          <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="All Actions" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder={t("admin.allActions")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Actions</SelectItem>
+            <SelectItem value="all">{t("admin.allActions")}</SelectItem>
             {allActions.map((a) => (
               <SelectItem key={a} value={a} className="capitalize">{a.replace(/_/g, " ")}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Refresh
+          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> {t("admin.refresh")}
         </Button>
       </div>
 
@@ -99,7 +101,7 @@ export default function AdminAuditLogsPage() {
       ) : filtered.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            {logs.length === 0 ? "No audit logs yet. Activity will appear here as users interact with the platform." : "No logs match your filters"}
+            {logs.length === 0 ? t("admin.noAuditLogs") : t("admin.noLogsMatch")}
           </CardContent>
         </Card>
       ) : isMobile ? (
@@ -108,14 +110,14 @@ export default function AdminAuditLogsPage() {
             <MobileRecordCard
               key={entry.id}
               title={entry.details || entry.action.replace(/_/g, " ")}
-              subtitle={entry.user_email || "System"}
+              subtitle={entry.user_email || t("admin.system")}
               badge={{
                 label: entry.action.replace(/_/g, " "),
                 className: actionColors[entry.action] || "bg-secondary text-secondary-foreground",
               }}
               fields={[
-                { label: "Entity", value: entry.entity_type || "—" },
-                { label: "Time", value: new Date(entry.created_at).toLocaleString() },
+                { label: t("admin.entity"), value: entry.entity_type || "—" },
+                { label: t("admin.timestamp"), value: new Date(entry.created_at).toLocaleString() },
               ]}
             />
           ))}
@@ -127,18 +129,18 @@ export default function AdminAuditLogsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Timestamp</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">User</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Action</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Entity</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Details</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.timestamp")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.user")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.action")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.entity")}</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground">{t("admin.details")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((entry) => (
                     <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="p-3 text-sm text-muted-foreground whitespace-nowrap">{new Date(entry.created_at).toLocaleString()}</td>
-                      <td className="p-3 text-sm">{entry.user_email || "System"}</td>
+                      <td className="p-3 text-sm">{entry.user_email || t("admin.system")}</td>
                       <td className="p-3">
                         <Badge variant="secondary" className={`text-[10px] capitalize ${actionColors[entry.action] || "bg-secondary text-secondary-foreground"}`}>
                           {entry.action.replace(/_/g, " ")}
