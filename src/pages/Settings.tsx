@@ -522,6 +522,16 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-5">
+                  <h3 className="text-sm font-medium text-foreground">API Keys</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Create and manage API keys for external integrations. Use these keys with the <code className="text-[11px] font-mono">x-api-key</code> header.</p>
+                </div>
+                <ApiKeyManager />
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
