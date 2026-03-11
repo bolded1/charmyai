@@ -297,48 +297,97 @@ export default function UploadPage() {
 
 
       {files.length > 0 && (
-        <Card className="cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate("/app/documents")}>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2">
-              <Loader2 className={`h-4 w-4 ${files.some((f) => f.status === "uploading" || f.status === "processing") ? "animate-spin text-primary" : "text-muted-foreground"}`} />
-               {t("upload.uploading")}
-              <Badge variant="secondary" className="text-[10px] ml-1">{files.length}</Badge>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+        <Card className="cursor-pointer hover:border-primary/30 transition-colors group" onClick={() => navigate("/app/documents")}>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              {files.some((f) => f.status === "uploading" || f.status === "processing") ? (
+                <div className="relative h-5 w-5">
+                  <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                  <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                </div>
+              ) : (
+                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
+              )}
+              {files.some((f) => f.status === "uploading" || f.status === "processing")
+                ? t("upload.uploading")
+                : t("upload.readyForReview")}
+              <Badge variant="secondary" className="text-[10px] ml-1 tabular-nums">{files.filter(f => f.status === "done").length}/{files.length}</Badge>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 group-hover:translate-x-0 duration-200" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-1.5 pt-0">
             {files.map((file) => (
-              <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-9 w-9 rounded-lg bg-card flex items-center justify-center shrink-0">
-                  {file.status === "done" ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  ) : file.status === "error" ? (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  ) : (
-                    <Loader2 className="h-4 w-4 text-primary animate-spin" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium truncate">{file.name}</p>
-                    <span className="text-[11px] text-muted-foreground shrink-0 ml-2">{file.size}</span>
+              <div
+                key={file.id}
+                className={cn(
+                  "relative overflow-hidden rounded-xl p-3 transition-all duration-300",
+                  file.status === "done"
+                    ? "bg-emerald-500/[0.06] border border-emerald-500/15"
+                    : file.status === "error"
+                    ? "bg-destructive/[0.06] border border-destructive/15"
+                    : "bg-muted/40 border border-border/40"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                    file.status === "done" ? "bg-emerald-500/15" :
+                    file.status === "error" ? "bg-destructive/15" :
+                    "bg-primary/10"
+                  )}>
+                    {file.status === "done" ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    ) : file.status === "error" ? (
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    ) : file.status === "processing" ? (
+                      <FileText className="h-4 w-4 text-primary animate-pulse" />
+                    ) : (
+                      <UploadIcon className="h-4 w-4 text-primary" />
+                    )}
                   </div>
-                  <Progress value={file.progress} className="h-1.5" />
-                  <p className="text-[11px] text-muted-foreground">
-                    {file.status === "uploading" && t("upload.uploadingStatus")}
-                    {file.status === "processing" && t("upload.aiExtracting")}
-                    {file.status === "done" && t("upload.readyForReview")}
-                    {file.status === "error" && (file.error || t("upload.uploadFailed"))}
-                  </p>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium truncate">{file.name}</p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] text-muted-foreground tabular-nums">{file.size}</span>
+                        {file.status !== "done" && file.status !== "error" && (
+                          <span className="text-[10px] font-medium text-primary tabular-nums">{file.progress}%</span>
+                        )}
+                      </div>
+                    </div>
+                    {file.status !== "done" && file.status !== "error" && (
+                      <div className="relative h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out"
+                          style={{ width: `${file.progress}%` }}
+                        />
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary/50 to-transparent animate-pulse"
+                          style={{ width: `${Math.min(file.progress + 15, 100)}%` }}
+                        />
+                      </div>
+                    )}
+                    <p className={cn(
+                      "text-[11px] transition-colors",
+                      file.status === "done" ? "text-emerald-600 dark:text-emerald-400 font-medium" :
+                      file.status === "error" ? "text-destructive font-medium" :
+                      "text-muted-foreground"
+                    )}>
+                      {file.status === "uploading" && t("upload.uploadingStatus")}
+                      {file.status === "processing" && t("upload.aiExtracting")}
+                      {file.status === "done" && `✓ ${t("upload.readyForReview")}`}
+                      {file.status === "error" && (file.error || t("upload.uploadFailed"))}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => { e.stopPropagation(); removeFile(file.id); }}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0"
-                  onClick={(e) => { e.stopPropagation(); removeFile(file.id); }}
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
               </div>
             ))}
           </CardContent>
