@@ -32,7 +32,7 @@ export default function ApiKeyManager() {
   const [newKeyName, setNewKeyName] = useState("");
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  
   const [revokeId, setRevokeId] = useState<string | null>(null);
 
   const apiBaseUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-v1`;
