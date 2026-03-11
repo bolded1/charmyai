@@ -1,0 +1,110 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Charmy API",
+    "version": "1.0.0",
+    "description": "External integration API for Charmy."
+  },
+  "servers": [
+    {
+      "url": "https://YOUR_PROJECT_REF.supabase.co/functions/v1/api-v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "apiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/workspaces": {
+      "get": {
+        "summary": "List accessible workspaces"
+      }
+    },
+    "/documents": {
+      "get": {
+        "summary": "List documents"
+      }
+    },
+    "/documents/upload": {
+      "post": {
+        "summary": "Upload a document"
+      }
+    },
+    "/documents/{id}": {
+      "get": {
+        "summary": "Get a document"
+      },
+      "patch": {
+        "summary": "Update a document"
+      }
+    },
+    "/documents/{id}/download": {
+      "get": {
+        "summary": "Create a signed file download URL"
+      }
+    },
+    "/documents/{id}/extract": {
+      "post": {
+        "summary": "Trigger extraction"
+      }
+    },
+    "/documents/{id}/approve": {
+      "post": {
+        "summary": "Approve a document"
+      }
+    },
+    "/exports": {
+      "get": {
+        "summary": "List exports"
+      }
+    },
+    "/api-keys": {
+      "get": {
+        "summary": "List API keys"
+      },
+      "post": {
+        "summary": "Create API key"
+      }
+    },
+    "/api-keys/{id}": {
+      "delete": {
+        "summary": "Revoke API key"
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "summary": "List webhooks"
+      },
+      "post": {
+        "summary": "Create webhook endpoint"
+      }
+    },
+    "/webhooks/{id}": {
+      "delete": {
+        "summary": "Delete webhook endpoint"
+      }
+    },
+    "/webhooks/{id}/test": {
+      "post": {
+        "summary": "Send a test webhook"
+      }
+    }
+  }
+}

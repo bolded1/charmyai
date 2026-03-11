@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff, Lock } from "lucide-react";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
@@ -261,8 +261,6 @@ export default function SettingsPage() {
   const apiBaseUrl = import.meta.env.VITE_SUPABASE_URL
     ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-v1`
     : "";
-  const apiDocsUrl = apiBaseUrl ? `${apiBaseUrl}/docs` : "";
-  const apiSpecUrl = apiBaseUrl ? `${apiBaseUrl}/openapi.json` : "";
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -512,20 +510,13 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <Button
-                    type="button"
-                    onClick={() => apiDocsUrl && window.open(apiDocsUrl, "_blank", "noopener,noreferrer")}
-                    disabled={!apiDocsUrl}
-                  >
-                    Open API Docs
+                  <Button asChild type="button">
+                    <Link to="/app/api-docs">Open API Docs</Link>
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => apiSpecUrl && window.open(apiSpecUrl, "_blank", "noopener,noreferrer")}
-                    disabled={!apiSpecUrl}
-                  >
-                    Open OpenAPI Spec
+                  <Button asChild type="button" variant="outline">
+                    <a href="/charmy-api-v1-openapi.json" target="_blank" rel="noreferrer">
+                      Open OpenAPI Spec
+                    </a>
                   </Button>
                 </div>
               </CardContent>
