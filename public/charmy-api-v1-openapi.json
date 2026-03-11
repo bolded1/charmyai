@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://YOUR_PROJECT_REF.supabase.co/functions/v1/api-v1"
+      "url": "https://vhaursnvaadhxxwefxez.supabase.co/functions/v1/api-v1"
     }
   ],
   "components": {
