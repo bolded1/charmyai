@@ -18,6 +18,7 @@ import Contact from "./pages/Contact";
 import Demo from "./pages/Demo";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import RefundPolicy from "./pages/RefundPolicy";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
@@ -104,6 +105,7 @@ const App = () => (
             <Route path="/demo" element={<Demo />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/acceptable-use" element={<AcceptableUse />} />
           </Route>
 

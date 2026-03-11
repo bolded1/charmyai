@@ -257,6 +257,7 @@ export default function MarketingLayout() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <Link to="/privacy" className="block hover:text-foreground">{t("marketing.privacyPolicy")}</Link>
                 <Link to="/terms" className="block hover:text-foreground">{t("marketing.termsOfService")}</Link>
+                <Link to="/refund-policy" className="block hover:text-foreground">{t("marketing.refundPolicy")}</Link>
                 <Link to="/acceptable-use" className="block hover:text-foreground">{t("marketing.acceptableUse")}</Link>
                 <button onClick={openPreferences} className="block hover:text-foreground text-left">{t("marketing.cookiePreferences")}</button>
               </div>

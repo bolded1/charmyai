@@ -247,6 +247,62 @@ export const acceptableUseDefaults: Record<string, string> = {
   section10Body: "We may update this Acceptable Use Policy from time to time. Material changes will be communicated via email or in-app notification at least 14 days before they take effect. Continued use of the platform after changes take effect constitutes acceptance of the updated policy.",
 };
 
+export const refundPolicyDefaults: Record<string, string> = {
+  title: "Refund Policy",
+  lastUpdated: "Last updated: March 11, 2026",
+  intro: "We want Charmy to be straightforward to buy and fair to use. This Refund Policy explains when refunds are available, how they are handled, and what to expect if you would like to cancel a purchase or request a refund.",
+  section1Title: "1. Scope",
+  section1Body: "This Refund Policy applies to purchases made directly through Charmy for paid plans, one-time purchases, and other paid services unless separate written terms apply. Purchases made through third-party marketplaces or resellers may be subject to that provider's own refund rules.",
+  section2Title: "2. Consumer Withdrawal Rights",
+  section2Body: "If you are an EU consumer, you may have a legal right to withdraw from your purchase within 14 days of the purchase date under applicable consumer protection law.\n\nIf you asked us to begin providing the service during that period, and the service has already been materially used or fully delivered, we may deduct the value of the service already provided to the extent permitted by law.\n\nTo exercise a withdrawal right, contact us at support@charmy.ai with your account email, purchase date, and a clear statement that you want to withdraw from the purchase.",
+  section3Title: "3. Subscription Refunds",
+  section3Body: "Subscription fees are generally billed in advance and are non-refundable once a billing period starts, except where required by law or where we expressly agree otherwise.\n\nIf you cancel a subscription, access continues until the end of the current paid billing period unless stated otherwise at checkout. Cancellation stops future renewals but does not automatically create a refund for charges already paid.",
+  section4Title: "4. One-Time Purchases",
+  section4Body: "For one-time purchases, refunds may be considered when:\n\n• You were charged incorrectly.\n• You were billed more than once for the same purchase.\n• A technical issue on our side prevented delivery of the purchased service and we could not resolve it within a reasonable time.\n\nWe do not usually issue refunds for change of mind after the service has been accessed or used, except where required by law.",
+  section5Title: "5. Billing Errors and Duplicate Charges",
+  section5Body: "If you believe you were charged in error, contact us as soon as possible at billing@charmy.ai. We may ask for supporting details such as the charge date, amount, last four digits of the payment method, and account email. Verified duplicate or incorrect charges will be refunded to the original payment method.",
+  section6Title: "6. Non-Refundable Situations",
+  section6Body: "Unless required by law, refunds are typically not available for:\n\n• Partial use of a billing period.\n• Failure to cancel before a renewal date.\n• Dissatisfaction caused by features, limitations, or compatibility details that were clearly disclosed before purchase.\n• Service interruptions caused by external systems outside our reasonable control.\n• Violations of our Terms of Service or Acceptable Use Policy that lead to suspension or termination.",
+  section7Title: "7. How to Request a Refund",
+  section7Body: "To request a refund, email support@charmy.ai or billing@charmy.ai and include:\n\n• Your full name and account email.\n• The date of purchase.\n• The amount charged.\n• A short explanation of the issue.\n• Any relevant invoice, receipt, or transaction reference.\n\nWe may request additional information if needed to verify the purchase.",
+  section8Title: "8. Review and Processing Time",
+  section8Body: "We review refund requests case by case and aim to respond within 5 business days. If approved, refunds are issued to the original payment method. Processing times after approval depend on your bank or payment provider and may take 5 to 10 business days.",
+  section9Title: "9. Chargebacks",
+  section9Body: "If you are experiencing a billing issue, we encourage you to contact us first so we can help resolve it quickly. Filing a chargeback without contacting us may delay resolution and can result in temporary account restrictions while the payment dispute is under review.",
+  section10Title: "10. Changes to This Policy",
+  section10Body: "We may update this Refund Policy from time to time. The version published on this page is the current version. Material changes will apply only as permitted by applicable law.",
+  section11Title: "11. Contact",
+  section11Body: "For refund questions or billing concerns, contact us at:\n\nCharmy\nEmail: support@charmy.net\nBilling: billing@charmy.net",
+};
+
+export const refundPolicyDefaultsEl: Record<string, string> = {
+  title: "Πολιτική Επιστροφών",
+  lastUpdated: "Τελευταία ενημέρωση: 11 Μαρτίου 2026",
+  intro: "Θέλουμε το Charmy να είναι ξεκάθαρο στην αγορά του και δίκαιο στη χρήση του. Αυτή η Πολιτική Επιστροφών εξηγεί πότε υπάρχουν επιστροφές χρημάτων, πώς εξετάζονται και τι να περιμένετε αν θέλετε να ακυρώσετε μια αγορά ή να ζητήσετε επιστροφή.",
+  section1Title: "1. Πεδίο Εφαρμογής",
+  section1Body: "Αυτή η Πολιτική Επιστροφών ισχύει για αγορές που γίνονται απευθείας μέσω του Charmy για επί πληρωμή πλάνα, εφάπαξ αγορές και άλλες επί πληρωμή υπηρεσίες, εκτός αν ισχύουν ξεχωριστοί γραπτοί όροι. Αγορές που γίνονται μέσω τρίτων marketplaces ή μεταπωλητών μπορεί να υπάγονται στους δικούς τους κανόνες επιστροφών.",
+  section2Title: "2. Δικαίωμα Υπαναχώρησης Καταναλωτή",
+  section2Body: "Αν είστε καταναλωτής στην ΕΕ, μπορεί να έχετε νόμιμο δικαίωμα υπαναχώρησης εντός 14 ημερών από την ημερομηνία αγοράς, σύμφωνα με την ισχύουσα νομοθεσία προστασίας καταναλωτή.\n\nΑν ζητήσατε να ξεκινήσει η παροχή της υπηρεσίας μέσα σε αυτή την περίοδο και η υπηρεσία έχει ήδη χρησιμοποιηθεί ουσιωδώς ή έχει παρασχεθεί πλήρως, μπορούμε να αφαιρέσουμε την αξία της υπηρεσίας που έχει ήδη παρασχεθεί, στον βαθμό που επιτρέπεται από τον νόμο.\n\nΓια να ασκήσετε το δικαίωμα υπαναχώρησης, επικοινωνήστε μαζί μας στο support@charmy.net με το email του λογαριασμού σας, την ημερομηνία αγοράς και μια σαφή δήλωση ότι θέλετε να υπαναχωρήσετε από την αγορά.",
+  section3Title: "3. Επιστροφές για Συνδρομές",
+  section3Body: "Οι χρεώσεις συνδρομών τιμολογούνται γενικά προκαταβολικά και δεν επιστρέφονται μόλις ξεκινήσει η περίοδος χρέωσης, εκτός αν απαιτείται διαφορετικά από τον νόμο ή αν συμφωνήσουμε ρητά διαφορετικά.\n\nΑν ακυρώσετε μια συνδρομή, η πρόσβαση συνεχίζεται μέχρι το τέλος της τρέχουσας πληρωμένης περιόδου, εκτός αν αναφέρεται διαφορετικά στο checkout. Η ακύρωση σταματά τις μελλοντικές ανανεώσεις αλλά δεν δημιουργεί αυτόματα επιστροφή για χρεώσεις που έχουν ήδη πληρωθεί.",
+  section4Title: "4. Εφάπαξ Αγορές",
+  section4Body: "Για εφάπαξ αγορές, επιστροφές μπορεί να εξεταστούν όταν:\n\n• Χρεωθήκατε λανθασμένα.\n• Χρεωθήκατε περισσότερες από μία φορές για την ίδια αγορά.\n• Τεχνικό πρόβλημα από τη δική μας πλευρά εμπόδισε την παροχή της αγορασμένης υπηρεσίας και δεν μπορέσαμε να το επιλύσουμε μέσα σε εύλογο χρόνο.\n\nΣυνήθως δεν εκδίδουμε επιστροφές για αλλαγή γνώμης αφού η υπηρεσία έχει προσπελαστεί ή χρησιμοποιηθεί, εκτός αν απαιτείται από τον νόμο.",
+  section5Title: "5. Σφάλματα Χρέωσης και Διπλές Χρεώσεις",
+  section5Body: "Αν πιστεύετε ότι χρεωθήκατε εσφαλμένα, επικοινωνήστε μαζί μας το συντομότερο δυνατό στο billing@charmy.net. Μπορεί να ζητήσουμε υποστηρικτικές πληροφορίες όπως ημερομηνία χρέωσης, ποσό, τα τελευταία τέσσερα ψηφία της μεθόδου πληρωμής και το email του λογαριασμού. Επιβεβαιωμένες διπλές ή λανθασμένες χρεώσεις θα επιστρέφονται στην αρχική μέθοδο πληρωμής.",
+  section6Title: "6. Περιπτώσεις Χωρίς Επιστροφή",
+  section6Body: "Εκτός αν απαιτείται από τον νόμο, επιστροφές συνήθως δεν είναι διαθέσιμες για:\n\n• Μερική χρήση μιας περιόδου χρέωσης.\n• Παράλειψη ακύρωσης πριν από την ημερομηνία ανανέωσης.\n• Δυσαρέσκεια που οφείλεται σε λειτουργίες, περιορισμούς ή λεπτομέρειες συμβατότητας που είχαν γνωστοποιηθεί καθαρά πριν από την αγορά.\n• Διακοπές υπηρεσίας που προκαλούνται από εξωτερικά συστήματα εκτός του εύλογου ελέγχου μας.\n• Παραβιάσεις των Όρων Χρήσης ή της Πολιτικής Αποδεκτής Χρήσης που οδηγούν σε αναστολή ή τερματισμό.",
+  section7Title: "7. Πώς να Ζητήσετε Επιστροφή",
+  section7Body: "Για να ζητήσετε επιστροφή, στείλτε email στο support@charmy.net ή στο billing@charmy.net και συμπεριλάβετε:\n\n• Το πλήρες όνομά σας και το email του λογαριασμού σας.\n• Την ημερομηνία αγοράς.\n• Το ποσό της χρέωσης.\n• Μια σύντομη εξήγηση του ζητήματος.\n• Οποιοδήποτε σχετικό τιμολόγιο, απόδειξη ή αναφορά συναλλαγής.\n\nΜπορεί να ζητήσουμε πρόσθετες πληροφορίες αν χρειαστεί για την επαλήθευση της αγοράς.",
+  section8Title: "8. Χρόνος Εξέτασης και Επεξεργασίας",
+  section8Body: "Εξετάζουμε τα αιτήματα επιστροφής κατά περίπτωση και στοχεύουμε να απαντήσουμε εντός 5 εργάσιμων ημερών. Αν εγκριθεί, η επιστροφή εκδίδεται στην αρχική μέθοδο πληρωμής. Ο χρόνος ολοκλήρωσης μετά την έγκριση εξαρτάται από την τράπεζα ή τον πάροχο πληρωμών σας και μπορεί να χρειαστεί 5 έως 10 εργάσιμες ημέρες.",
+  section9Title: "9. Αμφισβητήσεις Χρέωσης",
+  section9Body: "Αν αντιμετωπίζετε πρόβλημα χρέωσης, σας προτρέπουμε να επικοινωνήσετε πρώτα μαζί μας ώστε να το επιλύσουμε γρήγορα. Η υποβολή chargeback χωρίς προηγούμενη επικοινωνία μπορεί να καθυστερήσει την επίλυση και να οδηγήσει σε προσωρινούς περιορισμούς λογαριασμού όσο εξετάζεται η διαφορά πληρωμής.",
+  section10Title: "10. Αλλαγές στην Πολιτική",
+  section10Body: "Μπορούμε να ενημερώνουμε αυτή την Πολιτική Επιστροφών κατά καιρούς. Η έκδοση που δημοσιεύεται σε αυτή τη σελίδα είναι η τρέχουσα έκδοση. Ουσιώδεις αλλαγές θα ισχύουν μόνο στον βαθμό που επιτρέπεται από την εφαρμοστέα νομοθεσία.",
+  section11Title: "11. Επικοινωνία",
+  section11Body: "Για ερωτήσεις σχετικά με επιστροφές ή θέματα χρέωσης, επικοινωνήστε μαζί μας στα:\n\nCharmy\nEmail: support@charmy.net\nBilling: billing@charmy.net",
+};
+
 // --- Legal page helpers ---
 
 export type LegalSection = { title: string; body: string };
