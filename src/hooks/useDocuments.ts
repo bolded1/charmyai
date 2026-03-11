@@ -188,23 +188,42 @@ export function useApproveDocument() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // Create expense record for all approved documents
-      const { error } = await supabase.from("expense_records").insert({
-        user_id: user.id,
-        organization_id: approverProfile?.active_organization_id || null,
-        document_id: doc.id,
-        supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
-        invoice_number: doc.invoice_number,
-        invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-        due_date: doc.due_date,
-        currency: doc.currency || "EUR",
-        net_amount: doc.net_amount || 0,
-        vat_amount: doc.vat_amount || 0,
-        total_amount: doc.total_amount || 0,
-        vat_number: doc.vat_number,
-        category: doc.category,
-      });
-      if (error) throw error;
+      // Create expense or income record based on document type
+      if (doc.document_type === "sales_invoice") {
+        const { error } = await supabase.from("income_records").insert({
+          user_id: user.id,
+          organization_id: approverProfile?.active_organization_id || null,
+          document_id: doc.id,
+          customer_name: doc.customer_name || doc.supplier_name || "Unknown",
+          invoice_number: doc.invoice_number,
+          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+          due_date: doc.due_date,
+          currency: doc.currency || "EUR",
+          net_amount: doc.net_amount || 0,
+          vat_amount: doc.vat_amount || 0,
+          total_amount: doc.total_amount || 0,
+          vat_number: doc.vat_number,
+          category: doc.category,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("expense_records").insert({
+          user_id: user.id,
+          organization_id: approverProfile?.active_organization_id || null,
+          document_id: doc.id,
+          supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
+          invoice_number: doc.invoice_number,
+          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+          due_date: doc.due_date,
+          currency: doc.currency || "EUR",
+          net_amount: doc.net_amount || 0,
+          vat_amount: doc.vat_amount || 0,
+          total_amount: doc.total_amount || 0,
+          vat_number: doc.vat_number,
+          category: doc.category,
+        });
+        if (error) throw error;
+      }
 
       return doc;
     },
@@ -495,21 +514,39 @@ export function useBulkApproveDocuments() {
           .update({ status: "approved", updated_at: new Date().toISOString() })
           .eq("id", doc.id);
 
-        await supabase.from("expense_records").insert({
-          user_id: user.id,
-          organization_id: profile?.active_organization_id || null,
-          document_id: doc.id,
-          supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
-          invoice_number: doc.invoice_number,
-          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-          due_date: doc.due_date,
-          currency: doc.currency || "EUR",
-          net_amount: doc.net_amount || 0,
-          vat_amount: doc.vat_amount || 0,
-          total_amount: doc.total_amount || 0,
-          vat_number: doc.vat_number,
-          category: doc.category,
-        });
+        if (doc.document_type === "sales_invoice") {
+          await supabase.from("income_records").insert({
+            user_id: user.id,
+            organization_id: profile?.active_organization_id || null,
+            document_id: doc.id,
+            customer_name: doc.customer_name || doc.supplier_name || "Unknown",
+            invoice_number: doc.invoice_number,
+            invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+            due_date: doc.due_date,
+            currency: doc.currency || "EUR",
+            net_amount: doc.net_amount || 0,
+            vat_amount: doc.vat_amount || 0,
+            total_amount: doc.total_amount || 0,
+            vat_number: doc.vat_number,
+            category: doc.category,
+          });
+        } else {
+          await supabase.from("expense_records").insert({
+            user_id: user.id,
+            organization_id: profile?.active_organization_id || null,
+            document_id: doc.id,
+            supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
+            invoice_number: doc.invoice_number,
+            invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+            due_date: doc.due_date,
+            currency: doc.currency || "EUR",
+            net_amount: doc.net_amount || 0,
+            vat_amount: doc.vat_amount || 0,
+            total_amount: doc.total_amount || 0,
+            vat_number: doc.vat_number,
+            category: doc.category,
+          });
+        }
       }
     },
     onSuccess: (_, docs) => {

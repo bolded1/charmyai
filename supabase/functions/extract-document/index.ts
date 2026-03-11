@@ -379,7 +379,43 @@ serve(async (req) => {
       });
     }
 
-    // Note: expense/income records are created by the frontend on approval
+    // Auto-create expense/income record when auto-approved
+    if (newStatus === "approved") {
+      const docType = extracted.document_type || "expense_invoice";
+      if (docType === "sales_invoice") {
+        await supabase.from("income_records").insert({
+          user_id: doc.user_id,
+          organization_id: doc.organization_id || null,
+          document_id: documentId,
+          customer_name: extracted.customer_name || extracted.supplier_name || "Unknown",
+          invoice_number: extracted.invoice_number || null,
+          invoice_date: extracted.invoice_date || new Date().toISOString().split("T")[0],
+          due_date: extracted.due_date || null,
+          currency: extracted.currency || "EUR",
+          net_amount: extracted.net_amount || 0,
+          vat_amount: extracted.vat_amount || 0,
+          total_amount: extracted.total_amount || 0,
+          vat_number: extracted.vat_number || null,
+          category: finalCategory,
+        });
+      } else {
+        await supabase.from("expense_records").insert({
+          user_id: doc.user_id,
+          organization_id: doc.organization_id || null,
+          document_id: documentId,
+          supplier_name: extracted.supplier_name || "Unknown",
+          invoice_number: extracted.invoice_number || null,
+          invoice_date: extracted.invoice_date || new Date().toISOString().split("T")[0],
+          due_date: extracted.due_date || null,
+          currency: extracted.currency || "EUR",
+          net_amount: extracted.net_amount || 0,
+          vat_amount: extracted.vat_amount || 0,
+          total_amount: extracted.total_amount || 0,
+          vat_number: extracted.vat_number || null,
+          category: finalCategory,
+        });
+      }
+    }
 
     return new Response(
       JSON.stringify({
