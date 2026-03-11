@@ -17,6 +17,7 @@ import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff, Lock } from "lucide-react";
+import ApiKeyManager from "@/components/ApiKeyManager";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
@@ -519,6 +520,16 @@ export default function SettingsPage() {
                     </a>
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-5">
+                  <h3 className="text-sm font-medium text-foreground">API Keys</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Create and manage API keys for external integrations. Use these keys with the <code className="text-[11px] font-mono">x-api-key</code> header.</p>
+                </div>
+                <ApiKeyManager />
               </CardContent>
             </Card>
           </div>
