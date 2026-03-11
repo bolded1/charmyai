@@ -258,6 +258,11 @@ export default function SettingsPage() {
 
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "profile";
+  const apiBaseUrl = import.meta.env.VITE_SUPABASE_URL
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-v1`
+    : "";
+  const apiDocsUrl = apiBaseUrl ? `${apiBaseUrl}/docs` : "";
+  const apiSpecUrl = apiBaseUrl ? `${apiBaseUrl}/openapi.json` : "";
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -268,6 +273,7 @@ export default function SettingsPage() {
             <TabsTrigger value="billing">Billing</TabsTrigger>
             <TabsTrigger value="organization">Organization</TabsTrigger>
             <TabsTrigger value="email-import">Email Import</TabsTrigger>
+            <TabsTrigger value="api">API</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
@@ -460,6 +466,73 @@ export default function SettingsPage() {
           <EmailImportSettings />
         </TabsContent>
 
+        {/* ════════════════ API ════════════════ */}
+        <TabsContent value="api">
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-6 space-y-5">
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-brand-soft flex items-center justify-center shrink-0">
+                    <Key className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-medium text-foreground">Developer API</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Connect Charmy with external tools, automate uploads, generate signed file downloads, and receive webhook events when documents move through your workflow.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-border bg-muted/30 p-4">
+                    <p className="text-xs font-medium text-foreground">Authentication</p>
+                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                      Use your existing bearer token or create scoped API keys for external integrations.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/30 p-4">
+                    <p className="text-xs font-medium text-foreground">File Access</p>
+                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                      Generate signed download URLs for stored documents without exposing the storage bucket publicly.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/30 p-4">
+                    <p className="text-xs font-medium text-foreground">Webhooks</p>
+                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                      Subscribe to document upload, extraction, approval, and test events from your own systems.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border p-4">
+                  <p className="text-xs font-medium text-foreground">Base endpoint</p>
+                  <div className="mt-2 rounded-lg bg-muted/40 px-3 py-2 font-mono text-[11px] text-muted-foreground break-all">
+                    {apiBaseUrl || "Set VITE_SUPABASE_URL to generate your API endpoint"}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    type="button"
+                    onClick={() => apiDocsUrl && window.open(apiDocsUrl, "_blank", "noopener,noreferrer")}
+                    disabled={!apiDocsUrl}
+                  >
+                    Open API Docs
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => apiSpecUrl && window.open(apiSpecUrl, "_blank", "noopener,noreferrer")}
+                    disabled={!apiSpecUrl}
+                  >
+                    Open OpenAPI Spec
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
 
 
         {/* ════════════════ SECURITY ════════════════ */}
@@ -604,4 +677,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
