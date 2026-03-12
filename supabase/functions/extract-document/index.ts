@@ -327,16 +327,41 @@ serve(async (req) => {
       console.error("Auto-category rule error:", ruleErr);
     }
 
-    // Auto-create category in expense_categories if it doesn't exist
+    // Normalize category against existing ones to avoid near-duplicates
     if (finalCategory) {
       try {
         const { data: existingCats } = await supabase
           .from("expense_categories")
-          .select("id")
-          .eq("user_id", doc.user_id)
-          .ilike("name", finalCategory);
+          .select("id, name")
+          .eq("user_id", doc.user_id);
 
-        if (!existingCats || existingCats.length === 0) {
+        if (existingCats && existingCats.length > 0) {
+          // Normalize: lowercase, remove plurals, trim, collapse spaces & special chars
+          const normalize = (s: string) =>
+            s.toLowerCase()
+              .trim()
+              .replace(/[&]/g, "and")
+              .replace(/[^a-z0-9 ]/g, "")
+              .replace(/\s+/g, " ")
+              .replace(/ies$/, "y")
+              .replace(/s$/, "");
+
+          const aiNorm = normalize(finalCategory);
+
+          const match = existingCats.find((c) => normalize(c.name) === aiNorm);
+          if (match) {
+            // Use the existing category name instead of the AI-suggested one
+            finalCategory = match.name;
+            console.log("Matched existing category:", finalCategory);
+          } else {
+            // No match found — create new category
+            await supabase
+              .from("expense_categories")
+              .insert({ user_id: doc.user_id, name: finalCategory });
+            console.log("Auto-created category:", finalCategory);
+          }
+        } else {
+          // No categories exist yet — create first one
           await supabase
             .from("expense_categories")
             .insert({ user_id: doc.user_id, name: finalCategory });
