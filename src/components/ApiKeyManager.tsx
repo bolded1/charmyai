@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Key, Plus, Trash2, Copy, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +27,7 @@ interface ApiKey {
 }
 
 export default function ApiKeyManager() {
+  const { t } = useTranslation();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -53,7 +55,7 @@ export default function ApiKeyManager() {
         setKeys((json.data ?? []).filter((k: ApiKey) => !k.revoked_at));
       }
     } catch {
-      toast.error("Failed to load API keys");
+      toast.error(t("apiKeys.loadError"));
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export default function ApiKeyManager() {
 
   const handleCreate = async () => {
     if (!newKeyName.trim()) {
-      toast.error("Please enter a name for the key");
+      toast.error(t("apiKeys.enterName"));
       return;
     }
     setCreating(true);
@@ -86,12 +88,12 @@ export default function ApiKeyManager() {
         setShowKey(true);
         setNewKeyName("");
         fetchKeys();
-        toast.success("API key created");
+        toast.success(t("apiKeys.createSuccess"));
       } else {
-        toast.error(json.error || "Failed to create key");
+        toast.error(json.error || t("apiKeys.createError"));
       }
     } catch {
-      toast.error("Failed to create API key");
+      toast.error(t("apiKeys.createError"));
     } finally {
       setCreating(false);
     }
@@ -111,10 +113,10 @@ export default function ApiKeyManager() {
       });
       if (res.ok) {
         setKeys(prev => prev.filter(k => k.id !== id));
-        toast.success("API key revoked");
+        toast.success(t("apiKeys.revokeSuccess"));
       }
     } catch {
-      toast.error("Failed to revoke key");
+      toast.error(t("apiKeys.revokeError"));
     } finally {
       setRevokeId(null);
     }
@@ -122,7 +124,7 @@ export default function ApiKeyManager() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    toast.success(t("apiKeys.copied"));
   };
 
   return (
@@ -133,9 +135,9 @@ export default function ApiKeyManager() {
           <CardContent className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground">Your new API key</p>
+                <p className="text-sm font-medium text-foreground">{t("apiKeys.yourNewKey")}</p>
                 <p className="text-xs text-muted-foreground mt-0.5 mb-2">
-                  Copy this key now — you won't be able to see it again.
+                  {t("apiKeys.copyNowWarning")}
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 rounded-lg bg-muted/60 px-3 py-2 font-mono text-[11px] text-foreground break-all">
@@ -150,7 +152,7 @@ export default function ApiKeyManager() {
                 </div>
               </div>
               <Button variant="ghost" size="sm" className="shrink-0 text-xs" onClick={() => setNewlyCreatedKey(null)}>
-                Dismiss
+                {t("apiKeys.dismiss")}
               </Button>
             </div>
           </CardContent>
@@ -160,9 +162,9 @@ export default function ApiKeyManager() {
       {/* Create key */}
       <div className="flex items-end gap-3">
         <div className="flex-1 space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">New API Key</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("apiKeys.newApiKey")}</label>
           <Input
-            placeholder="e.g. Zapier integration"
+            placeholder={t("apiKeys.placeholder")}
             value={newKeyName}
             onChange={e => setNewKeyName(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleCreate()}
@@ -170,7 +172,7 @@ export default function ApiKeyManager() {
         </div>
         <Button onClick={handleCreate} disabled={creating} size="sm">
           {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-          <span className="ml-1.5">Create Key</span>
+          <span className="ml-1.5">{t("apiKeys.createKey")}</span>
         </Button>
       </div>
 
@@ -181,7 +183,7 @@ export default function ApiKeyManager() {
         </div>
       ) : keys.length === 0 ? (
         <div className="text-center py-8 text-sm text-muted-foreground">
-          No API keys yet. Create one to get started with the API.
+          {t("apiKeys.noKeysYet")}
         </div>
       ) : (
         <div className="space-y-2">
@@ -199,11 +201,11 @@ export default function ApiKeyManager() {
                   <div className="flex items-center gap-2 mt-0.5">
                     <code className="text-[11px] text-muted-foreground font-mono">{key.key_prefix}••••</code>
                     <span className="text-[10px] text-muted-foreground/60">
-                      Created {new Date(key.created_at).toLocaleDateString()}
+                      {t("apiKeys.created")} {new Date(key.created_at).toLocaleDateString()}
                     </span>
                     {key.last_used_at && (
                       <span className="text-[10px] text-muted-foreground/60">
-                        · Last used {new Date(key.last_used_at).toLocaleDateString()}
+                        · {t("apiKeys.lastUsed")} {new Date(key.last_used_at).toLocaleDateString()}
                       </span>
                     )}
                   </div>
@@ -226,18 +228,18 @@ export default function ApiKeyManager() {
       <AlertDialog open={!!revokeId} onOpenChange={open => !open && setRevokeId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Revoke API Key</AlertDialogTitle>
+            <AlertDialogTitle>{t("apiKeys.revokeTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This key will immediately stop working. Any integrations using it will lose access. This cannot be undone.
+              {t("apiKeys.revokeDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => revokeId && handleRevoke(revokeId)}
             >
-              Revoke Key
+              {t("apiKeys.revokeKey")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

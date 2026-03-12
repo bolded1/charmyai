@@ -1207,5 +1207,27 @@
     "en": "English",
     "el": "Ελληνικά",
     "switchLanguage": "Language"
+  },
+  "apiKeys": {
+    "title": "API Keys",
+    "yourNewKey": "Your new API key",
+    "copyNowWarning": "Copy this key now — you won't be able to see it again.",
+    "dismiss": "Dismiss",
+    "newApiKey": "New API Key",
+    "placeholder": "e.g. Zapier integration",
+    "createKey": "Create Key",
+    "noKeysYet": "No API keys yet. Create one to get started with the API.",
+    "created": "Created",
+    "lastUsed": "Last used",
+    "revokeTitle": "Revoke API Key",
+    "revokeDescription": "This key will immediately stop working. Any integrations using it will lose access. This cannot be undone.",
+    "revokeKey": "Revoke Key",
+    "enterName": "Please enter a name for the key",
+    "createSuccess": "API key created",
+    "revokeSuccess": "API key revoked",
+    "loadError": "Failed to load API keys",
+    "createError": "Failed to create API key",
+    "revokeError": "Failed to revoke key",
+    "copied": "Copied to clipboard"
   }
 }
