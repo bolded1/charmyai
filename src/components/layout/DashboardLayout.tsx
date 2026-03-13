@@ -7,14 +7,12 @@ import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { Loader2, Upload, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, UsersRound, HelpCircle, Briefcase, Tag, BarChart3 } from "lucide-react";
+import { Loader2, Upload, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, UsersRound, HelpCircle, Tag, BarChart3 } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
@@ -25,6 +23,7 @@ import { PwaInstallBanner } from "@/components/PwaInstallBanner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useClientRole } from "@/hooks/useClientRole";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger,
@@ -42,13 +41,13 @@ export default function DashboardLayout() {
   const { profile, displayName, initials, isLoading: profileLoading } = useProfile();
   const { data: org } = useOrganization();
   const { settings: layoutSettings } = useLayoutSettings();
-  const isMobile = useIsMobile();
   const brandLogo = useBrandLogo();
   const { impersonating, stopImpersonating } = useImpersonation();
   const subscription = useSubscription();
   const { data: systemSettings } = useSystemSettings();
   const isAdmin = useIsAdmin();
   const { isClient } = useClientRole();
+  const { isAccountingFirm } = useWorkspace();
 
   const mobileNavItems = [
     { title: t("navigation.capture"), url: "/app", icon: Upload },
@@ -57,19 +56,14 @@ export default function DashboardLayout() {
     { title: t("navigation.income"), url: "/app/income", icon: TrendingUp },
     { title: t("navigation.categories"), url: "/app/categories", icon: Tag },
     { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+    ...(!isClient && isAccountingFirm
+      ? [
+          { title: t("navigation.firmDashboard"), url: "/app/workspaces", icon: BarChart3 },
+          { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
+        ]
+      : []),
     { title: t("navigation.aiAssistant"), url: "/app/assistant", icon: Sparkles },
-    { title: t("navigation.firmDashboard"), url: "/app/workspaces", icon: BarChart3 },
-    { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
-    { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
-    { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
     { title: t("navigation.settings"), url: "/app/settings", icon: Settings },
-  ];
-
-  const clientMobileNavItems = [
-    { title: t("navigation.capture"), url: "/app", icon: Upload },
-    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
-    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
-    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
     { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
     { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
   ];
@@ -233,7 +227,7 @@ export default function DashboardLayout() {
               </button>
               <nav id="mobile-nav-scroll" className="flex-1 overflow-x-auto scrollbar-hide">
                 <div className="flex min-w-max">
-                  {(isClient ? clientMobileNavItems : mobileNavItems).map((item) => {
+                  {mobileNavItems.map((item) => {
                     const isActive = item.url === "/app"
                       ? location.pathname === "/app"
                       : location.pathname.startsWith(item.url);
