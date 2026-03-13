@@ -7,7 +7,7 @@ import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { Loader2, Upload, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, UsersRound, HelpCircle, Briefcase } from "lucide-react";
+import { Loader2, Upload, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, UsersRound, HelpCircle, Briefcase, Tag, BarChart3 } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
