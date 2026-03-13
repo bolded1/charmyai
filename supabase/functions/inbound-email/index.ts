@@ -331,7 +331,7 @@ serve(async (req) => {
     const senderEmail = fromMatch?.[2] || from;
 
     // Extract import token from recipient address
-    const toMatch = recipient.match(/(?:\+)?([a-f0-9]{32})@/i);
+    const toMatch = recipient.match(/(?:\+)?([a-z0-9]{6})@/i);
     const importToken = toMatch?.[1];
 
     if (!importToken) {
