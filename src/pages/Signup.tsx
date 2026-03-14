@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { FileText, Mail, UserX, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { logAuditEvent } from "@/lib/audit-log-client";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
