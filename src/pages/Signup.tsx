@@ -21,7 +21,19 @@ export default function SignupPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resending, setResending] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { data: systemSettings, isLoading: settingsLoading } = useSystemSettings();
+
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    setGoogleLoading(false);
+    if (error) {
+      toast.error(error.message || "Google sign-in failed");
+    }
+  };
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
