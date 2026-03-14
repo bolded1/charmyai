@@ -5,7 +5,7 @@ import {
   Upload, FileText, Receipt, TrendingUp, Download, UsersRound, Settings,
   Search, Mail, HelpCircle, BookOpen, Zap, Shield, ChevronRight,
   Keyboard, FolderOpen, CheckCircle2, ArrowRight, Tag, Bot,
-  CreditCard, BarChart3, Contact, LifeBuoy, ListChecks,
+  CreditCard, BarChart3, Contact, LifeBuoy, ListChecks, Code2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -272,6 +272,25 @@ const helpArticles: HelpArticle[] = [
       "Demo uploads from the public landing page are automatically deleted after 1 hour.",
       "Charmy does not share your financial data with third parties.",
       "Audit logs track all significant actions for compliance and transparency.",
+    ],
+  },
+  {
+    id: "api-docs",
+    title: "API Documentation",
+    description: "Integrate Charmy with external tools using the REST API.",
+    icon: Code2,
+    iconColor: "icon-bg-teal",
+    category: "Advanced Features",
+    content: [
+      "Charmy provides a RESTful API for programmatic access to your documents, expenses, income, and contacts.",
+      "Generate API keys from Settings → API tab. Each key has a prefix for easy identification and can be revoked at any time.",
+      "All API requests require the x-api-key header with your generated key.",
+      "Base URL: your project endpoint followed by /functions/v1/api-v1. Supported resources include /documents, /expenses, /income, and /contacts.",
+      "Use query parameters like ?limit=50&offset=0 for pagination, and ?status=processed or ?from=2026-01-01&to=2026-03-31 for filtering.",
+      "POST /documents accepts multipart/form-data with a 'file' field to upload and process new documents.",
+      "All responses follow a consistent JSON format with { data, count, error } fields.",
+      "A full OpenAPI (Swagger) specification is available at /api-docs for interactive exploration of all endpoints.",
+      "The API supports integration with tools like Zapier, Make, and custom workflows via webhooks configured in Settings.",
     ],
   },
 ];
