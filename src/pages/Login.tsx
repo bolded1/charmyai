@@ -22,7 +22,19 @@ export default function LoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    setGoogleLoading(false);
+    if (error) {
+      toast.error(error.message || "Google sign-in failed");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
