@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2, Archive } from "lucide-react";
+import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2, Archive, Plus } from "lucide-react";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -22,6 +22,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { ManualExpenseDialog } from "@/components/ManualExpenseDialog";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
@@ -55,6 +56,7 @@ export default function ExpensesPage() {
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [manualEntryOpen, setManualEntryOpen] = useState(false);
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
@@ -339,6 +341,9 @@ export default function ExpensesPage() {
 
       {/* Filters row */}
       <div className="flex flex-wrap items-center gap-3">
+        <Button size="sm" onClick={() => setManualEntryOpen(true)} className="shrink-0">
+          <Plus className="h-4 w-4 mr-1" /> Add Manual Expense
+        </Button>
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search expenses..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -686,6 +691,12 @@ export default function ExpensesPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <ManualExpenseDialog
+        open={manualEntryOpen}
+        onOpenChange={setManualEntryOpen}
+        defaultCurrency={defaultCurrency}
+      />
 
       <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <AlertDialogContent>

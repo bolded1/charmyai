@@ -402,6 +402,73 @@ export function useUploadIncomeDocument() {
   });
 }
 
+export interface ManualExpenseInput {
+  expense_type: "general" | "mileage" | "per_diem" | "cash";
+  supplier_name: string;
+  invoice_number?: string;
+  invoice_date: string;
+  currency: string;
+  net_amount: number;
+  vat_amount: number;
+  total_amount: number;
+  category?: string;
+  // Mileage extras (stored in invoice_number as metadata)
+  distance_km?: number;
+  rate_per_km?: number;
+  // Per diem extras
+  days?: number;
+  daily_rate?: number;
+}
+
+export function useCreateManualExpense() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: ManualExpenseInput) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // Build a human-readable reference for mileage / per diem
+      let reference = input.invoice_number || "";
+      if (input.expense_type === "mileage" && input.distance_km && input.rate_per_km) {
+        reference = reference || `${input.distance_km} km @ ${input.rate_per_km}/km`;
+      } else if (input.expense_type === "per_diem" && input.days && input.daily_rate) {
+        reference = reference || `${input.days} days @ ${input.daily_rate}/day`;
+      }
+
+      const { data, error } = await supabase.from("expense_records").insert({
+        user_id: user.id,
+        organization_id: profile?.active_organization_id || null,
+        document_id: null,
+        supplier_name: input.supplier_name,
+        invoice_number: reference || null,
+        invoice_date: input.invoice_date,
+        currency: input.currency,
+        net_amount: input.net_amount,
+        vat_amount: input.vat_amount,
+        total_amount: input.total_amount,
+        category: input.category || null,
+      }).select().single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      toast.success("Manual expense added");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    },
+  });
+}
+
 export function useDeleteExpense() {
   const queryClient = useQueryClient();
 
