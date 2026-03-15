@@ -86,9 +86,88 @@ serve(async (req) => {
     let paymentIntentId: string | null = null;
 
     if (skipCard) {
-      // Free access via promo code — no Stripe payment needed
-      // Just record the promo redemption; check-subscription reads promo_code_redemptions
-      logStep("Skip card flow — free promo activation");
+      // Server-side validation: cannot trust the client's skipCard flag.
+      // Re-fetch the promo code from the DB and verify it genuinely gives
+      // free/100% access before bypassing payment collection.
+      if (!promoCodeId) {
+        return new Response(JSON.stringify({ error: "A valid promo code is required for free access." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      const { data: promoCode, error: promoFetchErr } = await supabaseClient
+        .from("promo_codes")
+        .select("id, active, requires_card, discount_type, discount_value, max_redemptions, current_redemptions, end_date, stripe_coupon_id")
+        .eq("id", promoCodeId)
+        .maybeSingle();
+
+      if (promoFetchErr || !promoCode) {
+        logStep("skipCard rejected — promo code not found", { promoCodeId });
+        return new Response(JSON.stringify({ error: "Invalid promo code." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      if (!promoCode.active) {
+        logStep("skipCard rejected — promo code inactive", { promoCodeId });
+        return new Response(JSON.stringify({ error: "This promo code is no longer active." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      if (promoCode.end_date && new Date(promoCode.end_date) < new Date()) {
+        logStep("skipCard rejected — promo code expired", { promoCodeId });
+        return new Response(JSON.stringify({ error: "This promo code has expired." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      if (promoCode.max_redemptions && (promoCode.current_redemptions ?? 0) >= promoCode.max_redemptions) {
+        logStep("skipCard rejected — promo code over limit", { promoCodeId });
+        return new Response(JSON.stringify({ error: "This promo code has reached its usage limit." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      if (promoCode.requires_card) {
+        logStep("skipCard rejected — promo code requires a card", { promoCodeId });
+        return new Response(JSON.stringify({ error: "This promo code requires a payment method." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      // Verify the discount actually covers the full cost
+      const isFreeDiscount =
+        (promoCode.discount_type === "percentage" && promoCode.discount_value === 100) ||
+        promoCode.discount_type === "free_period";
+
+      if (!isFreeDiscount) {
+        // Double-check against Stripe coupon if available
+        let stripeConfirmed = false;
+        if (promoCode.stripe_coupon_id) {
+          try {
+            const coupon = await stripe.coupons.retrieve(promoCode.stripe_coupon_id);
+            stripeConfirmed = coupon.percent_off === 100 || coupon.amount_off != null && coupon.amount_off >= 99999;
+          } catch (e) {
+            logStep("Warning: could not verify coupon via Stripe", { error: String(e) });
+          }
+        }
+        if (!stripeConfirmed) {
+          logStep("skipCard rejected — promo code does not provide 100% discount", { promoCodeId, discount_type: promoCode.discount_type, discount_value: promoCode.discount_value });
+          return new Response(JSON.stringify({ error: "This promo code does not provide free access." }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          });
+        }
+      }
+
+      logStep("Skip card validated server-side — free promo confirmed", { promoCodeId });
     } else if (paymentMethodId) {
       // One-time payment with card
       logStep("Creating one-time payment intent");
