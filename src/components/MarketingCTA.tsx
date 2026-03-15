@@ -17,7 +17,7 @@ export function MarketingCTA() {
   const { t } = useTranslation();
 
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden">
+    <section className="py-16 md:py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-hero-gradient" />
       <div
         className="absolute inset-0 opacity-20"
