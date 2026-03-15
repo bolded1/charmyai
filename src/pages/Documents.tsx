@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +33,7 @@ export default function DocumentsPage() {
   const [editData, setEditData] = useState<Partial<DocumentRecord>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(50);
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -42,15 +43,16 @@ export default function DocumentsPage() {
   const bulkApprove = useBulkApproveDocuments();
   const bulkDelete = useBulkDeleteDocuments();
 
-  const filtered = documents.filter((d) => {
+  const allFiltered = documents.filter((d) => {
     const matchesSearch =
       d.file_name.toLowerCase().includes(search.toLowerCase()) ||
       (d.supplier_name || "").toLowerCase().includes(search.toLowerCase()) ||
       (d.customer_name || "").toLowerCase().includes(search.toLowerCase());
     return matchesSearch;
   });
+  const filtered = allFiltered.slice(0, visibleCount);
 
-  const allSelected = filtered.length > 0 && filtered.every((d) => selectedIds.has(d.id));
+  const allSelected = allFiltered.length > 0 && allFiltered.every((d) => selectedIds.has(d.id));
   const someSelected = selectedIds.size > 0;
 
   const selectedDocs = useMemo(
@@ -76,7 +78,7 @@ export default function DocumentsPage() {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filtered.map((d) => d.id)));
+      setSelectedIds(new Set(allFiltered.map((d) => d.id)));
     }
   };
 
@@ -167,7 +169,7 @@ export default function DocumentsPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t("documents.searchDocuments")} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input aria-label={t("documents.searchDocuments")} placeholder={t("documents.searchDocuments")} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[180px]">
@@ -240,10 +242,26 @@ export default function DocumentsPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : allFiltered.length === 0 ? (
         <Card>
-          <CardContent className="text-center py-12 text-muted-foreground text-sm">
-            {t("documents.noDocuments")}
+          <CardContent className="text-center py-12 text-sm">
+            <p className="text-muted-foreground">{t("documents.noDocuments")}</p>
+            {(search || statusFilter !== "all") && (
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Active:{" "}
+                {[search && `search "${search}"`, statusFilter !== "all" && `status "${statusFilter}"`]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+            )}
+            {(search || statusFilter !== "all") && (
+              <button
+                className="mt-2 text-xs text-primary underline-offset-2 hover:underline"
+                onClick={() => { setSearch(""); setStatusFilter("all"); }}
+              >
+                Clear filters
+              </button>
+            )}
           </CardContent>
         </Card>
       ) : isMobile ? (
@@ -385,6 +403,15 @@ export default function DocumentsPage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Load more */}
+      {allFiltered.length > visibleCount && (
+        <div className="flex justify-center">
+          <Button variant="outline" size="sm" onClick={() => setVisibleCount((c) => c + 50)}>
+            Show more ({allFiltered.length - visibleCount} remaining)
+          </Button>
+        </div>
       )}
 
       {/* Bulk Delete Confirmation */}

@@ -91,15 +91,11 @@ export default function UploadPage() {
         name: file.name,
         size: formatSize(file.size),
         status: "uploading",
-        progress: 20,
+        progress: 0,
       };
       setFiles((prev) => [entry, ...prev]);
 
       try {
-        // Simulate upload progress
-        setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, progress: 50 } : f)));
-        await new Promise((r) => setTimeout(r, 200));
-        setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, status: "processing", progress: 75 } : f)));
         await uploadMutation.mutateAsync(file);
         setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, status: "done", progress: 100 } : f)));
       } catch (err: any) {
@@ -350,21 +346,11 @@ export default function UploadPage() {
                       <p className="text-sm font-medium truncate">{file.name}</p>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-[10px] text-muted-foreground tabular-nums">{file.size}</span>
-                        {file.status !== "done" && file.status !== "error" && (
-                          <span className="text-[10px] font-medium text-primary tabular-nums">{file.progress}%</span>
-                        )}
                       </div>
                     </div>
                     {file.status !== "done" && file.status !== "error" && (
                       <div className="relative h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
-                        <div
-                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out"
-                          style={{ width: `${file.progress}%` }}
-                        />
-                        <div
-                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary/50 to-transparent animate-pulse"
-                          style={{ width: `${Math.min(file.progress + 15, 100)}%` }}
-                        />
+                        <div className="absolute inset-y-0 left-0 w-full rounded-full bg-primary/50 animate-pulse" />
                       </div>
                     )}
                     <p className={cn(

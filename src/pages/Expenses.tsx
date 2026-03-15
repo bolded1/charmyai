@@ -19,6 +19,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { useOrganization } from "@/hooks/useOrganization";
+import { toast } from "sonner";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -65,6 +67,8 @@ export default function ExpensesPage() {
   const { downloadAsZip, downloading } = useBulkDownload();
   const { data: org } = useOrganization();
   const defaultCurrency = org?.default_currency || "EUR";
+  const isOnline = useOnlineStatus();
+  const [visibleCount, setVisibleCount] = useState(50);
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
@@ -251,18 +255,21 @@ export default function ExpensesPage() {
       setSelectedIds(new Set());
       setBulkDeleteConfirm(false);
     } catch {
-      // error handled by mutation
+      toast.error("Some expenses could not be deleted. Please try again.");
+      setBulkDeleteConfirm(false);
     } finally {
       setBulkDeleting(false);
     }
   };
 
+  const paginatedFiltered = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+
   const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
     const map = new Map<string, typeof filtered>();
-    
+
     // Sort by date descending
-    const sorted = [...filtered].sort((a, b) => {
+    const sorted = [...paginatedFiltered].sort((a, b) => {
       const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
       const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
       return db - da;
@@ -316,7 +323,7 @@ export default function ExpensesPage() {
   }, [filtered, defaultCurrency]);
 
 
-  const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
+  const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); setVisibleCount(50); };
 
   if (!user) return <div className="text-center py-12 text-muted-foreground">Please log in to view expenses.</div>;
 
@@ -338,9 +345,9 @@ export default function ExpensesPage() {
         <div className="flex items-center gap-2">
           <div className="relative flex-1 min-w-0 md:min-w-[180px] md:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search expenses..." className="pl-9 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input aria-label="Search expenses" placeholder="Search expenses..." className="pl-9 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <Button size="sm" onClick={() => setManualEntryOpen(true)} className="shrink-0 h-9">
+          <Button size="sm" onClick={() => setManualEntryOpen(true)} className="shrink-0 h-9" disabled={!isOnline}>
             <Plus className="h-4 w-4 mr-1" /> Expense
           </Button>
         </div>
@@ -445,6 +452,17 @@ export default function ExpensesPage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
                 <p className="text-sm text-muted-foreground">No results for the selected filters.</p>
+                <p className="text-xs text-muted-foreground/70">
+                  Active:{" "}
+                  {[
+                    search && `search "${search}"`,
+                    currencyFilter !== "all" && `currency ${currencyFilter}`,
+                    categoryFilter !== "all" && `category "${categoryFilter}"`,
+                    datePreset !== "all" && `date: ${activeDateLabel}`,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
                 <Button variant="link" size="sm" className="h-auto p-0 text-sm" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
                   Clear all filters
                 </Button>
@@ -572,6 +590,15 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
+      {/* Load more */}
+      {filtered.length > visibleCount && (
+        <div className="flex justify-center">
+          <Button variant="outline" size="sm" onClick={() => setVisibleCount((c) => c + 50)}>
+            Show more ({filtered.length - visibleCount} remaining)
+          </Button>
+        </div>
+      )}
+
       {/* Bulk Action Bar */}
       <AnimatePresence>
         {selectedIds.size > 0 && (
@@ -582,11 +609,11 @@ export default function ExpensesPage() {
             className="fixed bottom-20 md:bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 flex items-center justify-center gap-2 md:gap-3 bg-card border border-border shadow-xl rounded-xl px-3 md:px-5 py-2.5 md:py-3"
           >
             <span className="text-xs md:text-sm font-medium">{selectedIds.size} selected</span>
-            <Button size="sm" className="h-8 text-xs" onClick={handleBulkDownload} disabled={downloading}>
+            <Button size="sm" className="h-8 text-xs" onClick={handleBulkDownload} disabled={downloading || !isOnline}>
               {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Archive className="h-3.5 w-3.5 mr-1" />}
               {isMobile ? "ZIP" : "Download ZIP"}
             </Button>
-            <Button size="sm" className="h-8 text-xs" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
+            <Button size="sm" className="h-8 text-xs" variant="destructive" onClick={() => setBulkDeleteConfirm(true)} disabled={!isOnline}>
               <Trash2 className="h-3.5 w-3.5 mr-1" />
               Delete
             </Button>
@@ -674,7 +701,7 @@ export default function ExpensesPage() {
               )}
 
               {/* Edit Fields */}
-              <div className="grid grid-cols-2 gap-3">
+              <fieldset disabled={updateExpense.isPending} className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-muted-foreground">Supplier</Label>
                   <Input className="h-8 text-sm" value={editData.supplier_name} onChange={(e) => setEditData({ ...editData, supplier_name: e.target.value })} />
@@ -708,17 +735,17 @@ export default function ExpensesPage() {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Net Amount</Label>
-                  <Input className="h-8 text-sm" type="number" step="0.01" value={editData.net_amount} onChange={(e) => setEditData({ ...editData, net_amount: parseFloat(e.target.value) || 0 })} />
+                  <Input className="h-8 text-sm" type="number" min="0" step="0.01" value={editData.net_amount} onChange={(e) => setEditData({ ...editData, net_amount: parseFloat(e.target.value) || 0 })} />
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">VAT Amount</Label>
-                  <Input className="h-8 text-sm" type="number" step="0.01" value={editData.vat_amount} onChange={(e) => setEditData({ ...editData, vat_amount: parseFloat(e.target.value) || 0 })} />
+                  <Input className="h-8 text-sm" type="number" min="0" step="0.01" value={editData.vat_amount} onChange={(e) => setEditData({ ...editData, vat_amount: parseFloat(e.target.value) || 0 })} />
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Total Amount</Label>
-                  <Input className="h-8 text-sm" type="number" step="0.01" value={editData.total_amount} onChange={(e) => setEditData({ ...editData, total_amount: parseFloat(e.target.value) || 0 })} />
+                  <Input className="h-8 text-sm" type="number" min="0" step="0.01" value={editData.total_amount} onChange={(e) => setEditData({ ...editData, total_amount: parseFloat(e.target.value) || 0 })} />
                 </div>
-              </div>
+              </fieldset>
 
               <div className="flex gap-2 pt-2">
                 <Button size="sm" variant="destructive" onClick={() => setDeleteConfirmId(selectedId)} disabled={deleteExpense.isPending}>

@@ -50,13 +50,16 @@ export default function DocumentRequestUpload() {
   const [dragOver, setDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Fetch request info on mount
-  useEffect(() => {
+  const [retryCount, setRetryCount] = useState(0);
+
+  const fetchRequestInfo = useCallback(() => {
     if (!token) {
       setInfoError("Invalid upload link.");
       setLoadingInfo(false);
       return;
     }
+    setLoadingInfo(true);
+    setInfoError(null);
     fetch(`${UPLOAD_URL}?token=${encodeURIComponent(token)}`)
       .then((r) => r.json())
       .then((data) => {
@@ -66,6 +69,11 @@ export default function DocumentRequestUpload() {
       .catch((e) => setInfoError(e.message ?? "Could not load upload link."))
       .finally(() => setLoadingInfo(false));
   }, [token]);
+
+  // Fetch request info on mount
+  useEffect(() => {
+    fetchRequestInfo();
+  }, [fetchRequestInfo, retryCount]);
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -135,6 +143,7 @@ export default function DocumentRequestUpload() {
 
   // ── Error / not found ──────────────────────────────────────────────────
   if (infoError || !requestInfo) {
+    const isNetworkError = infoError && (infoError.includes("fetch") || infoError.includes("network") || infoError.includes("Failed"));
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="max-w-md w-full text-center space-y-4">
@@ -143,6 +152,12 @@ export default function DocumentRequestUpload() {
           </div>
           <h1 className="text-xl font-bold">Link not found</h1>
           <p className="text-sm text-muted-foreground">{infoError ?? "This upload link is invalid."}</p>
+          {isNetworkError && (
+            <Button variant="outline" size="sm" onClick={() => setRetryCount((c) => c + 1)}>
+              <Loader2 className={`h-4 w-4 mr-2 ${loadingInfo ? "animate-spin" : "hidden"}`} />
+              Retry
+            </Button>
+          )}
         </div>
       </div>
     );
