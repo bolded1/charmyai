@@ -5,8 +5,11 @@ import {
   Upload, FileText, Search, Download, Sparkles, CheckCircle2,
   Clock, Receipt, Shield, Mail, Building2, Briefcase, FolderOpen,
   Zap, ClipboardCheck, Monitor, Smartphone, Share, Plus,
-  MoreVertical,
+  MoreVertical, Send, Link2, ExternalLink, ClipboardList,
 } from "lucide-react";
+import quickbooksLogo from "@/assets/quickbooks-logo.png";
+import xeroLogo from "@/assets/xero-logo.png";
+import freshbooksLogo from "@/assets/freshbooks-logo.png";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { useTranslation } from "react-i18next";
 import { MarketingFAQ } from "@/components/MarketingFAQ";
@@ -366,6 +369,133 @@ export default function IndexPage() {
                   <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                   <span className="text-[10px] font-semibold text-foreground">{t("marketing.switchedTo")}</span>
                 </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Document Requests ═══ */}
+      <section className="py-20">
+        <div className="container max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+              <span className="text-xs font-semibold tracking-wider uppercase text-primary mb-3 block">{t("features.docRequestTitle", "Document Requests")}</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                {t("marketing.docRequestHeadline", "Collect documents from clients ")}
+                <span className="text-gradient">{t("marketing.docRequestHeadlineHighlight", "effortlessly")}</span>
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                {t("marketing.docRequestDesc", "Send secure upload links to your clients — they submit documents without needing an account. Everything lands in the right workspace, ready for review.")}
+              </p>
+              <div className="space-y-3">
+                {[
+                  { icon: Send, text: t("features.docRequestCap1", "Send requests via email with one click") },
+                  { icon: ExternalLink, text: t("features.docRequestCap2", "Clients upload via secure public link") },
+                  { icon: ClipboardList, text: t("features.docRequestCap3", "Track request status in real time") },
+                  { icon: CheckCircle2, text: t("features.docRequestCap4", "Auto-route uploads to correct workspace") },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <item.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
+              <div className="glass-card rounded-2xl p-6 md:p-8">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Pending Requests</div>
+                <div className="space-y-3">
+                  {[
+                    { client: "Maria K.", doc: "Q1 VAT receipts", status: "Pending", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+                    { client: "Nikos P.", doc: "Bank statement — Feb", status: "Uploaded", color: "bg-primary/10 text-primary" },
+                    { client: "Anna D.", doc: "Payroll summary", status: "Overdue", color: "bg-destructive/10 text-destructive" },
+                  ].map((req, i) => (
+                    <motion.div key={req.doc} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.12 }}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-accent/40 border border-border/40">
+                      <div className="h-8 w-8 rounded-full bg-accent border border-border flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
+                        {req.client.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{req.doc}</p>
+                        <p className="text-[10px] text-muted-foreground">{req.client}</p>
+                      </div>
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${req.color}`}>{req.status}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="mt-4 p-3 rounded-lg border border-dashed border-border bg-accent/20 text-center">
+                  <p className="text-[11px] text-muted-foreground">Clients upload via <span className="font-medium text-foreground">secure link</span> — no account needed</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Accounting Integrations ═══ */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
+        <div className="container max-w-5xl relative z-10">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
+              className="order-2 md:order-1">
+              <div className="glass-card rounded-2xl p-6 md:p-8">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Connected Platforms</div>
+                <div className="space-y-3">
+                  {[
+                    { name: "QuickBooks Online", logo: quickbooksLogo, connected: true, sync: "Last sync 2h ago" },
+                    { name: "Xero", logo: xeroLogo, connected: false },
+                    { name: "FreshBooks", logo: freshbooksLogo, connected: false },
+                  ].map((p, i) => (
+                    <motion.div key={p.name} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.12 }}
+                      className={`flex items-center gap-3 p-3 rounded-xl border ${p.connected ? "bg-primary/5 border-primary/20" : "bg-accent/40 border-border/40"}`}>
+                      <div className="h-10 w-10 rounded-xl bg-white border border-border flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+                        <img src={p.logo} alt={p.name} className="h-full w-full object-contain" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium">{p.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{p.connected ? `Connected · ${p.sync}` : "Not connected"}</p>
+                      </div>
+                      {p.connected ? (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary flex items-center gap-1">
+                          <CheckCircle2 className="h-2.5 w-2.5" /> Active
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium px-2.5 py-1 rounded-lg border border-border text-muted-foreground">Connect</span>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
+              className="order-1 md:order-2">
+              <span className="text-xs font-semibold tracking-wider uppercase text-primary mb-3 block">{t("features.integrationsTitle", "Integrations")}</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                {t("marketing.integrationsHeadline", "Sync with your ")}
+                <span className="text-gradient">{t("marketing.integrationsHeadlineHighlight", "accounting platform")}</span>
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                {t("marketing.integrationsDesc", "Connect QuickBooks, Xero, or FreshBooks and push expenses and invoices directly to your ledger with one click.")}
+              </p>
+              <div className="space-y-3">
+                {[
+                  { icon: Link2, text: t("features.integrationsCap1", "One-click OAuth connection") },
+                  { icon: Zap, text: t("features.integrationsCap2", "Push expenses & invoices instantly") },
+                  { icon: Shield, text: t("features.integrationsCap4", "Secure token-based authentication") },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <item.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">{item.text}</span>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </div>
