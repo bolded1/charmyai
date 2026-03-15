@@ -69,38 +69,22 @@ export function MarketingCTA() {
         </motion.p>
 
         {/* Animated processing feed */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.25 }}
-          className="flex flex-col items-center gap-3 mb-12">
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.25 }}
+          className="flex flex-wrap items-center justify-center gap-3 mb-8">
           {floatingItems.map((item) => (
             <motion.div
               key={item.label}
-              className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-primary-foreground"
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 + item.delay * 0.15 }}
-              animate={{
-                y: [0, -4, 0],
-                boxShadow: [
-                  "0 0 0px hsla(0,0%,100%,0)",
-                  "0 0 20px hsla(0,0%,100%,0.1)",
-                  "0 0 0px hsla(0,0%,100%,0)",
-                ],
-              }}
-              // @ts-ignore
-              transition2={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: item.delay }}
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-primary-foreground"
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: item.delay }}
             >
+              <div className="h-7 w-7 rounded-lg bg-white/15 flex items-center justify-center">
+                <item.icon className="h-3.5 w-3.5" />
+              </div>
+              <span className="text-xs font-medium">{item.label}</span>
               <motion.div
-                className="h-9 w-9 rounded-xl bg-white/15 flex items-center justify-center"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: item.delay }}
-              >
-                <item.icon className="h-4 w-4" />
-              </motion.div>
-              <span className="text-sm font-medium">{item.label}</span>
-              <motion.div
-                className="ml-2 h-2 w-2 rounded-full bg-emerald-400"
-                animate={{ opacity: [0.4, 1, 0.4], scale: [0.8, 1.2, 0.8] }}
+                className="h-1.5 w-1.5 rounded-full bg-emerald-400"
+                animate={{ opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: item.delay }}
               />
             </motion.div>
