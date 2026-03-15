@@ -58,6 +58,7 @@ export interface UpdateWorkspaceData {
 interface WorkspaceContextType {
   activeWorkspace: Workspace | null;
   allWorkspaces: Workspace[];
+  homeOrg: Workspace | undefined;
   isAccountingFirm: boolean;
   clientWorkspaces: Workspace[];
   isLoading: boolean;
