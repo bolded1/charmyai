@@ -32,10 +32,10 @@ export function AppMobileDrawer() {
   const firmItems = [
     { title: t("navigation.firmDashboard"), url: "/app/workspaces", icon: BarChart3 },
     { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
+    { title: t("navigation.documentRequests"), url: "/app/document-requests", icon: Link2 },
   ];
 
   const systemItems = [
-    { title: t("navigation.documentRequests"), url: "/app/document-requests", icon: Link2 },
     { title: t("navigation.aiAssistant"), url: "/app/assistant", icon: Sparkles },
     { title: t("navigation.settings"), url: "/app/settings", icon: Settings },
     { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
