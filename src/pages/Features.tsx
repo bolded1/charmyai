@@ -298,6 +298,84 @@ export default function FeaturesPage() {
         </VisualCard>
       ),
     },
+    {
+      title: t("features.docRequestTitle", "Document Requests"),
+      description: t("features.docRequestDesc", "Request documents directly from your clients through secure, tokenised links. Clients upload files without needing an account — submissions land straight in your workspace, ready for review."),
+      capabilities: [
+        { icon: Send, text: t("features.docRequestCap1", "Send requests via email with one click") },
+        { icon: ExternalLink, text: t("features.docRequestCap2", "Clients upload via secure public link") },
+        { icon: ClipboardList, text: t("features.docRequestCap3", "Track request status in real time") },
+        { icon: CheckCircle2, text: t("features.docRequestCap4", "Auto-route uploads to correct workspace") },
+      ],
+      visual: (
+        <VisualCard>
+          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Pending Requests</div>
+          <div className="space-y-3">
+            {[
+              { client: "Maria K.", doc: "Q1 VAT receipts", status: "Pending", statusColor: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+              { client: "Nikos P.", doc: "Bank statement — Feb", status: "Uploaded", statusColor: "bg-brand-soft text-primary" },
+              { client: "Anna D.", doc: "Payroll summary", status: "Overdue", statusColor: "bg-destructive/10 text-destructive" },
+            ].map((req, i) => (
+              <motion.div key={req.doc} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40">
+                <div className="h-8 w-8 rounded-full bg-accent border border-border flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
+                  {req.client.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{req.doc}</p>
+                  <p className="text-[10px] text-muted-foreground">{req.client}</p>
+                </div>
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${req.statusColor}`}>{req.status}</span>
+              </motion.div>
+            ))}
+          </div>
+          <div className="mt-4 p-3 rounded-lg border border-dashed border-border bg-accent/20 text-center">
+            <p className="text-[11px] text-muted-foreground">Clients upload via <span className="font-medium text-foreground">secure link</span> — no account needed</p>
+          </div>
+        </VisualCard>
+      ),
+    },
+    {
+      title: t("features.integrationsTitle", "Accounting Integrations"),
+      description: t("features.integrationsDesc", "Connect your favourite accounting platform and push expenses and invoices directly to your ledger. One-click sync keeps everything in one place."),
+      reversed: true,
+      capabilities: [
+        { icon: Link2, text: t("features.integrationsCap1", "One-click OAuth connection") },
+        { icon: Zap, text: t("features.integrationsCap2", "Push expenses & invoices instantly") },
+        { icon: ArrowLeftRight, text: t("features.integrationsCap3", "Two-way sync status tracking") },
+        { icon: Shield, text: t("features.integrationsCap4", "Secure token-based authentication") },
+      ],
+      visual: (
+        <VisualCard>
+          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Connected Platforms</div>
+          <div className="space-y-3">
+            {[
+              { name: "QuickBooks Online", logo: quickbooksLogo, connected: true },
+              { name: "Xero", logo: xeroLogo, connected: false },
+              { name: "FreshBooks", logo: freshbooksLogo, connected: false },
+            ].map((platform, i) => (
+              <motion.div key={platform.name} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className={`flex items-center gap-3 p-3 rounded-lg border ${platform.connected ? "bg-brand-soft/30 border-primary/20" : "bg-accent/30 border-border/40"}`}>
+                <div className="h-10 w-10 rounded-xl bg-white border border-border flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+                  <img src={platform.logo} alt={platform.name} className="h-full w-full object-contain" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium">{platform.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{platform.connected ? "Connected · Last sync 2h ago" : "Not connected"}</p>
+                </div>
+                {platform.connected ? (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-soft text-primary flex items-center gap-1">
+                    <CheckCircle2 className="h-2.5 w-2.5" /> Active
+                  </span>
+                ) : (
+                  <Button variant="outline" size="sm" className="text-[10px] h-7 px-3">Connect</Button>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </VisualCard>
+      ),
+    },
   ];
 
   return (
