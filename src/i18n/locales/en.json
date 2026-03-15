@@ -716,7 +716,8 @@
     "faq7Q": "Is my financial data secure?",
     "faq7A": "Yes. Charmy processes documents using secure cloud infrastructure and encrypted connections. GDPR-compliant data handling.",
     "faq8Q": "Can I try Charmy before paying?",
-    "faq8A": "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo."
+    "faq8A": "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo.",
+    "noSubscription": "No subscription required"
   },
   "faq": {
     "badge": "Common Questions",
