@@ -845,6 +845,12 @@
     "iosInstructions": "Tap Share → Add to Home Screen for a native app experience",
     "installButton": "Install"
   },
+  "pwaUpdate": {
+    "title": "Update available",
+    "description": "A new version of Charmy is ready. Refresh to get the latest features.",
+    "refreshNow": "Refresh now",
+    "later": "Later"
+  },
   "notifications": {
     "markAllRead": "Mark all read",
     "noNotifications": "No notifications yet",
