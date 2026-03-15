@@ -331,26 +331,6 @@ export default function ExpensesPage() {
 
   return (
     <div className="max-w-6xl space-y-4 md:space-y-6">
-      {/* Currency summary cards */}
-      <div className={`grid gap-3 md:gap-5 ${currencySummary.length === 1 ? 'grid-cols-1 max-w-md' : currencySummary.length === 2 ? 'grid-cols-2' : currencySummary.length === 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
-        {currencySummary.map((cs, i) => {
-          const style = cardStyles[i % cardStyles.length];
-          const [cardClass, iconClass, textClass] = style.split(" ");
-          const symbol = currencySymbols[cs.currency] || `${cs.currency} `;
-          return (
-            <div key={cs.currency} className={`${cardClass} rounded-2xl p-3.5 md:p-5`}>
-              <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-2">
-                <div className={`h-7 w-7 md:h-9 md:w-9 rounded-lg md:rounded-xl ${iconClass} flex items-center justify-center`}>
-                  <Receipt className={`h-3.5 w-3.5 md:h-4 md:w-4 ${textClass}`} />
-                </div>
-                <p className="text-xs md:text-sm font-medium text-muted-foreground">{cs.currency}</p>
-              </div>
-              <p className="text-lg md:text-2xl font-bold">{symbol}{cs.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">{cs.count} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
-            </div>
-          );
-        })}
-      </div>
 
       {/* Filters row */}
       <div className="space-y-2 md:space-y-0 md:flex md:flex-wrap md:items-center md:gap-3">
