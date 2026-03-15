@@ -14,52 +14,72 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate the caller
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const callerClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const authHeader = req.headers.get("Authorization");
+    const internalKey = req.headers.get("x-internal-key");
+    const isInternalCall = internalKey === serviceKey;
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const userId = claimsData.claims.sub;
-    const userEmail = claimsData.claims.email as string;
+    let userId: string;
+    let userEmail: string = "";
 
-    // Billing entitlement check
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (stripeKey && userEmail) {
-      const entitlement = await checkBillingEntitlement(userEmail, stripeKey, userId);
-      if (!entitlement.valid) {
-        return new Response(JSON.stringify({ error: "Active subscription required to process documents." }), {
-          status: 403,
+    if (isInternalCall) {
+      // Internal service call — skip auth & billing, read userId from body
+      const body = await req.json();
+      if (!body.documentId || !body.userId) {
+        return new Response(JSON.stringify({ error: "documentId and userId required" }), {
+          status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-    }
+      userId = body.userId;
+      var documentId = body.documentId;
+    } else {
+      // Normal authenticated call
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    const { documentId } = await req.json();
-    if (!documentId) {
-      return new Response(JSON.stringify({ error: "documentId required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const callerClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
       });
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token);
+      if (claimsError || !claimsData?.claims) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = claimsData.claims.sub;
+      userEmail = claimsData.claims.email as string;
+
+      // Billing entitlement check
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (stripeKey && userEmail) {
+        const entitlement = await checkBillingEntitlement(userEmail, stripeKey, userId);
+        if (!entitlement.valid) {
+          return new Response(JSON.stringify({ error: "Active subscription required to process documents." }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      const body = await req.json();
+      if (!body.documentId) {
+        return new Response(JSON.stringify({ error: "documentId required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      var documentId = body.documentId;
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
