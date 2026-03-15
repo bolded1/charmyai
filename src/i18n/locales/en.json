@@ -650,7 +650,16 @@
     "exportPerClientDesc": "Generate exports and financial data for each client independently.",
     "dataIsolation": "Complete Data Isolation",
     "dataIsolationDesc": "Every workspace is fully isolated — client data never mixes between workspaces.",
-    "accountingFirmPlan": "Accounting Firm Plan"
+    "accountingFirmPlan": "Accounting Firm Plan",
+    "docRequestTitle": "Document Requests",
+    "docRequestCap1": "Send requests via email with one click",
+    "docRequestCap2": "Clients upload via secure public link",
+    "docRequestCap3": "Track request status in real time",
+    "docRequestCap4": "Auto-route uploads to correct workspace",
+    "integrationsTitle": "Integrations",
+    "integrationsCap1": "One-click OAuth connection",
+    "integrationsCap2": "Push expenses & invoices instantly",
+    "integrationsCap4": "Secure token-based authentication"
   },
   "pricing": {
     "title": "Pricing",
