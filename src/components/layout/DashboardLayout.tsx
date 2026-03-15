@@ -1,8 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { WorkspaceContextBar } from "@/components/WorkspaceContextBar";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
+import { Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { AppMobileDrawer } from "./AppMobileDrawer";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -36,6 +39,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 export default function DashboardLayout() {
   const { t } = useTranslation();
   const location = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { profile, displayName, initials, isLoading: profileLoading } = useProfile();
@@ -195,6 +199,19 @@ export default function DashboardLayout() {
             {/* Mobile header with logo + profile */}
             <header className="h-14 border-b border-border/30 bg-card/90 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden shadow-[var(--shadow-xs)]">
               <div className="flex items-center gap-2 flex-1 min-w-0">
+                <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-lg hover:bg-accent/60">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[280px] p-0 border-r border-border/40" onClick={(e) => {
+                    if ((e.target as HTMLElement).closest('a')) setDrawerOpen(false);
+                  }}>
+                    <AppMobileDrawer />
+                  </SheetContent>
+                </Sheet>
+
                 {brandLogo ? (
                   <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain shrink-0" />
                 ) : (
