@@ -38,6 +38,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 export default function DashboardLayout() {
   const { t } = useTranslation();
   const location = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { profile, displayName, initials, isLoading: profileLoading } = useProfile();
