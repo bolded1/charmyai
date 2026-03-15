@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X } from "lucide-react";
+import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X, CalendarDays } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -17,6 +17,7 @@ import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { format, isToday, isYesterday, parseISO } from "date-fns";
 
 const statusColors: Record<string, string> = {
   processing: "bg-muted text-muted-foreground",
@@ -51,6 +52,30 @@ export default function DocumentsPage() {
     return matchesSearch;
   });
   const filtered = allFiltered.slice(0, visibleCount);
+
+  // Group documents by upload date (created_at)
+  const groupedByDay = useMemo(() => {
+    const groups: { label: string; sortKey: string; docs: typeof filtered }[] = [];
+    const map = new Map<string, typeof filtered>();
+    for (const doc of filtered) {
+      const dateKey = (doc as any).created_at ? (doc as any).created_at.slice(0, 10) : "unknown";
+      if (!map.has(dateKey)) map.set(dateKey, []);
+      map.get(dateKey)!.push(doc);
+    }
+    for (const [dateKey, docs] of map) {
+      let label: string;
+      if (dateKey === "unknown") {
+        label = "Unknown date";
+      } else {
+        const d = parseISO(dateKey);
+        if (isToday(d)) label = "Today";
+        else if (isYesterday(d)) label = "Yesterday";
+        else label = format(d, "EEEE, MMMM d, yyyy");
+      }
+      groups.push({ label, sortKey: dateKey, docs });
+    }
+    return groups;
+  }, [filtered]);
 
   const allSelected = allFiltered.length > 0 && allFiltered.every((d) => selectedIds.has(d.id));
   const someSelected = selectedIds.size > 0;
@@ -266,143 +291,174 @@ export default function DocumentsPage() {
         </Card>
       ) : isMobile ? (
         /* Mobile card view */
-        <div className="space-y-2">
-          {filtered.map((doc) => (
-            <div key={doc.id} className="flex items-start gap-2">
-              <div className="pt-3 pl-1">
-                <Checkbox
-                  checked={selectedIds.has(doc.id)}
-                  onCheckedChange={() => toggleSelect(doc.id)}
-                />
+        <div className="space-y-1">
+          {groupedByDay.map((group) => (
+            <div key={group.sortKey}>
+              <div className="flex items-center gap-2 py-2 px-1">
+                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group.label}</span>
+                <span className="text-xs text-muted-foreground/60">({group.docs.length})</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <MobileRecordCard
-                  title={doc.file_name}
-                  subtitle={doc.supplier_name || doc.customer_name || undefined}
-                  badge={{
-                    label: (doc as any).potential_duplicate_of
-                      ? "⚠ Duplicate"
-                      : statusLabel(doc.status),
-                    className: (doc as any).potential_duplicate_of
-                      ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
-                      : statusColors[doc.status] || "",
-                  }}
-                  fields={[
-                    { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
-                    { label: "Date", value: doc.invoice_date || "—" },
-                    { label: "Amount", value: doc.total_amount && Number(doc.total_amount) > 0
-                      ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
-                      : "—"
-                    },
-                    { label: "Source", value: (doc as any).source === "email_import" ? "Email" : "Upload" },
-                  ]}
-                  onClick={() => openReview(doc)}
-                />
-              </div>
+              {group.docs.map((doc) => (
+                <div key={doc.id} className="flex items-start gap-2">
+                  <div className="pt-3 pl-1">
+                    <Checkbox
+                      checked={selectedIds.has(doc.id)}
+                      onCheckedChange={() => toggleSelect(doc.id)}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <MobileRecordCard
+                      title={doc.file_name}
+                      subtitle={doc.supplier_name || doc.customer_name || undefined}
+                      badge={{
+                        label: (doc as any).potential_duplicate_of
+                          ? "⚠ Duplicate"
+                          : statusLabel(doc.status),
+                        className: (doc as any).potential_duplicate_of
+                          ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
+                          : statusColors[doc.status] || "",
+                      }}
+                      fields={[
+                        { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
+                        { label: "Date", value: doc.invoice_date || "—" },
+                        { label: "Amount", value: doc.total_amount && Number(doc.total_amount) > 0
+                          ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
+                          : "—"
+                        },
+                        { label: "Source", value: (doc as any).source === "email_import" ? "Email" : "Upload" },
+                      ]}
+                      onClick={() => openReview(doc)}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
       ) : (
         /* Desktop table */
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                 <thead>
-                   <tr className="border-b text-left">
-                     <th className="p-3 w-10">
-                       <Checkbox
-                         checked={allSelected}
-                         onCheckedChange={toggleSelectAll}
-                       />
-                     </th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground">Document</th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground">Source</th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground">Supplier/Customer</th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground">Amount</th>
-                     <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
-                   </tr>
-                 </thead>
-                <tbody>
-                  {filtered.map((doc) => (
-                    <tr
-                      key={doc.id}
-                      className={`border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer ${
-                        selectedIds.has(doc.id) ? "bg-primary/5" : ""
-                      }`}
-                      onClick={() => openReview(doc)}
-                    >
-                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={selectedIds.has(doc.id)}
-                          onCheckedChange={() => toggleSelect(doc.id)}
-                        />
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="text-sm font-medium truncate max-w-[200px]">{doc.file_name}</span>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        {(doc as any).source === "email_import" ? (
-                          <Badge variant="secondary" className="text-[10px] gap-1">
-                            <Mail className="h-3 w-3" /> Email
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Upload</span>
-                        )}
-                      </td>
-                      <td className="p-3 text-sm text-muted-foreground capitalize">
-                        {(doc.document_type || "—").replace("_", " ")}
-                      </td>
-                      <td className="p-3 text-sm">{doc.supplier_name || doc.customer_name || "—"}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{doc.invoice_date || "—"}</td>
-                      <td className="p-3 text-sm font-medium">
-                        {doc.total_amount && Number(doc.total_amount) > 0
-                          ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
-                          : "—"}
-                        {(doc as any).extracted_data?.discount_amount != null && (doc as any).extracted_data.discount_amount !== 0 && (
-                          <span className="block text-xs text-emerald-600 font-normal">
-                            Discount: -{doc.currency || "EUR"} {Math.abs((doc as any).extracted_data.discount_amount).toFixed(2)}
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-1.5">
-                          <Badge variant="secondary" className={statusColors[doc.status] || ""}>
-                            {doc.status === "needs_review" ? (
-                              <span className="flex items-center gap-1">
-                                <AlertTriangle className="h-3 w-3" /> needs review
-                              </span>
-                            ) : doc.status === "processing" ? (
-                              <span className="flex items-center gap-1">
-                                <Loader2 className="h-3 w-3 animate-spin" /> processing
-                              </span>
-                            ) : doc.status === "approved" ? (
-                              <span className="flex items-center gap-1">
-                                <CheckCircle2 className="h-3 w-3" /> approved
-                              </span>
-                            ) : (
-                              doc.status.replace("_", " ")
-                            )}
-                          </Badge>
-                          {(doc as any).potential_duplicate_of && (
-                            <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/20">
-                              <Copy className="h-3 w-3 mr-1" /> duplicate
-                            </Badge>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="space-y-4">
+          {groupedByDay.map((group) => (
+            <div key={group.sortKey}>
+              <div className="flex items-center gap-2 py-2 px-1">
+                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group.label}</span>
+                <span className="text-xs text-muted-foreground/60">({group.docs.length})</span>
+              </div>
+              <Card>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b text-left">
+                          <th className="p-3 w-10">
+                            <Checkbox
+                              checked={group.docs.every((d) => selectedIds.has(d.id))}
+                              onCheckedChange={() => {
+                                const allInGroup = group.docs.every((d) => selectedIds.has(d.id));
+                                setSelectedIds((prev) => {
+                                  const next = new Set(prev);
+                                  group.docs.forEach((d) => allInGroup ? next.delete(d.id) : next.add(d.id));
+                                  return next;
+                                });
+                              }}
+                            />
+                          </th>
+                          <th className="p-3 text-xs font-medium text-muted-foreground">Document</th>
+                          <th className="p-3 text-xs font-medium text-muted-foreground">Source</th>
+                          <th className="p-3 text-xs font-medium text-muted-foreground">Type</th>
+                          <th className="p-3 text-xs font-medium text-muted-foreground">Supplier/Customer</th>
+                          <th className="p-3 text-xs font-medium text-muted-foreground">Date</th>
+                          <th className="p-3 text-xs font-medium text-muted-foreground">Amount</th>
+                          <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {group.docs.map((doc) => (
+                          <tr
+                            key={doc.id}
+                            className={`border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer ${
+                              selectedIds.has(doc.id) ? "bg-primary/5" : ""
+                            }`}
+                            onClick={() => openReview(doc)}
+                          >
+                            <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={selectedIds.has(doc.id)}
+                                onCheckedChange={() => toggleSelect(doc.id)}
+                              />
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <span className="text-sm font-medium truncate max-w-[200px]">{doc.file_name}</span>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              {(doc as any).source === "email_import" ? (
+                                <Badge variant="secondary" className="text-[10px] gap-1">
+                                  <Mail className="h-3 w-3" /> Email
+                                </Badge>
+                              ) : (doc as any).source === "document_request" ? (
+                                <Badge variant="secondary" className="text-[10px] gap-1">
+                                  Request
+                                </Badge>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">Upload</span>
+                              )}
+                            </td>
+                            <td className="p-3 text-sm text-muted-foreground capitalize">
+                              {(doc.document_type || "—").replace("_", " ")}
+                            </td>
+                            <td className="p-3 text-sm">{doc.supplier_name || doc.customer_name || "—"}</td>
+                            <td className="p-3 text-sm text-muted-foreground">{doc.invoice_date || "—"}</td>
+                            <td className="p-3 text-sm font-medium">
+                              {doc.total_amount && Number(doc.total_amount) > 0
+                                ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
+                                : "—"}
+                              {(doc as any).extracted_data?.discount_amount != null && (doc as any).extracted_data.discount_amount !== 0 && (
+                                <span className="block text-xs text-emerald-600 font-normal">
+                                  Discount: -{doc.currency || "EUR"} {Math.abs((doc as any).extracted_data.discount_amount).toFixed(2)}
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-1.5">
+                                <Badge variant="secondary" className={statusColors[doc.status] || ""}>
+                                  {doc.status === "needs_review" ? (
+                                    <span className="flex items-center gap-1">
+                                      <AlertTriangle className="h-3 w-3" /> needs review
+                                    </span>
+                                  ) : doc.status === "processing" ? (
+                                    <span className="flex items-center gap-1">
+                                      <Loader2 className="h-3 w-3 animate-spin" /> processing
+                                    </span>
+                                  ) : doc.status === "approved" ? (
+                                    <span className="flex items-center gap-1">
+                                      <CheckCircle2 className="h-3 w-3" /> approved
+                                    </span>
+                                  ) : (
+                                    doc.status.replace("_", " ")
+                                  )}
+                                </Badge>
+                                {(doc as any).potential_duplicate_of && (
+                                  <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/20">
+                                    <Copy className="h-3 w-3 mr-1" /> duplicate
+                                  </Badge>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       )}
 
       {/* Load more */}
