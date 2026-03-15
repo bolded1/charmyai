@@ -507,7 +507,14 @@
     "ctaBadge": "One-time payment · Lifetime access",
     "proCtaDesc": "For freelancers and businesses managing their own invoices and receipts.",
     "firmCtaDesc": "Manage up to 10 client workspaces from one account.",
-    "multiClient": "Multi-client"
+    "multiClient": "Multi-client",
+    "getStartedPrice": "Get Started — €29.99",
+    "docRequestHeadline": "Collect documents from clients ",
+    "docRequestHeadlineHighlight": "effortlessly",
+    "docRequestDesc": "Send secure upload links to your clients — they submit documents without needing an account. Everything lands in the right workspace, ready for review.",
+    "integrationsHeadline": "Sync with your ",
+    "integrationsHeadlineHighlight": "accounting platform",
+    "integrationsDesc": "Connect QuickBooks, Xero, or FreshBooks and push expenses and invoices directly to your ledger with one click."
   },
   "selfEmployed": {
     "badge": "Made for solo businesses",
@@ -643,7 +650,16 @@
     "exportPerClientDesc": "Generate exports and financial data for each client independently.",
     "dataIsolation": "Complete Data Isolation",
     "dataIsolationDesc": "Every workspace is fully isolated — client data never mixes between workspaces.",
-    "accountingFirmPlan": "Accounting Firm Plan"
+    "accountingFirmPlan": "Accounting Firm Plan",
+    "docRequestTitle": "Document Requests",
+    "docRequestCap1": "Send requests via email with one click",
+    "docRequestCap2": "Clients upload via secure public link",
+    "docRequestCap3": "Track request status in real time",
+    "docRequestCap4": "Auto-route uploads to correct workspace",
+    "integrationsTitle": "Integrations",
+    "integrationsCap1": "One-click OAuth connection",
+    "integrationsCap2": "Push expenses & invoices instantly",
+    "integrationsCap4": "Secure token-based authentication"
   },
   "pricing": {
     "title": "Pricing",
@@ -700,7 +716,8 @@
     "faq7Q": "Is my financial data secure?",
     "faq7A": "Yes. Charmy processes documents using secure cloud infrastructure and encrypted connections. GDPR-compliant data handling.",
     "faq8Q": "Can I try Charmy before paying?",
-    "faq8A": "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo."
+    "faq8A": "Yes. You can test Charmy instantly by uploading a sample invoice on the homepage demo.",
+    "noSubscription": "No subscription required"
   },
   "faq": {
     "badge": "Common Questions",
