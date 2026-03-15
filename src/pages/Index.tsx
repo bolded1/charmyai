@@ -5,8 +5,11 @@ import {
   Upload, FileText, Search, Download, Sparkles, CheckCircle2,
   Clock, Receipt, Shield, Mail, Building2, Briefcase, FolderOpen,
   Zap, ClipboardCheck, Monitor, Smartphone, Share, Plus,
-  MoreVertical,
+  MoreVertical, Send, Link2, ExternalLink, ClipboardList,
 } from "lucide-react";
+import quickbooksLogo from "@/assets/quickbooks-logo.png";
+import xeroLogo from "@/assets/xero-logo.png";
+import freshbooksLogo from "@/assets/freshbooks-logo.png";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { useTranslation } from "react-i18next";
 import { MarketingFAQ } from "@/components/MarketingFAQ";
