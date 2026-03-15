@@ -21,7 +21,7 @@ import { CreateDocumentRequestDialog } from "@/components/CreateDocumentRequestD
 import { cn } from "@/lib/utils";
 
 function getUploadUrl(token: string) {
-  return `${window.location.origin}/request/${token}`;
+  return `https://charmy.net/request/${token}`;
 }
 
 function RequestCard({
