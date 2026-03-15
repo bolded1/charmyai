@@ -627,6 +627,11 @@ serve(async (req) => {
 
     if (req.method === "GET" && path[0] === "documents" && path.length === 1) {
       const workspaceId = await resolveWorkspaceId(req, auth);
+      if (!workspaceId) {
+        return badRequest(
+          "workspace_id is required. Pass it as the x-workspace-id header or workspace_id query parameter."
+        );
+      }
       const limit = Math.min(Number(url.searchParams.get("limit") ?? "50"), 100);
       const status = url.searchParams.get("status");
 
@@ -634,10 +639,10 @@ serve(async (req) => {
         .from("documents")
         .select("*")
         .eq("user_id", auth.user.id)
+        .eq("organization_id", workspaceId)
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      if (workspaceId) query = query.eq("organization_id", workspaceId);
       if (status && status !== "all") query = query.eq("status", status);
 
       const { data, error } = await query;
@@ -901,16 +906,20 @@ serve(async (req) => {
 
     if (req.method === "GET" && path[0] === "exports" && path.length === 1) {
       const workspaceId = await resolveWorkspaceId(req, auth);
+      if (!workspaceId) {
+        return badRequest(
+          "workspace_id is required. Pass it as the x-workspace-id header or workspace_id query parameter."
+        );
+      }
       const limit = Math.min(Number(url.searchParams.get("limit") ?? "50"), 100);
 
       let query = auth.admin
         .from("export_history")
         .select("*")
         .eq("user_id", auth.user.id)
+        .eq("organization_id", workspaceId)
         .order("created_at", { ascending: false })
         .limit(limit);
-
-      if (workspaceId) query = query.eq("organization_id", workspaceId);
 
       const { data, error } = await query;
       if (error) throw error;

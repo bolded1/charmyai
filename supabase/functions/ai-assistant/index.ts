@@ -50,9 +50,27 @@ serve(async (req) => {
       }
     }
 
-    const { messages } = await req.json();
-    if (!messages || !Array.isArray(messages)) {
+    const { messages: rawMessages } = await req.json();
+    if (!rawMessages || !Array.isArray(rawMessages)) {
       return new Response(JSON.stringify({ error: "messages array required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Only keep user/assistant messages; strip any trailing assistant messages
+    // because the model does not support assistant prefill (last msg must be user)
+    const messages = rawMessages
+      .filter((m: any) => m.role === "user" || m.role === "assistant")
+      .filter((m: any) => typeof m.content === "string" && m.content.trim() !== "");
+
+    // Remove trailing assistant messages
+    while (messages.length > 0 && messages[messages.length - 1].role === "assistant") {
+      messages.pop();
+    }
+
+    if (messages.length === 0) {
+      return new Response(JSON.stringify({ error: "No valid user message found" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
