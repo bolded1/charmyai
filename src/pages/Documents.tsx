@@ -126,7 +126,9 @@ export default function DocumentsPage() {
       });
       setSelected(null);
       toast.success("Document updated");
-    } catch {}
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to save document.");
+    }
   };
 
   const handleApprove = async () => {
@@ -135,7 +137,9 @@ export default function DocumentsPage() {
     try {
       await approveDoc.mutateAsync(merged);
       setSelected(null);
-    } catch {}
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to approve document.");
+    }
   };
 
   if (!user) {
@@ -343,8 +347,8 @@ export default function DocumentsPage() {
                           ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
                           : "—"}
                         {(doc as any).extracted_data?.discount_amount != null && (doc as any).extracted_data.discount_amount !== 0 && (
-                          <span className="block text-xs text-emerald font-normal">
-                            Discount: -{(doc.currency || "EUR")} {Math.abs((doc as any).extracted_data.discount_amount).toFixed(2)}
+                          <span className="block text-xs text-emerald-600 font-normal">
+                            Discount: -{doc.currency || "EUR"} {Math.abs((doc as any).extracted_data.discount_amount).toFixed(2)}
                           </span>
                         )}
                       </td>
@@ -518,11 +522,14 @@ export default function DocumentsPage() {
 
                 <div>
                   <Label className="text-xs text-muted-foreground">Currency</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    value={editData.currency || "EUR"}
-                    onChange={(e) => setEditData((p) => ({ ...p, currency: e.target.value }))}
-                  />
+                  <Select value={editData.currency || "EUR"} onValueChange={(v) => setEditData((p) => ({ ...p, currency: v }))}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["EUR","USD","GBP","CHF","JPY","CAD","AUD","NZD","SEK","NOK","DKK","PLN","HUF","CZK","RON","BGN","HRK","RSD","TRY","RUB","AED","SAR","QAR","KWD","BHD","ILS","INR","PKR","SGD","MYR","THB","PHP","IDR","VND","KRW","CNY","HKD","TWD","ZAR","BRL","MXN","ARS","CLP","COP","PEN","NGN","KES","GHS","MAD","EGP"].map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>

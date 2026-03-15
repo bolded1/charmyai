@@ -241,7 +241,8 @@ export default function SettingsPage() {
 
 
 
-  const handlePasswordUpdate = () => {
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const handlePasswordUpdate = async () => {
     if (!passwordForm.current || !passwordForm.new) {
       toast.error("Please fill in all password fields.");
       return;
@@ -254,8 +255,17 @@ export default function SettingsPage() {
       toast.error("Password must be at least 8 characters.");
       return;
     }
-    setPasswordForm({ current: "", new: "", confirm: "" });
-    toast.success("Password updated!");
+    setUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.new });
+      if (error) throw error;
+      setPasswordForm({ current: "", new: "", confirm: "" });
+      toast.success("Password updated!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update password.");
+    } finally {
+      setUpdatingPassword(false);
+    }
   };
 
   const [searchParams] = useSearchParams();
@@ -588,7 +598,9 @@ export default function SettingsPage() {
                       onChange={(e) => setPasswordForm((p) => ({ ...p, confirm: e.target.value }))}
                     />
                   </Field>
-                  <Button size="sm" onClick={handlePasswordUpdate}>Update Password</Button>
+                  <Button size="sm" onClick={handlePasswordUpdate} disabled={updatingPassword}>
+                    {updatingPassword ? "Updating…" : "Update Password"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

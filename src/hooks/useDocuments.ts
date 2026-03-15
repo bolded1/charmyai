@@ -203,6 +203,17 @@ export function useApproveDocument() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // Resolve org default currency for fallback
+      let orgDefaultCurrency = "EUR";
+      if (approverProfile?.active_organization_id) {
+        const { data: orgData } = await supabase
+          .from("organizations")
+          .select("default_currency")
+          .eq("id", approverProfile.active_organization_id)
+          .maybeSingle();
+        if (orgData?.default_currency) orgDefaultCurrency = orgData.default_currency;
+      }
+
       // Create expense or income record based on document type
       if (doc.document_type === "sales_invoice") {
         const { error } = await supabase.from("income_records").insert({
@@ -213,7 +224,7 @@ export function useApproveDocument() {
           invoice_number: doc.invoice_number,
           invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
           due_date: doc.due_date,
-          currency: doc.currency || "EUR",
+          currency: doc.currency || orgDefaultCurrency,
           net_amount: doc.net_amount || 0,
           vat_amount: doc.vat_amount || 0,
           total_amount: doc.total_amount || 0,
@@ -230,7 +241,7 @@ export function useApproveDocument() {
           invoice_number: doc.invoice_number,
           invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
           due_date: doc.due_date,
-          currency: doc.currency || "EUR",
+          currency: doc.currency || orgDefaultCurrency,
           net_amount: doc.net_amount || 0,
           vat_amount: doc.vat_amount || 0,
           total_amount: doc.total_amount || 0,
@@ -383,6 +394,16 @@ export function useUploadIncomeDocument() {
         .update({ status: "approved", updated_at: new Date().toISOString() })
         .eq("id", doc.id);
 
+      let orgDefaultCurrencyIncome = "EUR";
+      if (profile?.active_organization_id) {
+        const { data: orgData } = await supabase
+          .from("organizations")
+          .select("default_currency")
+          .eq("id", profile.active_organization_id)
+          .maybeSingle();
+        if (orgData?.default_currency) orgDefaultCurrencyIncome = orgData.default_currency;
+      }
+
       const { error: incomeErr } = await supabase.from("income_records").insert({
         user_id: user.id,
         organization_id: profile?.active_organization_id || null,
@@ -391,7 +412,7 @@ export function useUploadIncomeDocument() {
         invoice_number: updatedDoc.invoice_number,
         invoice_date: updatedDoc.invoice_date || new Date().toISOString().split("T")[0],
         due_date: updatedDoc.due_date,
-        currency: updatedDoc.currency || "EUR",
+        currency: updatedDoc.currency || orgDefaultCurrencyIncome,
         net_amount: updatedDoc.net_amount || 0,
         vat_amount: updatedDoc.vat_amount || 0,
         total_amount: updatedDoc.total_amount || 0,
@@ -616,6 +637,16 @@ export function useBulkApproveDocuments() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      let orgDefaultCurrencyBulk = "EUR";
+      if (profile?.active_organization_id) {
+        const { data: orgData } = await supabase
+          .from("organizations")
+          .select("default_currency")
+          .eq("id", profile.active_organization_id)
+          .maybeSingle();
+        if (orgData?.default_currency) orgDefaultCurrencyBulk = orgData.default_currency;
+      }
+
       for (const doc of docs) {
         if (doc.status === "approved" || doc.status === "exported") continue;
 
@@ -633,7 +664,7 @@ export function useBulkApproveDocuments() {
             invoice_number: doc.invoice_number,
             invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
             due_date: doc.due_date,
-            currency: doc.currency || "EUR",
+            currency: doc.currency || orgDefaultCurrencyBulk,
             net_amount: doc.net_amount || 0,
             vat_amount: doc.vat_amount || 0,
             total_amount: doc.total_amount || 0,
@@ -649,7 +680,7 @@ export function useBulkApproveDocuments() {
             invoice_number: doc.invoice_number,
             invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
             due_date: doc.due_date,
-            currency: doc.currency || "EUR",
+            currency: doc.currency || orgDefaultCurrencyBulk,
             net_amount: doc.net_amount || 0,
             vat_amount: doc.vat_amount || 0,
             total_amount: doc.total_amount || 0,
@@ -662,6 +693,7 @@ export function useBulkApproveDocuments() {
     onSuccess: (_, docs) => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["income"] });
       toast.success(`${docs.length} document(s) approved`);
     },
     onError: (err: Error) => toast.error(err.message),
