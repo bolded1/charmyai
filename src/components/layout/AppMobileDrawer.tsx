@@ -84,7 +84,7 @@ export function AppMobileDrawer() {
             </div>
             <div>
               <span className="font-bold text-lg text-foreground tracking-tight leading-none">Charmy</span>
-              <p className="text-[11px] text-muted-foreground mt-0.5">Document Management</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{t("common.documentManagement")}</p>
             </div>
           </div>
         )}
