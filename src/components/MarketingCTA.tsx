@@ -64,7 +64,7 @@ export function MarketingCTA() {
         </motion.h2>
 
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-primary-foreground/75 mb-10 max-w-lg mx-auto text-base md:text-lg">
+          className="text-primary-foreground/75 mb-8 max-w-lg mx-auto text-base md:text-lg">
           {t("marketing.ctaDesc")}
         </motion.p>
 
