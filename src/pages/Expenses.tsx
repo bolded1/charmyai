@@ -15,7 +15,7 @@ import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/u
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MobileRecordCard } from "@/components/ui/responsive-table";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { useOrganization } from "@/hooks/useOrganization";
