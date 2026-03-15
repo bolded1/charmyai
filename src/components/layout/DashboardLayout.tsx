@@ -180,7 +180,9 @@ export default function DashboardLayout() {
             <header className="h-14 border-b border-border/30 bg-card/90 backdrop-blur-xl flex items-center justify-between px-3 shrink-0 md:hidden shadow-[var(--shadow-xs)]">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {brandLogo ? (
-                  <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain shrink-0" />
+                  <Link to="/app">
+                    <img src={brandLogo} alt="Logo" className="h-7 max-w-[5rem] object-contain shrink-0" />
+                  </Link>
                 ) : (
                   <Link to="/app" className="flex items-center gap-1.5 shrink-0">
                     <div className="h-7 w-7 rounded-md bg-hero-gradient flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
