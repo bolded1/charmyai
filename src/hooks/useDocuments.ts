@@ -92,6 +92,21 @@ export function useUploadDocument() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // Duplicate detection: same file_name + file_size for this user
+      const { data: existing } = await supabase
+        .from("documents")
+        .select("id, file_name")
+        .eq("user_id", user.id)
+        .eq("file_name", file.name)
+        .eq("file_size", file.size)
+        .maybeSingle();
+
+      if (existing) {
+        throw new Error(
+          `"${file.name}" looks like a duplicate — a file with the same name and size was already uploaded. Check your existing documents to avoid double entries.`
+        );
+      }
+
       const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
@@ -412,7 +427,8 @@ export interface ManualExpenseInput {
   vat_amount: number;
   total_amount: number;
   category?: string;
-  // Mileage extras (stored in invoice_number as metadata)
+  receipt_file?: File;
+  // Mileage extras
   distance_km?: number;
   rate_per_km?: number;
   // Per diem extras
@@ -442,10 +458,36 @@ export function useCreateManualExpense() {
         reference = reference || `${input.days} days @ ${input.daily_rate}/day`;
       }
 
+      // Optional receipt file upload
+      let documentId: string | null = null;
+      if (input.receipt_file) {
+        const file = input.receipt_file;
+        const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, file);
+        if (!uploadError) {
+          const { data: doc } = await supabase.from("documents").insert({
+            user_id: user.id,
+            organization_id: profile?.active_organization_id || null,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type,
+            file_size: file.size,
+            status: "approved",
+            supplier_name: input.supplier_name,
+            invoice_date: input.invoice_date,
+            currency: input.currency,
+            total_amount: input.total_amount,
+          }).select().single();
+          if (doc) documentId = doc.id;
+        }
+      }
+
       const { data, error } = await supabase.from("expense_records").insert({
         user_id: user.id,
         organization_id: profile?.active_organization_id || null,
-        document_id: null,
+        document_id: documentId,
         supplier_name: input.supplier_name,
         invoice_number: reference || null,
         invoice_date: input.invoice_date,
@@ -461,6 +503,7 @@ export function useCreateManualExpense() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Manual expense added");
     },
     onError: (err: Error) => {
