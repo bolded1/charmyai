@@ -228,6 +228,27 @@ serve(async (req) => {
 
     logStep("Subscription found", { id: sub.id, status: sub.status, priceId, subProductId, hasFirmPlan, hasProPlan, amountPaid });
 
+    // If subscription is not active, check if user has an active promo or one-time purchase that overrides
+    if (!isActive && !hasFirmPlan) {
+      const promo = await checkPromo();
+      if (promo) {
+        logStep("Subscription inactive but active promo found, granting access", { redemptionId: promo.id });
+        return new Response(JSON.stringify({
+          subscribed: true, plan: "pro", status: "promo_active",
+          trial_end: null, current_period_end: null, cancel_at_period_end: false,
+          has_firm_plan: false, amount_paid: amountPaid, paid_currency: paidCurrency,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      if (hasProPlan) {
+        logStep("Subscription inactive but one-time Pro purchase found");
+        return new Response(JSON.stringify({
+          subscribed: true, plan: "pro", status: "active",
+          trial_end: null, current_period_end: null, cancel_at_period_end: false,
+          has_firm_plan: false, amount_paid: amountPaid, paid_currency: paidCurrency,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     const trialEndDate = sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null;
     const periodEndDate = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null;
 
