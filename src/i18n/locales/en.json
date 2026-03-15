@@ -113,7 +113,8 @@
     "workspaces": "Workspaces",
     "firmDashboard": "Firm Dashboard",
     "notifications": "Notifications",
-    "backToApp": "Back to App"
+    "backToApp": "Back to App",
+    "documentRequests": "Document Requests"
   },
   "sidebarGroups": {
     "documents": "Documents",
