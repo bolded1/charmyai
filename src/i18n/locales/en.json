@@ -507,7 +507,14 @@
     "ctaBadge": "One-time payment · Lifetime access",
     "proCtaDesc": "For freelancers and businesses managing their own invoices and receipts.",
     "firmCtaDesc": "Manage up to 10 client workspaces from one account.",
-    "multiClient": "Multi-client"
+    "multiClient": "Multi-client",
+    "getStartedPrice": "Get Started — €29.99",
+    "docRequestHeadline": "Collect documents from clients ",
+    "docRequestHeadlineHighlight": "effortlessly",
+    "docRequestDesc": "Send secure upload links to your clients — they submit documents without needing an account. Everything lands in the right workspace, ready for review.",
+    "integrationsHeadline": "Sync with your ",
+    "integrationsHeadlineHighlight": "accounting platform",
+    "integrationsDesc": "Connect QuickBooks, Xero, or FreshBooks and push expenses and invoices directly to your ledger with one click."
   },
   "selfEmployed": {
     "badge": "Made for solo businesses",
