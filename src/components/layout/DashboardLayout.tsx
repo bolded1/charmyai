@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { WorkspaceContextBar } from "@/components/WorkspaceContextBar";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppMobileDrawer } from "./AppMobileDrawer";
