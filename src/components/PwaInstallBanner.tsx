@@ -12,8 +12,14 @@ export function PwaInstallBanner() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const wasDismissed = sessionStorage.getItem("pwa-install-dismissed");
-    if (wasDismissed) {
+    // Permanently dismiss after 3 sessions
+    const dismissCount = parseInt(localStorage.getItem("pwa-install-dismiss-count") || "0", 10);
+    if (dismissCount >= 3) {
+      setDismissed(true);
+      return;
+    }
+    const sessionDismissed = sessionStorage.getItem("pwa-install-dismissed");
+    if (sessionDismissed) {
       setDismissed(true);
       return;
     }
@@ -24,6 +30,8 @@ export function PwaInstallBanner() {
   const handleDismiss = () => {
     setDismissed(true);
     sessionStorage.setItem("pwa-install-dismissed", "1");
+    const count = parseInt(localStorage.getItem("pwa-install-dismiss-count") || "0", 10) + 1;
+    localStorage.setItem("pwa-install-dismiss-count", count.toString());
   };
 
   if (isInstalled || dismissed || !showBanner) return null;

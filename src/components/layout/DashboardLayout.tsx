@@ -198,7 +198,7 @@ export default function DashboardLayout() {
                 {mobileProfileMenu}
                 <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-lg hover:bg-accent/60">
+                    <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-xl border-border/60 bg-muted/50 hover:bg-accent shadow-sm">
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
