@@ -44,8 +44,8 @@ export function AppMobileDrawer() {
   ];
 
   const renderSection = (label: string, items: typeof documentItems) => (
-    <div className="mb-1">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground px-3 py-1.5">
+    <div className="mb-2">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 px-4 pt-4 pb-1.5">
         {label}
       </p>
       {items.map((item) => (
@@ -53,10 +53,10 @@ export function AppMobileDrawer() {
           key={item.url}
           to={item.url}
           end={item.url === "/app"}
-          className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors min-h-[44px]"
-          activeClassName="bg-accent text-accent-foreground"
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[15px] font-semibold text-foreground hover:bg-accent/60 transition-colors min-h-[44px] mx-1"
+          activeClassName="bg-primary/10 text-primary"
         >
-          <item.icon className="h-4.5 w-4.5 shrink-0" />
+          <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
           <span>{item.title}</span>
         </NavLink>
       ))}
@@ -64,20 +64,20 @@ export function AppMobileDrawer() {
   );
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-border">
+    <div className="flex flex-col h-full bg-background">
+      <div className="px-5 py-5 border-b border-border/50">
         {brandLogo ? (
           <img src={brandLogo} alt="Logo" className="h-8 max-w-[8rem] object-contain" />
         ) : (
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-hero-gradient flex items-center justify-center">
-              <FileText className="h-3.5 w-3.5 text-white" />
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-hero-gradient flex items-center justify-center shadow-sm shadow-primary/20">
+              <FileText className="h-4 w-4 text-white" />
             </div>
-            <span className="font-semibold text-sm">Charmy</span>
+            <span className="font-bold text-base text-foreground tracking-tight">Charmy</span>
           </div>
         )}
       </div>
-      <nav className="flex-1 py-2 px-2 overflow-y-auto">
+      <nav className="flex-1 py-1 overflow-y-auto">
         {renderSection(t("sidebarGroups.documents"), documentItems)}
         {renderSection(t("sidebarGroups.finance"), financeItems)}
         {!isClient && isAccountingFirm && renderSection(t("sidebarGroups.firm"), firmItems)}
