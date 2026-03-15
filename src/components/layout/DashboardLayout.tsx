@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { WorkspaceContextBar } from "@/components/WorkspaceContextBar";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
