@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2, Archive, Plus } from "lucide-react";
+import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, ExternalLink, Trash2, Archive, Plus, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -19,10 +19,11 @@ import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { useOrganization } from "@/hooks/useOrganization";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ManualExpenseDialog } from "@/components/ManualExpenseDialog";
+import { useNavigate } from "react-router-dom";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
@@ -39,6 +40,7 @@ interface ExpenseEdit {
 }
 
 export default function ExpensesPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [currencyFilter, setCurrencyFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -303,6 +305,26 @@ export default function ExpensesPage() {
       .map(([currency, data]) => ({ currency, ...data }));
   }, [filtered, defaultCurrency]);
 
+  const momStats = useMemo(() => {
+    const now = new Date();
+    const thisStart = startOfMonth(now);
+    const lastStart = startOfMonth(subMonths(now, 1));
+    const lastEnd = endOfMonth(subMonths(now, 1));
+    const inRange = (d: string | null, from: Date, to: Date) => {
+      if (!d) return false;
+      const dt = new Date(d);
+      return dt >= from && dt <= to;
+    };
+    const thisTotal = expenses
+      .filter((e) => e.currency === defaultCurrency && inRange(e.invoice_date, thisStart, new Date()))
+      .reduce((s, e) => s + Number(e.total_amount || 0), 0);
+    const lastTotal = expenses
+      .filter((e) => e.currency === defaultCurrency && inRange(e.invoice_date, lastStart, lastEnd))
+      .reduce((s, e) => s + Number(e.total_amount || 0), 0);
+    const pct = lastTotal === 0 ? null : ((thisTotal - lastTotal) / lastTotal) * 100;
+    return { thisTotal, lastTotal, pct };
+  }, [expenses, defaultCurrency]);
+
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
   if (!user) return <div className="text-center py-12 text-muted-foreground">Please log in to view expenses.</div>;
@@ -338,6 +360,39 @@ export default function ExpensesPage() {
           );
         })}
       </div>
+
+      {/* Month-over-month quick stats */}
+      {expenses.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
+            <span className="text-muted-foreground text-xs">This month</span>
+            <span className="font-semibold tabular-nums">
+              {currencySymbols[defaultCurrency] || `${defaultCurrency} `}
+              {momStats.thisTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
+            <span className="text-muted-foreground text-xs">Last month</span>
+            <span className="font-semibold tabular-nums text-muted-foreground">
+              {currencySymbols[defaultCurrency] || `${defaultCurrency} `}
+              {momStats.lastTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          {momStats.pct !== null && (
+            <div className={cn(
+              "flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold",
+              momStats.pct > 0 ? "text-red-600 bg-red-50 border-red-100 dark:bg-red-950/30 dark:border-red-900" :
+              momStats.pct < 0 ? "text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900" :
+              "text-muted-foreground bg-card"
+            )}>
+              {momStats.pct > 0 ? <TrendingUp className="h-3.5 w-3.5" /> :
+               momStats.pct < 0 ? <TrendingDown className="h-3.5 w-3.5" /> :
+               <Minus className="h-3.5 w-3.5" />}
+              {momStats.pct > 0 ? "+" : ""}{momStats.pct.toFixed(1)}% vs last month
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Filters row */}
       <div className="flex flex-wrap items-center gap-3">
@@ -425,9 +480,34 @@ export default function ExpensesPage() {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground text-sm">
-              No expense records found for the selected filters.
-            </div>
+            expenses.length === 0 ? (
+              // Zero expenses at all — full CTA
+              <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+                <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                  <Receipt className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold text-base mb-1">No expenses yet</h3>
+                <p className="text-sm text-muted-foreground mb-5 max-w-xs">
+                  Upload an invoice to extract data automatically, or add a manual expense like mileage or a cash purchase.
+                </p>
+                <div className="flex gap-2 flex-wrap justify-center">
+                  <Button size="sm" variant="outline" onClick={() => navigate("/app/documents")}>
+                    <FileText className="h-4 w-4 mr-1" /> Upload Invoice
+                  </Button>
+                  <Button size="sm" onClick={() => setManualEntryOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Manual Expense
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // Filters returned nothing
+              <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+                <p className="text-sm text-muted-foreground">No results for the selected filters.</p>
+                <Button variant="link" size="sm" className="h-auto p-0 text-sm" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
+                  Clear all filters
+                </Button>
+              </div>
+            )
           ) : isMobile ? (
             <div className="p-2 space-y-1">
               {groupedByMonth.map((group) => (
@@ -449,7 +529,7 @@ export default function ExpensesPage() {
                         <MobileRecordCard
                           title={doc.supplier_name}
                           subtitle={doc.invoice_number || undefined}
-                          badge={{ label: doc.category || "—" }}
+                          badge={{ label: !doc.document_id ? (doc.category === "Mileage" ? "Mileage" : doc.category === "Per Diem" ? "Per Diem" : "Manual") : (doc.category || "—") }}
                           fields={[
                             { label: "Date", value: doc.invoice_date },
                             { label: "Currency", value: doc.currency },
@@ -504,7 +584,16 @@ export default function ExpensesPage() {
                           <td className="pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />
                           </td>
-                          <td className="p-4 text-sm font-medium">{doc.supplier_name}</td>
+                          <td className="p-4 text-sm font-medium">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span>{doc.supplier_name}</span>
+                              {!doc.document_id && (
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal shrink-0 border-amber-200 text-amber-700 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30">
+                                  {doc.category === "Mileage" ? "Mileage" : doc.category === "Per Diem" ? "Per Diem" : "Manual"}
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
                           <td className="p-4"><Badge variant="secondary" className="text-xs font-normal">{doc.category || "—"}</Badge></td>
