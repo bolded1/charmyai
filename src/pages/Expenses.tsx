@@ -330,109 +330,114 @@ export default function ExpensesPage() {
   const isPdf = fileType === "application/pdf";
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-6xl space-y-4 md:space-y-6">
       {/* Currency summary cards */}
-      <div className={`grid gap-5 ${currencySummary.length === 1 ? 'grid-cols-1 max-w-md' : currencySummary.length === 2 ? 'sm:grid-cols-2' : currencySummary.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
+      <div className={`grid gap-3 md:gap-5 ${currencySummary.length === 1 ? 'grid-cols-1 max-w-md' : currencySummary.length === 2 ? 'grid-cols-2' : currencySummary.length === 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
         {currencySummary.map((cs, i) => {
           const style = cardStyles[i % cardStyles.length];
           const [cardClass, iconClass, textClass] = style.split(" ");
           const symbol = currencySymbols[cs.currency] || `${cs.currency} `;
           return (
-            <div key={cs.currency} className={`${cardClass} rounded-2xl p-5`}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`h-9 w-9 rounded-xl ${iconClass} flex items-center justify-center`}>
-                  <Receipt className={`h-4 w-4 ${textClass}`} />
+            <div key={cs.currency} className={`${cardClass} rounded-2xl p-3.5 md:p-5`}>
+              <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-2">
+                <div className={`h-7 w-7 md:h-9 md:w-9 rounded-lg md:rounded-xl ${iconClass} flex items-center justify-center`}>
+                  <Receipt className={`h-3.5 w-3.5 md:h-4 md:w-4 ${textClass}`} />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">Expenses {cs.currency}</p>
+                <p className="text-xs md:text-sm font-medium text-muted-foreground">{cs.currency}</p>
               </div>
-              <p className="text-2xl font-bold">{symbol}{cs.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              <p className="text-xs text-muted-foreground mt-1">{cs.count} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
+              <p className="text-lg md:text-2xl font-bold">{symbol}{cs.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">{cs.count} records{activeDateLabel ? ` · ${activeDateLabel}` : ""}</p>
             </div>
           );
         })}
       </div>
 
-
       {/* Filters row */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button size="sm" onClick={() => setManualEntryOpen(true)} className="shrink-0">
-          <Plus className="h-4 w-4 mr-1" /> Add Manual Expense
-        </Button>
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="space-y-2 md:space-y-0 md:flex md:flex-wrap md:items-center md:gap-3">
+        {/* Search — full width on mobile */}
+        <div className="relative flex-1 min-w-[180px] md:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search expenses..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder="Search expenses..." className="pl-9 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
-          <SelectTrigger className="w-40">
-            <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-            <SelectValue placeholder="Period" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Time</SelectItem>
-            <SelectItem value="this_month">This Month</SelectItem>
-            <SelectItem value="last_month">Last Month</SelectItem>
-            <SelectItem value="this_quarter">This Quarter</SelectItem>
-            <SelectItem value="this_year">This Year</SelectItem>
-            <SelectItem value="last_year">Last Year</SelectItem>
-            <SelectItem value="custom">Custom Range</SelectItem>
-          </SelectContent>
-        </Select>
-        {datePreset === "custom" && (
-          <>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
-                  <CalendarIcon className="h-3 w-3 mr-1" />
-                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "From"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
-              </PopoverContent>
-            </Popover>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left text-xs", !dateTo && "text-muted-foreground")}>
-                  <CalendarIcon className="h-3 w-3 mr-1" />
-                  {dateTo ? format(dateTo, "dd/MM/yyyy") : "To"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
-              </PopoverContent>
-            </Popover>
-          </>
-        )}
-        <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
-          <SelectTrigger className="w-28">
-            <SelectValue placeholder="Currency" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="EUR">EUR</SelectItem>
-            <SelectItem value="USD">USD</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {(datePreset !== "all" || currencyFilter !== "all" || categoryFilter !== "all" || search) && (
-          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
-            <X className="h-3 w-3 mr-1" /> Clear
-          </Button>
-        )}
+        {/* Filter chips row — horizontal scroll on mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-none">
+          {!isMobile && (
+            <Button size="sm" onClick={() => setManualEntryOpen(true)} className="shrink-0 h-9">
+              <Plus className="h-4 w-4 mr-1" /> Add Expense
+            </Button>
+          )}
+          <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
+            <SelectTrigger className="w-auto min-w-[120px] h-9 text-xs shrink-0">
+              <CalendarIcon className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <SelectValue placeholder="Period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="this_month">This Month</SelectItem>
+              <SelectItem value="last_month">Last Month</SelectItem>
+              <SelectItem value="this_quarter">This Quarter</SelectItem>
+              <SelectItem value="this_year">This Year</SelectItem>
+              <SelectItem value="last_year">Last Year</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
+            </SelectContent>
+          </Select>
+          {datePreset === "custom" && (
+            <>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("w-[110px] justify-start text-left text-xs h-9 shrink-0", !dateFrom && "text-muted-foreground")}>
+                    <CalendarIcon className="h-3 w-3 mr-1" />
+                    {dateFrom ? format(dateFrom, "dd/MM/yy") : "From"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("w-[110px] justify-start text-left text-xs h-9 shrink-0", !dateTo && "text-muted-foreground")}>
+                    <CalendarIcon className="h-3 w-3 mr-1" />
+                    {dateTo ? format(dateTo, "dd/MM/yy") : "To"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
+          <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
+            <SelectTrigger className="w-auto min-w-[80px] h-9 text-xs shrink-0">
+              <SelectValue placeholder="Currency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-auto min-w-[110px] h-9 text-xs shrink-0">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(datePreset !== "all" || currencyFilter !== "all" || categoryFilter !== "all" || search) && (
+            <Button variant="ghost" size="sm" className="text-xs h-9 shrink-0" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
+              <X className="h-3 w-3 mr-1" /> Clear
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Table / Cards */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -440,7 +445,6 @@ export default function ExpensesPage() {
             </div>
           ) : filtered.length === 0 ? (
             expenses.length === 0 ? (
-              // Zero expenses at all — full CTA
               <div className="flex flex-col items-center justify-center py-16 text-center px-6">
                 <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
                   <Receipt className="h-7 w-7 text-muted-foreground" />
@@ -459,7 +463,6 @@ export default function ExpensesPage() {
                 </div>
               </div>
             ) : (
-              // Filters returned nothing
               <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
                 <p className="text-sm text-muted-foreground">No results for the selected filters.</p>
                 <Button variant="link" size="sm" className="h-auto p-0 text-sm" onClick={() => { clearDateFilter(); setCurrencyFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
@@ -468,38 +471,51 @@ export default function ExpensesPage() {
               </div>
             )
           ) : isMobile ? (
-            <div className="p-2 space-y-1">
+            <div className="divide-y divide-border">
               {groupedByMonth.map((group) => (
                 <div key={group.key}>
-                  <div className="flex items-center justify-between px-3 py-2.5 bg-accent/40 rounded-lg mb-1 mt-1 first:mt-0">
-                    <span className="text-xs font-bold text-foreground">{group.label}</span>
-                    <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                  <div className="flex items-center justify-between px-3 py-2 bg-muted/50 sticky top-0 z-10">
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">{group.label}</span>
+                    <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
                       {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  {group.records.map((doc) => (
-                    <div key={doc.id} className="flex items-start gap-2">
-                      <Checkbox
-                        checked={selectedIds.has(doc.id)}
-                        onCheckedChange={() => toggleSelect(doc.id)}
-                        className="mt-4 shrink-0"
-                      />
-                      <div className="flex-1">
-                        <MobileRecordCard
-                          title={doc.supplier_name}
-                          subtitle={doc.invoice_number || undefined}
-                          badge={{ label: !doc.document_id ? (doc.category === "Mileage" ? "Mileage" : doc.category === "Per Diem" ? "Per Diem" : "Manual") : (doc.category || "—") }}
-                          fields={[
-                            { label: "Date", value: doc.invoice_date },
-                            { label: "Currency", value: doc.currency },
-                            { label: "Net", value: Number(doc.net_amount).toFixed(2) },
-                            { label: "Total", value: Number(doc.total_amount).toFixed(2) },
-                          ]}
-                          onClick={() => openEdit(doc)}
+                  <div className="divide-y divide-border/50">
+                    {group.records.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2.5 active:bg-accent/60 transition-colors",
+                          selectedIds.has(doc.id) && "bg-primary/5"
+                        )}
+                      >
+                        <Checkbox
+                          checked={selectedIds.has(doc.id)}
+                          onCheckedChange={() => toggleSelect(doc.id)}
+                          className="shrink-0"
                         />
+                        <div className="flex-1 min-w-0" onClick={() => openEdit(doc)}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-medium truncate">{doc.supplier_name}</span>
+                            <span className="text-sm font-semibold tabular-nums shrink-0">
+                              {currencySymbols[doc.currency] || `${doc.currency} `}{Number(doc.total_amount).toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[11px] text-muted-foreground">{doc.invoice_date}</span>
+                            {doc.category && (
+                              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">{doc.category}</Badge>
+                            )}
+                            {!doc.document_id && (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal border-amber-200 text-amber-700 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30">
+                                {doc.category === "Mileage" ? "Mileage" : doc.category === "Per Diem" ? "Per Diem" : "Manual"}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
