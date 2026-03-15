@@ -8,8 +8,12 @@ import {
   Search, Filter, Edit3, Zap, Shield, BarChart3,
   UserPlus, Activity, Sparkles, Tag, Building2,
   ArrowLeftRight, UserCheck, Layers, FileOutput,
+  Send, Link2, ClipboardList, ExternalLink,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import quickbooksLogo from "@/assets/quickbooks-logo.png";
+import xeroLogo from "@/assets/xero-logo.png";
+import freshbooksLogo from "@/assets/freshbooks-logo.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
