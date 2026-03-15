@@ -33,6 +33,7 @@ export function AppMobileDrawer() {
     { title: t("navigation.firmDashboard"), url: "/app/workspaces", icon: BarChart3 },
     { title: t("navigation.documentRequests"), url: "/app/document-requests", icon: Link2 },
     { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
+    { title: t("navigation.documentRequests"), url: "/app/document-requests", icon: Link2 },
   ];
 
   const systemItems = [

@@ -28,10 +28,10 @@ interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   firmOrgId: string;
-  clientWorkspaces: Workspace[];
+  workspaces: Workspace[];
 }
 
-export function CreateDocumentRequestDialog({ open, onOpenChange, firmOrgId, clientWorkspaces }: Props) {
+export function CreateDocumentRequestDialog({ open, onOpenChange, firmOrgId, workspaces }: Props) {
   const createRequest = useCreateDocumentRequest();
   const [created, setCreated] = useState<DocumentRequest | null>(null);
   const [copied, setCopied] = useState(false);
@@ -108,7 +108,7 @@ export function CreateDocumentRequestDialog({ open, onOpenChange, firmOrgId, cli
               </div>
 
               <div className="space-y-1.5">
-                <Label>Client workspace</Label>
+                <Label>Destination workspace</Label>
                 <Select
                   value={workspaceId}
                   onValueChange={(v) => setValue("workspace_id", v, { shouldValidate: true })}
@@ -117,7 +117,7 @@ export function CreateDocumentRequestDialog({ open, onOpenChange, firmOrgId, cli
                     <SelectValue placeholder="Select a client workspace…" />
                   </SelectTrigger>
                   <SelectContent>
-                    {clientWorkspaces.map((ws) => (
+                    {workspaces.map((ws) => (
                       <SelectItem key={ws.id} value={ws.id}>
                         {ws.name}
                       </SelectItem>

@@ -144,17 +144,17 @@ function RequestCard({
 }
 
 export default function DocumentRequestsPage() {
-  const { homeOrg, clientWorkspaces, isAccountingFirm } = useWorkspace();
+  const { homeOrg, allWorkspaces } = useWorkspace();
   const [createOpen, setCreateOpen] = useState(false);
   const [closeTarget, setCloseTarget] = useState<string | null>(null);
 
-  const firmOrgId = homeOrg?.id;
-  const { data: requests = [], isLoading } = useDocumentRequests(firmOrgId);
+  const orgId = homeOrg?.id;
+  const { data: requests = [], isLoading } = useDocumentRequests(orgId);
   const closeRequest = useCloseDocumentRequest();
 
-  // Build workspace name lookup
+  // Build workspace name lookup from all accessible workspaces
   const workspaceNameById: Record<string, string> = {};
-  clientWorkspaces.forEach((ws) => { workspaceNameById[ws.id] = ws.name; });
+  allWorkspaces.forEach((ws) => { workspaceNameById[ws.id] = ws.name; });
 
   const handleClose = async () => {
     if (!closeTarget) return;
@@ -165,20 +165,6 @@ export default function DocumentRequestsPage() {
   const handleReopen = async (id: string) => {
     await closeRequest.mutateAsync({ id, reopen: true });
   };
-
-  if (!isAccountingFirm) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full py-24 space-y-3 text-center px-4">
-        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-          <FileText className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <h2 className="text-lg font-semibold">Not available</h2>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Document requests are available for accounting firm accounts only.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5 p-4 md:p-6 max-w-3xl mx-auto">
@@ -230,12 +216,12 @@ export default function DocumentRequestsPage() {
       )}
 
       {/* Create dialog */}
-      {firmOrgId && (
+      {orgId && (
         <CreateDocumentRequestDialog
           open={createOpen}
           onOpenChange={setCreateOpen}
-          firmOrgId={firmOrgId}
-          clientWorkspaces={clientWorkspaces}
+          firmOrgId={orgId}
+          workspaces={allWorkspaces}
         />
       )}
 
