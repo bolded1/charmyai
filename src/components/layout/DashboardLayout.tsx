@@ -162,7 +162,7 @@ export default function DashboardLayout() {
               <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 flex items-center justify-between gap-2 shrink-0">
                 <div className="flex items-center gap-2 text-sm text-destructive">
                   <ShieldAlert className="h-4 w-4 shrink-0" />
-                  <span className="font-medium">Viewing as:</span>
+                  <span className="font-medium">{t("auth.viewingAs")}</span>
                   <span>{impersonating.displayName} ({impersonating.email})</span>
                 </div>
                 <Button
@@ -171,7 +171,7 @@ export default function DashboardLayout() {
                   className="text-destructive hover:bg-destructive/10 h-7"
                   onClick={() => { stopImpersonating(); navigate("/admin/users"); }}
                 >
-                  <X className="h-3.5 w-3.5 mr-1" /> Stop
+                  <X className="h-3.5 w-3.5 mr-1" /> {t("common.stop")}
                 </Button>
               </div>
             )}

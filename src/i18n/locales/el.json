@@ -91,7 +91,8 @@
     "downloadZip": "Λήψη ZIP",
     "emailAddress": "Διεύθυνση email",
     "emailCopied": "Η διεύθυνση email αντιγράφηκε!",
-    "myProfile": "Το Προφίλ μου"
+    "myProfile": "Το Προφίλ μου",
+    "documentManagement": "Διαχείριση Εγγράφων"
   },
   "navigation": {
     "dashboard": "Πίνακας Ελέγχου",
@@ -1081,6 +1082,12 @@
     "desktopInstructions": "Προσθέστε το Charmy στην επιφάνεια εργασίας ως Progressive Web App — γρήγορη εκκίνηση και εμπειρία εφαρμογής",
     "iosInstructions": "Πατήστε Κοινοποίηση → Προσθήκη στην Αρχική Οθόνη",
     "installButton": "Εγκατάσταση"
+  },
+  "pwaUpdate": {
+    "title": "Διαθέσιμη ενημέρωση",
+    "description": "Μια νέα έκδοση του Charmy είναι έτοιμη. Ανανεώστε για τις τελευταίες λειτουργίες.",
+    "refreshNow": "Ανανέωση τώρα",
+    "later": "Αργότερα"
   },
   "notifications": {
     "markAllRead": "Σήμανση όλων ως αναγνωσμένα",

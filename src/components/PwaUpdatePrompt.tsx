@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export function PwaUpdatePrompt() {
+  const { t } = useTranslation();
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(swUrl, r) {
-      // Check for updates every 30 minutes
       if (r) {
         setInterval(() => r.update(), 30 * 60 * 1000);
       }
@@ -32,9 +32,9 @@ export function PwaUpdatePrompt() {
             <RefreshCw className="h-4 w-4 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Update available</p>
+            <p className="text-sm font-semibold text-foreground">{t("pwaUpdate.title")}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              A new version of Charmy is ready. Refresh to get the latest features.
+              {t("pwaUpdate.description")}
             </p>
             <div className="flex gap-2 mt-3">
               <Button
@@ -42,7 +42,7 @@ export function PwaUpdatePrompt() {
                 className="h-7 text-xs"
                 onClick={() => updateServiceWorker(true)}
               >
-                Refresh now
+                {t("pwaUpdate.refreshNow")}
               </Button>
               <Button
                 size="sm"
@@ -50,7 +50,7 @@ export function PwaUpdatePrompt() {
                 className="h-7 text-xs"
                 onClick={() => setNeedRefresh(false)}
               >
-                Later
+                {t("pwaUpdate.later")}
               </Button>
             </div>
           </div>
