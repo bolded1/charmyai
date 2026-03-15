@@ -3,14 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, Loader2, CalendarIcon } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Download, Loader2, CalendarIcon, RefreshCw, CheckCircle2 } from "lucide-react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useExpenseRecords, useIncomeRecords } from "@/hooks/useDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToPdf } from "@/lib/pdf-export";
+import { syncToAccounting } from "@/components/AccountingSyncSettings";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 const MONTHS = [
   { value: "01", label: "Jan", full: "January" },
@@ -126,6 +129,30 @@ export default function ExportsPage() {
   const { activeWorkspace } = useWorkspace();
   const { data: expenses = [] } = useExpenseRecords();
   const { data: income = [] } = useIncomeRecords();
+
+  const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
+  const [syncingExp, setSyncingExp] = useState<string | null>(null);
+  const [syncingInc, setSyncingInc] = useState<string | null>(null);
+
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "";
+  const OAUTH_FN = `${SUPABASE_URL}/functions/v1/accounting-oauth`;
+
+  const loadConnected = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const params = new URLSearchParams({ action: "status" });
+      if (activeWorkspace?.id) params.set("org_id", activeWorkspace.id);
+      const res = await fetch(`${OAUTH_FN}?${params}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await res.json();
+      setConnectedProviders((data.integrations ?? []).map((i: any) => i.provider));
+    } catch { /* silently ignore */ }
+  }, [user, activeWorkspace]);
+
+  useEffect(() => { loadConnected(); }, [loadConnected]);
 
   const incomeYears = useMemo(() => {
     const years = new Set<string>();
@@ -258,6 +285,53 @@ export default function ExportsPage() {
     }
   };
 
+  const handleSyncExpenses = async (provider: string) => {
+    setSyncingExp(provider);
+    try {
+      let records = currency === "all" ? expenses : expenses.filter((e) => e.currency === currency);
+      if (expYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(expYear));
+      if (expMonths.length > 0) records = records.filter((r) => expMonths.includes(r.invoice_date?.slice(5, 7) || ""));
+      if (records.length === 0) { toast.info("No records match the current filters."); return; }
+
+      const { synced, errors } = await syncToAccounting(
+        provider as any, "expenses", records, activeWorkspace?.id ?? ""
+      );
+      if (errors.length > 0) toast.warning(`${synced} synced, ${errors.length} failed.`);
+      else toast.success(`${synced} expense records pushed to ${provider}.`);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSyncingExp(null);
+    }
+  };
+
+  const handleSyncIncome = async (provider: string) => {
+    setSyncingInc(provider);
+    try {
+      let records = income;
+      if (incomeCurrency !== "all") records = records.filter((r) => r.currency === incomeCurrency);
+      if (incomeYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(incomeYear));
+      if (incomeMonths.length > 0) records = records.filter((r) => incomeMonths.includes(r.invoice_date?.slice(5, 7) || ""));
+      if (records.length === 0) { toast.info("No records match the current filters."); return; }
+
+      const { synced, errors } = await syncToAccounting(
+        provider as any, "income", records, activeWorkspace?.id ?? ""
+      );
+      if (errors.length > 0) toast.warning(`${synced} synced, ${errors.length} failed.`);
+      else toast.success(`${synced} income records pushed to ${provider}.`);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSyncingInc(null);
+    }
+  };
+
+  const PROVIDER_LABELS: Record<string, string> = {
+    quickbooks: "QuickBooks",
+    xero: "Xero",
+    freshbooks: "FreshBooks",
+  };
+
   if (!user) {
     return <div className="text-center py-12 text-muted-foreground">Please log in to export data.</div>;
   }
@@ -314,6 +388,35 @@ export default function ExportsPage() {
             {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
             Export Expenses as {format.toUpperCase()}
           </Button>
+
+          {connectedProviders.length > 0 && (
+            <div className="pt-2 border-t border-border space-y-2">
+              <p className="text-xs text-muted-foreground font-medium">Sync to accounting software</p>
+              <div className="flex flex-wrap gap-2">
+                {connectedProviders.map((p) => (
+                  <Button
+                    key={p}
+                    variant="outline"
+                    size="sm"
+                    disabled={syncingExp === p}
+                    onClick={() => handleSyncExpenses(p)}
+                    className="h-8 text-xs"
+                  >
+                    {syncingExp === p
+                      ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                      : <RefreshCw className="h-3.5 w-3.5 mr-1.5" />}
+                    Push to {PROVIDER_LABELS[p] ?? p}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {connectedProviders.length === 0 && (
+            <p className="text-[11px] text-muted-foreground text-center">
+              <Link to="/settings?tab=integrations" className="underline underline-offset-2">Connect an accounting platform</Link> to push directly to your ledger.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -367,6 +470,35 @@ export default function ExportsPage() {
             {exportingIncome ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
             Export Income as {incomeFormat.toUpperCase()}
           </Button>
+
+          {connectedProviders.length > 0 && (
+            <div className="pt-2 border-t border-border space-y-2">
+              <p className="text-xs text-muted-foreground font-medium">Sync to accounting software</p>
+              <div className="flex flex-wrap gap-2">
+                {connectedProviders.map((p) => (
+                  <Button
+                    key={p}
+                    variant="outline"
+                    size="sm"
+                    disabled={syncingInc === p}
+                    onClick={() => handleSyncIncome(p)}
+                    className="h-8 text-xs"
+                  >
+                    {syncingInc === p
+                      ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                      : <RefreshCw className="h-3.5 w-3.5 mr-1.5" />}
+                    Push to {PROVIDER_LABELS[p] ?? p}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {connectedProviders.length === 0 && (
+            <p className="text-[11px] text-muted-foreground text-center">
+              <Link to="/settings?tab=integrations" className="underline underline-offset-2">Connect an accounting platform</Link> to push directly to your ledger.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

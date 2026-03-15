@@ -19,6 +19,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff, Lock } from "lucide-react";
 import ApiKeyManager from "@/components/ApiKeyManager";
 import EmailImportSettings from "@/components/EmailImportSettings";
+import AccountingSyncSettings from "@/components/AccountingSyncSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
 import { useOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
 import { useClientRole } from "@/hooks/useClientRole";
@@ -272,6 +273,7 @@ export default function SettingsPage() {
             <TabsTrigger value="billing">Billing</TabsTrigger>
             <TabsTrigger value="organization">Organization</TabsTrigger>
             <TabsTrigger value="email-import">Email Import</TabsTrigger>
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
             <TabsTrigger value="api">API</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
@@ -463,6 +465,23 @@ export default function SettingsPage() {
         {/* ════════════════ EMAIL IMPORT ════════════════ */}
         <TabsContent value="email-import">
           <EmailImportSettings />
+        </TabsContent>
+
+        {/* ════════════════ INTEGRATIONS ════════════════ */}
+        <TabsContent value="integrations">
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-5">
+                  <h3 className="text-sm font-medium text-foreground">Accounting Software</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Connect your accounting platform to push expenses and invoices directly to your ledger — no more CSV hand-offs.
+                  </p>
+                </div>
+                <AccountingSyncSettings />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* ════════════════ API ════════════════ */}
