@@ -101,8 +101,8 @@ serve(async (req) => {
       });
     }
 
-    // Verify the caller owns this document
-    if (doc.user_id !== userId) {
+    // For normal calls verify ownership; internal calls skip this
+    if (!isInternalCall && doc.user_id !== userId) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

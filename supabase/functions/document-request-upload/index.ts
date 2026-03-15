@@ -159,7 +159,8 @@ Deno.serve(async (req) => {
           file_path: filePath,
           file_type: file.type,
           file_size: file.size,
-          status: "needs_review",
+          source: "document_request",
+          status: "processing",
         })
         .select("id")
         .single();
@@ -186,6 +187,21 @@ Deno.serve(async (req) => {
         .from("document_requests")
         .update({ upload_count: request.upload_count + 1, updated_at: new Date().toISOString() })
         .eq("id", request.id);
+
+      // Trigger AI extraction (fire-and-forget style, don't block response)
+      try {
+        const extractUrl = `${supabaseUrl}/functions/v1/extract-document`;
+        fetch(extractUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-key": serviceRoleKey,
+          },
+          body: JSON.stringify({ documentId: doc.id, userId: request.created_by }),
+        }).catch((e) => console.error("Extract trigger failed:", e));
+      } catch (triggerErr) {
+        console.error("Failed to trigger extraction:", triggerErr);
+      }
 
       return new Response(
         JSON.stringify({ document_id: doc.id, file_name: file.name }),
