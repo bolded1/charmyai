@@ -76,7 +76,7 @@ export default function MarketingLayout() {
             </Link>
 
             {/* Desktop Nav — centered pill links */}
-            <nav className="hidden lg:flex items-center gap-1 bg-muted/50 rounded-xl px-1.5 py-1">
+            <nav className="hidden lg:flex items-center gap-1 px-1.5 py-1">
               {navLinks.map((l) => {
                 const isActive = location.pathname === l.to;
                 return (
