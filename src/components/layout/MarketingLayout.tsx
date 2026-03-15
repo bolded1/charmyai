@@ -251,6 +251,7 @@ export default function MarketingLayout() {
                 <Link to="/about" className="block hover:text-foreground">{t("marketing.about")}</Link>
                 <Link to="/contact" className="block hover:text-foreground">{t("marketing.contact")}</Link>
                 <Link to="/self-employed" className="block hover:text-foreground">{t("marketing.selfEmployedLink")}</Link>
+                <Link to="/app/help" className="block hover:text-foreground">Help & Documentation</Link>
               </div>
             </div>
             <div>
