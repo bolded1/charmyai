@@ -27,7 +27,18 @@ const EXPENSE_TYPES: { value: ExpenseType; label: string; icon: React.ReactNode;
   { value: "cash", label: "Cash", icon: <ShoppingCart className="h-4 w-4" />, description: "Cash or out-of-pocket" },
 ];
 
-const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "CAD", "AUD", "SEK", "NOK", "DKK", "JPY"];
+const CURRENCIES = [
+  // Major
+  "EUR", "USD", "GBP", "CHF", "JPY", "CAD", "AUD", "NZD",
+  // European
+  "SEK", "NOK", "DKK", "PLN", "HUF", "CZK", "RON", "BGN", "HRK", "RSD", "TRY", "RUB",
+  // Middle East / Africa
+  "AED", "SAR", "QAR", "KWD", "BHD", "OMR", "ILS", "MAD", "EGP", "NGN", "KES", "GHS", "ZAR",
+  // Asia
+  "INR", "PKR", "BDT", "SGD", "MYR", "THB", "PHP", "IDR", "VND", "KRW", "CNY", "HKD", "TWD",
+  // Americas
+  "BRL", "MXN", "ARS", "CLP", "COP", "PEN", "UYU",
+];
 
 const RATE_KEY = "charmy_mileage_rate";
 

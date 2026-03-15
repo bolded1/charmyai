@@ -285,7 +285,17 @@ export default function ExpensesPage() {
     return groups;
   }, [filtered]);
 
-  const currencySymbols: Record<string, string> = { EUR: "€", USD: "$", GBP: "£", CHF: "CHF ", JPY: "¥", CAD: "CA$", AUD: "A$", SEK: "kr ", NOK: "kr ", DKK: "kr " };
+  const currencySymbols: Record<string, string> = {
+    EUR: "€", USD: "$", GBP: "£", CHF: "CHF ", JPY: "¥", CAD: "CA$", AUD: "A$",
+    SEK: "kr ", NOK: "kr ", DKK: "kr ", PLN: "zł ", HUF: "Ft ", CZK: "Kč ",
+    RON: "lei ", BGN: "лв ", HRK: "kn ", RSD: "din ", TRY: "₺", RUB: "₽",
+    AED: "د.إ ", SAR: "﷼ ", QAR: "﷼ ", KWD: "KD ", BHD: "BD ", OMR: "OMR ",
+    ILS: "₪", INR: "₹", PKR: "₨ ", BDT: "৳ ", SGD: "S$", MYR: "RM ",
+    THB: "฿", PHP: "₱", IDR: "Rp ", VND: "₫", KRW: "₩", CNY: "¥",
+    HKD: "HK$", TWD: "NT$", NZD: "NZ$", ZAR: "R ", BRL: "R$", MXN: "MX$",
+    ARS: "ARS ", CLP: "CLP ", COP: "COP ", PEN: "S/ ", UYU: "UYU ",
+    NGN: "₦", KES: "KSh ", GHS: "GH₵", MAD: "MAD ", EGP: "E£ ",
+  };
   const cardStyles = ["stat-card-blue icon-bg-blue text-primary", "stat-card-violet icon-bg-violet text-violet", "stat-card-emerald icon-bg-emerald text-emerald", "stat-card-amber icon-bg-amber text-amber"];
   const currencySummary = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
@@ -315,14 +325,40 @@ export default function ExpensesPage() {
       const dt = new Date(d);
       return dt >= from && dt <= to;
     };
-    const thisTotal = expenses
-      .filter((e) => e.currency === defaultCurrency && inRange(e.invoice_date, thisStart, new Date()))
-      .reduce((s, e) => s + Number(e.total_amount || 0), 0);
-    const lastTotal = expenses
-      .filter((e) => e.currency === defaultCurrency && inRange(e.invoice_date, lastStart, lastEnd))
-      .reduce((s, e) => s + Number(e.total_amount || 0), 0);
+    // Compute per-currency totals so we can show the most relevant one
+    const computeTotals = (from: Date, to: Date) => {
+      const map = new Map<string, number>();
+      expenses.forEach((e) => {
+        if (!inRange(e.invoice_date, from, to)) return;
+        const c = e.currency || defaultCurrency;
+        map.set(c, (map.get(c) || 0) + Number(e.total_amount || 0));
+      });
+      return map;
+    };
+    const thisMap = computeTotals(thisStart, now);
+    const lastMap = computeTotals(lastStart, lastEnd);
+
+    // Prefer defaultCurrency; fall back to highest-total currency
+    const pickCurrency = () => {
+      if (thisMap.has(defaultCurrency) || lastMap.has(defaultCurrency)) return defaultCurrency;
+      const allCurrencies = new Set([...thisMap.keys(), ...lastMap.keys()]);
+      let best = defaultCurrency;
+      let bestTotal = -1;
+      allCurrencies.forEach((c) => {
+        const t = (thisMap.get(c) || 0) + (lastMap.get(c) || 0);
+        if (t > bestTotal) { bestTotal = t; best = c; }
+      });
+      return best;
+    };
+
+    const currency = pickCurrency();
+    const thisTotal = thisMap.get(currency) || 0;
+    const lastTotal = lastMap.get(currency) || 0;
     const pct = lastTotal === 0 ? null : ((thisTotal - lastTotal) / lastTotal) * 100;
-    return { thisTotal, lastTotal, pct };
+    // Total expense counts (all currencies)
+    const thisCount = expenses.filter((e) => inRange(e.invoice_date, thisStart, now)).length;
+    const lastCount = expenses.filter((e) => inRange(e.invoice_date, lastStart, lastEnd)).length;
+    return { thisTotal, lastTotal, pct, currency, thisCount, lastCount };
   }, [expenses, defaultCurrency]);
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
@@ -365,18 +401,24 @@ export default function ExpensesPage() {
       {expenses.length > 0 && (
         <div className="flex flex-wrap gap-3">
           <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
-            <span className="text-muted-foreground text-xs">This month</span>
-            <span className="font-semibold tabular-nums">
-              {currencySymbols[defaultCurrency] || `${defaultCurrency} `}
-              {momStats.thisTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
+            <div>
+              <span className="text-muted-foreground text-xs block">This month</span>
+              <span className="font-semibold tabular-nums">
+                {currencySymbols[momStats.currency] || `${momStats.currency} `}
+                {momStats.thisTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              {momStats.thisCount > 0 && <span className="text-[10px] text-muted-foreground">{momStats.thisCount} expense{momStats.thisCount !== 1 ? "s" : ""}</span>}
+            </div>
           </div>
           <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
-            <span className="text-muted-foreground text-xs">Last month</span>
-            <span className="font-semibold tabular-nums text-muted-foreground">
-              {currencySymbols[defaultCurrency] || `${defaultCurrency} `}
-              {momStats.lastTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
+            <div>
+              <span className="text-muted-foreground text-xs block">Last month</span>
+              <span className="font-semibold tabular-nums text-muted-foreground">
+                {currencySymbols[momStats.currency] || `${momStats.currency} `}
+                {momStats.lastTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              {momStats.lastCount > 0 && <span className="text-[10px] text-muted-foreground">{momStats.lastCount} expense{momStats.lastCount !== 1 ? "s" : ""}</span>}
+            </div>
           </div>
           {momStats.pct !== null && (
             <div className={cn(
@@ -388,7 +430,7 @@ export default function ExpensesPage() {
               {momStats.pct > 0 ? <TrendingUp className="h-3.5 w-3.5" /> :
                momStats.pct < 0 ? <TrendingDown className="h-3.5 w-3.5" /> :
                <Minus className="h-3.5 w-3.5" />}
-              {momStats.pct > 0 ? "+" : ""}{momStats.pct.toFixed(1)}% vs last month
+              {momStats.pct > 0 ? "+" : ""}{momStats.pct.toFixed(1)}%
             </div>
           )}
         </div>
