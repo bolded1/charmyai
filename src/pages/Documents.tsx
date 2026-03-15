@@ -291,39 +291,48 @@ export default function DocumentsPage() {
         </Card>
       ) : isMobile ? (
         /* Mobile card view */
-        <div className="space-y-2">
-          {filtered.map((doc) => (
-            <div key={doc.id} className="flex items-start gap-2">
-              <div className="pt-3 pl-1">
-                <Checkbox
-                  checked={selectedIds.has(doc.id)}
-                  onCheckedChange={() => toggleSelect(doc.id)}
-                />
+        <div className="space-y-1">
+          {groupedByDay.map((group) => (
+            <div key={group.sortKey}>
+              <div className="flex items-center gap-2 py-2 px-1">
+                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group.label}</span>
+                <span className="text-xs text-muted-foreground/60">({group.docs.length})</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <MobileRecordCard
-                  title={doc.file_name}
-                  subtitle={doc.supplier_name || doc.customer_name || undefined}
-                  badge={{
-                    label: (doc as any).potential_duplicate_of
-                      ? "⚠ Duplicate"
-                      : statusLabel(doc.status),
-                    className: (doc as any).potential_duplicate_of
-                      ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
-                      : statusColors[doc.status] || "",
-                  }}
-                  fields={[
-                    { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
-                    { label: "Date", value: doc.invoice_date || "—" },
-                    { label: "Amount", value: doc.total_amount && Number(doc.total_amount) > 0
-                      ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
-                      : "—"
-                    },
-                    { label: "Source", value: (doc as any).source === "email_import" ? "Email" : "Upload" },
-                  ]}
-                  onClick={() => openReview(doc)}
-                />
-              </div>
+              {group.docs.map((doc) => (
+                <div key={doc.id} className="flex items-start gap-2">
+                  <div className="pt-3 pl-1">
+                    <Checkbox
+                      checked={selectedIds.has(doc.id)}
+                      onCheckedChange={() => toggleSelect(doc.id)}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <MobileRecordCard
+                      title={doc.file_name}
+                      subtitle={doc.supplier_name || doc.customer_name || undefined}
+                      badge={{
+                        label: (doc as any).potential_duplicate_of
+                          ? "⚠ Duplicate"
+                          : statusLabel(doc.status),
+                        className: (doc as any).potential_duplicate_of
+                          ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
+                          : statusColors[doc.status] || "",
+                      }}
+                      fields={[
+                        { label: "Type", value: (doc.document_type || "—").replace("_", " ") },
+                        { label: "Date", value: doc.invoice_date || "—" },
+                        { label: "Amount", value: doc.total_amount && Number(doc.total_amount) > 0
+                          ? `${doc.currency || "EUR"} ${Number(doc.total_amount).toFixed(2)}`
+                          : "—"
+                        },
+                        { label: "Source", value: (doc as any).source === "email_import" ? "Email" : "Upload" },
+                      ]}
+                      onClick={() => openReview(doc)}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
