@@ -397,44 +397,6 @@ export default function ExpensesPage() {
         })}
       </div>
 
-      {/* Month-over-month quick stats */}
-      {expenses.length > 0 && (
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
-            <div>
-              <span className="text-muted-foreground text-xs block">This month</span>
-              <span className="font-semibold tabular-nums">
-                {currencySymbols[momStats.currency] || `${momStats.currency} `}
-                {momStats.thisTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              {momStats.thisCount > 0 && <span className="text-[10px] text-muted-foreground">{momStats.thisCount} expense{momStats.thisCount !== 1 ? "s" : ""}</span>}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
-            <div>
-              <span className="text-muted-foreground text-xs block">Last month</span>
-              <span className="font-semibold tabular-nums text-muted-foreground">
-                {currencySymbols[momStats.currency] || `${momStats.currency} `}
-                {momStats.lastTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              {momStats.lastCount > 0 && <span className="text-[10px] text-muted-foreground">{momStats.lastCount} expense{momStats.lastCount !== 1 ? "s" : ""}</span>}
-            </div>
-          </div>
-          {momStats.pct !== null && (
-            <div className={cn(
-              "flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold",
-              momStats.pct > 0 ? "text-red-600 bg-red-50 border-red-100 dark:bg-red-950/30 dark:border-red-900" :
-              momStats.pct < 0 ? "text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900" :
-              "text-muted-foreground bg-card"
-            )}>
-              {momStats.pct > 0 ? <TrendingUp className="h-3.5 w-3.5" /> :
-               momStats.pct < 0 ? <TrendingDown className="h-3.5 w-3.5" /> :
-               <Minus className="h-3.5 w-3.5" />}
-              {momStats.pct > 0 ? "+" : ""}{momStats.pct.toFixed(1)}%
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Filters row */}
       <div className="flex flex-wrap items-center gap-3">
