@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +90,7 @@ export function ManualExpenseDialog({ open, onOpenChange, defaultCurrency = "EUR
   // Receipt file
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   // Set default category when type changes
   useEffect(() => {
@@ -172,7 +174,22 @@ export function ManualExpenseDialog({ open, onOpenChange, defaultCurrency = "EUR
     setReceiptPreview(null);
   };
 
-  const handleClose = () => { reset(); onOpenChange(false); };
+  const isDirty = !!(description || reference || netAmount || vatAmount || distanceKm || days || dailyRate || location || receiptFile);
+
+  const handleClose = () => {
+    if (isDirty) {
+      setShowDiscardConfirm(true);
+    } else {
+      reset();
+      onOpenChange(false);
+    }
+  };
+
+  const confirmDiscard = () => {
+    setShowDiscardConfirm(false);
+    reset();
+    onOpenChange(false);
+  };;
 
   const isValid = () => {
     if (!date) return false;
@@ -231,6 +248,19 @@ export function ManualExpenseDialog({ open, onOpenChange, defaultCurrency = "EUR
   };
 
   return (
+    <>
+    <AlertDialog open={showDiscardConfirm} onOpenChange={setShowDiscardConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+          <AlertDialogDescription>You have unsaved data. Closing will discard all entered information.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Keep editing</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDiscard} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Discard</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -451,5 +481,6 @@ export function ManualExpenseDialog({ open, onOpenChange, defaultCurrency = "EUR
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

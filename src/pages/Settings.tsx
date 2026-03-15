@@ -67,6 +67,7 @@ function OrgSettingsForm({ org, updateOrg }: { org: any; updateOrg: any }) {
   const orgReadyRef = useRef(false);
   const lastSavedOrgRef = useRef("");
   const orgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [orgSaveStatus, setOrgSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   useEffect(() => {
     if (org) {
@@ -90,13 +91,18 @@ function OrgSettingsForm({ org, updateOrg }: { org: any; updateOrg: any }) {
     const serialized = JSON.stringify(orgForm);
     if (serialized === lastSavedOrgRef.current) return;
 
+    setOrgSaveStatus("saving");
     if (orgTimerRef.current) clearTimeout(orgTimerRef.current);
     orgTimerRef.current = setTimeout(async () => {
       try {
         await updateOrg.mutateAsync({ id: org.id, name: orgForm.name || org.name, ...orgForm });
         lastSavedOrgRef.current = serialized;
-        toast.success("Saved");
-      } catch { toast.error("Failed to save organization."); }
+        setOrgSaveStatus("saved");
+        setTimeout(() => setOrgSaveStatus("idle"), 2000);
+      } catch {
+        setOrgSaveStatus("idle");
+        toast.error("Failed to save organization.");
+      }
     }, 800);
     return () => { if (orgTimerRef.current) clearTimeout(orgTimerRef.current); };
   }, [orgForm]);
@@ -107,7 +113,21 @@ function OrgSettingsForm({ org, updateOrg }: { org: any; updateOrg: any }) {
     <div className="space-y-6">
       <Card>
         <CardContent className="p-6">
-          <SectionHeader title="Company Details" description="Basic information about your organization." />
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Company Details</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Basic information about your organization.</p>
+            </div>
+            {orgSaveStatus !== "idle" && (
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {orgSaveStatus === "saving" ? (
+                  <><Loader2 className="h-3 w-3 animate-spin" /> Saving…</>
+                ) : (
+                  <><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" /> Saved</>
+                )}
+              </span>
+            )}
+          </div>
           <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Company Name">
@@ -200,6 +220,7 @@ export default function SettingsPage() {
   const profileTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profileReadyRef = useRef(false);
   const lastSavedFormRef = useRef<string>("");
+  const [profileSaveStatus, setProfileSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   // Mark ready only after profile has populated the form
   useEffect(() => {
@@ -217,6 +238,7 @@ export default function SettingsPage() {
     const serialized = JSON.stringify(profileForm);
     if (serialized === lastSavedFormRef.current) return;
 
+    setProfileSaveStatus("saving");
     if (profileTimerRef.current) clearTimeout(profileTimerRef.current);
     profileTimerRef.current = setTimeout(async () => {
       try {
@@ -226,8 +248,12 @@ export default function SettingsPage() {
           timezone: profileForm.timezone, language: profileForm.language,
         });
         lastSavedFormRef.current = serialized;
-        toast.success("Saved");
-      } catch { toast.error("Failed to save."); }
+        setProfileSaveStatus("saved");
+        setTimeout(() => setProfileSaveStatus("idle"), 2000);
+      } catch {
+        setProfileSaveStatus("idle");
+        toast.error("Failed to save.");
+      }
     }, 800);
     return () => { if (profileTimerRef.current) clearTimeout(profileTimerRef.current); };
   }, [profileForm]);
@@ -328,7 +354,21 @@ export default function SettingsPage() {
               {/* Personal Info */}
               <Card>
                 <CardContent className="p-6">
-                  <SectionHeader title="Personal Information" description="Your name and contact details." />
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h3 className="text-sm font-medium text-foreground">Personal Information</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">Your name and contact details.</p>
+                    </div>
+                    {profileSaveStatus !== "idle" && (
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {profileSaveStatus === "saving" ? (
+                          <><Loader2 className="h-3 w-3 animate-spin" /> Saving…</>
+                        ) : (
+                          <><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" /> Saved</>
+                        )}
+                      </span>
+                    )}
+                  </div>
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Field label="First Name">

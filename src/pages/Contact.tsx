@@ -4,9 +4,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Mail, MapPin, Phone, Send, MessageSquare, Clock, ArrowRight,
-  DollarSign, HelpCircle, LifeBuoy, Handshake, Sparkles,
+  DollarSign, HelpCircle, LifeBuoy, Handshake, Sparkles, Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { MarketingCTA } from "@/components/MarketingCTA";
 import { motion } from "framer-motion";
@@ -23,6 +23,7 @@ const fadeUp = (delay = 0) => ({
 export default function ContactPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +31,7 @@ export default function ContactPage() {
     setTimeout(() => {
       setLoading(false);
       toast.success(t("contact.success"));
+      formRef.current?.reset();
     }, 1000);
   };
 
@@ -135,29 +137,31 @@ export default function ContactPage() {
               </div>
             </motion.div>
 
-            <motion.form {...fadeUp(0.15)} onSubmit={handleSubmit}
+            <motion.form {...fadeUp(0.15)} onSubmit={handleSubmit} ref={formRef}
               className="md:col-span-3 surface-elevated rounded-2xl p-6 md:p-8 space-y-5 border border-border/50">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">{t("contact.name")}</Label>
-                  <Input id="name" placeholder={t("contact.namePlaceholder", "Your name")} required />
+              <fieldset disabled={loading} className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">{t("contact.name")}</Label>
+                    <Input id="name" placeholder={t("contact.namePlaceholder", "Your name")} required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-xs font-medium text-muted-foreground">{t("contact.email")}</Label>
+                    <Input id="email" type="email" placeholder="you@company.com" required />
+                  </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-xs font-medium text-muted-foreground">{t("contact.email")}</Label>
-                  <Input id="email" type="email" placeholder="you@company.com" required />
+                  <Label htmlFor="subject" className="text-xs font-medium text-muted-foreground">{t("contact.subject", "Subject")}</Label>
+                  <Input id="subject" placeholder={t("contact.subjectPlaceholder", "How can we help?")} required />
                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="subject" className="text-xs font-medium text-muted-foreground">{t("contact.subject", "Subject")}</Label>
-                <Input id="subject" placeholder={t("contact.subjectPlaceholder", "How can we help?")} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="message" className="text-xs font-medium text-muted-foreground">{t("contact.message")}</Label>
-                <Textarea id="message" placeholder={t("contact.messagePlaceholder", "Tell us more about your needs...")} rows={5} required />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full" size="lg">
-                {loading ? t("common.loading") : <><Send className="h-4 w-4 mr-2" /> {t("contact.send")}</>}
-              </Button>
+                <div className="space-y-1.5">
+                  <Label htmlFor="message" className="text-xs font-medium text-muted-foreground">{t("contact.message")}</Label>
+                  <Textarea id="message" placeholder={t("contact.messagePlaceholder", "Tell us more about your needs...")} rows={5} required />
+                </div>
+                <Button type="submit" disabled={loading} className="w-full" size="lg">
+                  {loading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />{t("common.loading")}</> : <><Send className="h-4 w-4 mr-2" /> {t("contact.send")}</>}
+                </Button>
+              </fieldset>
               <p className="text-[11px] text-muted-foreground/70 text-center">{t("contact.privacyNote", "By submitting this form, you agree to our Privacy Policy.")}</p>
             </motion.form>
           </div>
