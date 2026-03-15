@@ -227,7 +227,7 @@ export function CreateDocumentRequestDialog({ open, onOpenChange, firmOrgId, wor
 
               {/* Email status */}
               {emailSent && (
-                <div className="flex items-center gap-2 text-sm text-emerald-600">
+                <div className="flex items-center gap-2 text-sm text-primary">
                   <Check className="h-4 w-4" />
                   <span>Email sent to {clientEmail}</span>
                 </div>
