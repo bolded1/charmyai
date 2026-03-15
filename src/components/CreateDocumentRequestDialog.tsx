@@ -43,7 +43,7 @@ export function CreateDocumentRequestDialog({ open, onOpenChange, firmOrgId, wor
   const workspaceId = watch("workspace_id");
 
   const uploadUrl = created
-    ? `${window.location.origin}/request/${created.token}`
+    ? `https://charmy.net/request/${created.token}`
     : null;
 
   const copyLink = () => {
