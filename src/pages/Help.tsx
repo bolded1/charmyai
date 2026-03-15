@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Upload, FileText, Receipt, TrendingUp, Download, UsersRound, Settings,
@@ -402,6 +402,8 @@ export default function Help() {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isPublic = !location.pathname.startsWith("/app");
 
   const filtered = helpArticles.filter(
     (a) =>
@@ -578,7 +580,7 @@ export default function Help() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
         className="glass-card rounded-2xl p-6 text-center cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => navigate("/app/support")}
+        onClick={() => navigate(isPublic ? "/contact" : "/app/support")}
       >
         <Zap className="h-8 w-8 text-primary mx-auto mb-2" />
         <h3 className="font-semibold mb-1">Still have questions?</h3>

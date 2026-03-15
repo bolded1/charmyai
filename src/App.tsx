@@ -112,6 +112,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/acceptable-use" element={<AcceptableUse />} />
+            <Route path="/help" element={<Help />} />
           </Route>
 
           {/* Auth pages */}
