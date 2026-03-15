@@ -7,7 +7,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Upload, FileText, Receipt, TrendingUp, Tag,
   Download, UsersRound, Settings, LogOut, HelpCircle, LifeBuoy, Sparkles, Briefcase,
-  BarChart3,
+  BarChart3, Link2,
 } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,6 +67,7 @@ export function DashboardSidebar() {
 
   const firmItems = [
     { title: t("navigation.firmDashboard"), url: "/app/workspaces", icon: BarChart3 },
+    { title: t("navigation.documentRequests"), url: "/app/document-requests", icon: Link2 },
     { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
   ];
 

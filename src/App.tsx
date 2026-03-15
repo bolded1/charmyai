@@ -69,6 +69,8 @@ import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import AdminFirmAccounts from "./pages/admin/AdminFirmAccounts";
 import Assistant from "./pages/Assistant";
 import Workspaces from "./pages/Workspaces";
+import DocumentRequests from "./pages/DocumentRequests";
+import DocumentRequestUpload from "./pages/DocumentRequestUpload";
 import NotFound from "./pages/NotFound";
 import { useDynamicPwaManifest } from "./hooks/useDynamicPwaManifest";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
@@ -139,6 +141,7 @@ const App = () => (
             <Route path="help" element={<Help />} />
             <Route path="assistant" element={<Assistant />} />
             <Route path="workspaces" element={<Workspaces />} />
+            <Route path="document-requests" element={<DocumentRequests />} />
           </Route>
 
           {/* Admin pages */}
@@ -170,6 +173,7 @@ const App = () => (
             <Route path="support" element={<AdminSupport />} />
           </Route>
 
+          <Route path="/request/:token" element={<DocumentRequestUpload />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
