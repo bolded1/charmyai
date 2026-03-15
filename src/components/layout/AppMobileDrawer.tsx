@@ -6,7 +6,7 @@ import { useClientRole } from "@/hooks/useClientRole";
 import {
   Upload, FileText, Receipt, TrendingUp, Tag,
   Download, UsersRound, Settings, Sparkles, LifeBuoy,
-  HelpCircle, BarChart3,
+  HelpCircle, BarChart3, Link2,
 } from "lucide-react";
 
 export function AppMobileDrawer() {
