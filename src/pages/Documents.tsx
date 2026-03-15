@@ -53,6 +53,30 @@ export default function DocumentsPage() {
   });
   const filtered = allFiltered.slice(0, visibleCount);
 
+  // Group documents by upload date (created_at)
+  const groupedByDay = useMemo(() => {
+    const groups: { label: string; sortKey: string; docs: typeof filtered }[] = [];
+    const map = new Map<string, typeof filtered>();
+    for (const doc of filtered) {
+      const dateKey = (doc as any).created_at ? (doc as any).created_at.slice(0, 10) : "unknown";
+      if (!map.has(dateKey)) map.set(dateKey, []);
+      map.get(dateKey)!.push(doc);
+    }
+    for (const [dateKey, docs] of map) {
+      let label: string;
+      if (dateKey === "unknown") {
+        label = "Unknown date";
+      } else {
+        const d = parseISO(dateKey);
+        if (isToday(d)) label = "Today";
+        else if (isYesterday(d)) label = "Yesterday";
+        else label = format(d, "EEEE, MMMM d, yyyy");
+      }
+      groups.push({ label, sortKey: dateKey, docs });
+    }
+    return groups;
+  }, [filtered]);
+
   const allSelected = allFiltered.length > 0 && allFiltered.every((d) => selectedIds.has(d.id));
   const someSelected = selectedIds.size > 0;
 
