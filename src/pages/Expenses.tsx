@@ -592,6 +592,16 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
+      {/* Mobile FAB */}
+      {isMobile && selectedIds.size === 0 && (
+        <Button
+          onClick={() => setManualEntryOpen(true)}
+          className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full shadow-lg p-0"
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
+      )}
+
       {/* Bulk Action Bar */}
       <AnimatePresence>
         {selectedIds.size > 0 && (
@@ -599,19 +609,19 @@ export default function ExpensesPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 flex items-center justify-center gap-2 md:gap-3 bg-card border border-border shadow-lg rounded-xl px-3 md:px-5 py-3"
+            className="fixed bottom-20 md:bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 flex items-center justify-center gap-2 md:gap-3 bg-card border border-border shadow-xl rounded-xl px-3 md:px-5 py-2.5 md:py-3"
           >
-            <span className="text-sm font-medium">{selectedIds.size} selected</span>
-            <Button size="sm" onClick={handleBulkDownload} disabled={downloading}>
-              {downloading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Archive className="h-4 w-4 mr-1" />}
-              Download ZIP
+            <span className="text-xs md:text-sm font-medium">{selectedIds.size} selected</span>
+            <Button size="sm" className="h-8 text-xs" onClick={handleBulkDownload} disabled={downloading}>
+              {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Archive className="h-3.5 w-3.5 mr-1" />}
+              {isMobile ? "ZIP" : "Download ZIP"}
             </Button>
-            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
-              <Trash2 className="h-4 w-4 mr-1" />
+            <Button size="sm" className="h-8 text-xs" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
+              <Trash2 className="h-3.5 w-3.5 mr-1" />
               Delete
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
-              <X className="h-4 w-4" />
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setSelectedIds(new Set())}>
+              <X className="h-3.5 w-3.5" />
             </Button>
           </motion.div>
         )}
