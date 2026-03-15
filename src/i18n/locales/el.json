@@ -91,7 +91,8 @@
     "downloadZip": "Λήψη ZIP",
     "emailAddress": "Διεύθυνση email",
     "emailCopied": "Η διεύθυνση email αντιγράφηκε!",
-    "myProfile": "Το Προφίλ μου"
+    "myProfile": "Το Προφίλ μου",
+    "documentManagement": "Διαχείριση Εγγράφων"
   },
   "navigation": {
     "dashboard": "Πίνακας Ελέγχου",

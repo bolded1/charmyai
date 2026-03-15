@@ -91,7 +91,8 @@
     "downloadZip": "Download ZIP",
     "emailAddress": "Email address",
     "emailCopied": "Email address copied!",
-    "myProfile": "My Profile"
+    "myProfile": "My Profile",
+    "documentManagement": "Document Management"
   },
   "navigation": {
     "dashboard": "Dashboard",
