@@ -32,7 +32,7 @@ export function useDocumentRequests(firmOrgId?: string) {
     queryKey: ["document_requests", firmOrgId],
     enabled: !!firmOrgId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("document_requests")
         .select("*")
         .eq("firm_org_id", firmOrgId!)
@@ -48,7 +48,7 @@ export function useRequestUploads(requestId?: string) {
     queryKey: ["document_request_uploads", requestId],
     enabled: !!requestId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("document_request_uploads")
         .select("*")
         .eq("request_id", requestId!)
@@ -72,7 +72,7 @@ export function useCreateDocumentRequest() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("document_requests")
         .insert({ ...payload, created_by: user.id })
         .select()
@@ -94,7 +94,7 @@ export function useCloseDocumentRequest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, reopen }: { id: string; reopen?: boolean }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("document_requests")
         .update({
           status: reopen ? "active" : "closed",

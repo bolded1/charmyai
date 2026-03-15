@@ -246,6 +246,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       value={{
         activeWorkspace,
         allWorkspaces,
+        homeOrg,
         isAccountingFirm,
         clientWorkspaces,
         isLoading: wsLoading || profileLoading,
