@@ -10,7 +10,7 @@ import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { Loader2, Upload, FileText, Receipt, TrendingUp, Download, Settings, ShieldAlert, X, LifeBuoy, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, UsersRound, HelpCircle, Tag, BarChart3, Link2 } from "lucide-react";
+import { Loader2, FileText, ShieldAlert, X, AlertTriangle } from "lucide-react";
 import { useLayoutSettings } from "@/hooks/useLayoutSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -53,26 +53,6 @@ export default function DashboardLayout() {
   const { isClient } = useClientRole();
   const { isAccountingFirm } = useWorkspace();
 
-  const mobileNavItems = [
-    { title: t("navigation.capture"), url: "/app", icon: Upload },
-    { title: t("navigation.documents"), url: "/app/documents", icon: FileText },
-    { title: t("navigation.expenses"), url: "/app/expenses", icon: Receipt },
-    { title: t("navigation.income"), url: "/app/income", icon: TrendingUp },
-    { title: t("navigation.categories"), url: "/app/categories", icon: Tag },
-    { title: t("navigation.exports"), url: "/app/exports", icon: Download },
-    ...(!isClient && isAccountingFirm
-      ? [
-          { title: t("navigation.firmDashboard"), url: "/app/workspaces", icon: BarChart3 },
-          { title: t("navigation.documentRequests"), url: "/app/document-requests", icon: Link2 },
-          { title: t("navigation.team"), url: "/app/team", icon: UsersRound },
-          { title: t("navigation.documentRequests"), url: "/app/document-requests", icon: Link2 },
-        ]
-      : []),
-    { title: t("navigation.aiAssistant"), url: "/app/assistant", icon: Sparkles },
-    { title: t("navigation.settings"), url: "/app/settings", icon: Settings },
-    { title: t("navigation.support"), url: "/app/support", icon: LifeBuoy },
-    { title: t("navigation.help"), url: "/app/help", icon: HelpCircle },
-  ];
   useEffect(() => {
     applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
   }, [org?.primary_color]);
@@ -230,54 +210,6 @@ export default function DashboardLayout() {
                 </Sheet>
               </div>
             </header>
-
-            {/* Mobile navigation tab bar */}
-            <div className="md:hidden border-b border-border/30 bg-card/90 backdrop-blur-xl flex items-center">
-              <button
-                onClick={() => {
-                  const el = document.getElementById("mobile-nav-scroll");
-                  if (el) el.scrollBy({ left: -120, behavior: "smooth" });
-                }}
-                className="shrink-0 px-1.5 py-2.5 text-muted-foreground/60 hover:text-foreground transition-colors"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <nav id="mobile-nav-scroll" className="flex-1 overflow-x-auto scrollbar-hide">
-                <div className="flex min-w-max">
-                  {mobileNavItems.map((item) => {
-                    const isActive = item.url === "/app"
-                      ? location.pathname === "/app"
-                      : location.pathname.startsWith(item.url);
-                    return (
-                      <Link
-                        key={item.url}
-                        to={item.url}
-                        className={`flex items-center gap-1.5 px-3 py-2.5 text-[13px] font-semibold whitespace-nowrap border-b-2 transition-colors ${
-                          isActive
-                            ? "border-primary text-primary"
-                            : "border-transparent text-foreground/80 hover:text-foreground"
-                        }`}
-                      >
-                        <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                        {item.title}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </nav>
-              <button
-                onClick={() => {
-                  const el = document.getElementById("mobile-nav-scroll");
-                  if (el) el.scrollBy({ left: 120, behavior: "smooth" });
-                }}
-                className="shrink-0 px-1.5 py-2.5 text-muted-foreground/60 hover:text-foreground transition-colors"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-
             <main className={`flex-1 min-h-0 surface-sunken ${location.pathname === "/app/assistant" ? "overflow-hidden p-0" : `overflow-auto scrollbar-thin ${layoutSettings.compactView ? "p-3 md:p-5" : "p-4 md:p-8"}`}`}>
               <Outlet />
               <NPSWidget />
