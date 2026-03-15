@@ -334,18 +334,18 @@ export default function ExpensesPage() {
 
       {/* Filters row */}
       <div className="space-y-2 md:space-y-0 md:flex md:flex-wrap md:items-center md:gap-3">
-        {/* Search — full width on mobile */}
-        <div className="relative flex-1 min-w-[180px] md:max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search expenses..." className="pl-9 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+        {/* Search + Add button */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 min-w-0 md:min-w-[180px] md:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search expenses..." className="pl-9 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <Button size="sm" onClick={() => setManualEntryOpen(true)} className="shrink-0 h-9">
+            <Plus className="h-4 w-4 mr-1" /> Expense
+          </Button>
         </div>
         {/* Filter chips row — horizontal scroll on mobile */}
         <div className="flex items-center gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-none">
-          {!isMobile && (
-            <Button size="sm" onClick={() => setManualEntryOpen(true)} className="shrink-0 h-9">
-              <Plus className="h-4 w-4 mr-1" /> Add Expense
-            </Button>
-          )}
           <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
             <SelectTrigger className="w-auto min-w-[120px] h-9 text-xs shrink-0">
               <CalendarIcon className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
@@ -571,16 +571,6 @@ export default function ExpensesPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Mobile FAB */}
-      {isMobile && selectedIds.size === 0 && (
-        <Button
-          onClick={() => setManualEntryOpen(true)}
-          className="fixed bottom-28 right-4 z-40 h-12 w-12 rounded-full shadow-lg p-0"
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
-      )}
 
       {/* Bulk Action Bar */}
       <AnimatePresence>
