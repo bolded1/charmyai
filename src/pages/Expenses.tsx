@@ -576,7 +576,7 @@ export default function ExpensesPage() {
       {isMobile && selectedIds.size === 0 && (
         <Button
           onClick={() => setManualEntryOpen(true)}
-          className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full shadow-lg p-0"
+          className="fixed bottom-28 right-4 z-40 h-12 w-12 rounded-full shadow-lg p-0"
         >
           <Plus className="h-5 w-5" />
         </Button>
