@@ -176,8 +176,8 @@ export default function PricingPage() {
 
             {/* Firm Plan */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }} className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-rose-400/10 rounded-3xl blur-xl opacity-60" />
-              <div className="relative glass-card rounded-2xl p-8 border border-amber-500/20 h-full flex flex-col">
+              <div className="absolute -inset-1 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 rounded-3xl blur-xl opacity-60" />
+              <div className="relative glass-card rounded-2xl p-8 border border-primary/20 h-full flex flex-col">
                 {firmPlan.current && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold shadow-lg">{t("pricing.yourCurrentPlan")}</span>
