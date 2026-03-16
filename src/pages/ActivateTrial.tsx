@@ -117,7 +117,7 @@ export default function ActivateTrialPage() {
           appearance: {
             theme: "stripe",
             variables: {
-              colorPrimary: "#1E3A8A",
+              colorPrimary: "#9B2335",
               borderRadius: "12px",
               fontFamily: "system-ui, sans-serif",
             },
@@ -165,7 +165,7 @@ export default function ActivateTrialPage() {
           appearance: {
             theme: "stripe",
             variables: {
-              colorPrimary: "#1E3A8A",
+              colorPrimary: "#9B2335",
               borderRadius: "12px",
               fontFamily: "system-ui, sans-serif",
             },
