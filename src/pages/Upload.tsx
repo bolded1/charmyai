@@ -141,7 +141,7 @@ export default function UploadPage() {
       case "processed":
       case "needs_review": return "bg-primary/10 text-primary border-primary/20";
       case "approved": return "bg-emerald-500/15 text-emerald-600 border-emerald-500/20";
-      case "exported": return "bg-violet-500/15 text-violet-600 border-violet-500/20";
+      case "exported": return "bg-teal-500/15 text-teal-600 border-teal-500/20";
       default: return "bg-muted text-muted-foreground";
     }
   };
