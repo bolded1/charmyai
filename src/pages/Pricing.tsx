@@ -180,7 +180,7 @@ export default function PricingPage() {
               <div className="relative glass-card rounded-2xl p-8 border border-amber-500/20 h-full flex flex-col">
                 {firmPlan.current && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full bg-amber-600 text-white text-xs font-semibold shadow-lg">{t("pricing.yourCurrentPlan")}</span>
+                    <span className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold shadow-lg">{t("pricing.yourCurrentPlan")}</span>
                   </div>
                 )}
                 <div className="text-center mb-8">
