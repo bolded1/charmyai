@@ -761,7 +761,11 @@
     "q9": "Can I export my data for accounting?",
     "a9": "Yes. Charmy lets you export financial data into formats suitable for accountants, including CSV, spreadsheet formats, and structured financial reports.",
     "q10": "Do I need accounting software to use Charmy?",
-    "a10": "No. Charmy focuses specifically on document processing and financial data extraction."
+    "a10": "No. Charmy focuses specifically on document processing and financial data extraction.",
+    "stillHaveQuestions": "Still have questions?",
+    "stillHaveQuestionsDesc": "Our team is here to help. Get in touch and we'll respond within 24 hours.",
+    "contactUs": "Contact Us",
+    "browseHelp": "Browse Help Center"
   },
   "about": {
     "ourStory": "Our Story",
