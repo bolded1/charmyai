@@ -1043,7 +1043,7 @@ export default function WorkspacesPage() {
                     </div>
                     <Badge
                       variant={inv.status === "accepted" ? "default" : inv.status === "revoked" ? "destructive" : "secondary"}
-                      className={`text-[9px] shrink-0 ${inv.status === "accepted" ? "bg-emerald-100 text-emerald-700 border-0" : ""}`}
+                      className={`text-[9px] shrink-0 ${inv.status === "accepted" ? "bg-success-soft text-success border-0" : ""}`}
                     >
                       {inv.status === "accepted" ? "Active" : inv.status === "revoked" ? "Revoked" : "Pending"}
                     </Badge>

@@ -14,17 +14,17 @@ import { toast } from "sonner";
 import { TicketConversation } from "@/components/support/TicketConversation";
 
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  open: { label: "Open", icon: AlertCircle, color: "bg-amber-100 text-amber-700 border-amber-200" },
+  open: { label: "Open", icon: AlertCircle, color: "bg-warning-soft text-warning border-transparent" },
   in_progress: { label: "In Progress", icon: Clock, color: "bg-primary/10 text-primary border-primary/20" },
-  resolved: { label: "Resolved", icon: CheckCircle2, color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  resolved: { label: "Resolved", icon: CheckCircle2, color: "bg-success-soft text-success border-transparent" },
   closed: { label: "Closed", icon: CheckCircle2, color: "bg-muted text-muted-foreground border-border" },
 };
 
 const priorityColors: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
   normal: "bg-primary/10 text-primary",
-  high: "bg-orange-100 text-orange-700",
-  urgent: "bg-red-100 text-red-700",
+  high: "bg-warning-soft text-warning",
+  urgent: "bg-danger-soft text-danger",
 };
 
 export default function SupportPage() {

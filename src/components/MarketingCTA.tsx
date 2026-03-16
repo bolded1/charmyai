@@ -83,7 +83,7 @@ export function MarketingCTA() {
               </div>
               <span className="text-xs font-medium">{item.label}</span>
               <motion.div
-                className="h-1.5 w-1.5 rounded-full bg-emerald-400"
+                className="h-1.5 w-1.5 rounded-full bg-success"
                 animate={{ opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: item.delay }}
               />

@@ -415,7 +415,7 @@ export default function IndexPage() {
                 <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Pending Requests</div>
                 <div className="space-y-3">
                   {[
-                    { client: "Maria K.", doc: "Q1 VAT receipts", status: "Pending", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+                    { client: "Maria K.", doc: "Q1 VAT receipts", status: "Pending", color: "bg-warning-soft text-warning" },
                     { client: "Nikos P.", doc: "Bank statement — Feb", status: "Uploaded", color: "bg-primary/10 text-primary" },
                     { client: "Anna D.", doc: "Payroll summary", status: "Overdue", color: "bg-destructive/10 text-destructive" },
                   ].map((req, i) => (
