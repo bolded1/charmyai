@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import {
   Upload, FileText, Search, Download, Sparkles, CheckCircle2,
   Clock, Receipt, Shield, Mail, Building2, Briefcase, FolderOpen,
-  Zap, ClipboardCheck, Monitor, Smartphone, Share, Plus,
-  MoreVertical, Send, Link2, ExternalLink, ClipboardList,
+  Zap, ClipboardCheck,
+  Send, Link2, ExternalLink, ClipboardList,
+  Lock, ShieldCheck, Globe, Server, Eye,
 } from "lucide-react";
 import quickbooksLogo from "@/assets/quickbooks-logo.png";
 import xeroLogo from "@/assets/xero-logo.png";
