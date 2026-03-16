@@ -286,7 +286,7 @@ export default function PricingPage() {
             <Accordion type="single" collapsible className="w-full">
               {firmFaqs.map((faq, i) => (
                 <AccordionItem key={i} value={`firm-faq-${i}`} className="border-b border-border/50 last:border-b-0">
-                  <AccordionTrigger className="text-left text-[15px] font-semibold py-5 hover:no-underline hover:text-amber-700 transition-colors [&[data-state=open]]:text-amber-700">
+                  <AccordionTrigger className="text-left text-[15px] font-semibold py-5 hover:no-underline hover:text-primary transition-colors [&[data-state=open]]:text-primary">
                     {faq.q}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground leading-relaxed text-sm pb-5">
