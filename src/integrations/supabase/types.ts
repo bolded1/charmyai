@@ -767,28 +767,22 @@ export type Database = {
       }
       expense_categories: {
         Row: {
-          color: string | null
           created_at: string
           id: string
-          monthly_budget: number | null
           name: string
           organization_id: string | null
           user_id: string
         }
         Insert: {
-          color?: string | null
           created_at?: string
           id?: string
-          monthly_budget?: number | null
           name: string
           organization_id?: string | null
           user_id: string
         }
         Update: {
-          color?: string | null
           created_at?: string
           id?: string
-          monthly_budget?: number | null
           name?: string
           organization_id?: string | null
           user_id?: string
