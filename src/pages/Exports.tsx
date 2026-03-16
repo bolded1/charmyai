@@ -414,7 +414,7 @@ export default function ExportsPage() {
 
           {connectedProviders.length === 0 && (
             <p className="text-[11px] text-muted-foreground text-center">
-              <Link to="/settings?tab=integrations" className="underline underline-offset-2">Connect an accounting platform</Link> to push directly to your ledger.
+              <Link to="/app/settings?tab=integrations" className="underline underline-offset-2">Connect an accounting platform</Link> to push directly to your ledger.
             </p>
           )}
         </CardContent>
