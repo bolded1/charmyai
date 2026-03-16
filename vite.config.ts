@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => ({
         name: "Charmy - AI Financial Document Processing",
         short_name: "Charmy",
         description: "Turn invoices and receipts into accounting data automatically.",
-        theme_color: "#2563EB",
+        theme_color: "#9B2335",
         background_color: "#f5f6fa",
         display: "standalone",
         scope: "/",
