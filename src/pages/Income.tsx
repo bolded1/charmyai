@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Search, TrendingUp, TrendingDown, Minus, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Download, FileText, ExternalLink, Trash2, Archive,
+  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Download, FileText, ExternalLink, Trash2, Archive,
 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect, Fragment } from "react";
 import { toast } from "sonner";
@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { useOrganization } from "@/hooks/useOrganization";
 import { usePlatformLimits } from "@/hooks/usePlatformLimits";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -329,42 +329,6 @@ export default function IncomePage() {
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
-  const momStats = useMemo(() => {
-    const now = new Date();
-    const thisStart = startOfMonth(now);
-    const lastStart = startOfMonth(subMonths(now, 1));
-    const lastEnd = endOfMonth(subMonths(now, 1));
-    const inRange = (d: string | null, from: Date, to: Date) => {
-      if (!d) return false;
-      const dt = new Date(d);
-      return dt >= from && dt <= to;
-    };
-    const computeTotals = (from: Date, to: Date) => {
-      const map = new Map<string, number>();
-      income.forEach((e) => {
-        if (!inRange(e.invoice_date, from, to)) return;
-        const c = e.currency || defaultCurrency;
-        map.set(c, (map.get(c) || 0) + Number(e.total_amount || 0));
-      });
-      return map;
-    };
-    const thisMap = computeTotals(thisStart, now);
-    const lastMap = computeTotals(lastStart, lastEnd);
-    const pickCurrency = () => {
-      if (thisMap.has(defaultCurrency) || lastMap.has(defaultCurrency)) return defaultCurrency;
-      const all = new Set([...thisMap.keys(), ...lastMap.keys()]);
-      let best = defaultCurrency; let bestTotal = -1;
-      all.forEach((c) => { const t = (thisMap.get(c) || 0) + (lastMap.get(c) || 0); if (t > bestTotal) { bestTotal = t; best = c; } });
-      return best;
-    };
-    const currency = pickCurrency();
-    const thisTotal = thisMap.get(currency) || 0;
-    const lastTotal = lastMap.get(currency) || 0;
-    const pct = lastTotal === 0 ? null : ((thisTotal - lastTotal) / lastTotal) * 100;
-    const thisCount = income.filter((e) => inRange(e.invoice_date, thisStart, now)).length;
-    const lastCount = income.filter((e) => inRange(e.invoice_date, lastStart, lastEnd)).length;
-    return { thisTotal, lastTotal, pct, currency, thisCount, lastCount };
-  }, [income, defaultCurrency]);
 
   const activeDateLabel = datePreset !== "all"
     ? datePreset === "custom"
@@ -416,44 +380,6 @@ export default function IncomePage() {
   return (
     <div className="max-w-6xl space-y-6">
 
-      {/* Month-over-month quick stats */}
-      {income.length > 0 && (
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
-            <div>
-              <span className="text-muted-foreground text-xs block">This month</span>
-              <span className="font-semibold tabular-nums">
-                {currencySymbols[momStats.currency] || `${momStats.currency} `}
-                {momStats.thisTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              {momStats.thisCount > 0 && <span className="text-[10px] text-muted-foreground">{momStats.thisCount} invoice{momStats.thisCount !== 1 ? "s" : ""}</span>}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm">
-            <div>
-              <span className="text-muted-foreground text-xs block">Last month</span>
-              <span className="font-semibold tabular-nums text-muted-foreground">
-                {currencySymbols[momStats.currency] || `${momStats.currency} `}
-                {momStats.lastTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              {momStats.lastCount > 0 && <span className="text-[10px] text-muted-foreground">{momStats.lastCount} invoice{momStats.lastCount !== 1 ? "s" : ""}</span>}
-            </div>
-          </div>
-          {momStats.pct !== null && (
-            <div className={cn(
-              "flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold",
-              momStats.pct > 0 ? "text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900" :
-              momStats.pct < 0 ? "text-red-600 bg-red-50 border-red-100 dark:bg-red-950/30 dark:border-red-900" :
-              "text-muted-foreground bg-card"
-            )}>
-              {momStats.pct > 0 ? <TrendingUp className="h-3.5 w-3.5" /> :
-               momStats.pct < 0 ? <TrendingDown className="h-3.5 w-3.5" /> :
-               <Minus className="h-3.5 w-3.5" />}
-              {momStats.pct > 0 ? "+" : ""}{momStats.pct.toFixed(1)}%
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Upload Box */}
       <Card className="overflow-hidden">
