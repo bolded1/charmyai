@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 import { Trophy, BarChart3, CalendarRange, ChevronDown, Wallet } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -62,6 +61,7 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
     [categories]
   );
 
+  // Actuals for the selected currency only (used for budget progress bars)
   const currentMonthActuals = useMemo(() => {
     const map = new Map<string, number>();
     filtered.forEach((e) => {
@@ -71,6 +71,19 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
     });
     return map;
   }, [filtered, currentMonthKey]);
+
+  // Actuals across ALL currencies per category (used for multi-currency budget breakdown)
+  const currentMonthAllCurrencyActuals = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    expenses.forEach((e) => {
+      if (e.invoice_date?.slice(0, 7) === currentMonthKey && e.category) {
+        if (!map.has(e.category)) map.set(e.category, new Map());
+        const inner = map.get(e.category)!;
+        inner.set(e.currency, (inner.get(e.currency) || 0) + Number(e.total_amount));
+      }
+    });
+    return map;
+  }, [expenses, currentMonthKey]);
 
   const monthlyTrends = useMemo(() => {
     const now = new Date();
@@ -117,8 +130,8 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
   if (isLoading) return null;
   if (expenses.length === 0) return null;
 
-  const formatAmount = (v: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
+  const formatAmount = (v: number, currency = activeCurrency) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -130,8 +143,24 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
                 <BarChart3 className="h-5 w-5 text-primary" />
                 Category Analytics
               </CardTitle>
-              <div className="flex items-center gap-3">
-                {currencies.length === 1 && (
+              <div className="flex items-center gap-2">
+                {/* Currency pills — always visible in header */}
+                {currencies.length > 1 ? (
+                  currencies.map((c) => (
+                    <button
+                      key={c}
+                      onClick={(e) => { e.stopPropagation(); setSelectedCurrency(c); }}
+                      className={[
+                        "text-xs px-2.5 py-1 rounded-full border font-medium transition-colors",
+                        c === activeCurrency
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground bg-background",
+                      ].join(" ")}
+                    >
+                      {c}
+                    </button>
+                  ))
+                ) : (
                   <Badge variant="secondary" className="text-xs">{activeCurrency}</Badge>
                 )}
                 <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -142,99 +171,114 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
 
         <CollapsibleContent>
           <CardContent className="space-y-6 pt-0">
-            {/* Currency selector */}
+
+            {/* Cross-currency summary row */}
             {currencies.length > 1 && (
-              <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 mt-1">
-                <div className="flex items-center justify-center h-8 w-8 rounded-md bg-primary/10">
-                  <span className="text-sm font-semibold text-primary">$</span>
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-medium text-muted-foreground">Display Currency</span>
-                  <Select value={activeCurrency} onValueChange={setSelectedCurrency}>
-                    <SelectTrigger className="w-[150px] h-8 text-sm font-medium border-none shadow-none p-0 focus:ring-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-muted/30 border text-sm mt-1">
+                <span className="text-xs text-muted-foreground font-medium">All currencies:</span>
+                {currencies.map((c) => {
+                  const total = expenses
+                    .filter((e) => e.currency === c)
+                    .reduce((s, e) => s + Number(e.total_amount), 0);
+                  return (
+                    <span
+                      key={c}
+                      className={`font-semibold tabular-nums ${c === activeCurrency ? "text-primary" : "text-foreground"}`}
+                    >
+                      {formatAmount(total, c)}
+                    </span>
+                  );
+                })}
+                <span className="text-xs text-muted-foreground ml-auto hidden sm:block">
+                  Showing {activeCurrency} breakdown below
+                </span>
               </div>
             )}
 
-            {/* Top categories + Total */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="pt-5 pb-4">
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Spend</p>
-                  <p className="text-2xl font-bold mt-1">{formatAmount(totalSpend)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{categoryTotals.length} categories · {filtered.length} records</p>
-                </CardContent>
-              </Card>
-              {topCategories.slice(0, 2).map((cat, i) => (
-                <Card key={cat.name}>
-                  <CardContent className="pt-5 pb-4">
-                    <div className="flex items-center gap-1.5">
-                      <Trophy className="h-3.5 w-3.5 text-amber-500" />
-                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">#{i + 1} Category</p>
-                    </div>
-                    <p className="text-lg font-bold mt-1 truncate">{cat.name}</p>
-                    <p className="text-sm text-muted-foreground">{formatAmount(cat.total)} · {totalSpend > 0 ? Math.round((cat.total / totalSpend) * 100) : 0}%</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {/* Empty state when selected currency has no records */}
+            {filtered.length === 0 ? (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                No {activeCurrency} expense records found.
+                {currencies.length > 1 && (
+                  <span> Switch to {currencies.filter((c) => c !== activeCurrency).join(" or ")} above to view data.</span>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Top categories + Total */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="pt-5 pb-4">
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Spend</p>
+                      <p className="text-2xl font-bold mt-1">{formatAmount(totalSpend)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{categoryTotals.length} categories · {filtered.length} records</p>
+                    </CardContent>
+                  </Card>
+                  {topCategories.slice(0, 2).map((cat, i) => (
+                    <Card key={cat.name}>
+                      <CardContent className="pt-5 pb-4">
+                        <div className="flex items-center gap-1.5">
+                          <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">#{i + 1} Category</p>
+                        </div>
+                        <p className="text-lg font-bold mt-1 truncate">{cat.name}</p>
+                        <p className="text-sm text-muted-foreground">{formatAmount(cat.total)} · {totalSpend > 0 ? Math.round((cat.total / totalSpend) * 100) : 0}%</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
 
-            {/* Monthly trends */}
-            {monthlyTrends.categories.length > 0 && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarRange className="h-4 w-4 text-muted-foreground" />
-                    Monthly Trends – Top Categories ({activeCurrency})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[260px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={monthlyTrends.data} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                        <YAxis tickFormatter={(v) => formatAmount(v)} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                        <Tooltip
-                          formatter={(value: number, name: string) => [formatAmount(value), name]}
-                          contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
-                        />
-                        {monthlyTrends.categories.map((cat, i) => {
-                          const color = categoryColorMap[cat] || COLORS[i % COLORS.length];
-                          return (
-                            <Line
-                              key={cat}
-                              type="monotone"
-                              dataKey={cat}
-                              stroke={color}
-                              strokeWidth={2}
-                              dot={{ r: 3, fill: color }}
+                {/* Monthly trends */}
+                {monthlyTrends.categories.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <CalendarRange className="h-4 w-4 text-muted-foreground" />
+                        Monthly Trends – Top Categories ({activeCurrency})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[260px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={monthlyTrends.data} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                            <YAxis tickFormatter={(v) => formatAmount(v)} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                            <Tooltip
+                              formatter={(value: number, name: string) => [formatAmount(value), name]}
+                              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
                             />
-                          );
-                        })}
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex flex-wrap gap-3 mt-3">
-                    {monthlyTrends.categories.map((cat, i) => (
-                      <div key={cat} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <div className="h-2.5 w-2.5 rounded-full" style={{ background: categoryColorMap[cat] || COLORS[i % COLORS.length] }} />
-                        {cat}
+                            {monthlyTrends.categories.map((cat, i) => {
+                              const color = categoryColorMap[cat] || COLORS[i % COLORS.length];
+                              return (
+                                <Line
+                                  key={cat}
+                                  type="monotone"
+                                  dataKey={cat}
+                                  stroke={color}
+                                  strokeWidth={2}
+                                  dot={{ r: 3, fill: color }}
+                                />
+                              );
+                            })}
+                          </LineChart>
+                        </ResponsiveContainer>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      <div className="flex flex-wrap gap-3 mt-3">
+                        {monthlyTrends.categories.map((cat, i) => (
+                          <div key={cat} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <div className="h-2.5 w-2.5 rounded-full" style={{ background: categoryColorMap[cat] || COLORS[i % COLORS.length] }} />
+                            {cat}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
-            {/* Monthly Budgets */}
+
+            {/* Monthly Budgets — shown regardless of currency filter */}
             {budgetedCategories.length > 0 && (
               <Card>
                 <CardHeader className="pb-2">
@@ -242,6 +286,11 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
                     <Wallet className="h-4 w-4 text-muted-foreground" />
                     Monthly Budgets ({now.toLocaleDateString("en-US", { month: "long", year: "numeric" })})
                   </CardTitle>
+                  {currencies.length > 1 && (
+                    <p className="text-xs text-muted-foreground">
+                      Progress bar shows {activeCurrency} spend · other currencies shown below each bar
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {budgetedCategories.map((cat) => {
@@ -249,6 +298,8 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
                     const budget = cat.monthly_budget!;
                     const pct = Math.min((actual / budget) * 100, 100);
                     const over = actual > budget;
+                    const allCurrencyBreakdown = currentMonthAllCurrencyActuals.get(cat.name);
+                    const hasOtherCurrencies = allCurrencyBreakdown && allCurrencyBreakdown.size > 1;
                     return (
                       <div key={cat.id} className="space-y-1">
                         <div className="flex items-center justify-between text-sm">
@@ -268,6 +319,14 @@ export default function CategoryAnalytics({ expenses, isLoading, categories = []
                             style={{ width: `${pct}%` }}
                           />
                         </div>
+                        {hasOtherCurrencies && (
+                          <p className="text-[11px] text-muted-foreground">
+                            This month across all currencies:{" "}
+                            {Array.from(allCurrencyBreakdown!.entries())
+                              .map(([cur, amt]) => formatAmount(amt, cur))
+                              .join(" · ")}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
