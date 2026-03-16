@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { MarketingFAQ } from "@/components/MarketingFAQ";
 import { MarketingCTA } from "@/components/MarketingCTA";
 import { DemoUploader } from "@/components/demo/DemoUploader";
+import { WhoIsItFor } from "@/components/WhoIsItFor";
 
 export default function IndexPage() {
   const { t } = useTranslation();
