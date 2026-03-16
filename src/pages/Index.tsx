@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import {
   Upload, FileText, Search, Download, Sparkles, CheckCircle2,
   Clock, Receipt, Shield, Mail, Building2, Briefcase, FolderOpen,
-  Zap, ClipboardCheck, Monitor, Smartphone, Share, Plus,
-  MoreVertical, Send, Link2, ExternalLink, ClipboardList,
+  Zap, ClipboardCheck,
+  Send, Link2, ExternalLink, ClipboardList,
+  Lock, ShieldCheck, Globe, Server, Eye,
 } from "lucide-react";
 import quickbooksLogo from "@/assets/quickbooks-logo.png";
 import xeroLogo from "@/assets/xero-logo.png";
@@ -536,79 +537,53 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* ═══ Install as App ═══ */}
+      {/* ═══ Security & Trust ═══ */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
         <div className="container max-w-5xl relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-5">
-              <Smartphone className="h-3.5 w-3.5" />
-              {t("marketing.pwa")}
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {t("marketing.securityBadge")}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              {t("marketing.installTitle").split("<1>")[0]}<span className="text-gradient">{t("marketing.installTitle").split("<1>")[1]?.split("</1>")[0]}</span>
+              {t("marketing.securityTitle").split("<1>")[0]}<span className="text-gradient">{t("marketing.securityTitle").split("<1>")[1]?.split("</1>")[0]}</span>
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              {t("marketing.installDesc")}
+              {t("marketing.securitySubtitle")}
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {[
-              { icon: Monitor, title: t("marketing.chromeEdge"), gradient: "bg-hero-gradient", shadow: "shadow-primary/20", delay: 0, steps: [
-                { text: <>Click the <strong className="text-foreground">install icon</strong> in the address bar</> },
-                { text: <>Click <strong className="text-foreground">"Install"</strong> in the prompt</> },
-                { text: <>Charmy opens as a <strong className="text-foreground">standalone app</strong></> },
-              ]},
-              { icon: Smartphone, title: t("marketing.iphoneIpad"), gradient: "bg-gradient-cool", shadow: "shadow-teal/20", delay: 0.3, steps: [
-                { text: <>Tap the <strong className="text-foreground"><Share className="inline h-3 w-3" /> Share</strong> button in Safari</> },
-                { text: <>Select <strong className="text-foreground"><Plus className="inline h-3 w-3" /> Add to Home Screen</strong></> },
-                { text: <>Launch from your <strong className="text-foreground">home screen</strong></> },
-              ]},
-              { icon: Download, title: t("marketing.android"), gradient: "bg-gradient-sunset", shadow: "shadow-violet/20", delay: 0.6, steps: [
-                { text: <>Tap <strong className="text-foreground"><MoreVertical className="inline h-3 w-3" /> Menu</strong> in Chrome</> },
-                { text: <>Select <strong className="text-foreground">"Install app"</strong> or <strong className="text-foreground">"Add to Home Screen"</strong></> },
-                { text: <>Charmy appears as a <strong className="text-foreground">native app</strong></> },
-              ]},
-            ].map((platform, idx) => {
-              const colors = ["bg-primary/10 text-primary", "bg-teal/10 text-teal", "bg-violet/10 text-violet"];
-              return (
-                <motion.div key={platform.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={idx + 1}
-                  className="glass-card rounded-2xl p-6 text-center group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: platform.delay }}
-                    className={`h-14 w-14 rounded-2xl ${platform.gradient} flex items-center justify-center mx-auto mb-5 shadow-lg ${platform.shadow}`}
-                  >
-                    <platform.icon className="h-7 w-7 text-white" />
-                  </motion.div>
-                  <h3 className="text-sm font-bold mb-2">{platform.title}</h3>
-                  <div className="space-y-2.5 text-left">
-                    {platform.steps.map((step, si) => (
-                      <div key={si} className="flex items-start gap-2.5 text-xs text-muted-foreground">
-                        <div className={`h-5 w-5 rounded-full ${colors[idx].split(' ')[0]} flex items-center justify-center shrink-0 mt-0.5`}>
-                          <span className={`text-[10px] font-bold ${colors[idx].split(' ')[1]}`}>{si + 1}</span>
-                        </div>
-                        <span>{step.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              );
-            })}
+              { icon: Lock, title: t("marketing.securityEncTitle"), desc: t("marketing.securityEncDesc"), gradient: "bg-hero-gradient", shadow: "shadow-primary/20" },
+              { icon: Globe, title: t("marketing.securityGdprTitle"), desc: t("marketing.securityGdprDesc"), gradient: "bg-gradient-cool", shadow: "shadow-teal/20" },
+              { icon: Server, title: t("marketing.securityRetentionTitle"), desc: t("marketing.securityRetentionDesc"), gradient: "bg-gradient-sunset", shadow: "shadow-violet/20" },
+            ].map((item, i) => (
+              <motion.div key={item.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1}
+                className="glass-card rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                <div className={`h-11 w-11 rounded-xl ${item.gradient} flex items-center justify-center mb-4 shadow-lg ${item.shadow}`}>
+                  <item.icon className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-base font-bold mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
           </div>
 
+          {/* Trust badge row */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={4}
-            className="flex flex-wrap justify-center gap-3 mt-10">
+            className="flex flex-wrap justify-center gap-3">
             {[
-              { icon: Zap, label: t("marketing.instantLaunch") },
-              { icon: Shield, label: t("marketing.offlineReady") },
-              { icon: Sparkles, label: t("marketing.autoUpdates") },
-              { icon: FileText, label: t("marketing.homeScreenIcon") },
-            ].map((feat) => (
-              <div key={feat.label} className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border/50 text-xs font-semibold text-muted-foreground shadow-sm">
-                <feat.icon className="h-3.5 w-3.5 text-primary" />
-                {feat.label}
+              { icon: Lock, label: t("marketing.trustSsl") },
+              { icon: Globe, label: t("marketing.trustGdpr") },
+              { icon: ShieldCheck, label: t("marketing.trustEncrypted") },
+              { icon: Eye, label: t("marketing.trustPrivacy") },
+              { icon: Server, label: t("marketing.trustEuHosting") },
+            ].map((badge) => (
+              <div key={badge.label} className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border/50 text-xs font-semibold text-muted-foreground shadow-sm">
+                <badge.icon className="h-3.5 w-3.5 text-primary" />
+                {badge.label}
               </div>
             ))}
           </motion.div>
