@@ -216,9 +216,9 @@ export default function PricingPage() {
                   {firmPlan.features.map((f) => {
                     const Icon = firmFeatureIcons[f] || CheckCircle2;
                     return (
-                      <div key={f} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-amber-500/5 transition-colors">
-                        <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
-                          <Icon className="h-4 w-4 text-amber-600" />
+                      <div key={f} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-primary/5 transition-colors">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <Icon className="h-4 w-4 text-primary" />
                         </div>
                         <span className="text-sm font-medium">{f}</span>
                       </div>
