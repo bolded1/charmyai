@@ -171,8 +171,8 @@ export default function AcceptInvitationPage() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center space-y-4">
-            <div className="h-14 w-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto">
-              <AlertTriangle className="h-7 w-7 text-amber-600" />
+            <div className="h-14 w-14 rounded-2xl bg-warning-soft flex items-center justify-center mx-auto">
+              <AlertTriangle className="h-7 w-7 text-warning" />
             </div>
             <h1 className="text-xl font-bold text-foreground">Invitation Expired</h1>
             <p className="text-sm text-muted-foreground">This invitation has expired. Please ask your accountant to resend the invitation.</p>
