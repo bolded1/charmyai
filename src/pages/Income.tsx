@@ -329,42 +329,6 @@ export default function IncomePage() {
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
-  const momStats = useMemo(() => {
-    const now = new Date();
-    const thisStart = startOfMonth(now);
-    const lastStart = startOfMonth(subMonths(now, 1));
-    const lastEnd = endOfMonth(subMonths(now, 1));
-    const inRange = (d: string | null, from: Date, to: Date) => {
-      if (!d) return false;
-      const dt = new Date(d);
-      return dt >= from && dt <= to;
-    };
-    const computeTotals = (from: Date, to: Date) => {
-      const map = new Map<string, number>();
-      income.forEach((e) => {
-        if (!inRange(e.invoice_date, from, to)) return;
-        const c = e.currency || defaultCurrency;
-        map.set(c, (map.get(c) || 0) + Number(e.total_amount || 0));
-      });
-      return map;
-    };
-    const thisMap = computeTotals(thisStart, now);
-    const lastMap = computeTotals(lastStart, lastEnd);
-    const pickCurrency = () => {
-      if (thisMap.has(defaultCurrency) || lastMap.has(defaultCurrency)) return defaultCurrency;
-      const all = new Set([...thisMap.keys(), ...lastMap.keys()]);
-      let best = defaultCurrency; let bestTotal = -1;
-      all.forEach((c) => { const t = (thisMap.get(c) || 0) + (lastMap.get(c) || 0); if (t > bestTotal) { bestTotal = t; best = c; } });
-      return best;
-    };
-    const currency = pickCurrency();
-    const thisTotal = thisMap.get(currency) || 0;
-    const lastTotal = lastMap.get(currency) || 0;
-    const pct = lastTotal === 0 ? null : ((thisTotal - lastTotal) / lastTotal) * 100;
-    const thisCount = income.filter((e) => inRange(e.invoice_date, thisStart, now)).length;
-    const lastCount = income.filter((e) => inRange(e.invoice_date, lastStart, lastEnd)).length;
-    return { thisTotal, lastTotal, pct, currency, thisCount, lastCount };
-  }, [income, defaultCurrency]);
 
   const activeDateLabel = datePreset !== "all"
     ? datePreset === "custom"
