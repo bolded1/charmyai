@@ -203,7 +203,7 @@ export default function PricingPage() {
                     {t("billing.managePlan")}
                   </Button>
                 ) : (
-                  <Button className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
+                  <Button className="w-full h-12 text-base rounded-xl bg-hero-gradient text-primary-foreground hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
                     onClick={() => handleCheckout(STRIPE_PLANS.firm.price_id)}>
                     {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("common.processing")}</> : <>{t("pricing.startWith10")} <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
