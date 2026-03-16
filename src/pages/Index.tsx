@@ -90,6 +90,9 @@ export default function IndexPage() {
         </div>
       </section>
 
+      {/* ═══ Who Is It For ═══ */}
+      <WhoIsItFor />
+
       {/* ═══ Problem Section ═══ */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
