@@ -200,6 +200,27 @@ export function applyAccentColor(hex: string) {
 
 export const DEFAULT_ACCENT_COLOR = "#9B2335";
 
+/** Legacy blue/indigo defaults that were shipped before the Warm Terracotta rebrand */
+const LEGACY_BLUE_DEFAULTS = new Set([
+  "#1E3A8A", "#1e3a8a",
+  "#2563EB", "#2563eb",
+  "#4F46E5", "#4f46e5",
+  "#6366F1", "#6366f1",
+  "#7C3AED", "#7c3aed",
+  "#3B82F6", "#3b82f6",
+  "#1D4ED8", "#1d4ed8",
+  "#1E40AF", "#1e40af",
+]);
+
+/**
+ * Returns the stored accent colour, falling back to the new terracotta default
+ * for any colour that was the old blue/indigo platform default.
+ */
+export function resolveAccentColor(color: string | null | undefined): string {
+  if (!color || LEGACY_BLUE_DEFAULTS.has(color)) return DEFAULT_ACCENT_COLOR;
+  return color;
+}
+
 export const PRESET_COLORS = [
   { name: "Navy", hex: "#1E3A8A" },
   { name: "Blue", hex: "#2563EB" },

@@ -18,7 +18,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useNavigate, Link } from "react-router-dom";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
-import { applyAccentColor, DEFAULT_ACCENT_COLOR } from "@/lib/color-utils";
+import { applyAccentColor, DEFAULT_ACCENT_COLOR, resolveAccentColor } from "@/lib/color-utils";
 import { NPSWidget } from "@/components/NPSWidget";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -54,7 +54,7 @@ export default function DashboardLayout() {
   const { isAccountingFirm } = useWorkspace();
 
   useEffect(() => {
-    applyAccentColor(org?.primary_color || DEFAULT_ACCENT_COLOR);
+    applyAccentColor(resolveAccentColor(org?.primary_color));
   }, [org?.primary_color]);
 
   // Block all rendering until auth, profile, and subscription checks complete
