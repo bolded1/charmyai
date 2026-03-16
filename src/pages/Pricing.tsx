@@ -199,7 +199,7 @@ export default function PricingPage() {
                 </div>
                 <p className="text-center text-xs text-muted-foreground mb-8">{t("billing.oneTimePayment")}</p>
                 {firmPlan.current ? (
-                  <Button className="w-full h-12 text-base rounded-xl border-amber-500/30" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
+                  <Button className="w-full h-12 text-base rounded-xl border-primary/30" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
                     {t("billing.managePlan")}
                   </Button>
                 ) : (
