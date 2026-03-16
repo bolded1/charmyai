@@ -44,7 +44,7 @@ export default function ResetPasswordPage() {
   if (success) {
     return (
       <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.5), transparent 70%)' }} />
         <div className="w-full max-w-sm text-center relative z-10">
           <div className="glass-auth rounded-2xl p-7 space-y-4">
             <div className="h-14 w-14 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
   if (!hasSession) {
     return (
       <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.5), transparent 70%)' }} />
         <div className="w-full max-w-sm text-center relative z-10">
           <div className="glass-auth rounded-2xl p-7 space-y-4">
             <h2 className="text-lg font-bold">{t("resetPassword.invalidLink", "Invalid or expired link")}</h2>
@@ -80,8 +80,8 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
-      <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(262 83% 58% / 0.4), transparent 70%)' }} />
+      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.5), transparent 70%)' }} />
+      <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.4), transparent 70%)' }} />
 
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">

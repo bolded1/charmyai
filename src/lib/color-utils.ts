@@ -198,7 +198,7 @@ export function applyAccentColor(hex: string) {
 
 // ── Constants ──────────────────────────────────
 
-export const DEFAULT_ACCENT_COLOR = "#1E3A8A";
+export const DEFAULT_ACCENT_COLOR = "#9B2335";
 
 export const PRESET_COLORS = [
   { name: "Navy", hex: "#1E3A8A" },

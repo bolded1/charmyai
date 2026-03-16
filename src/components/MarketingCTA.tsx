@@ -23,7 +23,7 @@ export function MarketingCTA() {
         className="absolute inset-0 opacity-20"
         style={{
           background:
-            "radial-gradient(circle at 20% 40%, hsl(262 83% 58% / 0.5), transparent 50%), radial-gradient(circle at 80% 60%, hsl(172 66% 40% / 0.4), transparent 50%)",
+            "radial-gradient(circle at 20% 40%, hsl(17 69% 60% / 0.5), transparent 50%), radial-gradient(circle at 80% 60%, hsl(172 66% 40% / 0.4), transparent 50%)",
         }}
       />
       <div

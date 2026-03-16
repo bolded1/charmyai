@@ -89,7 +89,7 @@ export default function BillingRequiredPage() {
 
   return (
     <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(224 76% 48% / 0.5), transparent 70%)' }} />
+      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.5), transparent 70%)' }} />
 
       <div className="w-full max-w-md relative z-10 text-center">
         <div className="inline-flex items-center gap-2.5 font-bold text-xl mb-8">
