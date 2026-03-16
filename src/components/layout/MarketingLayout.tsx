@@ -54,7 +54,7 @@ export default function MarketingLayout() {
           background: 'hsla(0, 0%, 100%, 0.55)',
           backdropFilter: 'blur(24px) saturate(1.4)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
-          boxShadow: '0 8px 32px -8px hsla(224, 76%, 48%, 0.07), inset 0 1px 0 0 hsla(0, 0%, 100%, 0.6)',
+          boxShadow: '0 8px 32px -8px hsla(351, 63%, 37%, 0.07), inset 0 1px 0 0 hsla(0, 0%, 100%, 0.6)',
         }}>
           <div className="flex h-14 items-center justify-between px-4 md:px-6">
             {/* Logo */}
