@@ -97,7 +97,7 @@ export default function PricingPage() {
 
   return (
     <div className="relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-primary/8 via-violet-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-primary/8 via-primary/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* Hero */}
       <section className="relative pt-20 pb-12">
@@ -123,7 +123,7 @@ export default function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             {/* Pro Plan */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.5 }} className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-violet-500/10 to-teal-400/10 rounded-3xl blur-xl opacity-60" />
+              <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-primary/10 to-teal-400/10 rounded-3xl blur-xl opacity-60" />
               <div className="relative glass-card rounded-2xl p-8 border border-primary/20 h-full flex flex-col">
                 {proPlan.current && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">

@@ -28,7 +28,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const ROLE_COLORS: Record<string, string> = {
   firm_owner: "bg-primary/10 text-primary border-primary/20",
-  firm_admin: "bg-violet-500/10 text-violet-600 border-violet-500/20",
+  firm_admin: "bg-amber-500/10 text-amber-700 border-amber-500/20",
   accountant: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   staff: "bg-muted text-muted-foreground",
 };
