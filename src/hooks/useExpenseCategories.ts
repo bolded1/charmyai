@@ -7,6 +7,8 @@ export interface ExpenseCategory {
   id: string;
   user_id: string;
   name: string;
+  color: string | null;
+  monthly_budget: number | null;
   organization_id: string | null;
   created_at: string;
 }
@@ -39,7 +41,7 @@ export function useCreateExpenseCategory() {
   const { activeWorkspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async ({ name, color }: { name: string; color?: string | null }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
@@ -47,6 +49,7 @@ export function useCreateExpenseCategory() {
         .insert({
           user_id: user.id,
           name: name.trim(),
+          color: color ?? null,
           organization_id: activeWorkspace?.id || null,
         })
         .select()
@@ -67,11 +70,36 @@ export function useCreateExpenseCategory() {
 
 export function useUpdateExpenseCategory() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+    mutationFn: async ({
+      id,
+      name,
+      color,
+      monthly_budget,
+    }: {
+      id: string;
+      name?: string;
+      color?: string | null;
+      monthly_budget?: number | null;
+    }) => {
+      // Fetch old name so we can cascade-rename existing records
+      const { data: old } = await supabase
+        .from("expense_categories")
+        .select("name")
+        .eq("id", id)
+        .single();
+      const oldName = old?.name;
+
+      // Build update payload — only include fields that were passed
+      const patch: Record<string, unknown> = {};
+      if (name !== undefined) patch.name = name.trim();
+      if (color !== undefined) patch.color = color;
+      if (monthly_budget !== undefined) patch.monthly_budget = monthly_budget;
+
       const { data, error } = await supabase
         .from("expense_categories")
-        .update({ name: name.trim() })
+        .update(patch)
         .eq("id", id)
         .select()
         .single();
@@ -79,10 +107,33 @@ export function useUpdateExpenseCategory() {
         if (error.code === "23505") throw new Error("Category already exists");
         throw error;
       }
+
+      // Cascade rename: update all expense + income records that stored the old category name
+      if (name && oldName && name.trim() !== oldName) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await Promise.all([
+            supabase
+              .from("expense_records")
+              .update({ category: name.trim() })
+              .eq("category", oldName)
+              .eq("user_id", user.id),
+            supabase
+              .from("income_records")
+              .update({ category: name.trim() })
+              .eq("category", oldName)
+              .eq("user_id", user.id),
+          ]);
+        }
+      }
+
       return data as ExpenseCategory;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
+      queryClient.invalidateQueries({ queryKey: ["expense-records-for-analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["income"] });
       toast.success("Category updated");
     },
     onError: (err: Error) => toast.error(err.message),
