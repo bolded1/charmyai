@@ -270,7 +270,7 @@ export default function PricingPage() {
       <section className="py-20 md:py-28 border-t border-border/50">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-semibold mb-5">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-5">
               <Building2 className="h-3.5 w-3.5" />
               {t("pricing.firmPlan")}
             </div>
