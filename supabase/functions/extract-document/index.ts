@@ -138,6 +138,24 @@ serve(async (req) => {
     const isPdf = doc.file_type === "application/pdf";
     const model = isPdf ? "google/gemini-2.5-flash" : "openai/gpt-5";
 
+    // Fetch existing category names to guide the AI
+    let existingCategoryNames: string[] = [];
+    try {
+      let catContextQuery = supabase
+        .from("expense_categories")
+        .select("name")
+        .eq("user_id", doc.user_id);
+      if (doc.organization_id) {
+        catContextQuery = catContextQuery.eq("organization_id", doc.organization_id);
+      }
+      const { data: catRows } = await catContextQuery;
+      existingCategoryNames = (catRows ?? []).map((c: { name: string }) => c.name);
+    } catch {}
+
+    const categoryHint = existingCategoryNames.length > 0
+      ? `\nExisting categories (prefer one of these if it fits): ${existingCategoryNames.join(", ")}. Only suggest a new category name if none of the existing ones are a good fit.`
+      : "";
+
     // Call AI to extract data
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -157,7 +175,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: `Extract all accounting fields from this financial document. Identify the document type (expense_invoice, sales_invoice, receipt, or credit_note), supplier/customer info, invoice details, dates, amounts, VAT, and category.`,
+                text: `Extract all accounting fields from this financial document. Identify the document type (expense_invoice, sales_invoice, receipt, or credit_note), supplier/customer info, invoice details, dates, amounts, VAT, and category.${categoryHint}`,
               },
               {
                 type: "image_url",
@@ -187,7 +205,7 @@ serve(async (req) => {
                   total_amount: { type: "number", description: "Total amount including tax" },
                    vat_number: { type: "string", description: "VAT registration number if present" },
                   discount_amount: { type: "number", description: "Discount amount if any" },
-                  category: { type: "string", description: "Expense/income category e.g. Office Supplies, Consulting, Rent" },
+                  category: { type: "string", description: "Expense/income category. Prefer one of the user's existing categories if it fits, otherwise suggest a concise new name e.g. Office Supplies, Consulting, Rent" },
                   confidence: { type: "number", description: "Overall confidence score 0-100" },
                   ocr_text: { type: "string", description: "Full extracted text from the document" },
                 },
@@ -322,10 +340,14 @@ serve(async (req) => {
     // Apply auto-categorization rules
     let finalCategory = extracted.category || null;
     try {
-      const { data: rules } = await supabase
+      let rulesQuery = supabase
         .from("auto_category_rules")
         .select("*")
         .eq("user_id", doc.user_id);
+      if (doc.organization_id) {
+        rulesQuery = rulesQuery.eq("organization_id", doc.organization_id);
+      }
+      const { data: rules } = await rulesQuery;
 
       if (rules && rules.length > 0) {
         for (const rule of rules) {
@@ -350,25 +372,30 @@ serve(async (req) => {
     // Normalize category against existing ones to avoid near-duplicates
     if (finalCategory) {
       try {
-        const { data: existingCats } = await supabase
+        let existingCatQuery = supabase
           .from("expense_categories")
           .select("id, name")
           .eq("user_id", doc.user_id);
+        if (doc.organization_id) {
+          existingCatQuery = existingCatQuery.eq("organization_id", doc.organization_id);
+        }
+        const { data: existingCats } = await existingCatQuery;
+
+        // Normalize: lowercase, trim, collapse spaces & special chars, targeted plural collapse
+        const normalize = (s: string) =>
+          s.toLowerCase()
+            .trim()
+            .replace(/[&]/g, "and")
+            .replace(/[^a-z0-9 ]/g, "")
+            .replace(/\s+/g, " ")
+            .replace(/ies$/, "y")
+            .replace(/(?<=[a-z]{3})es$/, "")
+            .replace(/(?<=[a-z]{3})s$/, "");
+
+        const aiNorm = normalize(finalCategory);
 
         if (existingCats && existingCats.length > 0) {
-          // Normalize: lowercase, remove plurals, trim, collapse spaces & special chars
-          const normalize = (s: string) =>
-            s.toLowerCase()
-              .trim()
-              .replace(/[&]/g, "and")
-              .replace(/[^a-z0-9 ]/g, "")
-              .replace(/\s+/g, " ")
-              .replace(/ies$/, "y")
-              .replace(/s$/, "");
-
-          const aiNorm = normalize(finalCategory);
-
-          const match = existingCats.find((c) => normalize(c.name) === aiNorm);
+          const match = existingCats.find((c: { id: string; name: string }) => normalize(c.name) === aiNorm);
           if (match) {
             // Use the existing category name instead of the AI-suggested one
             finalCategory = match.name;
@@ -377,14 +404,14 @@ serve(async (req) => {
             // No match found — create new category
             await supabase
               .from("expense_categories")
-              .insert({ user_id: doc.user_id, name: finalCategory });
+              .insert({ user_id: doc.user_id, name: finalCategory, organization_id: doc.organization_id ?? null });
             console.log("Auto-created category:", finalCategory);
           }
         } else {
           // No categories exist yet — create first one
           await supabase
             .from("expense_categories")
-            .insert({ user_id: doc.user_id, name: finalCategory });
+            .insert({ user_id: doc.user_id, name: finalCategory, organization_id: doc.organization_id ?? null });
           console.log("Auto-created category:", finalCategory);
         }
       } catch (catErr) {
