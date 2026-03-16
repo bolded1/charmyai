@@ -44,7 +44,7 @@ export function PwaInstallBanner() {
         initial={{ opacity: 0, height: 0 }}
         animate={{ opacity: 1, height: "auto" }}
         exit={{ opacity: 0, height: 0 }}
-        className="border-b border-amber-300/40 bg-amber-50 overflow-hidden"
+        className="border-b border-primary/20 bg-brand-soft overflow-hidden"
       >
         <div className="px-4 py-3 flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
