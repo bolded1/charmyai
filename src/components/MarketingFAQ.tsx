@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, MessageCircle, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
@@ -72,6 +74,35 @@ export function MarketingFAQ() {
                 </AccordionItem>
               ))}
             </Accordion>
+          </motion.div>
+
+          {/* Post-FAQ CTA */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={2}
+            className="mt-12 glass-card rounded-2xl p-6 md:p-8 text-center"
+          >
+            <div className="h-12 w-12 rounded-2xl bg-hero-gradient flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20">
+              <MessageCircle className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="text-lg font-bold mb-2">{t("faq.stillHaveQuestions")}</h3>
+            <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
+              {t("faq.stillHaveQuestionsDesc")}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button asChild size="lg" className="h-11 px-6 rounded-xl text-sm font-semibold shadow-md shadow-primary/15">
+                <Link to="/contact">
+                  {t("faq.contactUs")}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-11 px-6 rounded-xl text-sm">
+                <Link to="/help">{t("faq.browseHelp")}</Link>
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
