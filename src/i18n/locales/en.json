@@ -527,7 +527,7 @@
     "proCtaDesc": "For freelancers and businesses managing their own invoices and receipts.",
     "firmCtaDesc": "Manage up to 10 client workspaces from one account.",
     "multiClient": "Multi-client",
-    "getStartedPrice": "Get Started — €29.99",
+    "getStartedPrice": "Get Started",
     "docRequestHeadline": "Collect documents from clients ",
     "docRequestHeadlineHighlight": "effortlessly",
     "docRequestDesc": "Send secure upload links to your clients — they submit documents without needing an account. Everything lands in the right workspace, ready for review.",
@@ -595,7 +595,7 @@
   "features": {
     "heroTitle": "Everything you need to process invoices <1>automatically</1>",
     "heroDesc": "Charmy converts invoices and receipts into structured financial data using AI.",
-    "getStartedPrice": "Get Started — €29.99",
+    "getStartedPrice": "Get Started",
     "uploadTitle": "Upload invoices",
     "uploadDesc": "Drag and drop PDF, JPG, or PNG files. Upload invoices, receipts, and supplier bills directly to Charmy.",
     "uploadCap1": "Drag and drop document uploads",
