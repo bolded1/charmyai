@@ -184,7 +184,7 @@ export default function PricingPage() {
                   </div>
                 )}
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-[11px] font-semibold mb-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
                     <Building2 className="h-3.5 w-3.5" />
                     {t("pricing.firmBadge")}
                   </div>
