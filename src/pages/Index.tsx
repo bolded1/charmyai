@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { MarketingFAQ } from "@/components/MarketingFAQ";
 import { MarketingCTA } from "@/components/MarketingCTA";
 import { DemoUploader } from "@/components/demo/DemoUploader";
+import { WhoIsItFor } from "@/components/WhoIsItFor";
 
 export default function IndexPage() {
   const { t } = useTranslation();
@@ -88,6 +89,9 @@ export default function IndexPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ═══ Who Is It For ═══ */}
+      <WhoIsItFor />
 
       {/* ═══ Problem Section ═══ */}
       <section className="py-20 relative overflow-hidden">
