@@ -13,6 +13,7 @@ import { Search, Receipt, Loader2, CalendarIcon, X, Pencil, Download, FileText, 
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { useExpenseRecords, useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
+import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -64,6 +65,11 @@ export default function ExpensesPage() {
   const { data: expenses = [], isLoading } = useExpenseRecords();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
+  const { data: expenseCategories = [] } = useExpenseCategories();
+  const categoryColorMap = useMemo(
+    () => Object.fromEntries(expenseCategories.map((c) => [c.name, c.color])),
+    [expenseCategories]
+  );
   const { downloadAsZip, downloading } = useBulkDownload();
   const { data: org } = useOrganization();
   const defaultCurrency = org?.default_currency || "EUR";
@@ -501,9 +507,18 @@ export default function ExpensesPage() {
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[11px] text-muted-foreground">{doc.invoice_date}</span>
-                            {doc.category && (
-                              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">{doc.category}</Badge>
-                            )}
+                            {doc.category && (() => {
+                              const color = categoryColorMap[doc.category];
+                              return (
+                                <Badge
+                                  variant="secondary"
+                                  className="text-[10px] h-4 px-1.5 font-normal"
+                                  style={color ? { background: `${color}20`, color, borderColor: `${color}40` } : undefined}
+                                >
+                                  {doc.category}
+                                </Badge>
+                              );
+                            })()}
                             {!doc.document_id && (
                               <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal border-amber-200 text-amber-700 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30">
                                 {doc.category === "Mileage" ? "Mileage" : doc.category === "Per Diem" ? "Per Diem" : "Manual"}
@@ -569,7 +584,20 @@ export default function ExpensesPage() {
                           </td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
-                          <td className="p-4"><Badge variant="secondary" className="text-xs font-normal">{doc.category || "—"}</Badge></td>
+                          <td className="p-4">
+                            {doc.category ? (() => {
+                              const color = categoryColorMap[doc.category];
+                              return (
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs font-normal"
+                                  style={color ? { background: `${color}20`, color, borderColor: `${color}40` } : undefined}
+                                >
+                                  {doc.category}
+                                </Badge>
+                              );
+                            })() : <span className="text-muted-foreground text-sm">—</span>}
+                          </td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
                           <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
                           <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>

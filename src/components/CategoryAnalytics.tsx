@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
-import { Trophy, BarChart3, CalendarRange, ChevronDown } from "lucide-react";
+import { Trophy, BarChart3, CalendarRange, ChevronDown, Wallet } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import type { ExpenseCategory } from "@/hooks/useExpenseCategories";
 
 interface ExpenseRecord {
   category: string | null;
@@ -16,9 +17,10 @@ interface ExpenseRecord {
 interface CategoryAnalyticsProps {
   expenses: ExpenseRecord[];
   isLoading: boolean;
+  categories?: ExpenseCategory[];
 }
 
-export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnalyticsProps) {
+export default function CategoryAnalytics({ expenses, isLoading, categories = [] }: CategoryAnalyticsProps) {
   const [open, setOpen] = useState(false);
 
   const currencies = useMemo(() => {
@@ -46,6 +48,29 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
   }, [filtered]);
 
   const topCategories = categoryTotals.slice(0, 5);
+
+  const categoryColorMap = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.name, c.color])),
+    [categories]
+  );
+
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const budgetedCategories = useMemo(
+    () => categories.filter((c) => c.monthly_budget != null && c.monthly_budget > 0),
+    [categories]
+  );
+
+  const currentMonthActuals = useMemo(() => {
+    const map = new Map<string, number>();
+    filtered.forEach((e) => {
+      if (e.invoice_date?.slice(0, 7) === currentMonthKey && e.category) {
+        map.set(e.category, (map.get(e.category) || 0) + Number(e.total_amount));
+      }
+    });
+    return map;
+  }, [filtered, currentMonthKey]);
 
   const monthlyTrends = useMemo(() => {
     const now = new Date();
@@ -182,27 +207,70 @@ export default function CategoryAnalytics({ expenses, isLoading }: CategoryAnaly
                           formatter={(value: number, name: string) => [formatAmount(value), name]}
                           contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
                         />
-                        {monthlyTrends.categories.map((cat, i) => (
-                          <Line
-                            key={cat}
-                            type="monotone"
-                            dataKey={cat}
-                            stroke={COLORS[i % COLORS.length]}
-                            strokeWidth={2}
-                            dot={{ r: 3, fill: COLORS[i % COLORS.length] }}
-                          />
-                        ))}
+                        {monthlyTrends.categories.map((cat, i) => {
+                          const color = categoryColorMap[cat] || COLORS[i % COLORS.length];
+                          return (
+                            <Line
+                              key={cat}
+                              type="monotone"
+                              dataKey={cat}
+                              stroke={color}
+                              strokeWidth={2}
+                              dot={{ r: 3, fill: color }}
+                            />
+                          );
+                        })}
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                   <div className="flex flex-wrap gap-3 mt-3">
                     {monthlyTrends.categories.map((cat, i) => (
                       <div key={cat} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <div className="h-2.5 w-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                        <div className="h-2.5 w-2.5 rounded-full" style={{ background: categoryColorMap[cat] || COLORS[i % COLORS.length] }} />
                         {cat}
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            )}
+            {/* Monthly Budgets */}
+            {budgetedCategories.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-muted-foreground" />
+                    Monthly Budgets ({now.toLocaleDateString("en-US", { month: "long", year: "numeric" })})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {budgetedCategories.map((cat) => {
+                    const actual = currentMonthActuals.get(cat.name) || 0;
+                    const budget = cat.monthly_budget!;
+                    const pct = Math.min((actual / budget) * 100, 100);
+                    const over = actual > budget;
+                    return (
+                      <div key={cat.id} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            {cat.color && (
+                              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: cat.color }} />
+                            )}
+                            <span className="font-medium">{cat.name}</span>
+                          </div>
+                          <span className={`text-xs tabular-nums ${over ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+                            {formatAmount(actual)} / {formatAmount(budget)}
+                          </span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${over ? "bg-destructive" : "bg-primary"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </CardContent>
               </Card>
             )}

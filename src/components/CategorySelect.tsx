@@ -20,7 +20,7 @@ export function CategorySelect({ value, onValueChange, className }: CategorySele
   const handleCreate = async () => {
     if (!newName.trim()) return;
     try {
-      const created = await createCategory.mutateAsync(newName.trim());
+      const created = await createCategory.mutateAsync({ name: newName.trim() });
       onValueChange(created.name);
       setNewName("");
       setShowCreate(false);
@@ -37,7 +37,12 @@ export function CategorySelect({ value, onValueChange, className }: CategorySele
           <SelectItem value="__none__">No category</SelectItem>
           {categories.map((cat) => (
             <SelectItem key={cat.id} value={cat.name}>
-              {cat.name}
+              <div className="flex items-center gap-2">
+                {cat.color && (
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: cat.color }} />
+                )}
+                {cat.name}
+              </div>
             </SelectItem>
           ))}
           <div className="border-t mt-1 pt-1 px-2 pb-1">
