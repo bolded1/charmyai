@@ -15,14 +15,14 @@ import { TicketConversation } from "@/components/support/TicketConversation";
 
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   open: { label: "Open", icon: AlertCircle, color: "bg-amber-100 text-amber-700 border-amber-200" },
-  in_progress: { label: "In Progress", icon: Clock, color: "bg-blue-100 text-blue-700 border-blue-200" },
+  in_progress: { label: "In Progress", icon: Clock, color: "bg-primary/10 text-primary border-primary/20" },
   resolved: { label: "Resolved", icon: CheckCircle2, color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   closed: { label: "Closed", icon: CheckCircle2, color: "bg-muted text-muted-foreground border-border" },
 };
 
 const priorityColors: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
-  normal: "bg-blue-100 text-blue-700",
+  normal: "bg-primary/10 text-primary",
   high: "bg-orange-100 text-orange-700",
   urgent: "bg-red-100 text-red-700",
 };

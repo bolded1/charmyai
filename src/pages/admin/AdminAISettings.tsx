@@ -196,7 +196,7 @@ export default function AdminAISettings() {
             {/* Image Model */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
-                <ImageIcon className="h-4 w-4 text-blue-500" />
+                <ImageIcon className="h-4 w-4 text-primary" />
                 Images (JPEG, PNG)
               </Label>
               <Select value={localSettings.imageModel} onValueChange={(v) => updateSetting("imageModel", v)}>
