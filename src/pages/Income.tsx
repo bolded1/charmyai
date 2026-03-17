@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -50,6 +51,7 @@ interface IncomeEdit {
   vat_amount: number;
   total_amount: number;
   vat_number: string;
+  notes: string;
 }
 
 export default function IncomePage() {
@@ -157,6 +159,7 @@ export default function IncomePage() {
       vat_amount: Number(record.vat_amount || 0),
       total_amount: Number(record.total_amount || 0),
       vat_number: record.vat_number || "",
+      notes: record.notes || "",
     });
   };
 
@@ -794,6 +797,11 @@ export default function IncomePage() {
                   <Label className="text-xs text-muted-foreground">Total Amount</Label>
                   <Input className="h-8 text-sm" type="number" step="0.01" value={editData.total_amount} onChange={(e) => setEditData({ ...editData, total_amount: parseFloat(e.target.value) || 0 })} />
                 </div>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Notes</Label>
+                <Textarea className="text-sm resize-none" rows={3} placeholder="Add notes..." value={editData.notes} onChange={(e) => setEditData({ ...editData, notes: e.target.value })} />
               </div>
 
               <div className="flex gap-2 pt-2">

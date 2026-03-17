@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,6 +41,7 @@ interface ExpenseEdit {
   vat_amount: number;
   total_amount: number;
   vat_number: string;
+  notes: string;
 }
 
 export default function ExpensesPage() {
@@ -151,6 +153,7 @@ export default function ExpensesPage() {
       vat_amount: Number(expense.vat_amount || 0),
       total_amount: Number(expense.total_amount || 0),
       vat_number: expense.vat_number || "",
+      notes: expense.notes || "",
     });
   };
 
@@ -774,6 +777,11 @@ export default function ExpensesPage() {
                   <Input className="h-8 text-sm" type="number" min="0" step="0.01" value={editData.total_amount} onChange={(e) => setEditData({ ...editData, total_amount: parseFloat(e.target.value) || 0 })} />
                 </div>
               </fieldset>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Notes</Label>
+                <Textarea className="text-sm resize-none" rows={3} placeholder="Add notes..." value={editData.notes} onChange={(e) => setEditData({ ...editData, notes: e.target.value })} />
+              </div>
 
               <div className="flex gap-2 pt-2">
                 <Button size="sm" variant="destructive" onClick={() => setDeleteConfirmId(selectedId)} disabled={deleteExpense.isPending}>
