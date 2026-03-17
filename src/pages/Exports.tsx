@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, Loader2, CalendarIcon, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Download, Loader2, CalendarIcon, RefreshCw, CheckCircle2, SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useExpenseRecords, useIncomeRecords } from "@/hooks/useDocuments";
@@ -14,6 +14,169 @@ import { exportToPdf } from "@/lib/pdf-export";
 import { syncToAccounting } from "@/components/AccountingSyncSettings";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+// ─── Field definitions ────────────────────────────────────────────────────────
+
+type FieldDef = { key: string; label: string; getValue: (d: any) => string };
+
+function fmt(n: number | null | undefined) {
+  return Number(n || 0).toFixed(2);
+}
+
+const EXPENSE_FIELDS: FieldDef[] = [
+  { key: "invoice_date",   label: "Date",         getValue: (d) => d.invoice_date   || "" },
+  { key: "due_date",       label: "Due Date",      getValue: (d) => d.due_date       || "" },
+  { key: "supplier_name",  label: "Supplier",      getValue: (d) => d.supplier_name  || "" },
+  { key: "invoice_number", label: "Invoice #",     getValue: (d) => d.invoice_number || "" },
+  { key: "vat_number",     label: "VAT Number",    getValue: (d) => d.vat_number     || "" },
+  { key: "currency",       label: "Currency",      getValue: (d) => d.currency       || "EUR" },
+  { key: "net_amount",     label: "Net Amount",    getValue: (d) => fmt(d.net_amount) },
+  { key: "vat_amount",     label: "VAT Amount",    getValue: (d) => fmt(d.vat_amount) },
+  { key: "total_amount",   label: "Total Amount",  getValue: (d) => fmt(d.total_amount) },
+  { key: "category",       label: "Category",      getValue: (d) => d.category || "" },
+  { key: "notes",          label: "Notes",         getValue: (d) => d.notes    || "" },
+];
+
+const INCOME_FIELDS: FieldDef[] = [
+  { key: "invoice_date",   label: "Date",         getValue: (d) => d.invoice_date   || "" },
+  { key: "due_date",       label: "Due Date",      getValue: (d) => d.due_date       || "" },
+  { key: "customer_name",  label: "Customer",      getValue: (d) => d.customer_name  || "" },
+  { key: "invoice_number", label: "Invoice #",     getValue: (d) => d.invoice_number || "" },
+  { key: "vat_number",     label: "VAT Number",    getValue: (d) => d.vat_number     || "" },
+  { key: "currency",       label: "Currency",      getValue: (d) => d.currency       || "EUR" },
+  { key: "net_amount",     label: "Net Amount",    getValue: (d) => fmt(d.net_amount) },
+  { key: "vat_amount",     label: "VAT Amount",    getValue: (d) => fmt(d.vat_amount) },
+  { key: "total_amount",   label: "Total Amount",  getValue: (d) => fmt(d.total_amount) },
+  { key: "category",       label: "Category",      getValue: (d) => d.category || "" },
+  { key: "notes",          label: "Notes",         getValue: (d) => d.notes    || "" },
+];
+
+// ─── Field config persistence ─────────────────────────────────────────────────
+
+type FieldConfig = { key: string; enabled: boolean }[];
+
+function defaultConfig(fields: FieldDef[]): FieldConfig {
+  return fields.map((f) => ({ key: f.key, enabled: true }));
+}
+
+function loadConfig(storageKey: string, fields: FieldDef[]): FieldConfig {
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const parsed: FieldConfig = JSON.parse(stored);
+      const storedKeys = new Set(parsed.map((f) => f.key));
+      return [
+        // keep stored order/enabled for known fields
+        ...parsed.filter((f) => fields.some((fd) => fd.key === f.key)),
+        // append any newly added fields at the end, enabled by default
+        ...fields.filter((fd) => !storedKeys.has(fd.key)).map((fd) => ({ key: fd.key, enabled: true })),
+      ];
+    }
+  } catch { /* ignore */ }
+  return defaultConfig(fields);
+}
+
+// ─── FieldSelector component ──────────────────────────────────────────────────
+
+function FieldSelector({
+  allFields,
+  config,
+  onChange,
+}: {
+  allFields: FieldDef[];
+  config: FieldConfig;
+  onChange: (c: FieldConfig) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const toggle = (key: string) =>
+    onChange(config.map((f) => (f.key === key ? { ...f, enabled: !f.enabled } : f)));
+
+  const move = (index: number, dir: -1 | 1) => {
+    const next = [...config];
+    const target = index + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  };
+
+  const enabledCount = config.filter((f) => f.enabled).length;
+
+  return (
+    <div className="border rounded-md overflow-hidden">
+      <button
+        type="button"
+        className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Columns
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {enabledCount} of {config.length} selected
+        </span>
+      </button>
+
+      {open && (
+        <div className="border-t px-3 py-2 space-y-0.5">
+          {config.map((f, i) => {
+            const field = allFields.find((fd) => fd.key === f.key);
+            if (!field) return null;
+            return (
+              <div key={f.key} className="flex items-center gap-2 py-1">
+                <Checkbox
+                  checked={f.enabled}
+                  onCheckedChange={() => toggle(f.key)}
+                  id={`field-${f.key}`}
+                />
+                <label
+                  htmlFor={`field-${f.key}`}
+                  className={cn(
+                    "flex-1 text-sm cursor-pointer select-none",
+                    !f.enabled && "text-muted-foreground"
+                  )}
+                >
+                  {field.label}
+                </label>
+                <div className="flex gap-0.5">
+                  <button
+                    type="button"
+                    disabled={i === 0}
+                    onClick={() => move(i, -1)}
+                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-25"
+                  >
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={i === config.length - 1}
+                    onClick={() => move(i, 1)}
+                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-25"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          <div className="border-t mt-1 pt-1">
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => onChange(defaultConfig(allFields))}
+            >
+              Reset to default
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Months picker ────────────────────────────────────────────────────────────
 
 const MONTHS = [
   { value: "01", label: "Jan", full: "January" },
@@ -31,15 +194,15 @@ const MONTHS = [
 ];
 
 function MonthMultiSelect({ selected, onChange }: { selected: string[]; onChange: (v: string[]) => void }) {
-  const toggle = (val: string) => {
+  const toggle = (val: string) =>
     onChange(selected.includes(val) ? selected.filter((v) => v !== val) : [...selected, val]);
-  };
 
-  const label = selected.length === 0
-    ? "All Months"
-    : selected.length <= 3
-      ? selected.map((v) => MONTHS.find((m) => m.value === v)?.label).join(", ")
-      : `${selected.length} months`;
+  const label =
+    selected.length === 0
+      ? "All Months"
+      : selected.length <= 3
+        ? selected.map((v) => MONTHS.find((m) => m.value === v)?.label).join(", ")
+        : `${selected.length} months`;
 
   return (
     <Popover>
@@ -62,10 +225,7 @@ function MonthMultiSelect({ selected, onChange }: { selected: string[]; onChange
               key={m.value}
               className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer text-sm"
             >
-              <Checkbox
-                checked={selected.includes(m.value)}
-                onCheckedChange={() => toggle(m.value)}
-              />
+              <Checkbox checked={selected.includes(m.value)} onCheckedChange={() => toggle(m.value)} />
               {m.full}
             </label>
           ))}
@@ -74,6 +234,8 @@ function MonthMultiSelect({ selected, onChange }: { selected: string[]; onChange
     </Popover>
   );
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function buildSubtitle(year: string, months: string[], currency: string) {
   const parts: string[] = [];
@@ -92,10 +254,6 @@ function buildFileName(type: string, year: string, months: string[], currency: s
   return `charmy-${parts.join("-")}-export.${ext}`;
 }
 
-function fmt(n: number | null | undefined) {
-  return Number(n || 0).toFixed(2);
-}
-
 function fmtCurrency(n: number, cur: string) {
   return `${cur === "USD" ? "$" : "€"}${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -112,6 +270,15 @@ function downloadCsvOrExcel(headers: string[], rows: string[][], fileName: strin
   URL.revokeObjectURL(url);
 }
 
+function resolveFields(allFields: FieldDef[], config: FieldConfig): FieldDef[] {
+  return config
+    .filter((f) => f.enabled)
+    .map((f) => allFields.find((fd) => fd.key === f.key)!)
+    .filter(Boolean);
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function ExportsPage() {
   const [format, setFormat] = useState("pdf");
   const [currency, setCurrency] = useState("all");
@@ -125,6 +292,13 @@ export default function ExportsPage() {
   const [incomeYear, setIncomeYear] = useState("all");
   const [exportingIncome, setExportingIncome] = useState(false);
 
+  const [expFieldConfig, setExpFieldConfig] = useState<FieldConfig>(() =>
+    loadConfig("charmy-exp-fields", EXPENSE_FIELDS)
+  );
+  const [incFieldConfig, setIncFieldConfig] = useState<FieldConfig>(() =>
+    loadConfig("charmy-inc-fields", INCOME_FIELDS)
+  );
+
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const { data: expenses = [] } = useExpenseRecords();
@@ -136,6 +310,15 @@ export default function ExportsPage() {
 
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "";
   const OAUTH_FN = `${SUPABASE_URL}/functions/v1/accounting-oauth`;
+
+  // Persist field configs
+  useEffect(() => {
+    localStorage.setItem("charmy-exp-fields", JSON.stringify(expFieldConfig));
+  }, [expFieldConfig]);
+
+  useEffect(() => {
+    localStorage.setItem("charmy-inc-fields", JSON.stringify(incFieldConfig));
+  }, [incFieldConfig]);
 
   const loadConnected = useCallback(async () => {
     if (!user) return;
@@ -169,26 +352,20 @@ export default function ExportsPage() {
   const handleExport = async () => {
     if (!user) return;
     setExporting(true);
-
     try {
       let records = currency === "all" ? expenses : expenses.filter((e) => e.currency === currency);
       if (expYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(expYear));
       if (expMonths.length > 0) records = records.filter((r) => expMonths.includes(r.invoice_date?.slice(5, 7) || ""));
 
-      const headers = ["Date", "Due Date", "Supplier", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category", "Notes"];
-      const rows = records.map((d) => [
-        d.invoice_date || "", d.due_date || "", d.supplier_name || "", d.invoice_number || "",
-        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "", (d as any).notes || "",
-      ]);
+      const activeFields = resolveFields(EXPENSE_FIELDS, expFieldConfig);
+      if (activeFields.length === 0) { toast.error("Select at least one column to export."); return; }
 
+      const headers = activeFields.map((f) => f.label);
+      const rows = records.map((d) => activeFields.map((f) => f.getValue(d)));
       const fileName = buildFileName("expenses", expYear, expMonths, currency, format);
 
       if (format === "pdf") {
-        const totalNet = records.reduce((s, r) => s + Number(r.net_amount || 0), 0);
-        const totalVat = records.reduce((s, r) => s + Number(r.vat_amount || 0), 0);
-        const totalAmount = records.reduce((s, r) => s + Number(r.total_amount || 0), 0);
         const cur = currency !== "all" ? currency : "EUR";
-
         exportToPdf({
           title: "Expense Report",
           subtitle: buildSubtitle(expYear, expMonths, currency),
@@ -196,9 +373,9 @@ export default function ExportsPage() {
           rows,
           fileName,
           summaryRows: [
-            { label: "NET TOTAL", value: fmtCurrency(totalNet, cur) },
-            { label: "VAT TOTAL", value: fmtCurrency(totalVat, cur) },
-            { label: "GRAND TOTAL", value: fmtCurrency(totalAmount, cur) },
+            { label: "NET TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.net_amount   || 0), 0), cur) },
+            { label: "VAT TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.vat_amount   || 0), 0), cur) },
+            { label: "GRAND TOTAL", value: fmtCurrency(records.reduce((s, r) => s + Number(r.total_amount || 0), 0), cur) },
           ],
         });
       } else {
@@ -228,27 +405,21 @@ export default function ExportsPage() {
   const handleExportIncome = async () => {
     if (!user) return;
     setExportingIncome(true);
-
     try {
       let records = income;
       if (incomeCurrency !== "all") records = records.filter((r) => r.currency === incomeCurrency);
       if (incomeYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(incomeYear));
       if (incomeMonths.length > 0) records = records.filter((r) => incomeMonths.includes(r.invoice_date?.slice(5, 7) || ""));
 
-      const headers = ["Date", "Due Date", "Customer", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category", "Notes"];
-      const rows = records.map((d) => [
-        d.invoice_date || "", d.due_date || "", d.customer_name || "", d.invoice_number || "",
-        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "", (d as any).notes || "",
-      ]);
+      const activeFields = resolveFields(INCOME_FIELDS, incFieldConfig);
+      if (activeFields.length === 0) { toast.error("Select at least one column to export."); return; }
 
+      const headers = activeFields.map((f) => f.label);
+      const rows = records.map((d) => activeFields.map((f) => f.getValue(d)));
       const fileName = buildFileName("income", incomeYear, incomeMonths, incomeCurrency, incomeFormat);
 
       if (incomeFormat === "pdf") {
-        const totalNet = records.reduce((s, r) => s + Number(r.net_amount || 0), 0);
-        const totalVat = records.reduce((s, r) => s + Number(r.vat_amount || 0), 0);
-        const totalAmount = records.reduce((s, r) => s + Number(r.total_amount || 0), 0);
         const cur = incomeCurrency !== "all" ? incomeCurrency : "EUR";
-
         exportToPdf({
           title: "Income Report",
           subtitle: buildSubtitle(incomeYear, incomeMonths, incomeCurrency),
@@ -256,9 +427,9 @@ export default function ExportsPage() {
           rows,
           fileName,
           summaryRows: [
-            { label: "NET TOTAL", value: fmtCurrency(totalNet, cur) },
-            { label: "VAT TOTAL", value: fmtCurrency(totalVat, cur) },
-            { label: "GRAND TOTAL", value: fmtCurrency(totalAmount, cur) },
+            { label: "NET TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.net_amount   || 0), 0), cur) },
+            { label: "VAT TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.vat_amount   || 0), 0), cur) },
+            { label: "GRAND TOTAL", value: fmtCurrency(records.reduce((s, r) => s + Number(r.total_amount || 0), 0), cur) },
           ],
         });
       } else {
@@ -293,9 +464,7 @@ export default function ExportsPage() {
       if (expMonths.length > 0) records = records.filter((r) => expMonths.includes(r.invoice_date?.slice(5, 7) || ""));
       if (records.length === 0) { toast.info("No records match the current filters."); return; }
 
-      const { synced, errors } = await syncToAccounting(
-        provider as any, "expenses", records, activeWorkspace?.id ?? ""
-      );
+      const { synced, errors } = await syncToAccounting(provider as any, "expenses", records, activeWorkspace?.id ?? "");
       if (errors.length > 0) toast.warning(`${synced} synced, ${errors.length} failed.`);
       else toast.success(`${synced} expense records pushed to ${provider}.`);
     } catch (err: any) {
@@ -314,9 +483,7 @@ export default function ExportsPage() {
       if (incomeMonths.length > 0) records = records.filter((r) => incomeMonths.includes(r.invoice_date?.slice(5, 7) || ""));
       if (records.length === 0) { toast.info("No records match the current filters."); return; }
 
-      const { synced, errors } = await syncToAccounting(
-        provider as any, "income", records, activeWorkspace?.id ?? ""
-      );
+      const { synced, errors } = await syncToAccounting(provider as any, "income", records, activeWorkspace?.id ?? "");
       if (errors.length > 0) toast.warning(`${synced} synced, ${errors.length} failed.`);
       else toast.success(`${synced} income records pushed to ${provider}.`);
     } catch (err: any) {
@@ -384,6 +551,13 @@ export default function ExportsPage() {
               </Select>
             </div>
           </div>
+
+          <FieldSelector
+            allFields={EXPENSE_FIELDS}
+            config={expFieldConfig}
+            onChange={setExpFieldConfig}
+          />
+
           <Button onClick={handleExport} className="w-full" disabled={exporting}>
             {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
             Export Expenses as {format.toUpperCase()}
@@ -466,6 +640,13 @@ export default function ExportsPage() {
               </Select>
             </div>
           </div>
+
+          <FieldSelector
+            allFields={INCOME_FIELDS}
+            config={incFieldConfig}
+            onChange={setIncFieldConfig}
+          />
+
           <Button onClick={handleExportIncome} className="w-full" disabled={exportingIncome}>
             {exportingIncome ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
             Export Income as {incomeFormat.toUpperCase()}
