@@ -28,7 +28,7 @@ export default function Privacy() {
   }, [c]);
 
   return (
-    <div className="py-16 md:py-24">
+    <div className="pt-24 pb-16 md:py-24">
       <div className="container max-w-3xl">
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="mb-12">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">{c.title}</h1>
