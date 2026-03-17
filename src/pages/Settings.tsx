@@ -18,6 +18,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Camera, Loader2, Shield, Key, Smartphone, Clock, Eye, EyeOff, Lock } from "lucide-react";
 import ApiKeyManager from "@/components/ApiKeyManager";
+import WebhookManager from "@/components/WebhookManager";
 import EmailImportSettings from "@/components/EmailImportSettings";
 import AccountingSyncSettings from "@/components/AccountingSyncSettings";
 import { ALL_TIMEZONES } from "@/lib/timezones";
@@ -599,6 +600,12 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">Create and manage API keys for external integrations. Use these keys with the <code className="text-[11px] font-mono">x-api-key</code> header.</p>
                 </div>
                 <ApiKeyManager />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <WebhookManager />
               </CardContent>
             </Card>
           </div>

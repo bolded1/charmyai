@@ -3,6 +3,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 
+const WEBHOOK_FN = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
+
+/** Fire-and-forget: dispatch a webhook event without blocking the caller. */
+async function dispatchWebhookEvent(event: string, payload: Record<string, unknown>) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    fetch(WEBHOOK_FN, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ event, payload }),
+    }).catch(() => {/* silently ignore delivery failures */});
+  } catch { /* ignore */ }
+}
+
 export interface DocumentRecord {
   id: string;
   user_id: string;
@@ -177,6 +195,9 @@ export function useUpdateDocument() {
         await supabase.from("income_records").update({ notes: syncedNotes }).eq("document_id", id);
       }
 
+      // Dispatch webhook (fire-and-forget)
+      dispatchWebhookEvent("document.updated", { document: data });
+
       return data;
     },
     onSuccess: () => {
@@ -265,6 +286,13 @@ export function useApproveDocument() {
         });
         if (error) throw error;
       }
+
+      // Dispatch webhook (fire-and-forget)
+      const isIncome = doc.document_type === "sales_invoice";
+      dispatchWebhookEvent("document.approved", {
+        document: doc,
+        record_type: isIncome ? "income" : "expense",
+      });
 
       return doc;
     },
