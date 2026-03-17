@@ -123,7 +123,7 @@ export default function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             {/* Pro Plan */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.5 }} className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-primary/10 to-teal-400/10 rounded-3xl blur-xl opacity-60" />
+              <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 rounded-3xl blur-xl opacity-60" />
               <div className="relative glass-card rounded-2xl p-8 border border-primary/20 h-full flex flex-col">
                 {proPlan.current && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -176,15 +176,15 @@ export default function PricingPage() {
 
             {/* Firm Plan */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }} className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-rose-400/10 rounded-3xl blur-xl opacity-60" />
-              <div className="relative glass-card rounded-2xl p-8 border border-amber-500/20 h-full flex flex-col">
+              <div className="absolute -inset-1 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 rounded-3xl blur-xl opacity-60" />
+              <div className="relative glass-card rounded-2xl p-8 border border-primary/20 h-full flex flex-col">
                 {firmPlan.current && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full bg-amber-600 text-white text-xs font-semibold shadow-lg">{t("pricing.yourCurrentPlan")}</span>
+                    <span className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold shadow-lg">{t("pricing.yourCurrentPlan")}</span>
                   </div>
                 )}
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-[11px] font-semibold mb-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
                     <Building2 className="h-3.5 w-3.5" />
                     {t("pricing.firmBadge")}
                   </div>
@@ -199,11 +199,11 @@ export default function PricingPage() {
                 </div>
                 <p className="text-center text-xs text-muted-foreground mb-8">{t("billing.oneTimePayment")}</p>
                 {firmPlan.current ? (
-                  <Button className="w-full h-12 text-base rounded-xl border-amber-500/30" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
+                  <Button className="w-full h-12 text-base rounded-xl border-primary/30" variant="outline" onClick={() => subscription?.openCustomerPortal()}>
                     {t("billing.managePlan")}
                   </Button>
                 ) : (
-                  <Button className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
+                  <Button className="w-full h-12 text-base rounded-xl bg-hero-gradient text-primary-foreground hover:opacity-90 transition-opacity" disabled={!!checkoutLoading}
                     onClick={() => handleCheckout(STRIPE_PLANS.firm.price_id)}>
                     {checkoutLoading === STRIPE_PLANS.firm.price_id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("common.processing")}</> : <>{t("pricing.startWith10")} <ArrowRight className="h-4 w-4 ml-2" /></>}
                   </Button>
@@ -216,9 +216,9 @@ export default function PricingPage() {
                   {firmPlan.features.map((f) => {
                     const Icon = firmFeatureIcons[f] || CheckCircle2;
                     return (
-                      <div key={f} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-amber-500/5 transition-colors">
-                        <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
-                          <Icon className="h-4 w-4 text-amber-600" />
+                      <div key={f} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-primary/5 transition-colors">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <Icon className="h-4 w-4 text-primary" />
                         </div>
                         <span className="text-sm font-medium">{f}</span>
                       </div>
@@ -236,8 +236,8 @@ export default function PricingPage() {
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
             className="glass-card rounded-2xl p-8 md:p-10 border border-border/50 text-center space-y-4">
-            <div className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-amber-500/10 mx-auto">
-              <Building2 className="h-5 w-5 text-amber-600" />
+            <div className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-primary/10 mx-auto">
+              <Building2 className="h-5 w-5 text-primary" />
             </div>
             <h3 className="text-lg font-bold">{t("pricing.whyAccountants")}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
@@ -270,7 +270,7 @@ export default function PricingPage() {
       <section className="py-20 md:py-28 border-t border-border/50">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-semibold mb-5">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-5">
               <Building2 className="h-3.5 w-3.5" />
               {t("pricing.firmPlan")}
             </div>
@@ -286,7 +286,7 @@ export default function PricingPage() {
             <Accordion type="single" collapsible className="w-full">
               {firmFaqs.map((faq, i) => (
                 <AccordionItem key={i} value={`firm-faq-${i}`} className="border-b border-border/50 last:border-b-0">
-                  <AccordionTrigger className="text-left text-[15px] font-semibold py-5 hover:no-underline hover:text-amber-700 transition-colors [&[data-state=open]]:text-amber-700">
+                  <AccordionTrigger className="text-left text-[15px] font-semibold py-5 hover:no-underline hover:text-primary transition-colors [&[data-state=open]]:text-primary">
                     {faq.q}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground leading-relaxed text-sm pb-5">

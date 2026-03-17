@@ -105,7 +105,7 @@ export default function EmailCampaignHistory() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Delivered</p>
-                    <p className="font-medium text-green-600">{c.sent_count}</p>
+                    <p className="font-medium text-success">{c.sent_count}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Errors</p>

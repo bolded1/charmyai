@@ -81,8 +81,8 @@ export default function DashboardLayout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center max-w-md space-y-4">
-          <div className="h-16 w-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto">
-            <AlertTriangle className="h-8 w-8 text-amber-600" />
+          <div className="h-16 w-16 rounded-2xl bg-warning-soft flex items-center justify-center mx-auto">
+            <AlertTriangle className="h-8 w-8 text-warning" />
           </div>
           <h1 className="text-xl font-bold text-foreground">Under Maintenance</h1>
           <p className="text-sm text-muted-foreground">

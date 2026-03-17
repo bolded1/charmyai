@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounting_integrations: {
+        Row: {
+          access_token: string | null
+          connected_at: string
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          last_sync_count: number | null
+          organization_id: string | null
+          provider: string
+          realm_id: string | null
+          refresh_token: string | null
+          token_expiry: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_count?: number | null
+          organization_id?: string | null
+          provider: string
+          realm_id?: string | null
+          refresh_token?: string | null
+          token_expiry?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_count?: number | null
+          organization_id?: string | null
+          provider?: string
+          realm_id?: string | null
+          refresh_token?: string | null
+          token_expiry?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounting_integrations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
