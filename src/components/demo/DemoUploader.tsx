@@ -152,9 +152,9 @@ export function DemoUploader() {
   return (
     <>
       <section className="pb-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
           {/* Demo Card */}
-          <div className="glass-card rounded-2xl p-10 md:p-10 relative overflow-hidden">
+          <div className="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden">
             {/* Decorative gradient blobs */}
             <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.8), transparent 70%)' }} />
             <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--violet) / 0.6), transparent 70%)' }} />
