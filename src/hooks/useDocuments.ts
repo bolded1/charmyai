@@ -187,12 +187,16 @@ export function useUpdateDocument() {
 
       if (error) throw error;
 
-      // Sync notes to linked expense/income records
+      // Sync notes to linked expense/income records (column added in migration 20260317120000)
       const notes = (updates.user_corrections as any)?._notes;
       if (notes !== undefined) {
         const syncedNotes = notes || null;
-        await supabase.from("expense_records").update({ notes: syncedNotes }).eq("document_id", id);
-        await supabase.from("income_records").update({ notes: syncedNotes }).eq("document_id", id);
+        await supabase.from("expense_records").update({ notes: syncedNotes }).eq("document_id", id).then(({ error }) => {
+          if (error) console.warn("notes sync skipped (expense_records):", error.message);
+        });
+        await supabase.from("income_records").update({ notes: syncedNotes }).eq("document_id", id).then(({ error }) => {
+          if (error) console.warn("notes sync skipped (income_records):", error.message);
+        });
       }
 
       // Dispatch webhook (fire-and-forget)
@@ -247,7 +251,9 @@ export function useApproveDocument() {
       }
 
       // Create expense or income record based on document type
+      // notes column added in migration 20260317120000 – omit if column absent
       const docNotes = (doc.user_corrections as any)?._notes || null;
+      const notesField = docNotes !== null ? { notes: docNotes } : {};
 
       if (doc.document_type === "sales_invoice") {
         const { error } = await supabase.from("income_records").insert({
@@ -264,7 +270,7 @@ export function useApproveDocument() {
           total_amount: doc.total_amount || 0,
           vat_number: doc.vat_number,
           category: doc.category,
-          notes: docNotes,
+          ...notesField,
         });
         if (error) throw error;
       } else {
@@ -282,7 +288,7 @@ export function useApproveDocument() {
           total_amount: doc.total_amount || 0,
           vat_number: doc.vat_number,
           category: doc.category,
-          notes: docNotes,
+          ...notesField,
         });
         if (error) throw error;
       }
@@ -623,12 +629,17 @@ export function useUpdateExpense() {
 
   return useMutation({
     mutationFn: async ({ id, updates, documentId }: { id: string; updates: Record<string, any>; documentId?: string | null }) => {
-      const { data, error } = await supabase
+      // notes column added in migration 20260317120000 – retry without it if absent
+      let { data, error } = await supabase
         .from("expense_records")
         .update(updates)
         .eq("id", id)
         .select()
         .single();
+      if (error?.message?.includes("notes")) {
+        const { notes: _dropped, ...rest } = updates as any;
+        ({ data, error } = await supabase.from("expense_records").update(rest).eq("id", id).select().single());
+      }
       if (error) throw error;
 
       // Sync notes back to the linked document
@@ -659,12 +670,17 @@ export function useUpdateIncome() {
 
   return useMutation({
     mutationFn: async ({ id, updates, documentId }: { id: string; updates: Record<string, any>; documentId?: string | null }) => {
-      const { data, error } = await supabase
+      // notes column added in migration 20260317120000 – retry without it if absent
+      let { data, error } = await supabase
         .from("income_records")
         .update(updates)
         .eq("id", id)
         .select()
         .single();
+      if (error?.message?.includes("notes")) {
+        const { notes: _dropped, ...rest } = updates as any;
+        ({ data, error } = await supabase.from("income_records").update(rest).eq("id", id).select().single());
+      }
       if (error) throw error;
 
       // Sync notes back to the linked document
