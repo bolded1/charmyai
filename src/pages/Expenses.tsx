@@ -167,7 +167,7 @@ export default function ExpensesPage() {
 
   const handleSave = async () => {
     if (!selectedId || !editData) return;
-    await updateExpense.mutateAsync({ id: selectedId, updates: editData });
+    await updateExpense.mutateAsync({ id: selectedId, updates: editData, documentId: selectedExpense?.document_id });
     closeEdit();
   };
 

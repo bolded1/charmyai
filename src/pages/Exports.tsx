@@ -175,10 +175,10 @@ export default function ExportsPage() {
       if (expYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(expYear));
       if (expMonths.length > 0) records = records.filter((r) => expMonths.includes(r.invoice_date?.slice(5, 7) || ""));
 
-      const headers = ["Date", "Due Date", "Supplier", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"];
+      const headers = ["Date", "Due Date", "Supplier", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category", "Notes"];
       const rows = records.map((d) => [
         d.invoice_date || "", d.due_date || "", d.supplier_name || "", d.invoice_number || "",
-        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "",
+        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "", (d as any).notes || "",
       ]);
 
       const fileName = buildFileName("expenses", expYear, expMonths, currency, format);
@@ -235,10 +235,10 @@ export default function ExportsPage() {
       if (incomeYear !== "all") records = records.filter((r) => r.invoice_date?.startsWith(incomeYear));
       if (incomeMonths.length > 0) records = records.filter((r) => incomeMonths.includes(r.invoice_date?.slice(5, 7) || ""));
 
-      const headers = ["Date", "Due Date", "Customer", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category"];
+      const headers = ["Date", "Due Date", "Customer", "Invoice #", "VAT Number", "Currency", "Net Amount", "VAT Amount", "Total Amount", "Category", "Notes"];
       const rows = records.map((d) => [
         d.invoice_date || "", d.due_date || "", d.customer_name || "", d.invoice_number || "",
-        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "",
+        d.vat_number || "", d.currency || "EUR", fmt(d.net_amount), fmt(d.vat_amount), fmt(d.total_amount), d.category || "", (d as any).notes || "",
       ]);
 
       const fileName = buildFileName("income", incomeYear, incomeMonths, incomeCurrency, incomeFormat);

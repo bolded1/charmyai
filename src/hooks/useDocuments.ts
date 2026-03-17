@@ -168,10 +168,21 @@ export function useUpdateDocument() {
         .single();
 
       if (error) throw error;
+
+      // Sync notes to linked expense/income records
+      const notes = (updates.user_corrections as any)?._notes;
+      if (notes !== undefined) {
+        const syncedNotes = notes || null;
+        await supabase.from("expense_records").update({ notes: syncedNotes }).eq("document_id", id);
+        await supabase.from("income_records").update({ notes: syncedNotes }).eq("document_id", id);
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["income"] });
     },
   });
 }
@@ -215,6 +226,8 @@ export function useApproveDocument() {
       }
 
       // Create expense or income record based on document type
+      const docNotes = (doc.user_corrections as any)?._notes || null;
+
       if (doc.document_type === "sales_invoice") {
         const { error } = await supabase.from("income_records").insert({
           user_id: user.id,
@@ -230,6 +243,7 @@ export function useApproveDocument() {
           total_amount: doc.total_amount || 0,
           vat_number: doc.vat_number,
           category: doc.category,
+          notes: docNotes,
         });
         if (error) throw error;
       } else {
@@ -247,6 +261,7 @@ export function useApproveDocument() {
           total_amount: doc.total_amount || 0,
           vat_number: doc.vat_number,
           category: doc.category,
+          notes: docNotes,
         });
         if (error) throw error;
       }
@@ -579,7 +594,7 @@ export function useUpdateExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, any> }) => {
+    mutationFn: async ({ id, updates, documentId }: { id: string; updates: Record<string, any>; documentId?: string | null }) => {
       const { data, error } = await supabase
         .from("expense_records")
         .update(updates)
@@ -587,10 +602,22 @@ export function useUpdateExpense() {
         .select()
         .single();
       if (error) throw error;
+
+      // Sync notes back to the linked document
+      if (documentId && updates.notes !== undefined) {
+        const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
+        const existing = (docData?.user_corrections as any) || {};
+        await supabase.from("documents").update({
+          user_corrections: { ...existing, _notes: updates.notes || null },
+          updated_at: new Date().toISOString(),
+        }).eq("id", documentId);
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Expense updated");
     },
     onError: (err: Error) => {
@@ -603,7 +630,7 @@ export function useUpdateIncome() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, any> }) => {
+    mutationFn: async ({ id, updates, documentId }: { id: string; updates: Record<string, any>; documentId?: string | null }) => {
       const { data, error } = await supabase
         .from("income_records")
         .update(updates)
@@ -611,10 +638,22 @@ export function useUpdateIncome() {
         .select()
         .single();
       if (error) throw error;
+
+      // Sync notes back to the linked document
+      if (documentId && updates.notes !== undefined) {
+        const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
+        const existing = (docData?.user_corrections as any) || {};
+        await supabase.from("documents").update({
+          user_corrections: { ...existing, _notes: updates.notes || null },
+          updated_at: new Date().toISOString(),
+        }).eq("id", documentId);
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["income"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Income record updated");
     },
     onError: (err: Error) => {
