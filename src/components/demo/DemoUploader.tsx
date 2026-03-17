@@ -152,7 +152,7 @@ export function DemoUploader() {
   return (
     <>
       <section className="pb-16">
-        <div className="container max-w-2xl">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
           {/* Demo Card */}
           <div className="glass-card rounded-2xl p-10 md:p-10 relative overflow-hidden">
             {/* Decorative gradient blobs */}
