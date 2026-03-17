@@ -62,7 +62,7 @@ export default function DemoPage() {
           </motion.div>
         </div>
 
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4}>
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-10">
           <DemoUploader />
         </motion.div>
       </section>
