@@ -167,7 +167,7 @@ export default function DocumentRequestsPage() {
   };
 
   return (
-    <div className="space-y-5 p-4 md:p-6 max-w-3xl mx-auto">
+    <div className="space-y-5 max-w-3xl mx-auto">
       {/* Page header */}
       <div className="flex items-center justify-between gap-4">
         <div>
