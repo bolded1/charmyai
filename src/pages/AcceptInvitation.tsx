@@ -284,7 +284,10 @@ export default function AcceptInvitationPage() {
           </form>
 
           <p className="text-[11px] text-center text-muted-foreground">
-            By creating an account, you agree to our Terms of Service and Privacy Policy.
+            By creating an account, you agree to our{" "}
+            <a href="/terms" className="underline underline-offset-2 hover:text-foreground">Terms of Service</a>
+            {" "}and{" "}
+            <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</a>.
           </p>
         </CardContent>
       </Card>
