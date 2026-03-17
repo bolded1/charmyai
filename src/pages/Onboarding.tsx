@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { FileText, Building2, UserCircle, ArrowRight, ArrowLeft, Camera, Check, ChevronsUpDown, Briefcase, Users, FolderOpen, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,16 +19,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type AccountType = "business" | "firm" | null;
 
-const companyRoles = ["Owner", "Founder", "Accountant", "Finance Manager", "Admin", "Staff"];
-
-const INDUSTRIES = [
-  { value: "technology", label: "Technology" },
-  { value: "consulting", label: "Consulting" },
-  { value: "retail", label: "Retail & E-commerce" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "construction", label: "Construction" },
-  { value: "other", label: "Other" },
-];
+const COMPANY_ROLE_KEYS = ["Owner", "Founder", "Accountant", "Finance Manager", "Admin", "Staff"] as const;
+const INDUSTRY_VALUES = ["technology", "consulting", "retail", "healthcare", "construction", "other"] as const;
 
 const CURRENCIES = [
   { value: "EUR", label: "EUR — Euro" },
@@ -54,6 +47,7 @@ const COUNTRIES = [
 ];
 
 export default function OnboardingPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading, updateProfile, uploadAvatar } = useProfile();
@@ -64,16 +58,25 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [hasStartedOnboardingFlow, setHasStartedOnboardingFlow] = useState(false);
 
+  const companyRoleOptions = COMPANY_ROLE_KEYS.map((r) => ({
+    value: r,
+    label: t(`onboarding.role${r.replace(/\s/g, "")}` as any, r),
+  }));
+  const industryOptions = INDUSTRY_VALUES.map((v) => ({
+    value: v,
+    label: t(`onboarding.industry${v.charAt(0).toUpperCase() + v.slice(1)}` as any, v),
+  }));
+
   const steps = accountType === "firm"
     ? [
-        { title: "Account Type", icon: Briefcase },
-        { title: "Your Profile", icon: UserCircle },
-        { title: "Firm Details", icon: Building2 },
+        { title: t("onboarding.stepAccountType"), icon: Briefcase },
+        { title: t("onboarding.stepYourProfile"), icon: UserCircle },
+        { title: t("onboarding.stepFirmDetails"), icon: Building2 },
       ]
     : [
-        { title: "Account Type", icon: Briefcase },
-        { title: "Your Profile", icon: UserCircle },
-        { title: "Organization Details", icon: Building2 },
+        { title: t("onboarding.stepAccountType"), icon: Briefcase },
+        { title: t("onboarding.stepYourProfile"), icon: UserCircle },
+        { title: t("onboarding.stepOrgDetails"), icon: Building2 },
       ];
 
   // Auto-detect which step to start on based on saved data
@@ -155,7 +158,7 @@ export default function OnboardingPage() {
     // Step 0: Account type selection
     if (step === 0) {
       if (!accountType) {
-        toast.error("Please choose how you will use Charmy.");
+        toast.error(t("onboarding.errorChooseType"));
         return;
       }
       setStep(1);
@@ -165,7 +168,7 @@ export default function OnboardingPage() {
     // Step 1: Profile
     if (step === 1) {
       if (!firstName.trim() || !lastName.trim()) {
-        toast.error("First name and last name are required.");
+        toast.error(t("onboarding.errorNameRequired"));
         return;
       }
       try {
@@ -181,7 +184,7 @@ export default function OnboardingPage() {
         }
       } catch (err: any) {
         console.error("Onboarding profile save error:", err);
-        toast.error("Failed to save profile. Please try again.");
+        toast.error(t("onboarding.errorSaveProfile"));
         return;
       }
       setStep(2);
@@ -191,11 +194,11 @@ export default function OnboardingPage() {
     // Step 2: Organization/Firm details
     if (step === 2) {
       if (!orgName.trim()) {
-        toast.error(accountType === "firm" ? "Firm name is required." : "Company name is required.");
+        toast.error(accountType === "firm" ? t("onboarding.errorFirmNameRequired") : t("onboarding.errorCompanyNameRequired"));
         return;
       }
       if (!currency) {
-        toast.error("Default currency is required.");
+        toast.error(t("onboarding.errorCurrencyRequired"));
         return;
       }
       if (org) {
@@ -212,7 +215,7 @@ export default function OnboardingPage() {
           await updateOrg.mutateAsync(orgUpdate as any);
         } catch (err: any) {
           console.error("Onboarding org save error:", err);
-          toast.error("Failed to update organization.");
+          toast.error(t("onboarding.errorSaveOrg"));
           return;
         }
       }
@@ -225,10 +228,10 @@ export default function OnboardingPage() {
       } catch {}
 
       if (accountType === "firm") {
-        toast.success("Setup complete! Let's activate your Accounting Firm plan.");
+        toast.success(t("onboarding.successFirm"));
         navigate("/activate-firm");
       } else {
-        toast.success("Setup complete! Let's activate your plan.");
+        toast.success(t("onboarding.successBusiness"));
         navigate("/activate-trial");
       }
     }
@@ -262,7 +265,7 @@ export default function OnboardingPage() {
               <div key={i} className={`h-1.5 w-10 rounded-full transition-all duration-300 ${i <= step ? 'bg-hero-gradient shadow-sm shadow-primary/20' : 'bg-border'}`} />
             ))}
           </div>
-          <p className="text-sm text-muted-foreground">Step {step + 1} of {steps.length} — {steps[step].title}</p>
+          <p className="text-sm text-muted-foreground">{t("onboarding.stepOf", { current: step + 1, total: steps.length, title: steps[step].title })}</p>
         </div>
 
         <div className="glass-auth rounded-2xl p-6">
@@ -270,8 +273,8 @@ export default function OnboardingPage() {
             {step === 0 && (
               <motion.div key="step-0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
                 <div className="text-center mb-6">
-                  <h2 className="text-lg font-bold text-foreground mb-1">Choose how you will use Charmy</h2>
-                  <p className="text-sm text-muted-foreground">This helps us set up the right experience for you.</p>
+                  <h2 className="text-lg font-bold text-foreground mb-1">{t("onboarding.chooseHowTitle")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("onboarding.chooseHowDesc")}</p>
                 </div>
                 <div className="space-y-3">
                   <button
@@ -293,10 +296,10 @@ export default function OnboardingPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-foreground">Business / Freelancer</span>
+                          <span className="font-semibold text-foreground">{t("onboarding.businessTitle")}</span>
                           {accountType === "business" && <Check className="h-4 w-4 text-primary" />}
                         </div>
-                        <p className="text-sm text-muted-foreground">Manage documents for your own company</p>
+                        <p className="text-sm text-muted-foreground">{t("onboarding.businessDesc")}</p>
                       </div>
                     </div>
                   </button>
@@ -320,10 +323,10 @@ export default function OnboardingPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-foreground">Accounting Firm</span>
+                          <span className="font-semibold text-foreground">{t("onboarding.firmTitle")}</span>
                           {accountType === "firm" && <Check className="h-4 w-4 text-amber-600" />}
                         </div>
-                        <p className="text-sm text-muted-foreground">Manage documents for multiple client companies</p>
+                        <p className="text-sm text-muted-foreground">{t("onboarding.firmDesc")}</p>
                       </div>
                     </div>
                   </button>
@@ -338,14 +341,14 @@ export default function OnboardingPage() {
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-2 text-sm text-foreground font-medium">
                         <Sparkles className="h-4 w-4 text-amber-600" />
-                        Accounting Firm Plan — €99 one-time
+                        {t("onboarding.firmPlanTitle")}
                       </div>
                       <div className="space-y-1.5">
                         {[
-                          "Up to 10 separate client workspaces",
-                          "Dedicated accountant dashboard",
-                          "AI document extraction per workspace",
-                          "Separate exports for each client",
+                          t("onboarding.firmFeature1"),
+                          t("onboarding.firmFeature2"),
+                          t("onboarding.firmFeature3"),
+                          t("onboarding.firmFeature4"),
                         ].map((feat) => (
                           <div key={feat} className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Check className="h-3 w-3 text-amber-600 shrink-0" />
@@ -354,7 +357,7 @@ export default function OnboardingPage() {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground pt-1 border-t border-amber-500/10">
-                        After setup you'll be directed to the one-time €99 payment to activate your firm account.
+                        {t("onboarding.firmPlanNote")}
                       </p>
                     </div>
                   </motion.div>
@@ -379,29 +382,29 @@ export default function OnboardingPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>First Name *</Label>
+                      <Label>{t("onboarding.firstName")} *</Label>
                       <Input placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
                     </div>
                     <div className="space-y-2">
-                      <Label>Last Name *</Label>
+                      <Label>{t("onboarding.lastName")} *</Label>
                       <Input placeholder="Smith" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Job Title</Label>
-                    <Input placeholder={accountType === "firm" ? "e.g. Senior Accountant" : "e.g. Finance Manager"} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
+                    <Label>{t("onboarding.jobTitle")}</Label>
+                    <Input placeholder={accountType === "firm" ? t("onboarding.jobTitlePlaceholderFirm") : t("onboarding.jobTitlePlaceholderBusiness")} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Phone Number</Label>
+                    <Label>{t("onboarding.phoneNumber")}</Label>
                     <Input placeholder="+49 123 456 789" value={phone} onChange={(e) => setPhone(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Role in Company</Label>
+                    <Label>{t("onboarding.roleInCompany")}</Label>
                     <Select value={companyRole} onValueChange={setCompanyRole}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {companyRoles.map((r) => (
-                          <SelectItem key={r} value={r}>{r}</SelectItem>
+                        {companyRoleOptions.map((r) => (
+                          <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -414,7 +417,7 @@ export default function OnboardingPage() {
               <motion.div key="step-2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>{accountType === "firm" ? "Firm Name *" : "Company Name *"}</Label>
+                    <Label>{accountType === "firm" ? `${t("onboarding.firmName")} *` : `${t("onboarding.companyName")} *`}</Label>
                     <Input
                       placeholder={accountType === "firm" ? "Smith & Partners Accounting" : "Acme Corp"}
                       value={orgName}
@@ -425,9 +428,9 @@ export default function OnboardingPage() {
 
                   {accountType !== "firm" && (
                     <div className="space-y-2">
-                      <Label>Industry</Label>
+                      <Label>{t("onboarding.industry")}</Label>
                       <div className="flex flex-wrap gap-2">
-                        {INDUSTRIES.map((ind) => (
+                        {industryOptions.map((ind) => (
                           <button
                             key={ind.value}
                             type="button"
@@ -444,25 +447,25 @@ export default function OnboardingPage() {
                         ))}
                       </div>
                       {industry === "other" && (
-                        <Input placeholder="Enter your industry..." value={customIndustry} onChange={(e) => setCustomIndustry(e.target.value)} className="mt-2" />
+                        <Input placeholder={t("onboarding.industryPlaceholder")} value={customIndustry} onChange={(e) => setCustomIndustry(e.target.value)} className="mt-2" />
                       )}
                     </div>
                   )}
 
                   <div className="space-y-2">
-                    <Label>Country</Label>
+                    <Label>{t("onboarding.country")}</Label>
                     <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" role="combobox" aria-expanded={countryOpen} className="w-full justify-between font-normal">
-                          {country || "Select country..."}
+                          {country || t("onboarding.selectCountry")}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Search country..." />
+                          <CommandInput placeholder={t("onboarding.searchCountry")} />
                           <CommandList>
-                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandEmpty>{t("onboarding.noCountryFound")}</CommandEmpty>
                             <CommandGroup>
                               {COUNTRIES.map((c) => (
                                 <CommandItem key={c} value={c} onSelect={() => { setCountry(c); setCountryOpen(false); }}>
@@ -479,7 +482,7 @@ export default function OnboardingPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Default Currency *</Label>
+                      <Label>{t("onboarding.defaultCurrency")} *</Label>
                       <Select value={currency} onValueChange={setCurrency}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -490,13 +493,13 @@ export default function OnboardingPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>VAT Number</Label>
+                      <Label>{t("onboarding.vatNumber")}</Label>
                       <Input placeholder="DE123456789" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Address</Label>
+                    <Label>{t("onboarding.address")}</Label>
                     <Input placeholder="123 Main St, Berlin" value={address} onChange={(e) => setAddress(e.target.value)} />
                   </div>
 
@@ -504,7 +507,7 @@ export default function OnboardingPage() {
                     <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-3 flex items-start gap-3">
                       <Building2 className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                       <p className="text-xs text-muted-foreground">
-                        After completing setup, you'll be directed to the <span className="font-medium text-foreground">€99 one-time payment</span> to activate your Accounting Firm plan with up to 10 client workspaces.
+                        {t("onboarding.firmSetupNote")} <span className="font-medium text-foreground">{t("onboarding.firmSetupNoteHighlight")}</span> {t("onboarding.firmSetupNoteEnd")}
                       </p>
                     </div>
                   )}
@@ -515,12 +518,12 @@ export default function OnboardingPage() {
 
           <div className="flex items-center justify-between mt-6 pt-4 border-t">
             <Button variant="ghost" size="sm" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}>
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back
+              <ArrowLeft className="h-4 w-4 mr-1" /> {t("onboarding.back")}
             </Button>
             <Button size="sm" onClick={next}>
               {step === steps.length - 1
-                ? (accountType === "firm" ? "Continue to Payment" : "Finish Setup")
-                : "Continue"
+                ? (accountType === "firm" ? t("onboarding.continueToPayment") : t("onboarding.finishSetup"))
+                : t("onboarding.continue")
               } <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>

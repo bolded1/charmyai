@@ -9,7 +9,7 @@ export default function ApiDocsPage() {
     : "https://YOUR_PROJECT_REF.supabase.co/functions/v1/api-v1";
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div className="space-y-3">
         <Badge variant="outline" className="text-[11px] uppercase tracking-[0.18em]">Developer API</Badge>
         <div className="space-y-2">

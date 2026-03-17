@@ -378,7 +378,7 @@ export default function IncomePage() {
   if (!user) return <div className="text-center py-12 text-muted-foreground">Please log in to view income.</div>;
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
 
 
       {/* Upload Box */}

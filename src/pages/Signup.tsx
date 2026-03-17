@@ -256,7 +256,7 @@ export default function SignupPage() {
               onClick={() => handleOAuth("google")}
             >
               {socialLoading === "google" ? <Loader2 className="h-4 w-4 animate-spin mr-2.5" /> : <span className="mr-2.5"><GoogleIcon /></span>}
-              Continue with Google
+              {t("auth.continueWithGoogle")}
             </Button>
 
             <Button
@@ -267,7 +267,7 @@ export default function SignupPage() {
               onClick={() => handleOAuth("apple")}
             >
               {socialLoading === "apple" ? <Loader2 className="h-4 w-4 animate-spin mr-2.5" /> : <span className="mr-2.5"><AppleIcon /></span>}
-              Continue with Apple
+              {t("auth.continueWithApple")}
             </Button>
           </div>
 
@@ -275,7 +275,7 @@ export default function SignupPage() {
           <div className="relative">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/50" /></div>
             <div className="relative flex justify-center">
-              <span className="bg-card px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">or continue with email</span>
+              <span className="bg-card px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">{t("auth.orContinueWithEmail")}</span>
             </div>
           </div>
 
