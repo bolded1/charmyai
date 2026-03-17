@@ -150,9 +150,10 @@ export default function DocumentsPage() {
   const handleSave = async () => {
     if (!selected) return;
     try {
+      const { discount_amount, ...columnData } = editData as any;
       await updateDoc.mutateAsync({
         id: selected.id,
-        updates: { ...editData, user_corrections: { ...editData, _notes: notes.trim() || null } },
+        updates: { ...columnData, user_corrections: { ...editData, _notes: notes.trim() || null } },
       });
       setSelected(null);
       toast.success("Document updated");
