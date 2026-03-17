@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ function formatBytes(bytes: number): string {
 }
 
 export default function DocumentRequestUpload() {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
 
   const [requestInfo, setRequestInfo] = useState<RequestInfo | null>(null);
@@ -54,7 +56,7 @@ export default function DocumentRequestUpload() {
 
   const fetchRequestInfo = useCallback(() => {
     if (!token) {
-      setInfoError("Invalid upload link.");
+      setInfoError(t("documentUpload.linkInvalid"));
       setLoadingInfo(false);
       return;
     }
@@ -66,7 +68,7 @@ export default function DocumentRequestUpload() {
         if (data.error) throw new Error(data.error);
         setRequestInfo(data.request);
       })
-      .catch((e) => setInfoError(e.message ?? "Could not load upload link."))
+      .catch((e) => setInfoError(e.message ?? t("documentUpload.couldNotLoad")))
       .finally(() => setLoadingInfo(false));
   }, [token]);
 
@@ -150,12 +152,12 @@ export default function DocumentRequestUpload() {
           <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
             <AlertCircle className="h-7 w-7 text-destructive" />
           </div>
-          <h1 className="text-xl font-bold">Link not found</h1>
-          <p className="text-sm text-muted-foreground">{infoError ?? "This upload link is invalid."}</p>
+          <h1 className="text-xl font-bold">{t("documentUpload.linkNotFound")}</h1>
+          <p className="text-sm text-muted-foreground">{infoError ?? t("documentUpload.linkInvalid")}</p>
           {isNetworkError && (
             <Button variant="outline" size="sm" onClick={() => setRetryCount((c) => c + 1)}>
               <Loader2 className={`h-4 w-4 mr-2 ${loadingInfo ? "animate-spin" : "hidden"}`} />
-              Retry
+              {t("documentUpload.retry")}
             </Button>
           )}
         </div>
@@ -172,13 +174,11 @@ export default function DocumentRequestUpload() {
           <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center mx-auto">
             <AlertCircle className="h-7 w-7 text-muted-foreground" />
           </div>
-          <h1 className="text-xl font-bold">{isExpired ? "Link expired" : "Request closed"}</h1>
+          <h1 className="text-xl font-bold">{isExpired ? t("documentUpload.linkExpired") : t("documentUpload.requestClosed")}</h1>
           <p className="text-sm text-muted-foreground">
-            {isExpired
-              ? "This upload link has expired. Please contact your accountant for a new link."
-              : "This upload request has been closed by your accountant. No more uploads are accepted."}
+            {isExpired ? t("documentUpload.linkExpiredDesc") : t("documentUpload.requestClosedDesc")}
           </p>
-          <p className="text-xs text-muted-foreground">Sent by {requestInfo.firm_name}</p>
+          <p className="text-xs text-muted-foreground">{t("documentUpload.sentBy")} {requestInfo.firm_name}</p>
         </div>
       </div>
     );
@@ -205,7 +205,7 @@ export default function DocumentRequestUpload() {
           </div>
           {requestInfo.expires_at && (
             <p className="text-xs text-amber-600">
-              Deadline: {format(new Date(requestInfo.expires_at), "PPP")}
+              {t("documentUpload.deadline")} {format(new Date(requestInfo.expires_at), "PPP")}
             </p>
           )}
         </div>
@@ -213,11 +213,11 @@ export default function DocumentRequestUpload() {
         {/* Optional sender info */}
         <div className="bg-background rounded-xl border border-border p-4 space-y-3">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Your details (optional)
+            {t("documentUpload.yourDetails")}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="uploader-name" className="text-xs">Name</Label>
+              <Label htmlFor="uploader-name" className="text-xs">{t("documentUpload.name")}</Label>
               <Input
                 id="uploader-name"
                 placeholder="Jane Smith"
@@ -228,7 +228,7 @@ export default function DocumentRequestUpload() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="uploader-email" className="text-xs">Email</Label>
+              <Label htmlFor="uploader-email" className="text-xs">{t("documentUpload.email")}</Label>
               <Input
                 id="uploader-email"
                 type="email"
@@ -266,11 +266,11 @@ export default function DocumentRequestUpload() {
           />
           <Upload className="h-8 w-8 text-muted-foreground" />
           <div>
-            <p className="text-sm font-medium text-foreground">Drop files here or click to browse</p>
-            <p className="text-xs text-muted-foreground mt-0.5">PDF, PNG, JPG, WebP · max 20 MB each</p>
+            <p className="text-sm font-medium text-foreground">{t("documentUpload.dropFiles")}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("documentUpload.fileTypes")}</p>
           </div>
           <Button size="sm" variant="outline" type="button" disabled={anyUploading}>
-            Select files
+            {t("documentUpload.selectFiles")}
           </Button>
         </div>
 
@@ -308,13 +308,13 @@ export default function DocumentRequestUpload() {
           <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3">
             <CheckCircle2 className="h-5 w-5 shrink-0" />
             <p className="text-sm font-medium">
-              All files uploaded successfully! Your accountant will review them shortly.
+              {t("documentUpload.allDone")}
             </p>
           </div>
         )}
 
         <p className="text-center text-xs text-muted-foreground">
-          Powered by <span className="font-medium">Charmy</span>
+          {t("documentUpload.poweredBy")} <span className="font-medium">Charmy</span>
         </p>
       </div>
     </div>

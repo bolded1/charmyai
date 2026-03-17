@@ -155,7 +155,11 @@
     "signupsClosedDesc": "New registrations are currently disabled. Please check back later or contact support.",
     "termsAgree": "By signing up, you agree to our Terms of Service and Privacy Policy.",
     "emailAlreadyUsed": "This email is already in use. Please sign in or use a different email.",
-    "viewingAs": "Viewing as:"
+    "viewingAs": "Viewing as:",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "orContinueWithEmail": "or continue with email",
+    "checkYourInbox": "Check your inbox"
   },
   "resetPassword": {
     "chooseNew": "Choose a new password",
@@ -1277,5 +1281,25 @@
     "createError": "Failed to create API key",
     "revokeError": "Failed to revoke key",
     "copied": "Copied to clipboard"
+  },
+  "documentUpload": {
+    "linkNotFound": "Link not found",
+    "linkInvalid": "This upload link is invalid.",
+    "linkExpired": "Link expired",
+    "linkExpiredDesc": "This upload link has expired. Please contact your accountant for a new link.",
+    "requestClosed": "Request closed",
+    "requestClosedDesc": "This upload request has been closed by your accountant. No more uploads are accepted.",
+    "couldNotLoad": "Could not load upload link.",
+    "sentBy": "Sent by",
+    "deadline": "Deadline:",
+    "retry": "Retry",
+    "yourDetails": "Your details (optional)",
+    "name": "Name",
+    "email": "Email",
+    "dropFiles": "Drop files here or click to browse",
+    "fileTypes": "PDF, PNG, JPG, WebP · max 20 MB each",
+    "selectFiles": "Select files",
+    "allDone": "All files uploaded successfully! Your accountant will review them shortly.",
+    "poweredBy": "Powered by"
   }
 }
