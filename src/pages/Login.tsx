@@ -231,7 +231,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <p className="font-medium text-sm mb-1">{t("auth.checkYourInbox")}</p>
-                <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("auth.resetSent", { email: forgotEmail }) }} />
+                <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("auth.resetSent", { email: forgotEmail.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }) }} />
               </div>
             </motion.div>
           ) : (

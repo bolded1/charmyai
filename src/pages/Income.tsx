@@ -159,7 +159,7 @@ export default function IncomePage() {
       vat_amount: Number(record.vat_amount || 0),
       total_amount: Number(record.total_amount || 0),
       vat_number: record.vat_number || "",
-      notes: record.notes || "",
+      notes: (record as any).notes || "",
     });
   };
 
