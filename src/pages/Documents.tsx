@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X, CalendarDays } from "lucide-react";
+import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X, CalendarDays, StickyNote } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { useState, useMemo, useRef } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -32,6 +33,7 @@ export default function DocumentsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
   const [editData, setEditData] = useState<Partial<DocumentRecord>>({});
+  const [notes, setNotes] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(50);
@@ -126,6 +128,7 @@ export default function DocumentsPage() {
 
   const openReview = (doc: DocumentRecord) => {
     setSelected(doc);
+    setNotes((doc.user_corrections as any)?._notes ?? "");
     const discount = (doc as any).extracted_data?.discount_amount ?? (doc as any).user_corrections?.discount_amount ?? "";
     setEditData({
       document_type: doc.document_type,
@@ -149,7 +152,7 @@ export default function DocumentsPage() {
     try {
       await updateDoc.mutateAsync({
         id: selected.id,
-        updates: { ...editData, user_corrections: editData },
+        updates: { ...editData, user_corrections: { ...editData, _notes: notes.trim() || null } },
       });
       setSelected(null);
       toast.success("Document updated");
@@ -160,7 +163,7 @@ export default function DocumentsPage() {
 
   const handleApprove = async () => {
     if (!selected) return;
-    const merged = { ...selected, ...editData, user_corrections: editData };
+    const merged = { ...selected, ...editData, user_corrections: { ...editData, _notes: notes.trim() || null } };
     try {
       await approveDoc.mutateAsync(merged);
       setSelected(null);
@@ -442,6 +445,9 @@ export default function DocumentsPage() {
                                     doc.status.replace("_", " ")
                                   )}
                                 </Badge>
+                                {(doc.user_corrections as any)?._notes && (
+                                  <StickyNote className="h-3.5 w-3.5 text-muted-foreground shrink-0" title="Has notes" />
+                                )}
                                 {(doc as any).potential_duplicate_of && (
                                   <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/20">
                                     <Copy className="h-3 w-3 mr-1" /> duplicate
@@ -675,6 +681,18 @@ export default function DocumentsPage() {
                     onValueChange={(v) => setEditData((p) => ({ ...p, category: v }))}
                   />
                 </div>
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">{t("documents.notes")}</Label>
+                <Textarea
+                  placeholder={t("documents.notesPlaceholder")}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  className="resize-none text-sm"
+                />
               </div>
 
               <div className="flex gap-2 pt-2">
