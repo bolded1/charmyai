@@ -814,7 +814,6 @@ export type Database = {
           invoice_date: string
           invoice_number: string | null
           net_amount: number
-          notes: string | null
           organization_id: string | null
           supplier_name: string
           total_amount: number
@@ -832,7 +831,6 @@ export type Database = {
           invoice_date: string
           invoice_number?: string | null
           net_amount?: number
-          notes?: string | null
           organization_id?: string | null
           supplier_name: string
           total_amount?: number
@@ -850,7 +848,6 @@ export type Database = {
           invoice_date?: string
           invoice_number?: string | null
           net_amount?: number
-          notes?: string | null
           organization_id?: string | null
           supplier_name?: string
           total_amount?: number
@@ -964,7 +961,6 @@ export type Database = {
           invoice_date: string
           invoice_number: string | null
           net_amount: number
-          notes: string | null
           organization_id: string | null
           total_amount: number
           user_id: string
@@ -982,7 +978,6 @@ export type Database = {
           invoice_date: string
           invoice_number?: string | null
           net_amount?: number
-          notes?: string | null
           organization_id?: string | null
           total_amount?: number
           user_id: string
@@ -1000,7 +995,6 @@ export type Database = {
           invoice_date?: string
           invoice_number?: string | null
           net_amount?: number
-          notes?: string | null
           organization_id?: string | null
           total_amount?: number
           user_id?: string
