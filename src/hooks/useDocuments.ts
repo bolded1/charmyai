@@ -3,6 +3,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 
+const WEBHOOK_FN = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
+
+/** Fire-and-forget: dispatch a webhook event without blocking the caller. */
+async function dispatchWebhookEvent(event: string, payload: Record<string, unknown>) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    fetch(WEBHOOK_FN, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ event, payload }),
+    }).catch(() => {/* silently ignore delivery failures */});
+  } catch { /* ignore */ }
+}
+
 export interface DocumentRecord {
   id: string;
   user_id: string;
@@ -168,10 +186,24 @@ export function useUpdateDocument() {
         .single();
 
       if (error) throw error;
+
+      // Sync notes to linked expense/income records
+      const notes = (updates.user_corrections as any)?._notes;
+      if (notes !== undefined) {
+        const syncedNotes = notes || null;
+        await supabase.from("expense_records").update({ notes: syncedNotes }).eq("document_id", id);
+        await supabase.from("income_records").update({ notes: syncedNotes }).eq("document_id", id);
+      }
+
+      // Dispatch webhook (fire-and-forget)
+      dispatchWebhookEvent("document.updated", { document: data });
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["income"] });
     },
   });
 }
@@ -215,6 +247,8 @@ export function useApproveDocument() {
       }
 
       // Create expense or income record based on document type
+      const docNotes = (doc.user_corrections as any)?._notes || null;
+
       if (doc.document_type === "sales_invoice") {
         const { error } = await supabase.from("income_records").insert({
           user_id: user.id,
@@ -230,6 +264,7 @@ export function useApproveDocument() {
           total_amount: doc.total_amount || 0,
           vat_number: doc.vat_number,
           category: doc.category,
+          notes: docNotes,
         });
         if (error) throw error;
       } else {
@@ -247,9 +282,17 @@ export function useApproveDocument() {
           total_amount: doc.total_amount || 0,
           vat_number: doc.vat_number,
           category: doc.category,
+          notes: docNotes,
         });
         if (error) throw error;
       }
+
+      // Dispatch webhook (fire-and-forget)
+      const isIncome = doc.document_type === "sales_invoice";
+      dispatchWebhookEvent("document.approved", {
+        document: doc,
+        record_type: isIncome ? "income" : "expense",
+      });
 
       return doc;
     },
@@ -579,7 +622,7 @@ export function useUpdateExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, any> }) => {
+    mutationFn: async ({ id, updates, documentId }: { id: string; updates: Record<string, any>; documentId?: string | null }) => {
       const { data, error } = await supabase
         .from("expense_records")
         .update(updates)
@@ -587,10 +630,22 @@ export function useUpdateExpense() {
         .select()
         .single();
       if (error) throw error;
+
+      // Sync notes back to the linked document
+      if (documentId && updates.notes !== undefined) {
+        const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
+        const existing = (docData?.user_corrections as any) || {};
+        await supabase.from("documents").update({
+          user_corrections: { ...existing, _notes: updates.notes || null },
+          updated_at: new Date().toISOString(),
+        }).eq("id", documentId);
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Expense updated");
     },
     onError: (err: Error) => {
@@ -603,7 +658,7 @@ export function useUpdateIncome() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, any> }) => {
+    mutationFn: async ({ id, updates, documentId }: { id: string; updates: Record<string, any>; documentId?: string | null }) => {
       const { data, error } = await supabase
         .from("income_records")
         .update(updates)
@@ -611,10 +666,22 @@ export function useUpdateIncome() {
         .select()
         .single();
       if (error) throw error;
+
+      // Sync notes back to the linked document
+      if (documentId && updates.notes !== undefined) {
+        const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
+        const existing = (docData?.user_corrections as any) || {};
+        await supabase.from("documents").update({
+          user_corrections: { ...existing, _notes: updates.notes || null },
+          updated_at: new Date().toISOString(),
+        }).eq("id", documentId);
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["income"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Income record updated");
     },
     onError: (err: Error) => {

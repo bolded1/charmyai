@@ -173,7 +173,7 @@ export default function IncomePage() {
 
   const handleSave = async () => {
     if (!selectedId || !editData) return;
-    await updateIncome.mutateAsync({ id: selectedId, updates: editData });
+    await updateIncome.mutateAsync({ id: selectedId, updates: editData, documentId: selectedRecord?.document_id });
     closeEdit();
   };
 
