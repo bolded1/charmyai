@@ -447,7 +447,7 @@ export default function DocumentsPage() {
                                   )}
                                 </Badge>
                                 {(doc.user_corrections as any)?._notes && (
-                                  <StickyNote className="h-3.5 w-3.5 text-muted-foreground shrink-0" title="Has notes" />
+                                  <StickyNote className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                 )}
                                 {(doc as any).potential_duplicate_of && (
                                   <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/20">

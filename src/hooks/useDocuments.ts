@@ -187,17 +187,7 @@ export function useUpdateDocument() {
 
       if (error) throw error;
 
-      // Sync notes to linked expense/income records (column added in migration 20260317120000)
-      const notes = (updates.user_corrections as any)?._notes;
-      if (notes !== undefined) {
-        const syncedNotes = notes || null;
-        await supabase.from("expense_records").update({ notes: syncedNotes }).eq("document_id", id).then(({ error }) => {
-          if (error) console.warn("notes sync skipped (expense_records):", error.message);
-        });
-        await supabase.from("income_records").update({ notes: syncedNotes }).eq("document_id", id).then(({ error }) => {
-          if (error) console.warn("notes sync skipped (income_records):", error.message);
-        });
-      }
+      // Notes sync removed — notes column does not exist on expense/income records
 
       // Dispatch webhook (fire-and-forget)
       dispatchWebhookEvent("document.updated", { document: data });

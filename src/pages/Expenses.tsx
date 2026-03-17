@@ -153,7 +153,7 @@ export default function ExpensesPage() {
       vat_amount: Number(expense.vat_amount || 0),
       total_amount: Number(expense.total_amount || 0),
       vat_number: expense.vat_number || "",
-      notes: expense.notes || "",
+      notes: (expense as any).notes || "",
     });
   };
 

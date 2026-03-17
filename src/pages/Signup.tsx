@@ -198,7 +198,7 @@ export default function SignupPage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold mb-1.5">{t("auth.checkEmail")}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: t("auth.checkEmailDesc", { email }) }} />
+              <p className="text-sm text-muted-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: t("auth.checkEmailDesc", { email: email.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }) }} />
             </div>
             <Button variant="outline" size="sm" className="w-full h-10 rounded-xl" disabled={resendCooldown > 0 || resending} onClick={handleResendEmail}>
               {resending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}

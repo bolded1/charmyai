@@ -418,7 +418,7 @@ export default function WebhookManager() {
         .select("id, target_url, events, created_at, revoked_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      setEndpoints(data ?? []);
+      setEndpoints((data ?? []).map(d => ({ ...d, events: Array.isArray(d.events) ? d.events as string[] : [] })));
     } catch (err: any) {
       toast.error(err.message);
     } finally {
