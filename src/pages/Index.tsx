@@ -96,7 +96,7 @@ export default function IndexPage() {
       <WhoIsItFor />
 
       {/* ═══ Problem Section ═══ */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="pt-20 pb-10 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
         <div className="container max-w-5xl relative z-10">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -145,7 +145,7 @@ export default function IndexPage() {
       </section>
 
       {/* ═══ Solution Section ═══ */}
-      <section className="py-20">
+      <section className="pt-10 pb-20">
         <div className="container max-w-5xl">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
