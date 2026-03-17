@@ -87,11 +87,9 @@ export default function IndexPage() {
         </div>
 
         {/* Demo uploader embedded in hero */}
-        <div className="container max-w-5xl relative z-10">
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-12">
-            <DemoUploader />
-          </motion.div>
-        </div>
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-12 relative z-10">
+          <DemoUploader />
+        </motion.div>
       </section>
 
       {/* ═══ Who Is It For ═══ */}
