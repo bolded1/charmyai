@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface HelpArticle {
   id: string;
@@ -415,8 +416,10 @@ export default function Help() {
 
   const newCount = helpArticles.filter((a) => a.isNew).length;
 
+  const isAppContext = location.pathname.startsWith("/app");
+
   return (
-    <div className="pt-24 px-4 pb-4 md:pt-24 md:px-8 md:pb-4 max-w-4xl mx-auto space-y-8">
+    <div className={cn("px-4 pb-4 md:px-8 md:pb-4 max-w-4xl mx-auto space-y-8", isAppContext ? "pt-6 md:pt-8" : "pt-24 md:pt-24")}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
