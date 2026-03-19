@@ -25,6 +25,7 @@ export function useBulkDownload() {
 
       const zip = new JSZip();
       let added = 0;
+      let failed = 0;
 
       for (const doc of docs) {
         try {
@@ -32,7 +33,10 @@ export function useBulkDownload() {
             .from("documents")
             .download(doc.file_path);
 
-          if (dlError || !blob) continue;
+          if (dlError || !blob) {
+            failed++;
+            continue;
+          }
 
           const ext = doc.file_type === "application/pdf" ? ".pdf"
             : doc.file_type?.startsWith("image/png") ? ".png"
@@ -48,7 +52,7 @@ export function useBulkDownload() {
           zip.file(name, blob);
           added++;
         } catch {
-          // Skip files that fail
+          failed++;
         }
       }
 
@@ -68,7 +72,11 @@ export function useBulkDownload() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success(`Downloaded ${added} file(s) as ZIP`);
+      if (failed > 0) {
+        toast.warning(`Downloaded ${added} file(s), ${failed} could not be retrieved`);
+      } else {
+        toast.success(`Downloaded ${added} file(s) as ZIP`);
+      }
     } catch (err: any) {
       toast.error(err.message || "Download failed");
     } finally {
