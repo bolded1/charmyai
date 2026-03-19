@@ -93,9 +93,12 @@ export default function DashboardLayout() {
     );
   }
 
+  const isFirmAccount = org?.workspace_type === "accounting_firm" || subscription.has_firm_plan;
+  const paymentRoute = isFirmAccount ? "/payment?plan=firm" : "/payment";
+
   // Billing setup gate — client users skip billing (their firm pays)
   if (!impersonating && !isClient && !profile.billing_setup_at) {
-    return <Navigate to="/payment" replace />;
+    return <Navigate to={paymentRoute} replace />;
   }
 
   // Subscription gate — client users skip subscription check
@@ -103,7 +106,7 @@ export default function DashboardLayout() {
     if (subscription.status && subscription.status !== "active" && subscription.status !== "promo_active") {
       return <Navigate to="/billing-required" replace />;
     }
-    return <Navigate to="/payment" replace />;
+    return <Navigate to={paymentRoute} replace />;
   }
 
   const handleSignOut = async () => {
