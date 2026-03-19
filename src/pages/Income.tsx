@@ -508,17 +508,17 @@ export default function IncomePage() {
                         onCheckedChange={toggleSelectAll}
                       />
                     </th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("customer_name")}>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("customer_name")} aria-sort={sortField === "customer_name" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                       <span className="flex items-center">Customer<SortIcon field="customer_name" /></span>
                     </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("invoice_date")}>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("invoice_date")} aria-sort={sortField === "invoice_date" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                       <span className="flex items-center">Date<SortIcon field="invoice_date" /></span>
                     </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Currency</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">Net</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">VAT</th>
-                    <th className="p-4 text-right text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("total_amount")}>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("total_amount")} aria-sort={sortField === "total_amount" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                       <span className="flex items-center justify-end">Total<SortIcon field="total_amount" /></span>
                     </th>
                     <th className="p-4 w-10"></th>
@@ -542,7 +542,7 @@ export default function IncomePage() {
                           <td className="pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />
                           </td>
-                          <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
+                          <td className="p-4 text-sm font-medium"><span className="truncate block max-w-[200px]" title={doc.customer_name}>{doc.customer_name}</span></td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
                           <td className="p-4 text-sm text-muted-foreground">
                             {doc.invoice_date ? format(parseISO(doc.invoice_date), "dd MMM yyyy") : "—"}

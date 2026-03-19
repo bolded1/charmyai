@@ -193,9 +193,9 @@ export function ManualExpenseDialog({ open, onOpenChange, defaultCurrency = "EUR
 
   const isValid = () => {
     if (!date) return false;
-    if (type === "mileage") return !!description && parseFloat(distanceKm) > 0 && parseFloat(ratePerKm) > 0;
-    if (type === "per_diem") return !!(location || description) && parseFloat(days) > 0 && parseFloat(dailyRate) > 0;
-    return !!description && parseFloat(totalAmount) > 0;
+    if (type === "mileage") return !!description.trim() && parseFloat(distanceKm) > 0 && parseFloat(ratePerKm) > 0;
+    if (type === "per_diem") return !!(location.trim() || description.trim()) && parseFloat(days) > 0 && parseFloat(dailyRate) > 0;
+    return !!description.trim() && parseFloat(totalAmount) > 0;
   };
 
   const handleSubmit = async () => {

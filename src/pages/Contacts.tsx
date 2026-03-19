@@ -582,6 +582,7 @@ export default function Contacts() {
         c.name.toLowerCase().includes(q) ||
         (c.vatNumber ?? "").toLowerCase().includes(q) ||
         (c.email ?? "").toLowerCase().includes(q) ||
+        (c.phone ?? "").toLowerCase().includes(q) ||
         c.categories.some((cat) => cat.toLowerCase().includes(q))
       );
     }
@@ -606,7 +607,7 @@ export default function Contacts() {
       ]);
     });
     const csv = rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

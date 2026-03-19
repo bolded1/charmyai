@@ -322,8 +322,8 @@ export default function Reports() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard i={0} dark label="Total Revenue"  value={fmt(totalRevenue,  activeCurrency)} sub={`${income.length} records`}   trend="up" />
-          <StatCard i={1}      label="Total Expenses" value={fmt(totalExpenses, activeCurrency)} sub={`${expenses.length} records`} trend="down" />
+          <StatCard i={0} dark label="Total Revenue"  value={fmt(totalRevenue,  activeCurrency)} sub={`${income.length} record${income.length !== 1 ? "s" : ""}`}   trend="up" />
+          <StatCard i={1}      label="Total Expenses" value={fmt(totalExpenses, activeCurrency)} sub={`${expenses.length} record${expenses.length !== 1 ? "s" : ""}`} trend="down" />
           <StatCard i={2}      label="Gross Profit"   value={fmt(grossProfit,   activeCurrency)} trend={profitTrend} sub={grossProfit >= 0 ? "Profitable" : "Loss"} />
           <StatCard i={3}      label="VAT Balance"    value={fmt(vatBalance,    activeCurrency)} trend={vatBalance >= 0 ? "up" : "down"} sub="Net VAT position" />
         </div>

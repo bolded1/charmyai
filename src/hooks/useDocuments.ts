@@ -213,11 +213,10 @@ export function useApproveDocument() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Update document status
+      // Save user corrections first (without changing status yet)
       const { error: updateErr } = await supabase
         .from("documents")
         .update({
-          status: "approved",
           user_corrections: doc.user_corrections,
           updated_at: new Date().toISOString(),
         })
@@ -300,6 +299,12 @@ export function useApproveDocument() {
           if (error) throw error;
         }
       }
+
+      // Only mark as approved AFTER record creation succeeds
+      await supabase
+        .from("documents")
+        .update({ status: "approved", updated_at: new Date().toISOString() })
+        .eq("id", doc.id);
 
       // Dispatch webhook (fire-and-forget)
       const isIncome = doc.document_type === "sales_invoice";

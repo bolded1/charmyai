@@ -414,7 +414,7 @@ export default function ExpensesPage() {
                         />
                         <div className="flex-1 min-w-0" onClick={() => openEdit(doc)}>
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-medium truncate">{doc.supplier_name}</span>
+                            <span className="text-sm font-medium truncate" title={doc.supplier_name}>{doc.supplier_name}</span>
                             <span className="text-sm font-semibold tabular-nums shrink-0">
                               {fmtCurrencyValue(Number(doc.total_amount) || 0, doc.currency || defaultCurrency)}
                             </span>
@@ -454,21 +454,22 @@ export default function ExpensesPage() {
                     <th className="pl-4 pr-1 w-10">
                       <Checkbox
                         checked={selectableCount > 0 && selectedIds.size === selectableCount}
+                        indeterminate={selectedIds.size > 0 && selectedIds.size < selectableCount}
                         onCheckedChange={toggleSelectAll}
                       />
                     </th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("supplier_name")}>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("supplier_name")} aria-sort={sortField === "supplier_name" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                       <span className="flex items-center">Supplier<SortIcon field="supplier_name" /></span>
                     </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("invoice_date")}>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("invoice_date")} aria-sort={sortField === "invoice_date" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                       <span className="flex items-center">Date<SortIcon field="invoice_date" /></span>
                     </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Category</th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Currency</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">Net</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">VAT</th>
-                    <th className="p-4 text-right text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("total_amount")}>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("total_amount")} aria-sort={sortField === "total_amount" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                       <span className="flex items-center justify-end">Total<SortIcon field="total_amount" /></span>
                     </th>
                     <th className="p-4 w-10"></th>
@@ -494,7 +495,7 @@ export default function ExpensesPage() {
                           </td>
                           <td className="p-4 text-sm font-medium">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span>{doc.supplier_name}</span>
+                              <span title={doc.supplier_name}>{doc.supplier_name}</span>
                               {!doc.document_id && (
                                 <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal shrink-0 border-amber-200 text-amber-700 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30">
                                   {doc.category === "Mileage" ? "Mileage" : doc.category === "Per Diem" ? "Per Diem" : "Manual"}
