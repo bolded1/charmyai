@@ -461,6 +461,9 @@ export function useUploadIncomeDocument() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // Check storage quota
+      await checkStorageQuota(profile?.active_organization_id || null, file.size);
+
       const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
