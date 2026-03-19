@@ -124,7 +124,7 @@ serve(async (req) => {
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
           for (const item of lineItems.data) {
             const productId = typeof item.price?.product === "string" ? item.price.product : (item.price?.product as any)?.id;
-            if (productId === FIRM_PLAN_PRODUCT_ID) {
+            if (isFirmProduct(productId)) {
               hasFirmPlan = true;
               // Capture actual amount paid (in cents -> convert to main unit)
               amountPaid = (session.amount_total ?? 0) / 100;
