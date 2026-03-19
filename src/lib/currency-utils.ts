@@ -48,6 +48,7 @@ export function groupByCurrency(
  * Formats a number as currency.
  */
 export function fmtCurrencyValue(n: number, currency: string): string {
+  if (!isFinite(n)) return `${currency} 0.00`;
   try {
     return n.toLocaleString(undefined, {
       style: "currency",

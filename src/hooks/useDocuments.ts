@@ -213,11 +213,10 @@ export function useApproveDocument() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Update document status
+      // Save user corrections first (without changing status yet)
       const { error: updateErr } = await supabase
         .from("documents")
         .update({
-          status: "approved",
           user_corrections: doc.user_corrections,
           updated_at: new Date().toISOString(),
         })
@@ -248,43 +247,64 @@ export function useApproveDocument() {
       const docNotes = (doc.user_corrections as any)?._notes || null;
       const notesField = docNotes !== null ? { notes: docNotes } : {};
 
+      // Guard: skip record creation if one already exists for this document
       if (doc.document_type === "sales_invoice") {
-        const { error } = await supabase.from("income_records").insert({
-          user_id: user.id,
-          organization_id: approverProfile?.active_organization_id || null,
-          document_id: doc.id,
-          customer_name: doc.customer_name || doc.supplier_name || "Unknown",
-          invoice_number: doc.invoice_number,
-          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-          due_date: doc.due_date,
-          currency: doc.currency || orgDefaultCurrency,
-          net_amount: doc.net_amount || 0,
-          vat_amount: doc.vat_amount || 0,
-          total_amount: doc.total_amount || 0,
-          vat_number: doc.vat_number,
-          category: doc.category,
-          ...notesField,
-        });
-        if (error) throw error;
+        const { data: existingIncome } = await supabase
+          .from("income_records")
+          .select("id")
+          .eq("document_id", doc.id)
+          .maybeSingle();
+        if (!existingIncome) {
+          const { error } = await supabase.from("income_records").insert({
+            user_id: user.id,
+            organization_id: approverProfile?.active_organization_id || null,
+            document_id: doc.id,
+            customer_name: doc.customer_name || doc.supplier_name || "Unknown",
+            invoice_number: doc.invoice_number,
+            invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+            due_date: doc.due_date,
+            currency: doc.currency || orgDefaultCurrency,
+            net_amount: doc.net_amount || 0,
+            vat_amount: doc.vat_amount || 0,
+            total_amount: doc.total_amount || 0,
+            vat_number: doc.vat_number,
+            category: doc.category,
+            ...notesField,
+          });
+          if (error) throw error;
+        }
       } else {
-        const { error } = await supabase.from("expense_records").insert({
-          user_id: user.id,
-          organization_id: approverProfile?.active_organization_id || null,
-          document_id: doc.id,
-          supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
-          invoice_number: doc.invoice_number,
-          invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-          due_date: doc.due_date,
-          currency: doc.currency || orgDefaultCurrency,
-          net_amount: doc.net_amount || 0,
-          vat_amount: doc.vat_amount || 0,
-          total_amount: doc.total_amount || 0,
-          vat_number: doc.vat_number,
-          category: doc.category,
-          ...notesField,
-        });
-        if (error) throw error;
+        const { data: existingExpense } = await supabase
+          .from("expense_records")
+          .select("id")
+          .eq("document_id", doc.id)
+          .maybeSingle();
+        if (!existingExpense) {
+          const { error } = await supabase.from("expense_records").insert({
+            user_id: user.id,
+            organization_id: approverProfile?.active_organization_id || null,
+            document_id: doc.id,
+            supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
+            invoice_number: doc.invoice_number,
+            invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+            due_date: doc.due_date,
+            currency: doc.currency || orgDefaultCurrency,
+            net_amount: doc.net_amount || 0,
+            vat_amount: doc.vat_amount || 0,
+            total_amount: doc.total_amount || 0,
+            vat_number: doc.vat_number,
+            category: doc.category,
+            ...notesField,
+          });
+          if (error) throw error;
+        }
       }
+
+      // Only mark as approved AFTER record creation succeeds
+      await supabase
+        .from("documents")
+        .update({ status: "approved", updated_at: new Date().toISOString() })
+        .eq("id", doc.id);
 
       // Dispatch webhook (fire-and-forget)
       const isIncome = doc.document_type === "sales_invoice";
@@ -581,14 +601,30 @@ export function useDeleteExpense() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Fetch the record first to find linked document
+      const { data: record } = await supabase
+        .from("expense_records")
+        .select("document_id")
+        .eq("id", id)
+        .maybeSingle();
+
       const { error } = await supabase
         .from("expense_records")
         .delete()
         .eq("id", id);
       if (error) throw error;
+
+      // Revert linked document to "needs_review" so it can be re-approved
+      if (record?.document_id) {
+        await supabase
+          .from("documents")
+          .update({ status: "needs_review", updated_at: new Date().toISOString() })
+          .eq("id", record.document_id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Expense deleted");
     },
     onError: (err: Error) => {
@@ -602,14 +638,30 @@ export function useDeleteIncome() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Fetch the record first to find linked document
+      const { data: record } = await supabase
+        .from("income_records")
+        .select("document_id")
+        .eq("id", id)
+        .maybeSingle();
+
       const { error } = await supabase
         .from("income_records")
         .delete()
         .eq("id", id);
       if (error) throw error;
+
+      // Revert linked document to "needs_review" so it can be re-approved
+      if (record?.document_id) {
+        await supabase
+          .from("documents")
+          .update({ status: "needs_review", updated_at: new Date().toISOString() })
+          .eq("id", record.document_id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["income"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Income record deleted");
     },
     onError: (err: Error) => {
@@ -636,14 +688,16 @@ export function useUpdateExpense() {
       }
       if (error) throw error;
 
-      // Sync notes back to the linked document
+      // Sync notes back to the linked document (best-effort, don't fail the mutation)
       if (documentId && updates.notes !== undefined) {
-        const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
-        const existing = (docData?.user_corrections as any) || {};
-        await supabase.from("documents").update({
-          user_corrections: { ...existing, _notes: updates.notes || null },
-          updated_at: new Date().toISOString(),
-        }).eq("id", documentId);
+        try {
+          const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
+          const existing = (docData?.user_corrections as any) || {};
+          await supabase.from("documents").update({
+            user_corrections: { ...existing, _notes: updates.notes || null },
+            updated_at: new Date().toISOString(),
+          }).eq("id", documentId);
+        } catch { /* notes sync is best-effort */ }
       }
 
       return data;
@@ -677,14 +731,16 @@ export function useUpdateIncome() {
       }
       if (error) throw error;
 
-      // Sync notes back to the linked document
+      // Sync notes back to the linked document (best-effort, don't fail the mutation)
       if (documentId && updates.notes !== undefined) {
-        const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
-        const existing = (docData?.user_corrections as any) || {};
-        await supabase.from("documents").update({
-          user_corrections: { ...existing, _notes: updates.notes || null },
-          updated_at: new Date().toISOString(),
-        }).eq("id", documentId);
+        try {
+          const { data: docData } = await supabase.from("documents").select("user_corrections").eq("id", documentId).single();
+          const existing = (docData?.user_corrections as any) || {};
+          await supabase.from("documents").update({
+            user_corrections: { ...existing, _notes: updates.notes || null },
+            updated_at: new Date().toISOString(),
+          }).eq("id", documentId);
+        } catch { /* notes sync is best-effort */ }
       }
 
       return data;
@@ -732,38 +788,47 @@ export function useBulkApproveDocuments() {
           .update({ status: "approved", updated_at: new Date().toISOString() })
           .eq("id", doc.id);
 
+        // Guard: skip record creation if one already exists for this document
         if (doc.document_type === "sales_invoice") {
-          await supabase.from("income_records").insert({
-            user_id: user.id,
-            organization_id: profile?.active_organization_id || null,
-            document_id: doc.id,
-            customer_name: doc.customer_name || doc.supplier_name || "Unknown",
-            invoice_number: doc.invoice_number,
-            invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-            due_date: doc.due_date,
-            currency: doc.currency || orgDefaultCurrencyBulk,
-            net_amount: doc.net_amount || 0,
-            vat_amount: doc.vat_amount || 0,
-            total_amount: doc.total_amount || 0,
-            vat_number: doc.vat_number,
-            category: doc.category,
-          });
+          const { data: existingInc } = await supabase
+            .from("income_records").select("id").eq("document_id", doc.id).maybeSingle();
+          if (!existingInc) {
+            await supabase.from("income_records").insert({
+              user_id: user.id,
+              organization_id: profile?.active_organization_id || null,
+              document_id: doc.id,
+              customer_name: doc.customer_name || doc.supplier_name || "Unknown",
+              invoice_number: doc.invoice_number,
+              invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+              due_date: doc.due_date,
+              currency: doc.currency || orgDefaultCurrencyBulk,
+              net_amount: doc.net_amount || 0,
+              vat_amount: doc.vat_amount || 0,
+              total_amount: doc.total_amount || 0,
+              vat_number: doc.vat_number,
+              category: doc.category,
+            });
+          }
         } else {
-          await supabase.from("expense_records").insert({
-            user_id: user.id,
-            organization_id: profile?.active_organization_id || null,
-            document_id: doc.id,
-            supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
-            invoice_number: doc.invoice_number,
-            invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
-            due_date: doc.due_date,
-            currency: doc.currency || orgDefaultCurrencyBulk,
-            net_amount: doc.net_amount || 0,
-            vat_amount: doc.vat_amount || 0,
-            total_amount: doc.total_amount || 0,
-            vat_number: doc.vat_number,
-            category: doc.category,
-          });
+          const { data: existingExp } = await supabase
+            .from("expense_records").select("id").eq("document_id", doc.id).maybeSingle();
+          if (!existingExp) {
+            await supabase.from("expense_records").insert({
+              user_id: user.id,
+              organization_id: profile?.active_organization_id || null,
+              document_id: doc.id,
+              supplier_name: doc.supplier_name || doc.customer_name || "Unknown",
+              invoice_number: doc.invoice_number,
+              invoice_date: doc.invoice_date || new Date().toISOString().split("T")[0],
+              due_date: doc.due_date,
+              currency: doc.currency || orgDefaultCurrencyBulk,
+              net_amount: doc.net_amount || 0,
+              vat_amount: doc.vat_amount || 0,
+              total_amount: doc.total_amount || 0,
+              vat_number: doc.vat_number,
+              category: doc.category,
+            });
+          }
         }
       }
     },

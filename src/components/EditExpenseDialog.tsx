@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,8 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const initialDataRef = useRef<string>("");
 
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
@@ -44,7 +46,7 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
   // Populate editData when record/open changes
   useEffect(() => {
     if (record && open) {
-      setEditData({
+      const data = {
         supplier_name: record.supplier_name || "",
         invoice_number: record.invoice_number || "",
         invoice_date: record.invoice_date || "",
@@ -55,9 +57,12 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
         total_amount: Number(record.total_amount || 0),
         vat_number: record.vat_number || "",
         notes: (record as any).notes || "",
-      });
+      };
+      setEditData(data);
+      initialDataRef.current = JSON.stringify(data);
     } else {
       setEditData(null);
+      initialDataRef.current = "";
     }
   }, [record?.id, open]);
 
@@ -117,17 +122,32 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
     };
   }, [record?.document_id, open]);
 
+  const isDirty = editData ? JSON.stringify(editData) !== initialDataRef.current : false;
+
   const handleClose = () => {
+    if (isDirty) {
+      setShowDiscardConfirm(true);
+      return;
+    }
+    doClose();
+  };
+
+  const doClose = () => {
     if (fileUrl?.startsWith("blob:")) URL.revokeObjectURL(fileUrl);
     setFileUrl(null);
     setFileType(null);
+    setShowDiscardConfirm(false);
     onOpenChange(false);
   };
 
   const handleSave = async () => {
     if (!record?.id || !editData) return;
-    await updateExpense.mutateAsync({ id: record.id, updates: editData, documentId: record?.document_id });
-    handleClose();
+    try {
+      await updateExpense.mutateAsync({ id: record.id, updates: editData, documentId: record?.document_id });
+      doClose();
+    } catch {
+      // error toast handled by mutation onError
+    }
   };
 
   const handleDownload = () => {
@@ -241,9 +261,9 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
                   <Select value={editData.currency} onValueChange={(v) => setEditData({ ...editData, currency: v })}>
                     <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
+                      {["EUR","USD","GBP","CHF","JPY","CAD","AUD","NZD","SEK","NOK","DKK","PLN","HUF","CZK","RON","BGN","TRY","RUB","AED","SAR","ILS","INR","SGD","MYR","THB","PHP","IDR","VND","KRW","CNY","HKD","TWD","ZAR","BRL","MXN","ARS","NGN","KES","MAD","EGP"].map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -300,12 +320,25 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
                 if (deleteConfirmId) {
                   await deleteExpense.mutateAsync(deleteConfirmId);
                   setDeleteConfirmId(null);
-                  handleClose();
+                  doClose();
                 }
               }}
             >
               Delete
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDiscardConfirm} onOpenChange={setShowDiscardConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>You have unsaved changes. Closing will discard them.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction onClick={doClose} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Discard</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

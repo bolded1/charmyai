@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X, CalendarDays, StickyNote } from "lucide-react";
+import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X, CalendarDays, StickyNote, CalendarIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,7 +18,7 @@ import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { format, isToday, isYesterday, parseISO, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from "date-fns";
 
 const statusColors: Record<string, string> = {
   processing: "bg-muted text-muted-foreground",
@@ -37,6 +37,7 @@ export default function DocumentsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(50);
+  const [datePreset, setDatePreset] = useState<"all" | "this_month" | "last_month" | "this_quarter" | "this_year">("all");
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -46,12 +47,32 @@ export default function DocumentsPage() {
   const bulkApprove = useBulkApproveDocuments();
   const bulkDelete = useBulkDeleteDocuments();
 
+  const dateRange = useMemo(() => {
+    const now = new Date();
+    switch (datePreset) {
+      case "this_month": return { from: startOfMonth(now), to: endOfMonth(now) };
+      case "last_month": { const l = new Date(now.getFullYear(), now.getMonth() - 1, 1); return { from: startOfMonth(l), to: endOfMonth(l) }; }
+      case "this_quarter": return { from: startOfQuarter(now), to: endOfQuarter(now) };
+      case "this_year": return { from: startOfYear(now), to: endOfYear(now) };
+      default: return { from: undefined, to: undefined };
+    }
+  }, [datePreset]);
+
   const allFiltered = documents.filter((d) => {
     const matchesSearch =
       d.file_name.toLowerCase().includes(search.toLowerCase()) ||
       (d.supplier_name || "").toLowerCase().includes(search.toLowerCase()) ||
       (d.customer_name || "").toLowerCase().includes(search.toLowerCase());
-    return matchesSearch;
+    let matchesDate = true;
+    if (dateRange.from || dateRange.to) {
+      const docDate = d.invoice_date ? new Date(d.invoice_date) : null;
+      if (!docDate) matchesDate = false;
+      else {
+        if (dateRange.from && docDate < dateRange.from) matchesDate = false;
+        if (dateRange.to && docDate > dateRange.to) matchesDate = false;
+      }
+    }
+    return matchesSearch && matchesDate;
   });
   const filtered = allFiltered.slice(0, visibleCount);
 
@@ -200,6 +221,19 @@ export default function DocumentsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input aria-label={t("documents.searchDocuments")} placeholder={t("documents.searchDocuments")} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <Select value={datePreset} onValueChange={(v) => setDatePreset(v as typeof datePreset)}>
+          <SelectTrigger className="w-full sm:w-[140px]">
+            <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="this_month">This Month</SelectItem>
+            <SelectItem value="last_month">Last Month</SelectItem>
+            <SelectItem value="this_quarter">This Quarter</SelectItem>
+            <SelectItem value="this_year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <Filter className="h-4 w-4 mr-2" />

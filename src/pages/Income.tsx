@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Trash2, Archive, Plus,
+  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Trash2, Archive, Plus, ArrowUpDown, ArrowUp, ArrowDown,
 } from "lucide-react";
 import { useState, useCallback, useMemo, Fragment } from "react";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { useOrganization } from "@/hooks/useOrganization";
 import { usePlatformLimits } from "@/hooks/usePlatformLimits";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO, isPast, isValid } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { groupByCurrency, fmtCurrencyValue } from "@/lib/currency-utils";
@@ -48,6 +48,8 @@ export default function IncomePage() {
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [manualIncomeOpen, setManualIncomeOpen] = useState(false);
+  const [sortField, setSortField] = useState<"customer_name" | "invoice_date" | "total_amount" | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -107,6 +109,35 @@ export default function IncomePage() {
     });
   }, [income, search, currencyFilter, categoryFilter, dateRange]);
 
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDir(field === "total_amount" ? "desc" : "asc");
+    }
+  };
+
+  const SortIcon = ({ field }: { field: typeof sortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-30" />;
+    return sortDir === "asc" ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />;
+  };
+
+  const sortedFiltered = useMemo(() => {
+    if (!sortField) return filtered;
+    return [...filtered].sort((a, b) => {
+      let cmp = 0;
+      if (sortField === "customer_name") {
+        cmp = (a.customer_name || "").localeCompare(b.customer_name || "");
+      } else if (sortField === "invoice_date") {
+        cmp = (a.invoice_date || "").localeCompare(b.invoice_date || "");
+      } else if (sortField === "total_amount") {
+        cmp = (Number(a.total_amount) || 0) - (Number(b.total_amount) || 0);
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, sortField, sortDir]);
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -129,31 +160,52 @@ export default function IncomePage() {
     const docIds = filtered
       .filter((e) => selectedIds.has(e.id) && e.document_id)
       .map((e) => e.document_id as string);
-    if (docIds.length === 0) return;
+    if (docIds.length === 0) {
+      toast.error("No downloadable documents in selection");
+      return;
+    }
     await downloadAsZip(docIds, "income-invoices");
+    toast.success(`${docIds.length} document(s) downloaded`);
     setSelectedIds(new Set());
   };
 
   const handleBulkDelete = async () => {
     setBulkDeleting(true);
     try {
-      for (const id of selectedIds) {
+      const ids = Array.from(selectedIds);
+      for (const id of ids) {
         await deleteIncome.mutateAsync(id);
       }
+      toast.success(`${ids.length} income record(s) deleted`);
       setSelectedIds(new Set());
       setBulkDeleteConfirm(false);
     } catch {
-      // error handled by mutation
+      toast.error("Some records could not be deleted. Please try again.");
+      setBulkDeleteConfirm(false);
     } finally {
       setBulkDeleting(false);
     }
   };
 
+  const displayFiltered = sortField ? sortedFiltered : filtered;
+
   const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; currencyTotals: ReturnType<typeof groupByCurrency> }[] = [];
     const map = new Map<string, typeof filtered>();
 
-    const sorted = [...filtered].sort((a, b) => {
+    if (sortField) {
+      if (displayFiltered.length > 0) {
+        groups.push({
+          key: "sorted",
+          label: `Sorted by ${sortField === "customer_name" ? "Customer" : sortField === "invoice_date" ? "Date" : "Amount"}`,
+          records: displayFiltered,
+          currencyTotals: groupByCurrency(displayFiltered, defaultCurrency),
+        });
+      }
+      return groups;
+    }
+
+    const sorted = [...displayFiltered].sort((a, b) => {
       const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
       const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
       return db - da;
@@ -173,28 +225,17 @@ export default function IncomePage() {
     });
 
     return groups;
-  }, [filtered, defaultCurrency]);
+  }, [displayFiltered, defaultCurrency, sortField]);
 
-  const currencySymbols: Record<string, string> = {
-    EUR: "€", USD: "$", GBP: "£", CHF: "CHF ", JPY: "¥", CAD: "CA$", AUD: "A$",
-    SEK: "kr ", NOK: "kr ", DKK: "kr ", PLN: "zł ", HUF: "Ft ", CZK: "Kč ",
-    RON: "lei ", BGN: "лв ", HRK: "kn ", RSD: "din ", TRY: "₺", RUB: "₽",
-    AED: "د.إ ", SAR: "﷼ ", QAR: "﷼ ", KWD: "KD ", ILS: "₪", INR: "₹",
-    SGD: "S$", MYR: "RM ", THB: "฿", PHP: "₱", IDR: "Rp ", VND: "₫",
-    KRW: "₩", CNY: "¥", HKD: "HK$", TWD: "NT$", NZD: "NZ$", ZAR: "R ",
-    BRL: "R$", MXN: "MX$", ARS: "ARS ", NGN: "₦", KES: "KSh ", MAD: "MAD ", EGP: "E£ ",
-  };
-  const cardStyles = ["stat-card-emerald icon-bg-emerald text-emerald", "stat-card-amber icon-bg-amber text-amber", "stat-card-blue icon-bg-blue text-primary", "stat-card-violet icon-bg-violet text-violet"];
   const currencySummary = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
-    // Always include the default currency
-    map.set(defaultCurrency, { total: 0, count: 0 });
     filtered.forEach((e) => {
       const c = e.currency || defaultCurrency;
       const prev = map.get(c) || { total: 0, count: 0 };
-      map.set(c, { total: prev.total + Number(e.total_amount || 0), count: prev.count + 1 });
+      map.set(c, { total: prev.total + (Number(e.total_amount) || 0), count: prev.count + 1 });
     });
     return Array.from(map.entries())
+      .filter(([, data]) => data.count > 0)
       .sort((a, b) => {
         if (a[0] === defaultCurrency) return -1;
         if (b[0] === defaultCurrency) return 1;
@@ -345,7 +386,7 @@ export default function IncomePage() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} disabled={dateTo ? { after: dateTo } : undefined} initialFocus className={cn("p-3 pointer-events-auto")} />
               </PopoverContent>
             </Popover>
             <Popover>
@@ -356,7 +397,7 @@ export default function IncomePage() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} disabled={dateFrom ? { before: dateFrom } : undefined} initialFocus className={cn("p-3 pointer-events-auto")} />
               </PopoverContent>
             </Popover>
           </>
@@ -467,13 +508,19 @@ export default function IncomePage() {
                         onCheckedChange={toggleSelectAll}
                       />
                     </th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Customer</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("customer_name")} aria-sort={sortField === "customer_name" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                      <span className="flex items-center">Customer<SortIcon field="customer_name" /></span>
+                    </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Invoice #</th>
-                    <th className="p-4 text-left text-xs font-medium text-muted-foreground">Date</th>
+                    <th className="p-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("invoice_date")} aria-sort={sortField === "invoice_date" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                      <span className="flex items-center">Date<SortIcon field="invoice_date" /></span>
+                    </th>
                     <th className="p-4 text-left text-xs font-medium text-muted-foreground">Currency</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">Net</th>
                     <th className="p-4 text-right text-xs font-medium text-muted-foreground">VAT</th>
-                    <th className="p-4 text-right text-xs font-medium text-muted-foreground">Total</th>
+                    <th className="p-4 text-right text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => toggleSort("total_amount")} aria-sort={sortField === "total_amount" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                      <span className="flex items-center justify-end">Total<SortIcon field="total_amount" /></span>
+                    </th>
                     <th className="p-4 w-10"></th>
                   </tr>
                 </thead>
@@ -495,9 +542,14 @@ export default function IncomePage() {
                           <td className="pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.has(doc.id)} onCheckedChange={() => toggleSelect(doc.id)} />
                           </td>
-                          <td className="p-4 text-sm font-medium">{doc.customer_name}</td>
+                          <td className="p-4 text-sm font-medium"><span className="truncate block max-w-[200px]" title={doc.customer_name}>{doc.customer_name}</span></td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.invoice_number || "—"}</td>
-                          <td className="p-4 text-sm text-muted-foreground">{doc.invoice_date}</td>
+                          <td className="p-4 text-sm text-muted-foreground">
+                            {doc.invoice_date ? format(parseISO(doc.invoice_date), "dd MMM yyyy") : "—"}
+                            {doc.due_date && (() => { const d = parseISO(doc.due_date); return isValid(d) && isPast(d); })() && (
+                              <Badge variant="secondary" className="ml-1.5 text-[10px] h-4 px-1.5 font-normal bg-red-500/10 text-red-600 border-red-500/20">Overdue</Badge>
+                            )}
+                          </td>
                           <td className="p-4 text-sm text-muted-foreground">{doc.currency}</td>
                           <td className="p-4 text-sm text-right tabular-nums">{Number(doc.net_amount).toFixed(2)}</td>
                           <td className="p-4 text-sm text-muted-foreground text-right tabular-nums">{Number(doc.vat_amount).toFixed(2)}</td>
@@ -526,7 +578,7 @@ export default function IncomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 flex items-center justify-center gap-2 md:gap-3 bg-card border border-border shadow-lg rounded-xl px-3 md:px-5 py-3"
+            className="fixed bottom-20 md:bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 flex items-center justify-center gap-2 md:gap-3 bg-card border border-border shadow-xl rounded-xl px-3 md:px-5 py-2.5 md:py-3"
           >
             <span className="text-sm font-medium">{selectedIds.size} selected</span>
             <Button size="sm" onClick={handleBulkDownload} disabled={downloading}>

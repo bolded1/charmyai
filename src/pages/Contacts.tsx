@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Building2, Users, Search, ArrowUpRight, ArrowDownLeft,
-  ChevronRight, X, Hash, Calendar,
+  ChevronRight, X, Hash, Calendar, Download,
   Banknote, ArrowLeft, UserPlus, Pencil, TrendingUp, Receipt,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -582,6 +582,7 @@ export default function Contacts() {
         c.name.toLowerCase().includes(q) ||
         (c.vatNumber ?? "").toLowerCase().includes(q) ||
         (c.email ?? "").toLowerCase().includes(q) ||
+        (c.phone ?? "").toLowerCase().includes(q) ||
         c.categories.some((cat) => cat.toLowerCase().includes(q))
       );
     }
@@ -591,6 +592,29 @@ export default function Contacts() {
   const supplierCount = contacts.filter((c) => c.type === "supplier").length;
   const customerCount = contacts.filter((c) => c.type === "customer").length;
   const bothCount     = contacts.filter((c) => c.type === "both").length;
+
+  const handleExportCsv = () => {
+    const rows = [["Name", "Type", "VAT Number", "Email", "Phone", "Invoice Count", "Last Invoice Date"]];
+    filtered.forEach((c) => {
+      rows.push([
+        c.name,
+        c.type,
+        c.vatNumber || "",
+        c.email || "",
+        c.phone || "",
+        String(c.invoiceCount),
+        c.lastDate || "",
+      ]);
+    });
+    const csv = rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `contacts-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const FILTERS: { key: ContactType; label: string; icon: typeof Building2; count: number }[] = [
     { key: "all",      label: "All",       icon: Users,        count: contacts.length },
@@ -617,15 +641,18 @@ export default function Contacts() {
               Suppliers and customers auto-built from your invoice data
             </p>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="shrink-0 gap-2"
-            onClick={() => setAddOpen(true)}
-          >
-            <UserPlus className="h-4 w-4" />
-            Add Contact
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            {contacts.length > 0 && (
+              <Button size="sm" variant="outline" className="gap-2" onClick={handleExportCsv}>
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            )}
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => setAddOpen(true)}>
+              <UserPlus className="h-4 w-4" />
+              Add Contact
+            </Button>
+          </div>
         </motion.div>
 
         <div className="space-y-4">
