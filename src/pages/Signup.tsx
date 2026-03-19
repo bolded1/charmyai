@@ -96,7 +96,7 @@ export default function SignupPage() {
   if (systemSettings && !systemSettings.newSignups) {
     return (
       <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.6), transparent 70%)' }} />
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.6), transparent 70%)' }} />
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -173,7 +173,7 @@ export default function SignupPage() {
   if (emailSent) {
     return (
       <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.6), transparent 70%)' }} />
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.6), transparent 70%)' }} />
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -217,7 +217,7 @@ export default function SignupPage() {
   return (
     <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       {/* Background orbs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.6), transparent 70%)' }} />
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.6), transparent 70%)' }} />
       <div className="absolute bottom-[-15%] right-[-5%] w-[400px] h-[400px] rounded-full opacity-15 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.5), transparent 70%)' }} />
       <div className="absolute top-[30%] right-[15%] w-[250px] h-[250px] rounded-full opacity-10 blur-[80px]" style={{ background: 'radial-gradient(circle, hsl(350 75% 55% / 0.4), transparent 70%)' }} />
 

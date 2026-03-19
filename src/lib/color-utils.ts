@@ -198,7 +198,7 @@ export function applyAccentColor(hex: string) {
 
 // ── Constants ──────────────────────────────────
 
-export const DEFAULT_ACCENT_COLOR = "#9B2335";
+export const DEFAULT_ACCENT_COLOR = "#1E8555";
 
 /** Legacy blue/indigo defaults that were shipped before the Warm Terracotta rebrand */
 const LEGACY_BLUE_DEFAULTS = new Set([

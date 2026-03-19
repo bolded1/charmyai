@@ -117,7 +117,7 @@ export default function ActivateTrialPage() {
           appearance: {
             theme: "stripe",
             variables: {
-              colorPrimary: "#9B2335",
+              colorPrimary: "#1E8555",
               borderRadius: "12px",
               fontFamily: "system-ui, sans-serif",
             },
@@ -165,7 +165,7 @@ export default function ActivateTrialPage() {
           appearance: {
             theme: "stripe",
             variables: {
-              colorPrimary: "#9B2335",
+              colorPrimary: "#1E8555",
               borderRadius: "12px",
               fontFamily: "system-ui, sans-serif",
             },
@@ -392,7 +392,7 @@ export default function ActivateTrialPage() {
   return (
     <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       {/* Background effects */}
-      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.5), transparent 70%)' }} />
+      <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.5), transparent 70%)' }} />
       <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.4), transparent 70%)' }} />
 
       <div className="w-full max-w-lg relative z-10">

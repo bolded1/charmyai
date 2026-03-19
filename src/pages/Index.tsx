@@ -44,7 +44,7 @@ export default function IndexPage() {
     <div>
       {/* ═══ Hero Section ═══ */}
       <section className="relative pt-24 md:pt-36 pb-20 overflow-hidden">
-        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.5), transparent 70%)' }} />
+        <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.5), transparent 70%)' }} />
         <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.4), transparent 70%)' }} />
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.15, 0.08] }}

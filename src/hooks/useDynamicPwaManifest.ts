@@ -13,7 +13,7 @@ const DEFAULT_MANIFEST: Record<string, unknown> = {
   name: "Charmy - AI Financial Document Processing",
   short_name: "Charmy",
   description: "Turn invoices and receipts into accounting data automatically.",
-  theme_color: "#9B2335",
+  theme_color: "#1E8555",
   background_color: "#f5f6fa",
   display: "standalone",
   scope: "/",

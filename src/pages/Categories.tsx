@@ -19,7 +19,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import CategoryAnalytics from "@/components/CategoryAnalytics";
 
 const COLOR_SWATCHES = [
-  "#9B2335", "#E07B54", "#D97706", "#059669",
+  "#1E8555", "#E07B54", "#D97706", "#059669",
   "#0D9488", "#0284C7", "#7C3AED", "#E11D48",
   "#64748B", "#78716C",
 ];
