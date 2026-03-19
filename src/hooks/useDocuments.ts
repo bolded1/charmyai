@@ -628,6 +628,7 @@ export function useCreateManualExpense() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
       toast.success("Manual expense added");
     },
     onError: (err: Error) => {
