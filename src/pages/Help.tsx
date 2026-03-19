@@ -6,7 +6,7 @@ import {
   Search, Mail, HelpCircle, BookOpen, Zap, Shield, ChevronRight,
   Keyboard, CheckCircle2, ArrowRight, Tag, Bot,
   CreditCard, BarChart3, Contact, LifeBuoy, ListChecks, Code2,
-  Car, Link2, Send, WifiOff, PlusCircle,
+  Car, Link2, Send, WifiOff, PlusCircle, PieChart,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
