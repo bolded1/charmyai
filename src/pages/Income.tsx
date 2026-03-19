@@ -485,7 +485,14 @@ export default function IncomePage() {
               {groupedByMonth.map((group) => (
                 <div key={group.key}>
                   <div className="flex items-center justify-between px-3 py-2.5 bg-accent/40 rounded-lg mb-1 mt-1 first:mt-0">
-                    <span className="text-xs font-bold text-foreground">{group.label}</span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={group.records.every((r) => selectedIds.has(r.id))}
+                        onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
+                        className="shrink-0"
+                      />
+                      <span className="text-xs font-bold text-foreground">{group.label}</span>
+                    </div>
                     <span className="text-xs font-semibold tabular-nums text-muted-foreground">
                       {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
