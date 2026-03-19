@@ -234,7 +234,8 @@ export function ManualExpenseDialog({ open, onOpenChange, defaultCurrency = "EUR
     };
 
     await createExpense.mutateAsync(input);
-    handleClose();
+    reset();
+    onOpenChange(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
