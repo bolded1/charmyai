@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Eye, Building2, Loader2, RefreshCw, Download } from "lucide-react";
+import { Search, Eye, Building2, Loader2, RefreshCw, Download, Trash2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
@@ -17,6 +18,8 @@ interface OrgRow {
   owner_user_id: string;
   created_at: string;
   updated_at: string;
+  workspace_type?: string;
+  parent_org_id?: string | null;
   owner_email?: string;
   user_count?: number;
   doc_count?: number;
@@ -29,6 +32,8 @@ export default function AdminOrganizations() {
   const [selected, setSelected] = useState<OrgRow | null>(null);
   const [orgUsers, setOrgUsers] = useState<any[]>([]);
   const [orgDocs, setOrgDocs] = useState<any[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<OrgRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const isMobile = useIsMobile();
 
   const fetchOrgs = async () => {
@@ -40,7 +45,6 @@ export default function AdminOrganizations() {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Enrich with owner email and counts
       const enriched = await Promise.all(
         (orgsData || []).map(async (org) => {
           const { data: profile } = await supabase
@@ -57,7 +61,7 @@ export default function AdminOrganizations() {
           return {
             ...org,
             owner_email: profile?.email || "Unknown",
-            user_count: 1, // owner at minimum
+            user_count: 1,
             doc_count: docCount || 0,
           };
         })
@@ -72,14 +76,12 @@ export default function AdminOrganizations() {
 
   const loadOrgDetails = async (org: OrgRow) => {
     setSelected(org);
-    // Load users (profiles linked to this org owner for now)
     const { data: profiles } = await supabase
       .from("profiles")
       .select("*")
       .eq("user_id", org.owner_user_id);
     setOrgUsers(profiles || []);
 
-    // Load documents
     const { data: docs } = await supabase
       .from("documents")
       .select("*")
@@ -87,6 +89,26 @@ export default function AdminOrganizations() {
       .order("created_at", { ascending: false })
       .limit(50);
     setOrgDocs(docs || []);
+  };
+
+  const handleDeleteOrg = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-firm-management", {
+        body: { action: "delete_organization", org_id: deleteTarget.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Organization "${deleteTarget.name}" deleted`);
+      setDeleteTarget(null);
+      setSelected(null);
+      fetchOrgs();
+    } catch (err: any) {
+      toast.error("Failed to delete: " + (err.message || "Unknown error"));
+    } finally {
+      setDeleting(false);
+    }
   };
 
   useEffect(() => { fetchOrgs(); }, []);
@@ -171,9 +193,14 @@ export default function AdminOrganizations() {
                       <td className="p-3 text-sm">{org.doc_count}</td>
                       <td className="p-3 text-sm text-muted-foreground">{new Date(org.created_at).toLocaleDateString()}</td>
                       <td className="p-3">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadOrgDetails(org)}>
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadOrgDetails(org)}>
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(org)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -213,6 +240,11 @@ export default function AdminOrganizations() {
                     </div>
                   ))}
                 </div>
+                <div className="pt-4 border-t">
+                  <Button variant="destructive" size="sm" onClick={() => { setSelected(null); setDeleteTarget(selected); }}>
+                    <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Organization
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="users" className="mt-4">
@@ -248,6 +280,24 @@ export default function AdminOrganizations() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{deleteTarget?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this organization and all its data including documents, expenses, income records, and categories. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteOrg} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Trash2 className="h-4 w-4 mr-1" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
