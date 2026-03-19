@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Users, FileText, CheckCircle2, AlertCircle, Loader2, TrendingUp, ArrowUpRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--border))"];
 
@@ -68,6 +69,7 @@ export default function AdminDashboard() {
         setOrgActivity(orgCounts.sort((a, b) => b.documents - a.documents));
       } catch (err: any) {
         console.error("Dashboard fetch error:", err);
+        toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }

@@ -58,7 +58,7 @@ export default function AdminBroadcastPage() {
       if (error) throw error;
       setHistory((data as BroadcastRecord[]) || []);
     } catch {
-      // silent
+      toast.error("Failed to load broadcast history");
     } finally {
       setLoadingHistory(false);
     }

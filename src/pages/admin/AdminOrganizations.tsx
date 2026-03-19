@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Eye, Building2, Loader2, RefreshCw } from "lucide-react";
+import { Search, Eye, Building2, Loader2, RefreshCw, Download } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
@@ -103,6 +103,17 @@ export default function AdminOrganizations() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search organizations..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <Button variant="outline" size="sm" onClick={() => {
+          const rows = [["Name", "Owner Email", "Documents", "Created"]];
+          filtered.forEach((o) => rows.push([o.name, o.owner_email || "", String(o.doc_count), new Date(o.created_at).toLocaleDateString()]));
+          const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+          const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a"); a.href = url; a.download = `organizations-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+          URL.revokeObjectURL(url);
+        }} disabled={filtered.length === 0}>
+          <Download className="h-4 w-4 mr-1" /> CSV
+        </Button>
         <Button variant="outline" size="sm" onClick={fetchOrgs} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Refresh
         </Button>

@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Trash2, Archive, Plus, ArrowUpDown, ArrowUp, ArrowDown,
 } from "lucide-react";
-import { useState, useCallback, useMemo, Fragment } from "react";
+import { useState, useCallback, useMemo, useEffect, Fragment } from "react";
 import { toast } from "sonner";
 import { useIncomeRecords, useUploadIncomeDocument, useDeleteIncome } from "@/hooks/useDocuments";
 import { ManualIncomeDialog } from "@/components/ManualIncomeDialog";
@@ -48,6 +48,7 @@ export default function IncomePage() {
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [manualIncomeOpen, setManualIncomeOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(50);
   const [sortField, setSortField] = useState<"customer_name" | "invoice_date" | "total_amount" | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -189,23 +190,28 @@ export default function IncomePage() {
 
   const displayFiltered = sortField ? sortedFiltered : filtered;
 
+  // Reset pagination when filters change
+  useEffect(() => { setVisibleCount(50); }, [search, currencyFilter, datePreset, dateFrom, dateTo, sortField, sortDir]);
+
+  const paginatedDisplay = displayFiltered.slice(0, visibleCount);
+
   const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; currencyTotals: ReturnType<typeof groupByCurrency> }[] = [];
     const map = new Map<string, typeof filtered>();
 
     if (sortField) {
-      if (displayFiltered.length > 0) {
+      if (paginatedDisplay.length > 0) {
         groups.push({
           key: "sorted",
           label: `Sorted by ${sortField === "customer_name" ? "Customer" : sortField === "invoice_date" ? "Date" : "Amount"}`,
-          records: displayFiltered,
-          currencyTotals: groupByCurrency(displayFiltered, defaultCurrency),
+          records: paginatedDisplay,
+          currencyTotals: groupByCurrency(paginatedDisplay, defaultCurrency),
         });
       }
       return groups;
     }
 
-    const sorted = [...displayFiltered].sort((a, b) => {
+    const sorted = [...paginatedDisplay].sort((a, b) => {
       const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
       const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
       return db - da;
@@ -225,7 +231,7 @@ export default function IncomePage() {
     });
 
     return groups;
-  }, [displayFiltered, defaultCurrency, sortField]);
+  }, [paginatedDisplay, defaultCurrency, sortField, visibleCount]);
 
   const currencySummary = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
@@ -595,6 +601,15 @@ export default function IncomePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Load more */}
+      {displayFiltered.length > visibleCount && (
+        <div className="flex justify-center">
+          <Button variant="outline" size="sm" onClick={() => setVisibleCount((c) => c + 50)}>
+            Show more ({displayFiltered.length - visibleCount} remaining)
+          </Button>
+        </div>
+      )}
 
       {/* Bulk Delete Confirmation */}
       <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>

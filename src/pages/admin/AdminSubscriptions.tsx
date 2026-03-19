@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Search, RefreshCw, Ban, XCircle, Gift, CreditCard, Loader2, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
@@ -53,6 +54,7 @@ export default function AdminSubscriptionsPage() {
   const [grantFreeEmail, setGrantFreeEmail] = useState("");
   const [trialDays, setTrialDays] = useState("7");
   const [actionLoading, setActionLoading] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState<{ action: string; subId: string; msg: string; immediate: boolean } | null>(null);
 
   const fetchSubs = async () => {
     setLoading(true);
@@ -106,9 +108,9 @@ export default function AdminSubscriptionsPage() {
     { label: "Change Plan", icon: <RefreshCw className="h-3.5 w-3.5" />, onClick: () => setChangePlanDialog(sub) },
     ...(sub.status === "trialing" ? [{ label: "Extend Trial", icon: <Clock className="h-3.5 w-3.5" />, onClick: () => setExtendTrialDialog(sub) }] : []),
     ...(sub.cancel_at_period_end ? [] : [
-      { label: "Cancel at Period End", icon: <Ban className="h-3.5 w-3.5" />, onClick: () => handleAction("cancel_subscription", { subscriptionId: sub.id }, "Subscription will cancel at period end") },
+      { label: "Cancel at Period End", icon: <Ban className="h-3.5 w-3.5" />, onClick: () => setCancelConfirm({ action: "cancel_subscription", subId: sub.id, msg: "Subscription will cancel at period end", immediate: false }) },
     ]),
-    { label: "Cancel Immediately", icon: <XCircle className="h-3.5 w-3.5" />, onClick: () => handleAction("cancel_immediately", { subscriptionId: sub.id }, "Subscription cancelled"), destructive: true },
+    { label: "Cancel Immediately", icon: <XCircle className="h-3.5 w-3.5" />, onClick: () => setCancelConfirm({ action: "cancel_immediately", subId: sub.id, msg: "Subscription cancelled", immediate: true }), destructive: true },
   ];
 
   return (
@@ -284,6 +286,34 @@ export default function AdminSubscriptionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel confirmation */}
+      <AlertDialog open={!!cancelConfirm} onOpenChange={() => setCancelConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{cancelConfirm?.immediate ? "Cancel subscription immediately?" : "Cancel at period end?"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {cancelConfirm?.immediate
+                ? "This will immediately cancel the subscription. The customer will lose access right away."
+                : "The subscription will remain active until the current billing period ends, then cancel automatically."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+            <AlertDialogAction
+              className={cancelConfirm?.immediate ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              onClick={() => {
+                if (cancelConfirm) {
+                  handleAction(cancelConfirm.action, { subscriptionId: cancelConfirm.subId }, cancelConfirm.msg);
+                  setCancelConfirm(null);
+                }
+              }}
+            >
+              {cancelConfirm?.immediate ? "Cancel Now" : "Cancel at Period End"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

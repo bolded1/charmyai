@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Loader2, Plus, ToggleLeft, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { logAuditEvent } from "@/lib/audit-log-client";
 
 interface Flag {
   id: string;
@@ -61,6 +62,7 @@ export default function AdminFeatureFlags() {
         enabled: false,
       });
       if (error) throw error;
+      logAuditEvent({ action: "admin_flag_created", entityType: "feature_flag", entityId: newFlag.key, details: `Created flag: ${newFlag.name}` });
       toast.success("Feature flag created");
       setDialogOpen(false);
       setNewFlag({ key: "", name: "", description: "", segment: "all" });
@@ -81,6 +83,7 @@ export default function AdminFeatureFlags() {
       toast.error("Failed to toggle: " + error.message);
       return;
     }
+    logAuditEvent({ action: "admin_flag_toggled", entityType: "feature_flag", entityId: flag.id, details: `${flag.name} ${!flag.enabled ? "enabled" : "disabled"}` });
     setFlags((prev) => prev.map((f) => f.id === flag.id ? { ...f, enabled: !f.enabled } : f));
     toast.success(`${flag.name} ${!flag.enabled ? "enabled" : "disabled"}`);
   };
@@ -103,6 +106,7 @@ export default function AdminFeatureFlags() {
       toast.error("Failed to delete: " + error.message);
       return;
     }
+    logAuditEvent({ action: "admin_flag_deleted", entityType: "feature_flag", entityId: flag.id, details: `Deleted flag: ${flag.name}` });
     setFlags((prev) => prev.filter((f) => f.id !== flag.id));
     toast.success("Flag deleted");
   };

@@ -26,6 +26,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
+import { logAuditEvent } from "@/lib/audit-log-client";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FirmAccount {
@@ -138,6 +139,7 @@ export default function AdminFirmAccounts() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      logAuditEvent({ action: "admin_firm_action", entityType: "organization", entityId: params.org_id || "", details: `Firm action: ${actionType}` });
       toast.success("Action completed successfully");
       if (actionType === "delete_firm") {
         setSelectedFirm(null);

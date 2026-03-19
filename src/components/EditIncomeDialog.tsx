@@ -232,7 +232,7 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
               )}
 
               {/* Edit Fields */}
-              <div className="grid grid-cols-2 gap-3">
+              <fieldset disabled={updateIncome.isPending} className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <Label className="text-xs text-muted-foreground">Customer</Label>
                   <ContactCombobox
@@ -284,7 +284,7 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
                   <Label className="text-xs text-muted-foreground">Total Amount</Label>
                   <Input className="h-8 text-sm" type="number" step="0.01" value={editData.total_amount} onChange={(e) => setEditData({ ...editData, total_amount: parseFloat(e.target.value) || 0 })} />
                 </div>
-              </div>
+              </fieldset>
 
               <div>
                 <Label className="text-xs text-muted-foreground">Notes</Label>

@@ -50,7 +50,9 @@ export default function AdminDemoSettingsPage() {
       .from("demo_settings")
       .select("key, value");
 
-    if (!error && data) {
+    if (error) {
+      toast.error("Failed to load demo settings");
+    } else if (data) {
       const merged = { ...DEFAULTS };
       data.forEach((row: any) => {
         if (row.key in merged) {

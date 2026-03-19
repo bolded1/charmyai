@@ -262,6 +262,7 @@ export default function SettingsPage() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error("File too large. Maximum size is 2MB."); return; }
     try { await uploadAvatar(file); toast.success("Avatar updated!"); }
     catch { toast.error("Failed to upload avatar."); }
   };

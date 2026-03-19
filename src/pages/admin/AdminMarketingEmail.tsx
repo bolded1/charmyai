@@ -174,6 +174,8 @@ export default function AdminMarketingEmail() {
       });
       if (error || data?.error) throw new Error(data?.error || error?.message);
       toast.success(`Email sent to ${data.sent} recipients!`);
+      setSubject("");
+      if (editorRef.current) editorRef.current.innerHTML = "";
     } catch (err: any) {
       toast.error(err.message || "Failed to send emails");
     } finally {

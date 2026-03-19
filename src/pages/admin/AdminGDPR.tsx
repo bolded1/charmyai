@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Download, Trash2, Loader2, Search, Shield, FileJson, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { logAuditEvent } from "@/lib/audit-log-client";
 
 export default function AdminGDPR() {
   const [userId, setUserId] = useState("");
@@ -65,6 +66,7 @@ export default function AdminGDPR() {
       a.click();
       URL.revokeObjectURL(url);
 
+      logAuditEvent({ action: "admin_gdpr_export", entityType: "user", entityId: selectedUser.user_id, details: `GDPR data export for ${selectedUser.email}` });
       toast.success("User data exported and downloaded");
     } catch (err: any) {
       toast.error("Export failed: " + err.message);
@@ -87,6 +89,7 @@ export default function AdminGDPR() {
 
       if (res.error) throw new Error(res.error.message);
 
+      logAuditEvent({ action: "admin_gdpr_delete", entityType: "user", entityId: selectedUser.user_id, userEmail: selectedUser.email, details: `All user data permanently deleted (GDPR request) for ${selectedUser.email}` });
       toast.success("All user data permanently deleted");
       setSelectedUser(null);
       setExportPreview(null);

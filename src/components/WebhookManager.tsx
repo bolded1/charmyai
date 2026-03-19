@@ -113,6 +113,7 @@ function CreateWebhookDialog({
 
   const handleSubmit = async () => {
     if (!url.trim()) { toast.error("Enter a target URL"); return; }
+    try { const u = new URL(url.trim()); if (u.protocol !== "https:") { toast.error("Webhook URL must use HTTPS"); return; } } catch { toast.error("Enter a valid URL (e.g. https://example.com/webhook)"); return; }
     const events = allEvents ? ["*"] : selected;
     if (events.length === 0) { toast.error("Select at least one event"); return; }
 
