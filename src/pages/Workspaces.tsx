@@ -120,7 +120,7 @@ const COUNTRIES = [
 
 const emptyForm: CreateWorkspaceData = {
   name: "", trading_name: "", vat_number: "", tax_id: "",
-  address: "", country: "NL", default_currency: "EUR",
+  address: "", country: "NL", default_currency: "",
   contact_email: "", contact_phone: "",
 };
 
@@ -390,7 +390,7 @@ export default function WorkspacesPage() {
 
   // ── Handlers ──
   const handleCreate = async () => {
-    if (!formData.name.trim() || creatingRef.current) return;
+    if (!formData.name.trim() || !formData.default_currency || creatingRef.current) return;
     creatingRef.current = true;
     setCreating(true);
     try {
@@ -553,8 +553,8 @@ export default function WorkspacesPage() {
             <CountryCombobox value={data.country || "NL"} onChange={(v) => onChange("country", v)} />
           </Field>
           <Field label="Base Currency">
-            <Select value={data.default_currency || "EUR"} onValueChange={(v) => onChange("default_currency", v)}>
-              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+            <Select value={data.default_currency || ""} onValueChange={(v) => onChange("default_currency", v)}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select currency" /></SelectTrigger>
               <SelectContent>
                 {CURRENCIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
               </SelectContent>
@@ -937,7 +937,7 @@ export default function WorkspacesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!formData.name.trim() || creating || (sendInvite && (!clientContactName.trim() || !formData.contact_email?.trim()))}>
+            <Button onClick={handleCreate} disabled={!formData.name.trim() || !formData.default_currency || creating || (sendInvite && (!clientContactName.trim() || !formData.contact_email?.trim()))}>
               {creating && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
               {sendInvite ? "Create & Invite Client" : "Create Workspace"}
             </Button>
