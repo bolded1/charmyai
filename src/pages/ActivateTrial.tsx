@@ -145,6 +145,8 @@ export default function ActivateTrialPage() {
   // Create PaymentIntent and mount Elements for Firm plan
   useEffect(() => {
     if (!stripe || !user || planChoice !== "firm" || !cardRequired) return;
+    if (firmInitRef.current) return;
+    firmInitRef.current = true;
 
     const initFirmPayment = async () => {
       try {
@@ -181,12 +183,12 @@ export default function ActivateTrialPage() {
         const pe = els.create("payment");
         pe.mount("#stripe-firm-element");
       } catch (err: any) {
+        firmInitRef.current = false;
         setSetupError(err.message || "Failed to initialize payment form");
       }
     };
 
     initFirmPayment();
-    return () => {};
   }, [stripe, user, planChoice, cardRequired]);
 
   const handleApplyPromo = async () => {
