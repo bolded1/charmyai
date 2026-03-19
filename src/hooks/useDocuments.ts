@@ -329,47 +329,55 @@ export function useApproveDocument() {
 }
 
 export function useExpenseRecords() {
-  const { data: identity } = useActiveOrgId();
-  return useQuery({
+  const { data: identity, isLoading: identityLoading } = useActiveOrgId();
+  const { effectiveUserId } = useImpersonation();
+  const query = useQuery({
     queryKey: ["expenses", identity?.userId, identity?.orgId],
     queryFn: async () => {
       if (!identity?.userId) return [];
-      let query = supabase
+      let q = supabase
         .from("expense_records")
         .select("*")
-        .eq("user_id", identity.userId)
         .order("invoice_date", { ascending: false });
-      if (identity.orgId) {
-        query = query.eq("organization_id", identity.orgId);
+      if (effectiveUserId) {
+        q = q.eq("user_id", effectiveUserId);
       }
-      const { data, error } = await query;
+      if (identity.orgId) {
+        q = q.eq("organization_id", identity.orgId);
+      }
+      const { data, error } = await q;
       if (error) throw error;
       return data;
     },
     enabled: !!identity?.userId,
   });
+  return { ...query, isLoading: query.isLoading || identityLoading };
 }
 
 export function useIncomeRecords() {
-  const { data: identity } = useActiveOrgId();
-  return useQuery({
+  const { data: identity, isLoading: identityLoading } = useActiveOrgId();
+  const { effectiveUserId } = useImpersonation();
+  const query = useQuery({
     queryKey: ["income", identity?.userId, identity?.orgId],
     queryFn: async () => {
       if (!identity?.userId) return [];
-      let query = supabase
+      let q = supabase
         .from("income_records")
         .select("*")
-        .eq("user_id", identity.userId)
         .order("invoice_date", { ascending: false });
-      if (identity.orgId) {
-        query = query.eq("organization_id", identity.orgId);
+      if (effectiveUserId) {
+        q = q.eq("user_id", effectiveUserId);
       }
-      const { data, error } = await query;
+      if (identity.orgId) {
+        q = q.eq("organization_id", identity.orgId);
+      }
+      const { data, error } = await q;
       if (error) throw error;
       return data;
     },
     enabled: !!identity?.userId,
   });
+  return { ...query, isLoading: query.isLoading || identityLoading };
 }
 
 export function useUploadIncomeDocument() {
@@ -878,22 +886,23 @@ export interface CreateContactInput {
 }
 
 export function useContacts() {
-  const { data: identity } = useActiveOrgId();
+  const { data: identity, isLoading: identityLoading } = useActiveOrgId();
 
-  return useQuery<ContactRecord[]>({
+  const query = useQuery<ContactRecord[]>({
     queryKey: ["contacts", identity?.userId, identity?.orgId],
     queryFn: async () => {
       if (!identity?.userId) return [];
-      const query = identity.orgId
+      const q = identity.orgId
         ? supabase.from("contacts").select("*")
             .or(`user_id.eq.${identity.userId},organization_id.eq.${identity.orgId}`)
         : supabase.from("contacts").select("*").eq("user_id", identity.userId);
-      const { data, error } = await query.order("name", { ascending: true });
+      const { data, error } = await q.order("name", { ascending: true });
       if (error) throw error;
       return (data || []) as ContactRecord[];
     },
     enabled: !!identity?.userId,
   });
+  return { ...query, isLoading: query.isLoading || identityLoading };
 }
 
 export function useCreateContact() {
