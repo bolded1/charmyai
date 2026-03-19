@@ -55,5 +55,5 @@ export async function checkBillingEntitlement(
     }
   }
 
-  return { valid: false, reason: "no_subscription" };
+  return { valid: false, reason: billingFailureReason };
 }
