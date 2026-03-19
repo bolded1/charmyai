@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Loader2, UserCheck, KeyRound, ShieldAlert, ShieldCheck, FileText, DollarSign, TrendingUp, Download, Ban, Building2, Trash2 } from "lucide-react";
+import { Loader2, UserCheck, KeyRound, ShieldCheck, FileText, DollarSign, TrendingUp, Download, Ban, Building2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserRow {
@@ -56,6 +56,13 @@ export function UserDetailsDialog({
   const [loadingActivity, setLoadingActivity] = useState(false);
   const [revokingFirm, setRevokingFirm] = useState(false);
   const [deletingUser, setDeletingUser] = useState(false);
+
+  useEffect(() => {
+    setSelectedRole(user?.role || "user");
+    setNewPassword("");
+    setActivity(null);
+    setTab("details");
+  }, [user?.user_id, user?.role]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
