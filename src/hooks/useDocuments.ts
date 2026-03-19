@@ -848,6 +848,32 @@ export function useBulkDeleteDocuments() {
   });
 }
 
+export function useRetryExtraction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (documentId: string) => {
+      // Set status back to processing
+      await supabase
+        .from("documents")
+        .update({ status: "processing", updated_at: new Date().toISOString() })
+        .eq("id", documentId);
+
+      // Re-trigger extraction
+      const { error } = await supabase.functions.invoke("extract-document", {
+        body: { documentId },
+      });
+
+      if (error) throw new Error("Extraction failed. Please try again.");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success("Document queued for re-extraction");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 export function getDocumentFileUrl(filePath: string): string {
   const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
   return data.publicUrl;
