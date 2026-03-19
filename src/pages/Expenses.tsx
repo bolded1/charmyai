@@ -499,7 +499,13 @@ export default function ExpensesPage() {
                       <tr className="bg-accent/30">
                         <td colSpan={10} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-foreground">{group.label}</span>
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={group.records.every((r) => selectedIds.has(r.id))}
+                                onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
+                              />
+                              <span className="text-xs font-bold text-foreground">{group.label}</span>
+                            </div>
                             <span className="text-xs font-semibold tabular-nums text-muted-foreground">
                               {group.records.length} records · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                             </span>
