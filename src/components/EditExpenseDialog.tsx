@@ -218,7 +218,8 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                         <FileText className="h-8 w-8 mb-2" />
-                        <p className="text-sm">Preview not available</p>
+                        <p className="text-sm">{fileUrl ? "Preview not available" : "Document could not be loaded"}</p>
+                        <p className="text-xs mt-1">{!fileUrl && "The file may have been moved or you may not have access"}</p>
                         {fileUrl && (
                           <Button variant="link" size="sm" className="mt-1 text-xs" onClick={handleDownload}>
                             Download file instead
