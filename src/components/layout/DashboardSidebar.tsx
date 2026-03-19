@@ -63,6 +63,7 @@ export function DashboardSidebar() {
     { title: t("navigation.income"), url: "/app/income", icon: TrendingUp },
     { title: t("navigation.categories"), url: "/app/categories", icon: Tag },
     { title: t("navigation.exports"), url: "/app/exports", icon: Download },
+    { title: t("navigation.reports"), url: "/app/reports", icon: BarChart3 },
   ];
 
   const firmItems = [
