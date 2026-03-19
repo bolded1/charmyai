@@ -88,7 +88,7 @@ export function DashboardSidebar() {
   const renderGroup = (label: string, items: typeof financeItems) => (
     <SidebarGroup className="py-1">
       {showLabels && (
-        <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
+        <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/55 px-3 mb-1 h-7">
           {label}
         </SidebarGroupLabel>
       )}
@@ -98,8 +98,8 @@ export function DashboardSidebar() {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                 <NavLink to={item.url} end={item.url === '/app'}>
-                  <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  {showLabels && <span className="text-sm font-medium text-foreground">{item.title}</span>}
+                  <item.icon className="h-4 w-4" strokeWidth={2} />
+                  {showLabels && <span className="text-[13px] font-medium text-foreground">{item.title}</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -209,7 +209,7 @@ export function DashboardSidebar() {
                 {!isClient && isAccountingFirm && (
                   <SidebarGroup className="py-1">
                     {showLabels && (
-                      <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-muted px-2.5 mb-0.5 h-6">
+                      <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/55 px-3 mb-1 h-7">
                         {t("sidebarGroups.firm")}
                       </SidebarGroupLabel>
                     )}
@@ -225,7 +225,7 @@ export function DashboardSidebar() {
                             <SidebarMenuItem key={item.title}>
                               <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                                 <NavLink to={item.url} end={item.url === '/app'}>
-                                  <item.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                  <item.icon className="h-4 w-4" strokeWidth={2} />
                                   {showLabels && (
                                     <span className="text-sm font-medium text-foreground flex-1 flex items-center justify-between">
                                       {item.title}
@@ -252,7 +252,7 @@ export function DashboardSidebar() {
         </SidebarContent>
         <SidebarFooter className="px-3 pb-4 pt-3 border-t border-border/30">
           {/* User card */}
-          <div className="rounded-xl bg-accent/40 border border-border/30 p-2.5 space-y-2">
+          <div className="space-y-1">
             {/* Language + Notifications row */}
             <div className="flex items-center justify-center gap-1 px-0.5">
               <LanguageSwitcher variant="ghost" />
@@ -261,7 +261,7 @@ export function DashboardSidebar() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2.5 w-full rounded-lg px-1 py-1 hover:bg-background/70 transition-all duration-150 focus:outline-none">
+                <button className="flex items-center gap-2.5 w-full rounded-xl px-2 py-2 hover:bg-accent transition-all duration-150 focus:outline-none">
                   <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background shadow-sm">
                     {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
                     <AvatarFallback className="bg-primary/10 text-primary text-[11px] font-bold">{initials}</AvatarFallback>
