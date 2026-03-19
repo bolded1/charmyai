@@ -649,11 +649,55 @@ export default function DocumentsPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <Label className="text-xs text-muted-foreground">File</Label>
-                  <p className="text-sm font-medium">{selected.file_name}</p>
+              {/* File Preview */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-muted-foreground">{selected.file_name}</Label>
+                  <div className="flex gap-2">
+                    {fileUrl && (
+                      <>
+                        <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleDocDownload}>
+                          <Download className="h-3 w-3 mr-1" /> Download
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleDocOpen}>
+                          <ExternalLink className="h-3 w-3 mr-1" /> Open
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
+                <div className="border rounded-lg overflow-hidden bg-muted/30">
+                  {loadingFile ? (
+                    <div className="flex items-center justify-center py-16">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : fileUrl && isImage ? (
+                    <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain" />
+                  ) : fileUrl && isPdf ? (
+                    <object data={fileUrl} type="application/pdf" className="w-full h-[360px]">
+                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                        <FileText className="h-8 w-8 mb-2" />
+                        <p className="text-sm">PDF preview not available in this browser</p>
+                        <Button variant="link" size="sm" className="mt-1 text-xs" onClick={handleDocOpen}>
+                          Open PDF in new tab
+                        </Button>
+                      </div>
+                    </object>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                      <FileText className="h-8 w-8 mb-2" />
+                      <p className="text-sm">{fileUrl ? "Preview not available" : "Document could not be loaded"}</p>
+                      {fileUrl && (
+                        <Button variant="link" size="sm" className="mt-1 text-xs" onClick={handleDocDownload}>
+                          Download file instead
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
 
                 <div>
                   <Label className="text-xs text-muted-foreground">Document Type</Label>
