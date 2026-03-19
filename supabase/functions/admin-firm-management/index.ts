@@ -282,9 +282,9 @@ Deno.serve(async (req) => {
         await adminClient.from("profiles").update({ status }).eq("user_id", user_id);
 
         if (status === "inactive") {
-          await adminClient.auth.admin.updateUser(user_id, { ban_duration: "876600h" });
+          await adminAuthClient.auth.admin.updateUserById(user_id, { ban_duration: "876600h" });
         } else {
-          await adminClient.auth.admin.updateUser(user_id, { ban_duration: "none" });
+          await adminAuthClient.auth.admin.updateUserById(user_id, { ban_duration: "none" });
         }
 
         await adminClient.from("audit_logs").insert({
