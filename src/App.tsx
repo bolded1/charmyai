@@ -125,6 +125,7 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/payment" element={<ActivateTrial />} />
           <Route path="/activate-trial" element={<ActivateTrial />} />
           <Route path="/activate-firm" element={<ActivateFirmPlan />} />
           <Route path="/billing-required" element={<BillingRequired />} />

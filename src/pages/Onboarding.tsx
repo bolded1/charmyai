@@ -232,7 +232,7 @@ export default function OnboardingPage() {
         navigate("/activate-firm");
       } else {
         toast.success(t("onboarding.successBusiness"));
-        navigate("/activate-trial");
+        navigate("/payment");
       }
     }
   };

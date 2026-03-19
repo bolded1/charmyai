@@ -103,7 +103,7 @@ export default function DashboardLayout() {
     if (subscription.status && subscription.status !== "active" && subscription.status !== "promo_active") {
       return <Navigate to="/billing-required" replace />;
     }
-    return <Navigate to="/activate-trial" replace />;
+    return <Navigate to="/payment" replace />;
   }
 
   const handleSignOut = async () => {
