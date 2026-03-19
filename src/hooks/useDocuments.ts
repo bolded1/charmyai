@@ -822,6 +822,9 @@ export function useBulkApproveDocuments() {
       for (const doc of docs) {
         if (doc.status === "approved" || doc.status === "exported") continue;
 
+        // Auto-create category if AI assigned one
+        await ensureCategoryExists(doc.category, user.id, profile?.active_organization_id || null);
+
         await supabase
           .from("documents")
           .update({ status: "approved", updated_at: new Date().toISOString() })
