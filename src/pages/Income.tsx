@@ -190,11 +190,22 @@ export default function IncomePage() {
   };
 
   const displayFiltered = sortField ? sortedFiltered : filtered;
+  const totalPages = Math.max(1, Math.ceil(displayFiltered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
 
-  // Reset pagination when filters change
-  useEffect(() => { setVisibleCount(50); }, [search, currencyFilter, datePreset, dateFrom, dateTo, sortField, sortDir]);
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [search, currencyFilter, datePreset, dateFrom, dateTo, sortField, sortDir]);
 
-  const paginatedDisplay = displayFiltered.slice(0, visibleCount);
+  const paginatedDisplay = displayFiltered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const toggleMonthSelect = (groupRecordIds: string[]) => {
+    const allSelected = groupRecordIds.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      groupRecordIds.forEach((id) => { if (allSelected) next.delete(id); else next.add(id); });
+      return next;
+    });
+  };
 
   const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; currencyTotals: ReturnType<typeof groupByCurrency> }[] = [];
