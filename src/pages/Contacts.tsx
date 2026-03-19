@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Building2, Users, Search, ArrowUpRight, ArrowDownLeft,
   ChevronRight, X, Hash, Calendar,
-  Banknote, ArrowLeft, UserPlus, Pencil,
+  Banknote, ArrowLeft, UserPlus, Pencil, TrendingUp, Receipt,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -262,9 +262,38 @@ function ContactRow({ contact, onClick, i }: { contact: DerivedContact; onClick:
         )}
       </div>
 
+      {/* Last date */}
+      {contact.lastDate && (
+        <span className="hidden lg:block text-[10px] text-muted-foreground shrink-0 min-w-[68px] text-right">
+          {format(parseISO(contact.lastDate), "dd MMM yyyy")}
+        </span>
+      )}
+
       <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
     </motion.div>
   );
+}
+
+// ─── Month grouping helper ────────────────────────────────────────────────────
+
+function groupByMonth(records: any[]) {
+  const map = new Map<string, any[]>();
+  const sorted = [...records].sort((a, b) => {
+    const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
+    const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
+    return db - da;
+  });
+  sorted.forEach((r) => {
+    const key = r.invoice_date ? format(parseISO(r.invoice_date), "yyyy-MM") : "no-date";
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(r);
+  });
+  return Array.from(map.entries()).map(([key, recs]) => ({
+    key,
+    label: key === "no-date" ? "No Date" : format(parseISO(key + "-01"), "MMMM yyyy"),
+    records: recs,
+    total: recs.reduce((s, r) => s + Number(r.total_amount || 0), 0),
+  }));
 }
 
 // ─── Invoice Row ──────────────────────────────────────────────────────────────
@@ -310,21 +339,13 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
   const [editingIncome, setEditingIncome] = useState<any | null>(null);
 
-  const sortedExpenses = [...contact.expenseInvoices].sort((a, b) =>
-    (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
-  );
-  const sortedIncome = [...contact.incomeInvoices].sort((a, b) =>
-    (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
-  );
+  const expenseGroups = groupByMonth(contact.expenseInvoices);
+  const incomeGroups  = groupByMonth(contact.incomeInvoices);
+
+  const netBalance = contact.incomeTotal - contact.expenseTotal;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 24 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 24 }}
-      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col h-full"
-    >
+    <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={onClose}>
@@ -343,8 +364,8 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
         </div>
       </div>
 
-      {/* Summary cards — always show expenses + income split */}
-      <div className="grid grid-cols-2 gap-2.5 mb-4">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 gap-2.5 mb-3">
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center gap-1.5 mb-1">
@@ -373,35 +394,68 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
             </p>
           </CardContent>
         </Card>
+
+        {/* Net balance — only for "both" contacts */}
+        {contact.type === "both" && (
+          <Card className="col-span-2">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Net Balance</span>
+              </div>
+              <p className={`font-bold text-sm tabular-nums ${netBalance >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                {fmt(Math.abs(netBalance), primaryCurrency)}
+                <span className="text-[10px] font-normal text-muted-foreground ml-1.5">
+                  {netBalance >= 0 ? "net income" : "net expense"}
+                </span>
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Meta info */}
       <div className="space-y-1 mb-4">
         {contact.vatNumber && (
-          <div className="flex items-center gap-2 text-sm">
-            <Hash className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground text-xs">VAT:</span>
             <span className="font-mono font-medium text-foreground text-xs">{contact.vatNumber}</span>
           </div>
         )}
         {contact.currencies.length > 0 && (
-          <div className="flex items-center gap-2 text-sm">
-            <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <Banknote className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground text-xs">Currencies:</span>
             <span className="font-medium text-foreground text-xs">{contact.currencies.join(", ")}</span>
           </div>
         )}
         {contact.lastDate && (
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground text-xs">Last invoice:</span>
             <span className="font-medium text-foreground text-xs">{format(parseISO(contact.lastDate), "dd MMM yyyy")}</span>
           </div>
         )}
+        {contact.categories.length > 0 && (
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {contact.categories.map((cat) => (
+              <Badge key={cat} variant="secondary" className="text-[10px] py-0">{cat}</Badge>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Invoice tabs — always shown */}
-      <div className="flex-1 min-h-0">
+      {/* Invoice tabs */}
+      {contact.invoiceCount === 0 ? (
+        <div className="flex flex-col items-center py-8 text-center text-muted-foreground">
+          <Receipt className="h-9 w-9 mb-2 opacity-25" />
+          <p className="text-sm font-medium">No invoices linked yet</p>
+          <p className="text-[11px] mt-1 max-w-[220px]">
+            Upload invoices mentioning this contact to link them automatically.
+          </p>
+        </div>
+      ) : (
         <Tabs defaultValue="expenses">
           <TabsList className="h-8 mb-3 w-full">
             <TabsTrigger value="expenses" className="text-xs flex-1">
@@ -413,34 +467,50 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
           </TabsList>
 
           <TabsContent value="expenses" className="mt-0">
-            <div className="space-y-1.5 overflow-auto max-h-[320px] pr-1 scrollbar-thin">
-              {sortedExpenses.length === 0 ? (
+            <div className="overflow-auto max-h-[400px] pr-1 scrollbar-thin space-y-3">
+              {expenseGroups.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-6">No expense invoices</p>
-              ) : sortedExpenses.map((r) => (
-                <InvoiceRow
-                  key={r.id}
-                  r={r}
-                  onEdit={() => setEditingExpense(r)}
-                />
+              ) : expenseGroups.map((group) => (
+                <div key={group.key}>
+                  <div className="flex items-center justify-between px-3 py-1.5 bg-accent/30 rounded-lg mb-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-foreground">{group.label}</span>
+                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {group.records.map((r) => (
+                      <InvoiceRow key={r.id} r={r} onEdit={() => setEditingExpense(r)} />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>
 
           <TabsContent value="income" className="mt-0">
-            <div className="space-y-1.5 overflow-auto max-h-[320px] pr-1 scrollbar-thin">
-              {sortedIncome.length === 0 ? (
+            <div className="overflow-auto max-h-[400px] pr-1 scrollbar-thin space-y-3">
+              {incomeGroups.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-6">No income invoices</p>
-              ) : sortedIncome.map((r) => (
-                <InvoiceRow
-                  key={r.id}
-                  r={r}
-                  onEdit={() => setEditingIncome(r)}
-                />
+              ) : incomeGroups.map((group) => (
+                <div key={group.key}>
+                  <div className="flex items-center justify-between px-3 py-1.5 bg-accent/30 rounded-lg mb-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-foreground">{group.label}</span>
+                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {group.records.map((r) => (
+                      <InvoiceRow key={r.id} r={r} onEdit={() => setEditingIncome(r)} />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      )}
 
       {/* Edit dialogs */}
       <EditExpenseDialog
@@ -453,7 +523,7 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
         open={!!editingIncome}
         onOpenChange={(o) => { if (!o) setEditingIncome(null); }}
       />
-    </motion.div>
+    </div>
   );
 }
 
