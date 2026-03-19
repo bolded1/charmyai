@@ -225,7 +225,7 @@ export default function ExpensesPage() {
     });
 
     return groups;
-  }, [displayFiltered, defaultCurrency, sortField, visibleCount]);
+  }, [paginatedFiltered, defaultCurrency, sortField]);
 
   const currencySummary = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
