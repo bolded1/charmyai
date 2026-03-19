@@ -352,8 +352,8 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
   const [editingIncome, setEditingIncome] = useState<any | null>(null);
 
-  const expenseGroups = groupByMonth(contact.expenseInvoices);
-  const incomeGroups  = groupByMonth(contact.incomeInvoices);
+  const expenseGroups = useMemo(() => groupByMonth(contact.expenseInvoices), [contact.expenseInvoices]);
+  const incomeGroups  = useMemo(() => groupByMonth(contact.incomeInvoices), [contact.incomeInvoices]);
 
   // Compute per-currency net balance (only for currencies that appear in both)
   const allCurrencies = new Set([...contact.expenseTotals.keys(), ...contact.incomeTotals.keys()]);
