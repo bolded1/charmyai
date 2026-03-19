@@ -245,9 +245,18 @@ export default function ExpensesPage() {
   }, [filtered, defaultCurrency]);
 
 
-  // Reset pagination when any filter changes
+  // Reset page when any filter changes
   const prevFilterKey = `${search}|${currencyFilter}|${categoryFilter}|${datePreset}|${dateFrom}|${dateTo}`;
-  useEffect(() => { setVisibleCount(50); }, [prevFilterKey]);
+  useEffect(() => { setCurrentPage(1); }, [prevFilterKey]);
+
+  const toggleMonthSelect = (groupRecordIds: string[]) => {
+    const allSelected = groupRecordIds.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      groupRecordIds.forEach((id) => { if (allSelected) next.delete(id); else next.add(id); });
+      return next;
+    });
+  };
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
