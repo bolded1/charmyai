@@ -937,7 +937,7 @@ export default function WorkspacesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!formData.name.trim() || creating || (sendInvite && (!clientContactName.trim() || !formData.contact_email?.trim()))}>
+            <Button onClick={handleCreate} disabled={!formData.name.trim() || !formData.default_currency || creating || (sendInvite && (!clientContactName.trim() || !formData.contact_email?.trim()))}>
               {creating && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
               {sendInvite ? "Create & Invite Client" : "Create Workspace"}
             </Button>
