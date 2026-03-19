@@ -560,8 +560,8 @@ function FirmUpgradeCard() {
             <Building2 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold">Accounting Firm Plan</h3>
-            <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
+            <h3 className="font-semibold">Upgrade to Accounting Firm Plan</h3>
+            <p className="text-xs text-muted-foreground">Pay the difference · Lifetime access</p>
           </div>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
