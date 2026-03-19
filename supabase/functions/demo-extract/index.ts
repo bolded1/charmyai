@@ -155,17 +155,35 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model,
+        response_format: { type: "json_object" },
         messages: [
           {
             role: "system",
-            content: "You are a financial document extraction AI for a demo. Extract accounting data from the uploaded document. Always return structured data using the provided tool.",
+            content: `You are a financial document extraction AI. Analyse the document and return ONLY a single valid JSON object — no markdown, no explanation, no code fences.
+
+JSON schema:
+{
+  "document_type": "expense_invoice" | "sales_invoice" | "receipt" | "credit_note",
+  "supplier_name": string,
+  "customer_name": string,
+  "invoice_number": string,
+  "invoice_date": "YYYY-MM-DD",
+  "due_date": "YYYY-MM-DD",
+  "currency": "EUR",
+  "net_amount": 0.00,
+  "vat_amount": 0.00,
+  "total_amount": 0.00,
+  "vat_number": string,
+  "category": string,
+  "confidence": 85
+}`,
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Extract all accounting fields from this financial document. Identify supplier/customer info, invoice details, dates, amounts, VAT, and category.",
+                text: "Extract all accounting fields from this financial document and return them as JSON.",
               },
               {
                 type: "image_url",
@@ -174,37 +192,6 @@ serve(async (req) => {
             ],
           },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_document_data",
-              description: "Extract structured accounting data from a financial document",
-              parameters: {
-                type: "object",
-                properties: {
-                  document_type: { type: "string", enum: ["expense_invoice", "sales_invoice", "receipt", "credit_note"] },
-                  supplier_name: { type: "string" },
-                  customer_name: { type: "string" },
-                  invoice_number: { type: "string" },
-                  invoice_date: { type: "string", description: "YYYY-MM-DD" },
-                  due_date: { type: "string", description: "YYYY-MM-DD" },
-                  currency: { type: "string", description: "3-letter code" },
-                  net_amount: { type: "number" },
-                  vat_amount: { type: "number" },
-                  total_amount: { type: "number" },
-                  vat_number: { type: "string" },
-                  discount_amount: { type: "number", description: "Discount amount if any" },
-                  category: { type: "string" },
-                  confidence: { type: "number", description: "0-100" },
-                },
-                required: ["document_type", "currency", "total_amount", "confidence"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "extract_document_data" } },
       }),
     });
 
@@ -232,9 +219,15 @@ serve(async (req) => {
     }
 
     const aiResult = await aiResponse.json();
-    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
+    const msg = aiResult.choices?.[0]?.message;
+    let rawJson: string | null = null;
+    if (msg?.content) {
+      rawJson = msg.content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    } else if (msg?.tool_calls?.[0]?.function?.arguments) {
+      rawJson = msg.tool_calls[0].function.arguments;
+    }
 
-    if (!toolCall?.function?.arguments) {
+    if (!rawJson) {
       await supabase.from("demo_uploads").update({ status: "error" }).eq("id", demoUploadId);
       return new Response(JSON.stringify({ error: "AI did not return structured data" }), {
         status: 500,
@@ -242,7 +235,16 @@ serve(async (req) => {
       });
     }
 
-    const extracted = JSON.parse(toolCall.function.arguments);
+    let extracted: Record<string, unknown>;
+    try {
+      extracted = JSON.parse(rawJson);
+    } catch {
+      await supabase.from("demo_uploads").update({ status: "error" }).eq("id", demoUploadId);
+      return new Response(JSON.stringify({ error: "AI returned invalid JSON" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Update demo record with extracted data
     await supabase

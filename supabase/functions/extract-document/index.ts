@@ -164,7 +164,8 @@ serve(async (req) => {
       ? `\nThe system has pre-classified this document as "${doc.document_type}" based on upload context. Use this as a strong hint when classifying.`
       : "";
 
-    // Call AI to extract data
+    // Call AI to extract data.
+    // We use JSON mode (no tool_choice) for maximum compatibility with Gemini via this gateway.
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -173,27 +174,36 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model,
+        response_format: { type: "json_object" },
         messages: [
           {
             role: "system",
-            content: `You are a precise financial document extraction AI. Your job is to extract every accounting field visible on invoices, receipts, and credit notes with maximum accuracy.
+            content: `You are a financial document extraction AI. Analyse the document image and return ONLY a single valid JSON object — no markdown, no explanation, no code fences.
 
-Key rules:
-- Extract EVERY numeric amount visible: net/subtotal, VAT/tax, and gross/total. Numbers may use commas as thousand separators (e.g. 1,234.56) — always return as plain decimals.
-- supplier_name = the company or person ISSUING the document (selling / billing party).
-- customer_name = the company or person RECEIVING / being billed (buyer).
-- For a sales invoice the customer is the buyer; for an expense invoice the supplier is the seller.
-- Extract the currency from the symbol or code on the document (€=EUR, $=USD, £=GBP, etc.).
-- Extract invoice_date and due_date in YYYY-MM-DD format. If only a year/month is shown, default day to 01.
-- Extract the VAT/tax registration number (vat_number) if present — often labelled VAT No, TVA, MwSt-Nr, CIF, NIF, SIRET, etc.
-- Always use the provided tool to return structured data.`,
+JSON schema (all fields optional except document_type, currency, total_amount, confidence):
+{
+  "document_type": "expense_invoice" | "sales_invoice" | "receipt" | "credit_note",
+  "supplier_name": string,      // company/person who ISSUED / is billing (seller)
+  "customer_name": string,      // company/person being billed (buyer / recipient)
+  "invoice_number": string,
+  "invoice_date": "YYYY-MM-DD",
+  "due_date": "YYYY-MM-DD",
+  "currency": "EUR",            // 3-letter ISO code — infer from symbol (€→EUR, $→USD, £→GBP)
+  "net_amount": 0.00,           // subtotal before tax — plain decimal, NO comma thousands separators
+  "vat_amount": 0.00,           // tax/VAT amount
+  "total_amount": 0.00,         // gross total including tax
+  "vat_number": string,         // VAT/tax reg number (VAT No, TVA, MwSt-Nr, CIF, NIF, SIRET…)
+  "category": string,           // e.g. "Office Supplies", "Consulting", "Utilities"
+  "confidence": 85,             // 0-100 overall extraction confidence
+  "ocr_text": string            // full raw text visible on the document
+}${typeHint}${categoryHint}`,
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Extract all accounting fields from this financial document. Classify as expense_invoice, sales_invoice, receipt, or credit_note. Extract supplier name, customer name, invoice number, dates, all amounts (net, VAT, total), currency, VAT number, and category.${typeHint}${categoryHint}`,
+                text: "Extract all accounting fields from this financial document and return them as JSON.",
               },
               {
                 type: "image_url",
@@ -202,38 +212,6 @@ Key rules:
             ],
           },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_document_data",
-              description: "Extract structured accounting data from a financial document",
-              parameters: {
-                type: "object",
-                properties: {
-                  document_type: { type: "string", enum: ["expense_invoice", "sales_invoice", "receipt", "credit_note"] },
-                  supplier_name: { type: "string", description: "Name of the supplier/vendor" },
-                  customer_name: { type: "string", description: "Name of the customer/buyer" },
-                  invoice_number: { type: "string" },
-                  invoice_date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                  due_date: { type: "string", description: "Due date in YYYY-MM-DD format, if present" },
-                  currency: { type: "string", description: "3-letter currency code e.g. EUR, USD, GBP" },
-                  net_amount: { type: "number", description: "Net amount before tax" },
-                  vat_amount: { type: "number", description: "VAT/tax amount" },
-                  total_amount: { type: "number", description: "Total amount including tax" },
-                   vat_number: { type: "string", description: "VAT registration number if present" },
-                  discount_amount: { type: "number", description: "Discount amount if any" },
-                  category: { type: "string", description: "Expense/income category. Prefer one of the user's existing categories if it fits, otherwise suggest a concise new name e.g. Office Supplies, Consulting, Rent" },
-                  confidence: { type: "number", description: "Overall confidence score 0-100" },
-                  ocr_text: { type: "string", description: "Full extracted text from the document" },
-                },
-                required: ["document_type", "currency", "total_amount", "confidence"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "extract_document_data" } },
       }),
     });
 
@@ -264,9 +242,20 @@ Key rules:
     }
 
     const aiResult = await aiResponse.json();
-    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
 
-    if (!toolCall?.function?.arguments) {
+    // Parse JSON from message content (JSON mode) with fallback to tool_calls for
+    // backwards compatibility if the gateway ever routes to a tool-calling model.
+    let rawJson: string | null = null;
+    const msg = aiResult.choices?.[0]?.message;
+    if (msg?.content) {
+      // Strip markdown code fences if the model wrapped the JSON
+      rawJson = msg.content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    } else if (msg?.tool_calls?.[0]?.function?.arguments) {
+      rawJson = msg.tool_calls[0].function.arguments;
+    }
+
+    if (!rawJson) {
+      console.error("AI response had no usable content:", JSON.stringify(aiResult).slice(0, 500));
       await supabase
         .from("documents")
         .update({ status: "needs_review" })
@@ -277,7 +266,20 @@ Key rules:
       });
     }
 
-    const extracted = JSON.parse(toolCall.function.arguments);
+    let extracted: Record<string, unknown>;
+    try {
+      extracted = JSON.parse(rawJson);
+    } catch (parseErr) {
+      console.error("Failed to parse AI JSON:", parseErr, rawJson?.slice(0, 300));
+      await supabase
+        .from("documents")
+        .update({ status: "needs_review" })
+        .eq("id", documentId);
+      return new Response(JSON.stringify({ error: "AI returned invalid JSON" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Normalise amounts — the AI occasionally returns strings like "1,234.56"
     const parseAmount = (v: unknown): number => {
