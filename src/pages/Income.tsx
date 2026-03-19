@@ -1,29 +1,24 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Download, FileText, ExternalLink, Trash2, Archive, Plus,
+  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Trash2, Archive, Plus,
 } from "lucide-react";
-import { useState, useCallback, useMemo, useEffect, Fragment } from "react";
+import { useState, useCallback, useMemo, Fragment } from "react";
 import { toast } from "sonner";
-import { useIncomeRecords, useUploadIncomeDocument, useUpdateIncome, useDeleteIncome } from "@/hooks/useDocuments";
-import { ContactCombobox } from "@/components/ContactCombobox";
+import { useIncomeRecords, useUploadIncomeDocument, useDeleteIncome } from "@/hooks/useDocuments";
 import { ManualIncomeDialog } from "@/components/ManualIncomeDialog";
-import { CategorySelect } from "@/components/CategorySelect";
+import { EditIncomeDialog } from "@/components/EditIncomeDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
-import { supabase } from "@/integrations/supabase/client";
 import { useBulkDownload } from "@/hooks/useBulkDownload";
 import { useOrganization } from "@/hooks/useOrganization";
 import { usePlatformLimits } from "@/hooks/usePlatformLimits";
@@ -42,20 +37,6 @@ interface UploadingFile {
   error?: string;
 }
 
-interface IncomeEdit {
-  customer_name: string;
-  invoice_number: string;
-  invoice_date: string;
-  due_date: string;
-  category: string;
-  currency: string;
-  net_amount: number;
-  vat_amount: number;
-  total_amount: number;
-  vat_number: string;
-  notes: string;
-}
-
 export default function IncomePage() {
   const [search, setSearch] = useState("");
   const [currencyFilter, setCurrencyFilter] = useState("all");
@@ -67,19 +48,13 @@ export default function IncomePage() {
   const [dragOver, setDragOver] = useState(false);
   const [manualIncomeOpen, setManualIncomeOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<IncomeEdit | null>(null);
-  const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const [fileType, setFileType] = useState<string | null>(null);
-  const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { data: income = [], isLoading } = useIncomeRecords();
   const uploadMutation = useUploadIncomeDocument();
-  const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();
   const { downloadAsZip, downloading } = useBulkDownload();
   const { data: org } = useOrganization();
@@ -89,113 +64,8 @@ export default function IncomePage() {
 
   const selectedRecord = income.find((e) => e.id === selectedId);
 
-  // Load file preview when opening dialog
-  useEffect(() => {
-    if (!selectedRecord?.document_id) {
-      setFileUrl((prev) => {
-        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-        return null;
-      });
-      setFileType(null);
-      return;
-    }
-
-    let cancelled = false;
-    let localBlobUrl: string | null = null;
-    setLoadingFile(true);
-    setFileType(null);
-
-    (async () => {
-      const { data: doc } = await supabase
-        .from("documents")
-        .select("file_path, file_type")
-        .eq("id", selectedRecord.document_id)
-        .single();
-
-      if (cancelled || !doc) {
-        setLoadingFile(false);
-        return;
-      }
-
-      const { data: fileBlob, error: fileError } = await supabase.storage
-        .from("documents")
-        .download(doc.file_path);
-
-      if (cancelled) return;
-
-      if (fileError || !fileBlob) {
-        setFileUrl(null);
-        setFileType(doc.file_type || null);
-        setLoadingFile(false);
-        return;
-      }
-
-      const typedBlob = new Blob([fileBlob], {
-        type: doc.file_type || fileBlob.type || "application/octet-stream",
-      });
-
-      localBlobUrl = URL.createObjectURL(typedBlob);
-      setFileUrl((prev) => {
-        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-        return localBlobUrl;
-      });
-      setFileType(doc.file_type || typedBlob.type || null);
-      setLoadingFile(false);
-    })();
-
-    return () => {
-      cancelled = true;
-      if (localBlobUrl) URL.revokeObjectURL(localBlobUrl);
-    };
-  }, [selectedRecord?.document_id]);
-
-  const openEdit = (record: typeof income[0]) => {
-    setSelectedId(record.id);
-    setEditData({
-      customer_name: record.customer_name || "",
-      invoice_number: record.invoice_number || "",
-      invoice_date: record.invoice_date || "",
-      due_date: record.due_date || "",
-      category: record.category || "",
-      currency: record.currency || defaultCurrency,
-      net_amount: Number(record.net_amount || 0),
-      vat_amount: Number(record.vat_amount || 0),
-      total_amount: Number(record.total_amount || 0),
-      vat_number: record.vat_number || "",
-      notes: (record as any).notes || "",
-    });
-  };
-
-  const closeEdit = () => {
-    if (fileUrl?.startsWith("blob:")) URL.revokeObjectURL(fileUrl);
-    setSelectedId(null);
-    setEditData(null);
-    setFileUrl(null);
-    setFileType(null);
-  };
-
-  const handleSave = async () => {
-    if (!selectedId || !editData) return;
-    await updateIncome.mutateAsync({ id: selectedId, updates: editData, documentId: selectedRecord?.document_id });
-    closeEdit();
-  };
-
-  const handleDownload = () => {
-    if (!fileUrl) return;
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = selectedRecord?.customer_name
-      ? `${selectedRecord.customer_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
-      : "document";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
-  const handleOpenFile = () => {
-    if (!fileUrl) return;
-    window.open(fileUrl, "_blank", "noopener,noreferrer");
-  };
+  const openEdit = (record: typeof income[0]) => setSelectedId(record.id);
+  const closeEdit = () => setSelectedId(null);
 
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -377,9 +247,6 @@ export default function IncomePage() {
   const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); Array.from(e.dataTransfer.files).forEach(processFile); };
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => { Array.from(e.target.files || []).forEach(processFile); e.target.value = ""; };
   const removeFile = (id: string) => setFiles((prev) => prev.filter((f) => f.id !== id));
-
-  const isImage = fileType?.startsWith("image/");
-  const isPdf = fileType === "application/pdf";
 
   if (!user) return <div className="text-center py-12 text-muted-foreground">Please log in to view income.</div>;
 
@@ -696,163 +563,11 @@ export default function IncomePage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Edit Dialog */}
-      <Dialog open={!!selectedId} onOpenChange={() => closeEdit()}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Income Record</DialogTitle>
-          </DialogHeader>
-          {editData && (
-            <div className="space-y-5">
-              {/* File Preview */}
-              {selectedRecord?.document_id && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Uploaded Document</Label>
-                    <div className="flex gap-2">
-                      {fileUrl && (
-                        <>
-                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleDownload}>
-                            <Download className="h-3 w-3 mr-1" /> Download
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={handleOpenFile}>
-                            <ExternalLink className="h-3 w-3 mr-1" /> Open
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="border rounded-lg overflow-hidden bg-muted/30">
-                    {loadingFile ? (
-                      <div className="flex items-center justify-center py-16">
-                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                      </div>
-                    ) : fileUrl && isImage ? (
-                      <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain" />
-                    ) : fileUrl && isPdf ? (
-                      <object data={fileUrl} type="application/pdf" className="w-full h-[360px]">
-                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                          <FileText className="h-8 w-8 mb-2" />
-                          <p className="text-sm">PDF preview not available in this browser</p>
-                          <Button variant="link" size="sm" className="mt-1 text-xs" onClick={handleOpenFile}>
-                            Open PDF in new tab
-                          </Button>
-                        </div>
-                      </object>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                        <FileText className="h-8 w-8 mb-2" />
-                        <p className="text-sm">Preview not available</p>
-                        {fileUrl && (
-                          <Button variant="link" size="sm" className="mt-1 text-xs" onClick={handleDownload}>
-                            Download file instead
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Edit Fields */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <Label className="text-xs text-muted-foreground">Customer</Label>
-                  <ContactCombobox
-                    value={editData.customer_name}
-                    onChange={(name, vat) => setEditData({ ...editData, customer_name: name, vat_number: vat ?? editData.vat_number })}
-                    placeholder="Search or type customer…"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Invoice #</Label>
-                  <Input className="h-8 text-sm" value={editData.invoice_number} onChange={(e) => setEditData({ ...editData, invoice_number: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Invoice Date</Label>
-                  <Input className="h-8 text-sm" type="date" value={editData.invoice_date} onChange={(e) => setEditData({ ...editData, invoice_date: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Due Date</Label>
-                  <Input className="h-8 text-sm" type="date" value={editData.due_date} onChange={(e) => setEditData({ ...editData, due_date: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Category</Label>
-                  <CategorySelect value={editData.category} onValueChange={(v) => setEditData({ ...editData, category: v })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Currency</Label>
-                  <Select value={editData.currency} onValueChange={(v) => setEditData({ ...editData, currency: v })}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {["EUR","USD","GBP","CHF","JPY","CAD","AUD","NZD","SEK","NOK","DKK","PLN","HUF","CZK","RON","BGN","TRY","RUB","AED","SAR","ILS","INR","SGD","MYR","THB","PHP","IDR","VND","KRW","CNY","HKD","TWD","ZAR","BRL","MXN","ARS","NGN","KES","MAD","EGP"].map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">VAT Number</Label>
-                  <Input className="h-8 text-sm" value={editData.vat_number} onChange={(e) => setEditData({ ...editData, vat_number: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Net Amount</Label>
-                  <Input className="h-8 text-sm" type="number" step="0.01" value={editData.net_amount} onChange={(e) => setEditData({ ...editData, net_amount: parseFloat(e.target.value) || 0 })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">VAT Amount</Label>
-                  <Input className="h-8 text-sm" type="number" step="0.01" value={editData.vat_amount} onChange={(e) => setEditData({ ...editData, vat_amount: parseFloat(e.target.value) || 0 })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Total Amount</Label>
-                  <Input className="h-8 text-sm" type="number" step="0.01" value={editData.total_amount} onChange={(e) => setEditData({ ...editData, total_amount: parseFloat(e.target.value) || 0 })} />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground">Notes</Label>
-                <Textarea className="text-sm resize-none" rows={3} placeholder="Add notes..." value={editData.notes} onChange={(e) => setEditData({ ...editData, notes: e.target.value })} />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="destructive" onClick={() => setDeleteConfirmId(selectedId)} disabled={deleteIncome.isPending}>
-                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
-                </Button>
-                <div className="flex-1" />
-                <Button size="sm" variant="outline" onClick={closeEdit}>Cancel</Button>
-                <Button size="sm" onClick={handleSave} disabled={updateIncome.isPending}>
-                  {updateIncome.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                  Save
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete income record?</AlertDialogTitle>
-            <AlertDialogDescription>This will permanently remove this income record. This action cannot be undone.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={async () => {
-                if (deleteConfirmId) {
-                  await deleteIncome.mutateAsync(deleteConfirmId);
-                  setDeleteConfirmId(null);
-                  closeEdit();
-                }
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <EditIncomeDialog
+        record={selectedRecord}
+        open={!!selectedId}
+        onOpenChange={(o) => { if (!o) closeEdit(); }}
+      />
 
       <ManualIncomeDialog open={manualIncomeOpen} onOpenChange={setManualIncomeOpen} />
     </div>
