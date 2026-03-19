@@ -158,8 +158,11 @@ export function useUploadDocument() {
 
       if (fnError) {
         console.error("Extraction error:", fnError);
-        // Don't throw - the doc is created, extraction just failed
-        toast.error(`Extraction failed for ${file.name}. You can review manually.`);
+        const message = typeof fnError.message === "string" ? fnError.message : "";
+        const isAccessOrBillingBlock = message.includes("403") || /forbidden|subscription required/i.test(message);
+        if (!isAccessOrBillingBlock) {
+          toast.error(`Extraction failed for ${file.name}. You can review manually.`);
+        }
       }
 
       return doc;
