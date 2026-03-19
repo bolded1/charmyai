@@ -212,7 +212,7 @@ export default function IndexPage() {
             <p className="text-muted-foreground max-w-lg mx-auto">{t("marketing.howItWorksDesc")}</p>
           </motion.div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { icon: Upload, title: t("marketing.step1Title"), desc: t("marketing.step1Desc"), gradient: "bg-hero-gradient", shadow: "shadow-primary/20" },
               { icon: Search, title: t("marketing.step2Title"), desc: t("marketing.step2Desc"), gradient: "bg-gradient-cool", shadow: "shadow-teal/20" },
