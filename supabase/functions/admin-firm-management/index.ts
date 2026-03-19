@@ -57,6 +57,11 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
+    // Separate admin auth client for user management operations
+    const adminAuthClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
     const body = await req.json();
     const { action } = body;
     logStep("Action received", { action });
@@ -277,9 +282,9 @@ Deno.serve(async (req) => {
         await adminClient.from("profiles").update({ status }).eq("user_id", user_id);
 
         if (status === "inactive") {
-          await adminClient.auth.admin.updateUser(user_id, { ban_duration: "876600h" });
+          await adminAuthClient.auth.admin.updateUserById(user_id, { ban_duration: "876600h" });
         } else {
-          await adminClient.auth.admin.updateUser(user_id, { ban_duration: "none" });
+          await adminAuthClient.auth.admin.updateUserById(user_id, { ban_duration: "none" });
         }
 
         await adminClient.from("audit_logs").insert({
@@ -411,6 +416,15 @@ Deno.serve(async (req) => {
           .eq("parent_org_id", org_id);
 
         const childIds = (childOrgs || []).map((c: any) => c.id);
+        const allOrgIds = [...childIds, org_id];
+
+        // Clear active_organization_id references in profiles FIRST (FK constraint)
+        for (const oid of allOrgIds) {
+          await adminClient
+            .from("profiles")
+            .update({ active_organization_id: null })
+            .eq("active_organization_id", oid);
+        }
 
         // Delete related data for child workspaces
         for (const childId of childIds) {
@@ -441,6 +455,8 @@ Deno.serve(async (req) => {
         await adminClient.from("team_members").delete().eq("firm_org_id", org_id);
         await adminClient.from("client_invitations").delete().eq("firm_org_id", org_id);
         await adminClient.from("chat_conversations").delete().eq("organization_id", org_id);
+        await adminClient.from("document_requests").delete().eq("firm_org_id", org_id);
+        await adminClient.from("accounting_integrations").delete().eq("organization_id", org_id);
 
         // Delete the firm org itself
         const { error: delErr } = await adminClient
