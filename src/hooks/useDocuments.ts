@@ -604,6 +604,9 @@ export function useCreateManualExpense() {
         }
       }
 
+      // Auto-create category if provided
+      await ensureCategoryExists(input.category, user.id, profile?.active_organization_id || null);
+
       const { data, error } = await supabase.from("expense_records").insert({
         user_id: user.id,
         organization_id: profile?.active_organization_id || null,
