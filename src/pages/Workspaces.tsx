@@ -553,8 +553,8 @@ export default function WorkspacesPage() {
             <CountryCombobox value={data.country || "NL"} onChange={(v) => onChange("country", v)} />
           </Field>
           <Field label="Base Currency">
-            <Select value={data.default_currency || "EUR"} onValueChange={(v) => onChange("default_currency", v)}>
-              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+            <Select value={data.default_currency || ""} onValueChange={(v) => onChange("default_currency", v)}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select currency" /></SelectTrigger>
               <SelectContent>
                 {CURRENCIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
               </SelectContent>
