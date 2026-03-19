@@ -46,6 +46,7 @@ export default function DocumentsPage() {
   const approveDoc = useApproveDocument();
   const bulkApprove = useBulkApproveDocuments();
   const bulkDelete = useBulkDeleteDocuments();
+  const retryExtraction = useRetryExtraction();
 
   const dateRange = useMemo(() => {
     const now = new Date();
