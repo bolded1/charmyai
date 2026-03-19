@@ -390,7 +390,7 @@ export default function WorkspacesPage() {
 
   // ── Handlers ──
   const handleCreate = async () => {
-    if (!formData.name.trim() || creatingRef.current) return;
+    if (!formData.name.trim() || !formData.default_currency || creatingRef.current) return;
     creatingRef.current = true;
     setCreating(true);
     try {
