@@ -15,6 +15,7 @@ const PRO_PLAN_PRODUCT_ID = "prod_U7PZ8dbaVYJKAv";
 const PRO_MONTHLY_PRODUCT_ID = "prod_U6lFbZZFmHhG8T";
 const PRO_ANNUAL_PRODUCT_ID = "prod_U6lFBZgYR4YdhA";
 
+const isFirmProduct = (id: string) => [FIRM_PLAN_PRODUCT_ID, FIRM_UPGRADE_PRODUCT_ID].includes(id);
 const isProProduct = (id: string) => [PRO_PLAN_PRODUCT_ID, PRO_MONTHLY_PRODUCT_ID, PRO_ANNUAL_PRODUCT_ID].includes(id);
 
 const logStep = (step: string, details?: any) => {
