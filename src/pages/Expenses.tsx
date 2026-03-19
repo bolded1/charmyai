@@ -183,7 +183,9 @@ export default function ExpensesPage() {
   };
 
   const displayFiltered = sortField ? sortedFiltered : filtered;
-  const paginatedFiltered = useMemo(() => displayFiltered.slice(0, visibleCount), [displayFiltered, visibleCount]);
+  const totalPages = Math.max(1, Math.ceil(displayFiltered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedFiltered = useMemo(() => displayFiltered.slice((safePage - 1) * pageSize, safePage * pageSize), [displayFiltered, safePage, pageSize]);
 
   const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; currencyTotals: ReturnType<typeof groupByCurrency> }[] = [];
