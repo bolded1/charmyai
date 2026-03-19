@@ -44,6 +44,7 @@ export default function DocumentsPage() {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
