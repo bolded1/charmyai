@@ -151,6 +151,7 @@ export default function DashboardLayout() {
           <div className="flex flex-col min-h-0 flex-1">
             <PwaInstallBanner />
             <OfflineIndicator />
+            <StorageFullBanner />
 
             {/* Workspace context bar for client workspaces */}
             <WorkspaceContextBar />

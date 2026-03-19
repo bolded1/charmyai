@@ -723,6 +723,11 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
+        {/* ════════════════ STORAGE ════════════════ */}
+        <TabsContent value="storage">
+          <StorageSettings />
+        </TabsContent>
+
         {/* ════════════════ AUDIT LOG ════════════════ */}
         <TabsContent value="audit">
           <Card>
