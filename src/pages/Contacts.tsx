@@ -2,8 +2,8 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2, Users, Search, ArrowUpRight, ArrowDownLeft,
-  Receipt, TrendingUp, ChevronRight, X, Hash, Calendar,
-  Banknote, ArrowLeft, UserPlus,
+  ChevronRight, X, Hash, Calendar,
+  Banknote, ArrowLeft, UserPlus, Pencil, ExternalLink, Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useExpenseRecords, useIncomeRecords, useContacts, type ContactRecord } from "@/hooks/useDocuments";
 import { AddContactDialog } from "@/components/AddContactDialog";
+import { EditExpenseDialog } from "@/components/EditExpenseDialog";
+import { EditIncomeDialog } from "@/components/EditIncomeDialog";
+import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 
@@ -28,7 +31,6 @@ interface DerivedContact {
   vatNumber: string | null;
   email: string | null;
   phone: string | null;
-  // Unified totals
   totalAmount: number;
   expenseTotal: number;
   incomeTotal: number;
@@ -36,7 +38,6 @@ interface DerivedContact {
   currencies: string[];
   lastDate: string | null;
   categories: string[];
-  // Split invoice arrays for tabbed detail
   expenseInvoices: any[];
   incomeInvoices: any[];
 }
@@ -62,7 +63,6 @@ function deriveContacts(
 ): DerivedContact[] {
   const map = new Map<string, DerivedContact>();
 
-  // 1. Seed with manual contacts first (preserve their data as baseline)
   for (const c of manualContacts) {
     const key = `contact::${c.name.toLowerCase()}`;
     map.set(key, {
@@ -85,14 +85,13 @@ function deriveContacts(
     });
   }
 
-  // 2. Merge expense_records (suppliers)
   for (const r of expenses) {
     const name = (r.supplier_name ?? "").trim();
     if (!name) continue;
     const key = `contact::${name.toLowerCase()}`;
     const existing = map.get(key);
     if (existing) {
-      existing.isManual = false; // has real invoices
+      existing.isManual = false;
       existing.expenseTotal += r.total_amount ?? 0;
       existing.totalAmount += r.total_amount ?? 0;
       existing.invoiceCount += 1;
@@ -101,7 +100,6 @@ function deriveContacts(
       if (r.category && !existing.categories.includes(r.category)) existing.categories.push(r.category);
       if (!existing.vatNumber && r.vat_number) existing.vatNumber = r.vat_number;
       existing.expenseInvoices.push(r);
-      // Upgrade type
       if (existing.type === "customer") existing.type = "both";
       else if (existing.type !== "both") existing.type = "supplier";
     } else {
@@ -126,14 +124,13 @@ function deriveContacts(
     }
   }
 
-  // 3. Merge income_records (customers)
   for (const r of income) {
     const name = (r.customer_name ?? "").trim();
     if (!name) continue;
     const key = `contact::${name.toLowerCase()}`;
     const existing = map.get(key);
     if (existing) {
-      existing.isManual = false; // has real invoices
+      existing.isManual = false;
       existing.incomeTotal += r.total_amount ?? 0;
       existing.totalAmount += r.total_amount ?? 0;
       existing.invoiceCount += 1;
@@ -142,7 +139,6 @@ function deriveContacts(
       if (r.category && !existing.categories.includes(r.category)) existing.categories.push(r.category);
       if (!existing.vatNumber && r.vat_number) existing.vatNumber = r.vat_number;
       existing.incomeInvoices.push(r);
-      // Upgrade type
       if (existing.type === "supplier") existing.type = "both";
       else if (existing.type !== "both") existing.type = "customer";
     } else {
@@ -207,72 +203,86 @@ function avatarGradient(type: DerivedContact["type"]) {
   return "bg-gradient-cool";
 }
 
-// ─── Contact Card ─────────────────────────────────────────────────────────────
+// ─── Contact Row (thin horizontal list item) ──────────────────────────────────
 
-function ContactCard({ contact, onClick, i }: { contact: DerivedContact; onClick: () => void; i: number }) {
+function ContactRow({ contact, onClick, i }: { contact: DerivedContact; onClick: () => void; i: number }) {
   const primaryCurrency = contact.currencies[0] ?? "EUR";
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.25, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
+      className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 cursor-pointer transition-colors"
+      onClick={onClick}
     >
-      <Card
-        className="cursor-pointer hover:-translate-y-0.5 transition-all duration-200"
-        onClick={onClick}
-      >
-        <CardContent className="p-5">
-          <div className="flex items-start justify-between gap-3">
-            {/* Avatar + name */}
-            <div className="flex items-center gap-3 min-w-0">
-              <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 text-sm font-bold text-white ${avatarGradient(contact.type)}`}>
-                {contact.name.slice(0, 2).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-foreground truncate">{contact.name}</p>
-                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                  <TypeBadge type={contact.type} isManual={contact.isManual} />
-                  {contact.vatNumber && (
-                    <span className="text-[10px] text-muted-foreground font-mono">{contact.vatNumber}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0 mt-1" />
-          </div>
+      {/* Avatar */}
+      <div className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-bold text-white ${avatarGradient(contact.type)}`}>
+        {contact.name.slice(0, 2).toUpperCase()}
+      </div>
 
-          {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border/40">
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Total</p>
-              <p className="text-sm font-bold text-foreground tabular-nums">
-                {contact.invoiceCount === 0 ? "—" : fmt(contact.totalAmount, primaryCurrency)}
-              </p>
+      {/* Name + badge */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+          <span className="text-sm font-semibold truncate">{contact.name}</span>
+          <TypeBadge type={contact.type} isManual={contact.isManual} />
+        </div>
+        {contact.vatNumber && (
+          <span className="text-[10px] text-muted-foreground font-mono">{contact.vatNumber}</span>
+        )}
+      </div>
+
+      {/* Expense stat */}
+      <div className="hidden sm:flex flex-col items-end gap-0 shrink-0 min-w-[88px]">
+        {contact.expenseInvoices.length > 0 ? (
+          <>
+            <div className="flex items-center gap-1">
+              <ArrowDownLeft className="h-3 w-3 text-rose-500" />
+              <span className="text-xs font-semibold tabular-nums text-rose-600">{fmt(contact.expenseTotal, primaryCurrency)}</span>
             </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Invoices</p>
-              <p className="text-sm font-bold text-foreground">{contact.invoiceCount}</p>
+            <span className="text-[10px] text-muted-foreground">{contact.expenseInvoices.length} exp inv</span>
+          </>
+        ) : (
+          <span className="text-xs text-muted-foreground/50">—</span>
+        )}
+      </div>
+
+      {/* Income stat */}
+      <div className="hidden sm:flex flex-col items-end gap-0 shrink-0 min-w-[88px]">
+        {contact.incomeInvoices.length > 0 ? (
+          <>
+            <div className="flex items-center gap-1">
+              <ArrowUpRight className="h-3 w-3 text-emerald-500" />
+              <span className="text-xs font-semibold tabular-nums text-emerald-600">{fmt(contact.incomeTotal, primaryCurrency)}</span>
             </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Last Invoice</p>
-              <p className="text-sm font-semibold text-foreground">
-                {contact.lastDate ? format(parseISO(contact.lastDate), "dd MMM yy") : "—"}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            <span className="text-[10px] text-muted-foreground">{contact.incomeInvoices.length} inc inv</span>
+          </>
+        ) : (
+          <span className="text-xs text-muted-foreground/50">—</span>
+        )}
+      </div>
+
+      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
     </motion.div>
   );
 }
 
 // ─── Invoice Row ──────────────────────────────────────────────────────────────
 
-function InvoiceRow({ r, nameField }: { r: any; nameField?: string }) {
+function InvoiceRow({
+  r,
+  onEdit,
+  onOpen,
+  openingDoc,
+}: {
+  r: any;
+  onEdit: (r: any) => void;
+  onOpen: (r: any) => void;
+  openingDoc: string | null;
+}) {
   return (
-    <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
-      <div className="min-w-0">
+    <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
+      <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-foreground truncate">
           {r.invoice_number ?? "No number"}
         </p>
@@ -281,13 +291,36 @@ function InvoiceRow({ r, nameField }: { r: any; nameField?: string }) {
           {r.category ? ` · ${r.category}` : ""}
         </p>
       </div>
-      <div className="text-right shrink-0">
+      <div className="text-right shrink-0 min-w-[72px]">
         <p className="text-xs font-bold text-foreground tabular-nums">
           {fmt(r.total_amount ?? 0, r.currency)}
         </p>
         {r.due_date && (
           <p className="text-[10px] text-muted-foreground">Due {format(parseISO(r.due_date), "dd MMM")}</p>
         )}
+      </div>
+      {/* Action buttons */}
+      <div className="flex items-center gap-0.5 shrink-0">
+        {r.document_id && (
+          <button
+            className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            onClick={(e) => { e.stopPropagation(); onOpen(r); }}
+            title="Open document"
+            disabled={openingDoc === r.id}
+          >
+            {openingDoc === r.id
+              ? <Loader2 className="h-3 w-3 animate-spin" />
+              : <ExternalLink className="h-3 w-3" />
+            }
+          </button>
+        )}
+        <button
+          className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          onClick={(e) => { e.stopPropagation(); onEdit(r); }}
+          title="Edit invoice"
+        >
+          <Pencil className="h-3 w-3" />
+        </button>
       </div>
     </div>
   );
@@ -297,14 +330,10 @@ function InvoiceRow({ r, nameField }: { r: any; nameField?: string }) {
 
 function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose: () => void }) {
   const primaryCurrency = contact.currencies[0] ?? "EUR";
+  const [editingExpense, setEditingExpense] = useState<any | null>(null);
+  const [editingIncome, setEditingIncome] = useState<any | null>(null);
+  const [openingDoc, setOpeningDoc] = useState<string | null>(null);
 
-  const isBoth = contact.type === "both";
-  const isSupplier = contact.type === "supplier";
-
-  const allInvoices = [...contact.expenseInvoices, ...contact.incomeInvoices];
-  const sortedAll = [...allInvoices].sort((a, b) =>
-    (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
-  );
   const sortedExpenses = [...contact.expenseInvoices].sort((a, b) =>
     (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
   );
@@ -312,8 +341,28 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
     (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
   );
 
-  const netTotal = allInvoices.reduce((s, r) => s + (r.net_amount ?? 0), 0);
-  const vatTotal = allInvoices.reduce((s, r) => s + (r.vat_amount ?? 0), 0);
+  const openDocument = async (r: any) => {
+    if (!r.document_id) return;
+    setOpeningDoc(r.id);
+    try {
+      const { data: doc } = await supabase
+        .from("documents")
+        .select("file_path, file_type")
+        .eq("id", r.document_id)
+        .single();
+      if (!doc?.file_path) return;
+
+      const { data: fileBlob } = await supabase.storage.from("documents").download(doc.file_path);
+      if (!fileBlob) return;
+
+      const typedBlob = new Blob([fileBlob], { type: doc.file_type || fileBlob.type || "application/octet-stream" });
+      const url = URL.createObjectURL(typedBlob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } finally {
+      setOpeningDoc(null);
+    }
+  };
 
   return (
     <motion.div
@@ -324,7 +373,7 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
       className="flex flex-col h-full"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-5">
         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={onClose}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -341,151 +390,120 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
         </div>
       </div>
 
-      {/* Summary cards — "both" shows expense vs income split */}
-      {isBoth ? (
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          <Card>
-            <CardContent className="p-3.5">
-              <div className="flex items-center gap-2 mb-1">
-                <ArrowDownLeft className="h-3.5 w-3.5 text-rose-500" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Expenses</span>
-              </div>
-              <p className="font-bold text-sm tabular-nums">{fmt(contact.expenseTotal, primaryCurrency)}</p>
-              <p className="text-[10px] text-muted-foreground">{contact.expenseInvoices.length} invoice{contact.expenseInvoices.length !== 1 ? "s" : ""}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3.5">
-              <div className="flex items-center gap-2 mb-1">
-                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Income</span>
-              </div>
-              <p className="font-bold text-sm tabular-nums">{fmt(contact.incomeTotal, primaryCurrency)}</p>
-              <p className="text-[10px] text-muted-foreground">{contact.incomeInvoices.length} invoice{contact.incomeInvoices.length !== 1 ? "s" : ""}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3.5">
-              <div className="flex items-center gap-2 mb-1">
-                <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Net Amount</span>
-              </div>
-              <p className="font-bold text-sm tabular-nums">{fmt(netTotal, primaryCurrency)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3.5">
-              <div className="flex items-center gap-2 mb-1">
-                <Hash className="h-3.5 w-3.5 text-amber-500" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">VAT Total</span>
-              </div>
-              <p className="font-bold text-sm tabular-nums">{fmt(vatTotal, primaryCurrency)}</p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          {[
-            { label: isSupplier ? "Total Spent" : "Total Received", value: fmt(contact.totalAmount, primaryCurrency), icon: Banknote, color: isSupplier ? "text-rose-500" : "text-emerald-500" },
-            { label: "Invoices",   value: String(contact.invoiceCount), icon: Receipt,  color: "text-primary" },
-            { label: "Net Amount", value: fmt(netTotal, primaryCurrency), icon: Banknote, color: "text-foreground" },
-            { label: "VAT Total",  value: fmt(vatTotal, primaryCurrency), icon: Hash,    color: "text-amber-500" },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <Card key={label}>
-              <CardContent className="p-3.5">
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon className={`h-3.5 w-3.5 ${color}`} />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span>
-                </div>
-                <p className="font-bold text-sm text-foreground tabular-nums">{value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Summary cards — always show expenses + income split */}
+      <div className="grid grid-cols-2 gap-2.5 mb-4">
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <ArrowDownLeft className="h-3.5 w-3.5 text-rose-500" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Expenses</span>
+            </div>
+            <p className="font-bold text-sm tabular-nums text-rose-600">
+              {contact.expenseInvoices.length === 0 ? "—" : fmt(contact.expenseTotal, primaryCurrency)}
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {contact.expenseInvoices.length} invoice{contact.expenseInvoices.length !== 1 ? "s" : ""}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Income</span>
+            </div>
+            <p className="font-bold text-sm tabular-nums text-emerald-600">
+              {contact.incomeInvoices.length === 0 ? "—" : fmt(contact.incomeTotal, primaryCurrency)}
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {contact.incomeInvoices.length} invoice{contact.incomeInvoices.length !== 1 ? "s" : ""}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Meta info */}
-      <div className="space-y-1.5 mb-5">
+      <div className="space-y-1 mb-4">
         {contact.vatNumber && (
           <div className="flex items-center gap-2 text-sm">
             <Hash className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">VAT:</span>
-            <span className="font-mono font-medium text-foreground">{contact.vatNumber}</span>
+            <span className="text-muted-foreground text-xs">VAT:</span>
+            <span className="font-mono font-medium text-foreground text-xs">{contact.vatNumber}</span>
           </div>
         )}
         {contact.currencies.length > 0 && (
           <div className="flex items-center gap-2 text-sm">
             <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Currencies:</span>
-            <span className="font-medium text-foreground">{contact.currencies.join(", ")}</span>
-          </div>
-        )}
-        {contact.categories.length > 0 && (
-          <div className="flex items-start gap-2 text-sm">
-            <Receipt className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-            <span className="text-muted-foreground">Categories:</span>
-            <span className="font-medium text-foreground">{contact.categories.join(", ")}</span>
+            <span className="text-muted-foreground text-xs">Currencies:</span>
+            <span className="font-medium text-foreground text-xs">{contact.currencies.join(", ")}</span>
           </div>
         )}
         {contact.lastDate && (
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Last invoice:</span>
-            <span className="font-medium text-foreground">{format(parseISO(contact.lastDate), "dd MMM yyyy")}</span>
+            <span className="text-muted-foreground text-xs">Last invoice:</span>
+            <span className="font-medium text-foreground text-xs">{format(parseISO(contact.lastDate), "dd MMM yyyy")}</span>
           </div>
         )}
       </div>
 
-      {/* Invoice list — tabbed for "both" contacts */}
+      {/* Invoice tabs — always shown */}
       <div className="flex-1 min-h-0">
-        {isBoth ? (
-          <Tabs defaultValue="all">
-            <TabsList className="h-8 mb-3">
-              <TabsTrigger value="all" className="text-xs">All ({allInvoices.length})</TabsTrigger>
-              <TabsTrigger value="expenses" className="text-xs">Expenses ({contact.expenseInvoices.length})</TabsTrigger>
-              <TabsTrigger value="income" className="text-xs">Income ({contact.incomeInvoices.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="all" className="mt-0">
-              <div className="space-y-2 overflow-auto max-h-[280px] pr-1">
-                {sortedAll.map((r) => <InvoiceRow key={r.id} r={r} />)}
-              </div>
-            </TabsContent>
-            <TabsContent value="expenses" className="mt-0">
-              <div className="space-y-2 overflow-auto max-h-[280px] pr-1">
-                {sortedExpenses.length === 0
-                  ? <p className="text-xs text-muted-foreground text-center py-4">No expenses</p>
-                  : sortedExpenses.map((r) => <InvoiceRow key={r.id} r={r} />)
-                }
-              </div>
-            </TabsContent>
-            <TabsContent value="income" className="mt-0">
-              <div className="space-y-2 overflow-auto max-h-[280px] pr-1">
-                {sortedIncome.length === 0
-                  ? <p className="text-xs text-muted-foreground text-center py-4">No income records</p>
-                  : sortedIncome.map((r) => <InvoiceRow key={r.id} r={r} />)
-                }
-              </div>
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <>
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/60 mb-3">
-              {contact.invoiceCount === 0
-                ? "No records yet"
-                : `All ${isSupplier ? "Expense" : "Income"} Records`}
-            </p>
-            {contact.invoiceCount === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No invoices linked to this contact yet.
-              </p>
-            ) : (
-              <div className="space-y-2 overflow-auto max-h-[340px] pr-1 scrollbar-thin">
-                {sortedAll.map((r) => <InvoiceRow key={r.id} r={r} />)}
-              </div>
-            )}
-          </>
-        )}
+        <Tabs defaultValue="expenses">
+          <TabsList className="h-8 mb-3 w-full">
+            <TabsTrigger value="expenses" className="text-xs flex-1">
+              Expenses ({contact.expenseInvoices.length})
+            </TabsTrigger>
+            <TabsTrigger value="income" className="text-xs flex-1">
+              Income ({contact.incomeInvoices.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="expenses" className="mt-0">
+            <div className="space-y-1.5 overflow-auto max-h-[320px] pr-1 scrollbar-thin">
+              {sortedExpenses.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-6">No expense invoices</p>
+              ) : sortedExpenses.map((r) => (
+                <InvoiceRow
+                  key={r.id}
+                  r={r}
+                  onEdit={() => setEditingExpense(r)}
+                  onOpen={openDocument}
+                  openingDoc={openingDoc}
+                />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="income" className="mt-0">
+            <div className="space-y-1.5 overflow-auto max-h-[320px] pr-1 scrollbar-thin">
+              {sortedIncome.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-6">No income invoices</p>
+              ) : sortedIncome.map((r) => (
+                <InvoiceRow
+                  key={r.id}
+                  r={r}
+                  onEdit={() => setEditingIncome(r)}
+                  onOpen={openDocument}
+                  openingDoc={openingDoc}
+                />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
+
+      {/* Edit dialogs */}
+      <EditExpenseDialog
+        record={editingExpense}
+        open={!!editingExpense}
+        onOpenChange={(o) => { if (!o) setEditingExpense(null); }}
+      />
+      <EditIncomeDialog
+        record={editingIncome}
+        open={!!editingIncome}
+        onOpenChange={(o) => { if (!o) setEditingIncome(null); }}
+      />
     </motion.div>
   );
 }
@@ -496,7 +514,7 @@ export default function Contacts() {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<ContactType>("all");
-  const [selected, setSelected] = useState<DerivedContact | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
 
   const { data: rawExpenses = [], isLoading: expLoading } = useExpenseRecords();
@@ -508,6 +526,9 @@ export default function Contacts() {
     () => deriveContacts(rawExpenses, rawIncome, manualContacts),
     [rawExpenses, rawIncome, manualContacts]
   );
+
+  // Always look up selected contact live so edits are reflected immediately
+  const selected = selectedId ? (contacts.find((c) => c.id === selectedId) ?? null) : null;
 
   const filtered = useMemo(() => {
     let list = contacts;
@@ -532,7 +553,7 @@ export default function Contacts() {
     { key: "all",      label: "All",       icon: Users,        count: contacts.length },
     { key: "supplier", label: "Suppliers", icon: ArrowDownLeft, count: supplierCount },
     { key: "customer", label: "Customers", icon: ArrowUpRight,  count: customerCount },
-    { key: "both",     label: "Both",      icon: TrendingUp,    count: bothCount },
+    { key: "both",     label: "Both",      icon: ArrowUpRight,  count: bothCount },
   ];
 
   return (
@@ -618,9 +639,9 @@ export default function Contacts() {
                 className="grid grid-cols-3 gap-3"
               >
                 {[
-                  { label: "Total Contacts", value: contacts.length, icon: Users,        color: "text-primary" },
-                  { label: "Suppliers",      value: supplierCount + bothCount, icon: ArrowDownLeft, color: "text-rose-500" },
-                  { label: "Customers",      value: customerCount + bothCount, icon: ArrowUpRight,  color: "text-emerald-500" },
+                  { label: "Total Contacts", value: contacts.length,              icon: Users,        color: "text-primary" },
+                  { label: "Suppliers",      value: supplierCount + bothCount,    icon: ArrowDownLeft, color: "text-rose-500" },
+                  { label: "Customers",      value: customerCount + bothCount,    icon: ArrowUpRight,  color: "text-emerald-500" },
                 ].map(({ label, value, icon: Icon, color }) => (
                   <Card key={label}>
                     <CardContent className="p-4 flex items-center gap-3">
@@ -639,8 +660,8 @@ export default function Contacts() {
 
             {/* Contact list */}
             {isLoading ? (
-              <div className="space-y-3">
-                {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+              <div className="space-y-2">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
               </div>
             ) : filtered.length === 0 ? (
               <Card>
@@ -668,16 +689,18 @@ export default function Contacts() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid sm:grid-cols-2 gap-3">
-                {filtered.map((contact, i) => (
-                  <ContactCard
-                    key={contact.id}
-                    contact={contact}
-                    i={i}
-                    onClick={() => setSelected(contact)}
-                  />
-                ))}
-              </div>
+              <Card className="overflow-hidden p-0">
+                <div className="divide-y divide-border/40">
+                  {filtered.map((contact, i) => (
+                    <ContactRow
+                      key={contact.id}
+                      contact={contact}
+                      i={i}
+                      onClick={() => setSelectedId(contact.id)}
+                    />
+                  ))}
+                </div>
+              </Card>
             )}
           </div>
 
@@ -694,7 +717,7 @@ export default function Contacts() {
                 <div style={{ width: 360 }}>
                   <Card className="h-full">
                     <CardContent className="p-5 h-full">
-                      <ContactDetail contact={selected} onClose={() => setSelected(null)} />
+                      <ContactDetail contact={selected} onClose={() => setSelectedId(null)} />
                     </CardContent>
                   </Card>
                 </div>
@@ -713,7 +736,7 @@ export default function Contacts() {
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="lg:hidden fixed inset-0 z-50 bg-background p-4 pt-6 overflow-auto"
             >
-              <ContactDetail contact={selected} onClose={() => setSelected(null)} />
+              <ContactDetail contact={selected} onClose={() => setSelectedId(null)} />
             </motion.div>
           )}
         </AnimatePresence>
