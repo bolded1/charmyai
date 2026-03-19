@@ -136,9 +136,11 @@ serve(async (req) => {
       binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
     }
     const base64 = btoa(binary);
-    const mimeType = doc.file_type === "application/pdf" ? "application/pdf" : doc.file_type;
+    const mimeType = doc.file_type === "application/pdf" ? "application/pdf" : (doc.file_type || "image/jpeg");
     const isPdf = doc.file_type === "application/pdf";
-    const model = isPdf ? "google/gemini-2.5-flash" : "openai/gpt-5";
+    // Use gpt-4o for all document types — it reliably handles both PDFs and images
+    // via the OpenAI-compatible gateway with vision support.
+    const model = "openai/gpt-4o";
 
     // Fetch existing category names to guide the AI
     let existingCategoryNames: string[] = [];
@@ -158,6 +160,11 @@ serve(async (req) => {
       ? `\nExisting categories (prefer one of these if it fits): ${existingCategoryNames.join(", ")}. Only suggest a new category name if none of the existing ones are a good fit.`
       : "";
 
+    // Hint from the document's existing type (set by the upload route, e.g. income page → sales_invoice)
+    const typeHint = doc.document_type
+      ? `\nThe system has pre-classified this document as "${doc.document_type}" based on upload context. Use this as a strong hint when classifying.`
+      : "";
+
     // Call AI to extract data
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -170,14 +177,24 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a financial document extraction AI. Extract accounting data from uploaded invoices, receipts, and credit notes. Always return structured data using the provided tool.`,
+            content: `You are a precise financial document extraction AI. Your job is to extract every accounting field visible on invoices, receipts, and credit notes with maximum accuracy.
+
+Key rules:
+- Extract EVERY numeric amount visible: net/subtotal, VAT/tax, and gross/total. Numbers may use commas as thousand separators (e.g. 1,234.56) — always return as plain decimals.
+- supplier_name = the company or person ISSUING the document (selling / billing party).
+- customer_name = the company or person RECEIVING / being billed (buyer).
+- For a sales invoice the customer is the buyer; for an expense invoice the supplier is the seller.
+- Extract the currency from the symbol or code on the document (€=EUR, $=USD, £=GBP, etc.).
+- Extract invoice_date and due_date in YYYY-MM-DD format. If only a year/month is shown, default day to 01.
+- Extract the VAT/tax registration number (vat_number) if present — often labelled VAT No, TVA, MwSt-Nr, CIF, NIF, SIRET, etc.
+- Always use the provided tool to return structured data.`,
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Extract all accounting fields from this financial document. Identify the document type (expense_invoice, sales_invoice, receipt, or credit_note), supplier/customer info, invoice details, dates, amounts, VAT, and category.${categoryHint}`,
+                text: `Extract all accounting fields from this financial document. Classify as expense_invoice, sales_invoice, receipt, or credit_note. Extract supplier name, customer name, invoice number, dates, all amounts (net, VAT, total), currency, VAT number, and category.${typeHint}${categoryHint}`,
               },
               {
                 type: "image_url",
@@ -263,13 +280,33 @@ serve(async (req) => {
 
     const extracted = JSON.parse(toolCall.function.arguments);
 
+    // Normalise amounts — the AI occasionally returns strings like "1,234.56"
+    const parseAmount = (v: unknown): number => {
+      if (typeof v === "number") return v;
+      if (typeof v === "string") {
+        // Remove thousand separators but keep decimal point
+        const cleaned = v.replace(/,(?=\d{3})/g, "").replace(/[^\d.]/g, "");
+        const n = parseFloat(cleaned);
+        return isNaN(n) ? 0 : n;
+      }
+      return 0;
+    };
+    extracted.net_amount   = parseAmount(extracted.net_amount);
+    extracted.vat_amount   = parseAmount(extracted.vat_amount);
+    extracted.total_amount = parseAmount(extracted.total_amount);
+
+    // If only total is present, derive net/vat sensibly
+    if (extracted.total_amount > 0 && extracted.net_amount === 0 && extracted.vat_amount === 0) {
+      extracted.net_amount = extracted.total_amount;
+    }
+
     // Validate extracted data
     const validationErrors: { field: string; message: string }[] = [];
 
-    if (extracted.net_amount && extracted.vat_amount && extracted.total_amount) {
+    if (extracted.net_amount > 0 && extracted.vat_amount >= 0 && extracted.total_amount > 0) {
       const expectedTotal = Number((extracted.net_amount + extracted.vat_amount).toFixed(2));
       const actualTotal = Number(extracted.total_amount.toFixed(2));
-      if (Math.abs(expectedTotal - actualTotal) > 0.02) {
+      if (Math.abs(expectedTotal - actualTotal) > 0.05) {
         validationErrors.push({
           field: "total_amount",
           message: `Net (${extracted.net_amount}) + VAT (${extracted.vat_amount}) = ${expectedTotal}, but total is ${actualTotal}`,
@@ -281,10 +318,20 @@ serve(async (req) => {
       validationErrors.push({ field: "invoice_date", message: "Invalid date format" });
     }
 
-    const validCurrencies = ["EUR", "USD", "GBP", "CHF", "SEK", "NOK", "DKK", "PLN", "CZK", "HUF", "RON", "BGN", "HRK", "CAD", "AUD", "JPY", "CNY", "BRL"];
-    if (extracted.currency && !validCurrencies.includes(extracted.currency)) {
+    // Broad list — flag truly unknown codes only, don't block common world currencies
+    const validCurrencies = [
+      "EUR","USD","GBP","CHF","SEK","NOK","DKK","PLN","CZK","HUF","RON","BGN","HRK","RSD",
+      "CAD","AUD","NZD","JPY","CNY","HKD","SGD","TWD","KRW","INR","IDR","MYR","THB","PHP","VND",
+      "BRL","MXN","ARS","CLP","COP","PEN",
+      "ZAR","NGN","KES","EGP","MAD","TND","GHS",
+      "AED","SAR","QAR","KWD","BHD","OMR","JOD","ILS","TRY",
+      "RUB","UAH","KZT","GEL",
+    ];
+    if (extracted.currency && !validCurrencies.includes(extracted.currency.toUpperCase())) {
       validationErrors.push({ field: "currency", message: `Unrecognized currency: ${extracted.currency}` });
     }
+    // Normalise currency to uppercase
+    if (extracted.currency) extracted.currency = extracted.currency.toUpperCase();
 
     // Check for duplicate documents
     let potentialDuplicateOf: string | null = null;
@@ -423,7 +470,11 @@ serve(async (req) => {
     const { error: updateErr } = await supabase
       .from("documents")
       .update({
-        document_type: extracted.document_type || "expense_invoice",
+        // Preserve the document's original type when the upload route set it explicitly
+        // (e.g. income page sets "sales_invoice"). Only override if AI is confident.
+        document_type: skipRecordCreation
+          ? (doc.document_type || extracted.document_type || "expense_invoice")
+          : (extracted.document_type || doc.document_type || "expense_invoice"),
         supplier_name: extracted.supplier_name || null,
         customer_name: extracted.customer_name || null,
         invoice_number: extracted.invoice_number || null,
