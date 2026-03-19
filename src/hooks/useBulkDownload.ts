@@ -2,6 +2,7 @@ import { useState } from "react";
 import JSZip from "jszip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { triggerBlobDownload } from "@/lib/download-utils";
 
 export function useBulkDownload() {
   const [downloading, setDownloading] = useState(false);
@@ -11,7 +12,6 @@ export function useBulkDownload() {
     setDownloading(true);
 
     try {
-      // Fetch document file paths
       const { data: docs, error } = await supabase
         .from("documents")
         .select("id, file_name, file_path, file_type")
@@ -43,7 +43,6 @@ export function useBulkDownload() {
             : doc.file_type?.startsWith("image/") ? ".jpg"
             : "";
 
-          // Deduplicate filenames
           let name = doc.file_name || `document-${doc.id}${ext}`;
           if (zip.file(name)) {
             name = `${doc.id.slice(0, 8)}-${name}`;
@@ -63,18 +62,7 @@ export function useBulkDownload() {
       }
 
       const content = await zip.generateAsync({ type: "blob" });
-      const url = URL.createObjectURL(content);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${zipName}.zip`;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      // Delay cleanup so the browser has time to initiate the download
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 3000);
+      triggerBlobDownload(content, `${zipName}.zip`);
 
       if (failed > 0) {
         toast.warning(`Downloaded ${added} files, ${failed} could not be retrieved`);
