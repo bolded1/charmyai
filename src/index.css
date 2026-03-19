@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* ═══════════════════════════════════════════
-       WARM TERRACOTTA LIGHT THEME
+       EMERALD GREEN LIGHT THEME
     ═══════════════════════════════════════════ */
 
     --background:      0 0% 97%;
@@ -27,13 +27,13 @@
     --muted-foreground:   0 5% 44%;
     --text-on-primary:    0 0% 100%;
 
-    --primary:            351 63% 37%;
+    --primary:            152 63% 32%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover:      352 63% 29%;
-    --brand-soft:         351 60% 95%;
-    --brand-border:       351 40% 80%;
-    --primary-icon:       6 63% 46%;
-    --ring:               351 63% 37%;
+    --primary-hover:      152 63% 25%;
+    --brand-soft:         152 50% 95%;
+    --brand-border:       152 35% 78%;
+    --primary-icon:       140 55% 42%;
+    --ring:               152 63% 32%;
 
     /* Colorful accent palette */
     --violet:         17 69% 60%;
@@ -55,8 +55,8 @@
     --accent:               0 0% 93%;
     --accent-foreground:    0 0% 11%;
 
-    --primary-button:       350 69% 32%;
-    --primary-button-hover: 350 69% 26%;
+    --primary-button:       152 69% 28%;
+    --primary-button-hover: 152 69% 22%;
 
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -72,15 +72,15 @@
     --warning-soft:  38 80% 95%;
     --danger:        0 72% 51%;
     --danger-soft:   0 60% 96%;
-    --info:          351 63% 37%;
-    --info-soft:     351 60% 95%;
+    --info:          152 63% 32%;
+    --info-soft:     152 50% 95%;
 
     --input-bg:         0 0% 100%;
-    --input-focus:      351 63% 37%;
+    --input-focus:      152 63% 32%;
     --table-row-hover:  0 0% 97%;
-    --link-color:       351 63% 37%;
+    --link-color:       152 63% 32%;
 
-    --chart-1:          351 63% 37%;
+    --chart-1:          152 63% 32%;
     --chart-2:          262 83% 58%;
     --chart-3:          350 75% 55%;
     --chart-4:          188 100% 28%;
@@ -88,21 +88,21 @@
 
     --sidebar-background:         0 0% 100%;
     --sidebar-foreground:         0 5% 42%;
-    --sidebar-primary:            351 63% 37%;
+    --sidebar-primary:            152 63% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             28 30% 94%;
+    --sidebar-accent:             152 20% 94%;
     --sidebar-accent-foreground:  0 0% 11%;
     --sidebar-border:             20 10% 91%;
-    --sidebar-ring:               351 63% 37%;
-    --sidebar-active-bg:          351 63% 95%;
-    --sidebar-active-text:        351 63% 29%;
+    --sidebar-ring:               152 63% 32%;
+    --sidebar-active-bg:          152 50% 95%;
+    --sidebar-active-text:        152 63% 25%;
     --sidebar-muted:              0 5% 52%;
 
     --radius: 0.5rem;
-    --hero-gradient: linear-gradient(135deg, hsl(351, 63%, 37%), hsl(6, 63%, 46%));
-    --gradient-warm: linear-gradient(135deg, hsl(351, 63%, 37%), hsl(17, 69%, 60%));
-    --gradient-cool: linear-gradient(135deg, hsl(172, 66%, 40%), hsl(351, 63%, 37%));
-    --gradient-sunset: linear-gradient(135deg, hsl(6, 63%, 46%), hsl(17, 69%, 60%));
+    --hero-gradient: linear-gradient(135deg, hsl(152, 63%, 32%), hsl(140, 55%, 42%));
+    --gradient-warm: linear-gradient(135deg, hsl(152, 63%, 32%), hsl(170, 50%, 45%));
+    --gradient-cool: linear-gradient(135deg, hsl(188, 100%, 28%), hsl(152, 63%, 32%));
+    --gradient-sunset: linear-gradient(135deg, hsl(140, 55%, 42%), hsl(170, 50%, 45%));
 
     /* Rich shadows — layered depth system */
     --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
@@ -110,7 +110,7 @@
     --shadow-md: 0 1px 2px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.08);
     --shadow-lg: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.12);
     --shadow-overlay: 0 1px 2px rgba(0,0,0,0.05), 0 20px 50px rgba(0,0,0,0.15);
-    --shadow-glow: 0 0 24px -6px hsl(351 63% 37% / 0.2);
+    --shadow-glow: 0 0 24px -6px hsl(152 63% 32% / 0.2);
     --shadow-card: 0 1px 2px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.08);
     --shadow-card-hover: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.12);
   }
@@ -121,16 +121,16 @@
   ═══════════════════════════════════════════ */
 
   .marketing {
-    --primary:            351 63% 37%;
+    --primary:            152 63% 32%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover:      352 63% 29%;
-    --brand-soft:         351 60% 95%;
-    --brand-border:       351 40% 80%;
-    --primary-icon:       6 63% 46%;
-    --ring:               351 63% 37%;
-    --hero-gradient: linear-gradient(135deg, hsl(351, 63%, 37%), hsl(6, 63%, 46%));
-    --link-color:         351 63% 37%;
-    --input-focus:        351 63% 37%;
+    --primary-hover:      152 63% 25%;
+    --brand-soft:         152 50% 95%;
+    --brand-border:       152 35% 78%;
+    --primary-icon:       140 55% 42%;
+    --ring:               152 63% 32%;
+    --hero-gradient: linear-gradient(135deg, hsl(152, 63%, 32%), hsl(140, 55%, 42%));
+    --link-color:         152 63% 32%;
+    --input-focus:        152 63% 32%;
   }
 }
 
@@ -280,7 +280,7 @@
   .shadow-glow { box-shadow: var(--shadow-glow); }
 
   /* Colorful icon backgrounds */
-  .icon-bg-blue { background: linear-gradient(135deg, hsl(351 63% 37% / 0.12), hsl(351 63% 37% / 0.04)); }
+  .icon-bg-blue { background: linear-gradient(135deg, hsl(152 63% 32% / 0.12), hsl(152 63% 32% / 0.04)); }
   .icon-bg-violet { background: linear-gradient(135deg, hsl(var(--violet) / 0.12), hsl(var(--violet) / 0.04)); }
   .icon-bg-teal { background: linear-gradient(135deg, hsl(var(--teal) / 0.12), hsl(var(--teal) / 0.04)); }
   .icon-bg-amber { background: linear-gradient(135deg, hsl(var(--amber) / 0.12), hsl(var(--amber) / 0.04)); }
@@ -295,15 +295,15 @@
 
   /* Gradient stat cards */
   .stat-card-blue {
-    background: linear-gradient(135deg, hsl(351 63% 37% / 0.06), hsl(6 63% 46% / 0.03));
-    border: 1px solid hsl(351 63% 37% / 0.1);
+    background: linear-gradient(135deg, hsl(152 63% 32% / 0.06), hsl(140 55% 42% / 0.03));
+    border: 1px solid hsl(152 63% 32% / 0.1);
   }
   .stat-card-emerald {
     background: linear-gradient(135deg, hsl(152 60% 38% / 0.06), hsl(172 66% 40% / 0.03));
     border: 1px solid hsl(152 60% 38% / 0.1);
   }
   .stat-card-violet {
-    background: linear-gradient(135deg, hsl(17 69% 60% / 0.06), hsl(351 63% 37% / 0.03));
+    background: linear-gradient(135deg, hsl(17 69% 60% / 0.06), hsl(152 63% 32% / 0.03));
     border: 1px solid hsl(17 69% 60% / 0.1);
   }
   .stat-card-amber {

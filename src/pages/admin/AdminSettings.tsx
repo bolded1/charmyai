@@ -398,7 +398,7 @@ export default function AdminSettingsPage() {
   // PWA Settings (DB-backed)
   const [pwaName, setPwaName, pnmSaving] = useDbAutoSave("pwa-name", "Charmy - AI Financial Document Processing");
   const [pwaShortName, setPwaShortName, psnSaving] = useDbAutoSave("pwa-short-name", "Charmy");
-  const [pwaThemeColor, setPwaThemeColor, ptcSaving] = useDbAutoSave("pwa-theme-color", "#9B2335");
+  const [pwaThemeColor, setPwaThemeColor, ptcSaving] = useDbAutoSave("pwa-theme-color", "#1E8555");
   const [pwaBgColor, setPwaBgColor, pbcSaving] = useDbAutoSave("pwa-bg-color", "#f5f6fa");
 
   const systemQueryClient = useQueryClient();
@@ -519,7 +519,7 @@ export default function AdminSettingsPage() {
                         onChange={(e) => setPwaThemeColor(e.target.value)}
                         className="h-9 w-12 rounded border cursor-pointer"
                       />
-                      <Input value={pwaThemeColor} onChange={(e) => setPwaThemeColor(e.target.value)} className="flex-1" placeholder="#9B2335" />
+                      <Input value={pwaThemeColor} onChange={(e) => setPwaThemeColor(e.target.value)} className="flex-1" placeholder="#1E8555" />
                     </div>
                     <p className="text-xs text-muted-foreground">Status bar & window chrome color</p>
                   </div>

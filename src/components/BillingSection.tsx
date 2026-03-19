@@ -449,7 +449,7 @@ function FirmUpgradeCard() {
           appearance: {
             theme: "stripe",
             variables: {
-              colorPrimary: "#9B2335",
+              colorPrimary: "#1E8555",
               borderRadius: "12px",
               fontFamily: "system-ui, sans-serif",
             },

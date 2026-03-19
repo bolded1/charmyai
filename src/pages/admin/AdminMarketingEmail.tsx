@@ -105,7 +105,7 @@ export default function AdminMarketingEmail() {
     .content h1 { font-size: 22px; font-weight: 700; margin: 0 0 16px; color: #09090b; }
     .content h2 { font-size: 18px; font-weight: 600; margin: 16px 0 12px; color: #09090b; }
     .content p { margin: 0 0 12px; }
-    .content a { color: #9B2335; }
+    .content a { color: #1E8555; }
     .content img { max-width: 100%; height: auto; border-radius: 8px; margin: 12px 0; }
     .content ul, .content ol { margin: 0 0 12px; padding-left: 24px; }
     .footer { text-align: center; padding: 24px 0 0; font-size: 12px; color: #a1a1aa; }

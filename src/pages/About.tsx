@@ -32,7 +32,7 @@ export default function AboutPage() {
   return (
     <div>
       <section className="relative py-24 md:py-32 overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.6), transparent 70%)' }} />
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.6), transparent 70%)' }} />
         <div className="absolute bottom-[-15%] right-[-5%] w-[400px] h-[400px] rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.4), transparent 70%)' }} />
         <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-[40%] right-[15%] w-[250px] h-[250px] rounded-full blur-3xl pointer-events-none"

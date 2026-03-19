@@ -24,7 +24,7 @@ export default function DemoPage() {
   return (
     <div>
       <section className="pt-24 md:pt-28 pb-4 relative overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(351 63% 37% / 0.5), transparent 70%)' }} />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.5), transparent 70%)' }} />
         <div className="absolute top-[10%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-10 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.5), transparent 70%)' }} />
         <motion.div animate={{ scale: [1, 1.1, 1], opacity: [0.06, 0.12, 0.06] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[900px] h-[400px] rounded-full blur-3xl pointer-events-none"
