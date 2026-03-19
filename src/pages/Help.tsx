@@ -416,7 +416,7 @@ export default function Help() {
   const newCount = helpArticles.filter((a) => a.isNew).length;
 
   return (
-    <div className="pt-16 px-4 pb-4 md:p-8 max-w-4xl mx-auto space-y-8">
+    <div className="pt-24 px-4 pb-4 md:pt-24 md:px-8 md:pb-4 max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
