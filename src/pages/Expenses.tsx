@@ -56,7 +56,8 @@ export default function ExpensesPage() {
   const { data: org } = useOrganization();
   const defaultCurrency = org?.default_currency || "EUR";
   const isOnline = useOnlineStatus();
-  const [visibleCount, setVisibleCount] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(30);
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
@@ -182,7 +183,9 @@ export default function ExpensesPage() {
   };
 
   const displayFiltered = sortField ? sortedFiltered : filtered;
-  const paginatedFiltered = useMemo(() => displayFiltered.slice(0, visibleCount), [displayFiltered, visibleCount]);
+  const totalPages = Math.max(1, Math.ceil(displayFiltered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedFiltered = useMemo(() => displayFiltered.slice((safePage - 1) * pageSize, safePage * pageSize), [displayFiltered, safePage, pageSize]);
 
   const groupedByMonth = useMemo(() => {
     const groups: { key: string; label: string; records: typeof filtered; currencyTotals: ReturnType<typeof groupByCurrency> }[] = [];
@@ -222,7 +225,7 @@ export default function ExpensesPage() {
     });
 
     return groups;
-  }, [displayFiltered, defaultCurrency, sortField, visibleCount]);
+  }, [paginatedFiltered, defaultCurrency, sortField]);
 
   const currencySummary = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
@@ -242,9 +245,18 @@ export default function ExpensesPage() {
   }, [filtered, defaultCurrency]);
 
 
-  // Reset pagination when any filter changes
+  // Reset page when any filter changes
   const prevFilterKey = `${search}|${currencyFilter}|${categoryFilter}|${datePreset}|${dateFrom}|${dateTo}`;
-  useEffect(() => { setVisibleCount(50); }, [prevFilterKey]);
+  useEffect(() => { setCurrentPage(1); }, [prevFilterKey]);
+
+  const toggleMonthSelect = (groupRecordIds: string[]) => {
+    const allSelected = groupRecordIds.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      groupRecordIds.forEach((id) => { if (allSelected) next.delete(id); else next.add(id); });
+      return next;
+    });
+  };
 
   const clearDateFilter = () => { setDatePreset("all"); setDateFrom(undefined); setDateTo(undefined); };
 
@@ -393,7 +405,14 @@ export default function ExpensesPage() {
               {groupedByMonth.map((group) => (
                 <div key={group.key}>
                   <div className="flex items-center justify-between px-3 py-2 bg-muted/50 sticky top-0 z-10">
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">{group.label}</span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={group.records.every((r) => selectedIds.has(r.id))}
+                        onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
+                        className="shrink-0"
+                      />
+                      <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">{group.label}</span>
+                    </div>
                     <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
                       {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
@@ -480,7 +499,13 @@ export default function ExpensesPage() {
                       <tr className="bg-accent/30">
                         <td colSpan={10} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-foreground">{group.label}</span>
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={group.records.every((r) => selectedIds.has(r.id))}
+                                onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
+                              />
+                              <span className="text-xs font-bold text-foreground">{group.label}</span>
+                            </div>
                             <span className="text-xs font-semibold tabular-nums text-muted-foreground">
                               {group.records.length} records · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                             </span>
@@ -543,12 +568,38 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Load more */}
-      {filtered.length > visibleCount && (
-        <div className="flex justify-center">
-          <Button variant="outline" size="sm" onClick={() => setVisibleCount((c) => c + 50)}>
-            Show more ({filtered.length - visibleCount} remaining)
-          </Button>
+      {/* Pagination */}
+      {filtered.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Showing {Math.min((safePage - 1) * pageSize + 1, filtered.length)}–{Math.min(safePage * pageSize, filtered.length)} of {filtered.length}</span>
+            <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(1); }}>
+              <SelectTrigger className="h-8 w-[70px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 20, 30, 50, 100].map((s) => (
+                  <SelectItem key={s} value={String(s)}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span className="text-xs">per page</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage <= 1} onClick={() => setCurrentPage(1)}>
+              «
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage <= 1} onClick={() => setCurrentPage((p) => p - 1)}>
+              ‹
+            </Button>
+            <span className="text-sm px-2 tabular-nums">{safePage} / {totalPages}</span>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}>
+              ›
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage >= totalPages} onClick={() => setCurrentPage(totalPages)}>
+              »
+            </Button>
+          </div>
         </div>
       )}
 
