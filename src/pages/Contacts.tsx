@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Building2, Users, Search, ArrowUpRight, ArrowDownLeft,
   ChevronRight, X, Hash, Calendar,
-  Banknote, ArrowLeft, UserPlus, Pencil, ExternalLink, Loader2,
+  Banknote, ArrowLeft, UserPlus, Pencil,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useExpenseRecords, useIncomeRecords, useContacts, type ContactRecord } from "@/hooks/useDocuments";
 import { AddContactDialog } from "@/components/AddContactDialog";
 import { EditExpenseDialog } from "@/components/EditExpenseDialog";
 import { EditIncomeDialog } from "@/components/EditIncomeDialog";
-import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 
@@ -269,19 +269,12 @@ function ContactRow({ contact, onClick, i }: { contact: DerivedContact; onClick:
 
 // ─── Invoice Row ──────────────────────────────────────────────────────────────
 
-function InvoiceRow({
-  r,
-  onEdit,
-  onOpen,
-  openingDoc,
-}: {
-  r: any;
-  onEdit: (r: any) => void;
-  onOpen: (r: any) => void;
-  openingDoc: string | null;
-}) {
+function InvoiceRow({ r, onEdit }: { r: any; onEdit: (r: any) => void }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
+    <div
+      className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer"
+      onClick={() => onEdit(r)}
+    >
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-foreground truncate">
           {r.invoice_number ?? "No number"}
@@ -299,29 +292,13 @@ function InvoiceRow({
           <p className="text-[10px] text-muted-foreground">Due {format(parseISO(r.due_date), "dd MMM")}</p>
         )}
       </div>
-      {/* Action buttons */}
-      <div className="flex items-center gap-0.5 shrink-0">
-        {r.document_id && (
-          <button
-            className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            onClick={(e) => { e.stopPropagation(); onOpen(r); }}
-            title="Open document"
-            disabled={openingDoc === r.id}
-          >
-            {openingDoc === r.id
-              ? <Loader2 className="h-3 w-3 animate-spin" />
-              : <ExternalLink className="h-3 w-3" />
-            }
-          </button>
-        )}
-        <button
-          className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          onClick={(e) => { e.stopPropagation(); onEdit(r); }}
-          title="Edit invoice"
-        >
-          <Pencil className="h-3 w-3" />
-        </button>
-      </div>
+      <button
+        className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+        onClick={(e) => { e.stopPropagation(); onEdit(r); }}
+        title="Edit invoice"
+      >
+        <Pencil className="h-3 w-3" />
+      </button>
     </div>
   );
 }
@@ -332,7 +309,6 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
   const primaryCurrency = contact.currencies[0] ?? "EUR";
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
   const [editingIncome, setEditingIncome] = useState<any | null>(null);
-  const [openingDoc, setOpeningDoc] = useState<string | null>(null);
 
   const sortedExpenses = [...contact.expenseInvoices].sort((a, b) =>
     (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
@@ -340,29 +316,6 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
   const sortedIncome = [...contact.incomeInvoices].sort((a, b) =>
     (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
   );
-
-  const openDocument = async (r: any) => {
-    if (!r.document_id) return;
-    setOpeningDoc(r.id);
-    try {
-      const { data: doc } = await supabase
-        .from("documents")
-        .select("file_path, file_type")
-        .eq("id", r.document_id)
-        .single();
-      if (!doc?.file_path) return;
-
-      const { data: fileBlob } = await supabase.storage.from("documents").download(doc.file_path);
-      if (!fileBlob) return;
-
-      const typedBlob = new Blob([fileBlob], { type: doc.file_type || fileBlob.type || "application/octet-stream" });
-      const url = URL.createObjectURL(typedBlob);
-      window.open(url, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } finally {
-      setOpeningDoc(null);
-    }
-  };
 
   return (
     <motion.div
@@ -468,8 +421,6 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
                   key={r.id}
                   r={r}
                   onEdit={() => setEditingExpense(r)}
-                  onOpen={openDocument}
-                  openingDoc={openingDoc}
                 />
               ))}
             </div>
@@ -484,8 +435,6 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
                   key={r.id}
                   r={r}
                   onEdit={() => setEditingIncome(r)}
-                  onOpen={openDocument}
-                  openingDoc={openingDoc}
                 />
               ))}
             </div>
@@ -585,9 +534,7 @@ export default function Contacts() {
           </Button>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left column — list */}
-          <div className="flex-1 min-w-0 space-y-4">
+        <div className="space-y-4">
             {/* Search + filters */}
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -702,44 +649,16 @@ export default function Contacts() {
                 </div>
               </Card>
             )}
-          </div>
-
-          {/* Right column — detail panel (desktop) */}
-          <AnimatePresence>
-            {selected && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 360 }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="hidden lg:block shrink-0 overflow-hidden"
-              >
-                <div style={{ width: 360 }}>
-                  <Card className="h-full">
-                    <CardContent className="p-5 h-full">
-                      <ContactDetail contact={selected} onClose={() => setSelectedId(null)} />
-                    </CardContent>
-                  </Card>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
-        {/* Mobile detail — full-screen overlay */}
-        <AnimatePresence>
-          {selected && (
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="lg:hidden fixed inset-0 z-50 bg-background p-4 pt-6 overflow-auto"
-            >
+        {/* Contact detail popup */}
+        <Dialog open={!!selectedId} onOpenChange={(o) => { if (!o) setSelectedId(null); }}>
+          <DialogContent className="max-w-lg w-full max-h-[85vh] overflow-y-auto">
+            {selected && (
               <ContactDetail contact={selected} onClose={() => setSelectedId(null)} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );
