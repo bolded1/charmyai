@@ -40,6 +40,7 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
   const [loadingFile, setLoadingFile] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const initialDataRef = useRef<string>("");
 
   const updateExpense = useUpdateExpense();
