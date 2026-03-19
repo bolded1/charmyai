@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { FileText, Search, Filter, Loader2, AlertTriangle, CheckCircle2, Mail, Copy, Trash2, CheckCheck, X, CalendarDays, StickyNote, CalendarIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useMemo } from "react";
-import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, type DocumentRecord } from "@/hooks/useDocuments";
+import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, useRetryExtraction, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,6 +46,7 @@ export default function DocumentsPage() {
   const approveDoc = useApproveDocument();
   const bulkApprove = useBulkApproveDocuments();
   const bulkDelete = useBulkDeleteDocuments();
+  const retryExtraction = useRetryExtraction();
 
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -731,6 +732,20 @@ export default function DocumentsPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
+                {(!selected.extracted_data || selected.status === "needs_review") && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      await retryExtraction.mutateAsync(selected.id);
+                      setSelected(null);
+                    }}
+                    disabled={retryExtraction.isPending}
+                  >
+                    {retryExtraction.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                    Re-extract
+                  </Button>
+                )}
                 <Button size="sm" variant="outline" className="flex-1" onClick={handleSave} disabled={updateDoc.isPending}>
                   {updateDoc.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
                   Save Changes
