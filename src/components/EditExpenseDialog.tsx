@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
   const [loadingFile, setLoadingFile] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const initialDataRef = useRef<string>("");
 
   const updateExpense = useUpdateExpense();
@@ -208,7 +210,7 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
                         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                       </div>
                     ) : fileUrl && isImage ? (
-                      <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain" />
+                      <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain cursor-zoom-in hover:opacity-90 transition-opacity" onClick={() => setLightboxOpen(true)} />
                     ) : fileUrl && isPdf ? (
                       <object data={fileUrl} type="application/pdf" className="w-full h-[360px]">
                         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
@@ -348,6 +350,7 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {fileUrl && isImage && <ImageLightbox open={lightboxOpen} onOpenChange={setLightboxOpen} src={fileUrl} />}
     </>
   );
 }

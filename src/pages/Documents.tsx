@@ -12,6 +12,7 @@ import { triggerBlobDownload } from "@/lib/download-utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { useDocuments, useUpdateDocument, useApproveDocument, useBulkApproveDocuments, useBulkDeleteDocuments, useRetryExtraction, type DocumentRecord } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +44,7 @@ export default function DocumentsPage() {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -672,7 +674,7 @@ export default function DocumentsPage() {
                       <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                     </div>
                   ) : fileUrl && isImage ? (
-                    <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain" />
+                    <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain cursor-zoom-in hover:opacity-90 transition-opacity" onClick={() => setLightboxOpen(true)} />
                   ) : fileUrl && isPdf ? (
                     <object data={fileUrl} type="application/pdf" className="w-full h-[360px]">
                       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
@@ -878,6 +880,7 @@ export default function DocumentsPage() {
           )}
         </DialogContent>
       </Dialog>
+      {fileUrl && isImage && <ImageLightbox open={lightboxOpen} onOpenChange={setLightboxOpen} src={fileUrl} />}
     </div>
   );
 }
