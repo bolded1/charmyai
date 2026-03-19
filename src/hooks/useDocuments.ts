@@ -806,3 +806,187 @@ export async function getDocumentSignedUrl(filePath: string): Promise<string | n
   if (error) return null;
   return data.signedUrl;
 }
+
+// ─── Contacts ─────────────────────────────────────────────────────────────────
+
+export interface ContactRecord {
+  id: string;
+  user_id: string;
+  organization_id: string | null;
+  name: string;
+  type: "supplier" | "customer" | "both";
+  vat_number: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface CreateContactInput {
+  name: string;
+  type: "supplier" | "customer" | "both";
+  vat_number?: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+}
+
+export function useContacts() {
+  const { impersonatedUserId } = useImpersonation();
+
+  return useQuery<ContactRecord[]>({
+    queryKey: ["contacts"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const effectiveUserId = impersonatedUserId || user?.id;
+      if (!effectiveUserId) return [];
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", effectiveUserId)
+        .maybeSingle();
+
+      let query = supabase
+        .from("contacts")
+        .select("*")
+        .eq("user_id", effectiveUserId)
+        .order("name", { ascending: true });
+
+      if (profile?.active_organization_id) {
+        query = supabase
+          .from("contacts")
+          .select("*")
+          .or(`user_id.eq.${effectiveUserId},organization_id.eq.${profile.active_organization_id}`)
+          .order("name", { ascending: true });
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as ContactRecord[];
+    },
+  });
+}
+
+export function useCreateContact() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateContactInput) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const { data, error } = await supabase.from("contacts").insert({
+        user_id: user.id,
+        organization_id: profile?.active_organization_id || null,
+        name: input.name.trim(),
+        type: input.type,
+        vat_number: input.vat_number?.trim() || null,
+        email: input.email?.trim() || null,
+        phone: input.phone?.trim() || null,
+        notes: input.notes?.trim() || null,
+      }).select().single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      toast.success("Contact added");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+// ─── Manual Income ─────────────────────────────────────────────────────────────
+
+export interface CreateManualIncomeInput {
+  customer_name: string;
+  invoice_number?: string;
+  invoice_date: string;
+  due_date?: string;
+  currency: string;
+  net_amount: number;
+  vat_amount: number;
+  total_amount: number;
+  category?: string;
+  vat_number?: string;
+  notes?: string;
+  receipt_file?: File;
+}
+
+export function useCreateManualIncome() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateManualIncomeInput) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // Optional receipt file upload
+      let documentId: string | null = null;
+      if (input.receipt_file) {
+        const file = input.receipt_file;
+        const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, file);
+        if (!uploadError) {
+          const { data: doc } = await supabase.from("documents").insert({
+            user_id: user.id,
+            organization_id: profile?.active_organization_id || null,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type,
+            file_size: file.size,
+            status: "approved",
+            document_type: "sales_invoice",
+            customer_name: input.customer_name,
+            invoice_date: input.invoice_date,
+            currency: input.currency,
+            total_amount: input.total_amount,
+          }).select().single();
+          if (doc) documentId = doc.id;
+        }
+      }
+
+      const { data, error } = await supabase.from("income_records").insert({
+        user_id: user.id,
+        organization_id: profile?.active_organization_id || null,
+        document_id: documentId,
+        customer_name: input.customer_name,
+        invoice_number: input.invoice_number || null,
+        invoice_date: input.invoice_date,
+        due_date: input.due_date || null,
+        currency: input.currency,
+        net_amount: input.net_amount,
+        vat_amount: input.vat_amount,
+        total_amount: input.total_amount,
+        vat_number: input.vat_number || null,
+        category: input.category || null,
+        notes: input.notes || null,
+      }).select().single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["income"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success("Income record added");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

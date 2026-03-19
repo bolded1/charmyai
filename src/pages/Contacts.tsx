@@ -3,32 +3,42 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2, Users, Search, ArrowUpRight, ArrowDownLeft,
   Receipt, TrendingUp, ChevronRight, X, Hash, Calendar,
-  Banknote, ArrowLeft,
+  Banknote, ArrowLeft, UserPlus,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useExpenseRecords, useIncomeRecords } from "@/hooks/useDocuments";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useExpenseRecords, useIncomeRecords, useContacts, type ContactRecord } from "@/hooks/useDocuments";
+import { AddContactDialog } from "@/components/AddContactDialog";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ContactType = "all" | "supplier" | "customer";
+type ContactType = "all" | "supplier" | "customer" | "both";
 
 interface DerivedContact {
-  id: string;                   // slugified name
+  id: string;
   name: string;
-  type: "supplier" | "customer";
+  type: "supplier" | "customer" | "both";
+  isManual: boolean;
   vatNumber: string | null;
+  email: string | null;
+  phone: string | null;
+  // Unified totals
   totalAmount: number;
+  expenseTotal: number;
+  incomeTotal: number;
   invoiceCount: number;
   currencies: string[];
-  lastDate: string | null;      // ISO date of most recent invoice
+  lastDate: string | null;
   categories: string[];
-  invoices: any[];              // raw records
+  // Split invoice arrays for tabbed detail
+  expenseInvoices: any[];
+  incomeInvoices: any[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -38,71 +48,121 @@ function slug(name: string) {
 }
 
 function fmt(n: number, currency: string) {
-  return n.toLocaleString(undefined, { style: "currency", currency, minimumFractionDigits: 2 });
+  try {
+    return n.toLocaleString(undefined, { style: "currency", currency, minimumFractionDigits: 2 });
+  } catch {
+    return `${currency} ${n.toFixed(2)}`;
+  }
 }
 
 function deriveContacts(
   expenses: any[],
   income: any[],
+  manualContacts: ContactRecord[],
 ): DerivedContact[] {
   const map = new Map<string, DerivedContact>();
 
-  // Suppliers from expense_records
+  // 1. Seed with manual contacts first (preserve their data as baseline)
+  for (const c of manualContacts) {
+    const key = `contact::${c.name.toLowerCase()}`;
+    map.set(key, {
+      id: `manual-${slug(c.name)}`,
+      name: c.name,
+      type: c.type,
+      isManual: true,
+      vatNumber: c.vat_number,
+      email: c.email,
+      phone: c.phone,
+      totalAmount: 0,
+      expenseTotal: 0,
+      incomeTotal: 0,
+      invoiceCount: 0,
+      currencies: [],
+      lastDate: null,
+      categories: [],
+      expenseInvoices: [],
+      incomeInvoices: [],
+    });
+  }
+
+  // 2. Merge expense_records (suppliers)
   for (const r of expenses) {
     const name = (r.supplier_name ?? "").trim();
     if (!name) continue;
-    const key = `supplier::${name.toLowerCase()}`;
+    const key = `contact::${name.toLowerCase()}`;
     const existing = map.get(key);
     if (existing) {
+      existing.isManual = false; // has real invoices
+      existing.expenseTotal += r.total_amount ?? 0;
       existing.totalAmount += r.total_amount ?? 0;
       existing.invoiceCount += 1;
       if (!existing.currencies.includes(r.currency)) existing.currencies.push(r.currency);
       if (r.invoice_date && (!existing.lastDate || r.invoice_date > existing.lastDate)) existing.lastDate = r.invoice_date;
       if (r.category && !existing.categories.includes(r.category)) existing.categories.push(r.category);
       if (!existing.vatNumber && r.vat_number) existing.vatNumber = r.vat_number;
-      existing.invoices.push(r);
+      existing.expenseInvoices.push(r);
+      // Upgrade type
+      if (existing.type === "customer") existing.type = "both";
+      else if (existing.type !== "both") existing.type = "supplier";
     } else {
       map.set(key, {
         id: `sup-${slug(name)}`,
         name,
         type: "supplier",
+        isManual: false,
         vatNumber: r.vat_number ?? null,
+        email: null,
+        phone: null,
         totalAmount: r.total_amount ?? 0,
+        expenseTotal: r.total_amount ?? 0,
+        incomeTotal: 0,
         invoiceCount: 1,
         currencies: r.currency ? [r.currency] : [],
         lastDate: r.invoice_date ?? null,
         categories: r.category ? [r.category] : [],
-        invoices: [r],
+        expenseInvoices: [r],
+        incomeInvoices: [],
       });
     }
   }
 
-  // Customers from income_records
+  // 3. Merge income_records (customers)
   for (const r of income) {
     const name = (r.customer_name ?? "").trim();
     if (!name) continue;
-    const key = `customer::${name.toLowerCase()}`;
+    const key = `contact::${name.toLowerCase()}`;
     const existing = map.get(key);
     if (existing) {
+      existing.isManual = false; // has real invoices
+      existing.incomeTotal += r.total_amount ?? 0;
       existing.totalAmount += r.total_amount ?? 0;
       existing.invoiceCount += 1;
       if (!existing.currencies.includes(r.currency)) existing.currencies.push(r.currency);
       if (r.invoice_date && (!existing.lastDate || r.invoice_date > existing.lastDate)) existing.lastDate = r.invoice_date;
       if (r.category && !existing.categories.includes(r.category)) existing.categories.push(r.category);
       if (!existing.vatNumber && r.vat_number) existing.vatNumber = r.vat_number;
-      existing.invoices.push(r);
+      existing.incomeInvoices.push(r);
+      // Upgrade type
+      if (existing.type === "supplier") existing.type = "both";
+      else if (existing.type !== "both") existing.type = "customer";
     } else {
       map.set(key, {
         id: `cus-${slug(name)}`,
         name,
         type: "customer",
+        isManual: false,
         vatNumber: r.vat_number ?? null,
+        email: null,
+        phone: null,
         totalAmount: r.total_amount ?? 0,
+        expenseTotal: 0,
+        incomeTotal: r.total_amount ?? 0,
         invoiceCount: 1,
         currencies: r.currency ? [r.currency] : [],
         lastDate: r.invoice_date ?? null,
         categories: r.category ? [r.category] : [],
-        invoices: [r],
+        expenseInvoices: [],
+        incomeInvoices: [r],
       });
     }
   }
@@ -110,10 +170,46 @@ function deriveContacts(
   return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
 }
 
+// ─── Badge helper ─────────────────────────────────────────────────────────────
+
+function TypeBadge({ type, isManual }: { type: DerivedContact["type"]; isManual: boolean }) {
+  if (isManual && type !== "both") {
+    return (
+      <Badge variant="secondary" className="text-[10px] py-0 bg-muted/80 text-muted-foreground border-border/60">
+        Manual
+      </Badge>
+    );
+  }
+  if (type === "both") {
+    return (
+      <Badge variant="secondary" className="text-[10px] py-0 bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/10">
+        <ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />Both
+      </Badge>
+    );
+  }
+  if (type === "supplier") {
+    return (
+      <Badge variant="default" className="text-[10px] py-0 bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">
+        <ArrowDownLeft className="h-2.5 w-2.5 mr-0.5" />Supplier
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="secondary" className="text-[10px] py-0 bg-teal/10 text-teal border-teal/20 hover:bg-teal/10">
+      <ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />Customer
+    </Badge>
+  );
+}
+
+function avatarGradient(type: DerivedContact["type"]) {
+  if (type === "both") return "bg-gradient-to-br from-emerald-500 to-teal-600";
+  if (type === "supplier") return "bg-hero-gradient";
+  return "bg-gradient-cool";
+}
+
 // ─── Contact Card ─────────────────────────────────────────────────────────────
 
 function ContactCard({ contact, onClick, i }: { contact: DerivedContact; onClick: () => void; i: number }) {
-  const isSupplier = contact.type === "supplier";
   const primaryCurrency = contact.currencies[0] ?? "EUR";
 
   return (
@@ -130,26 +226,19 @@ function ContactCard({ contact, onClick, i }: { contact: DerivedContact; onClick
           <div className="flex items-start justify-between gap-3">
             {/* Avatar + name */}
             <div className="flex items-center gap-3 min-w-0">
-              <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 text-sm font-bold text-white ${isSupplier ? "bg-hero-gradient" : "bg-gradient-cool"}`}>
+              <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 text-sm font-bold text-white ${avatarGradient(contact.type)}`}>
                 {contact.name.slice(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0">
                 <p className="font-semibold text-foreground truncate">{contact.name}</p>
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                  <Badge variant={isSupplier ? "default" : "secondary"} className={`text-[10px] py-0 ${isSupplier ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : "bg-teal/10 text-teal border-teal/20 hover:bg-teal/10"}`}>
-                    {isSupplier ? (
-                      <><ArrowDownLeft className="h-2.5 w-2.5 mr-0.5" />Supplier</>
-                    ) : (
-                      <><ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />Customer</>
-                    )}
-                  </Badge>
+                  <TypeBadge type={contact.type} isManual={contact.isManual} />
                   {contact.vatNumber && (
                     <span className="text-[10px] text-muted-foreground font-mono">{contact.vatNumber}</span>
                   )}
                 </div>
               </div>
             </div>
-
             <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0 mt-1" />
           </div>
 
@@ -157,7 +246,9 @@ function ContactCard({ contact, onClick, i }: { contact: DerivedContact; onClick
           <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border/40">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Total</p>
-              <p className="text-sm font-bold text-foreground tabular-nums">{fmt(contact.totalAmount, primaryCurrency)}</p>
+              <p className="text-sm font-bold text-foreground tabular-nums">
+                {contact.invoiceCount === 0 ? "—" : fmt(contact.totalAmount, primaryCurrency)}
+              </p>
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Invoices</p>
@@ -176,18 +267,53 @@ function ContactCard({ contact, onClick, i }: { contact: DerivedContact; onClick
   );
 }
 
+// ─── Invoice Row ──────────────────────────────────────────────────────────────
+
+function InvoiceRow({ r, nameField }: { r: any; nameField?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-foreground truncate">
+          {r.invoice_number ?? "No number"}
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          {r.invoice_date ? format(parseISO(r.invoice_date), "dd MMM yyyy") : "—"}
+          {r.category ? ` · ${r.category}` : ""}
+        </p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-xs font-bold text-foreground tabular-nums">
+          {fmt(r.total_amount ?? 0, r.currency)}
+        </p>
+        {r.due_date && (
+          <p className="text-[10px] text-muted-foreground">Due {format(parseISO(r.due_date), "dd MMM")}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Detail Panel ─────────────────────────────────────────────────────────────
 
 function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose: () => void }) {
-  const isSupplier = contact.type === "supplier";
   const primaryCurrency = contact.currencies[0] ?? "EUR";
-  const netTotal   = contact.invoices.reduce((s, r) => s + (r.net_amount   ?? 0), 0);
-  const vatTotal   = contact.invoices.reduce((s, r) => s + (r.vat_amount   ?? 0), 0);
-  const totalSpend = contact.invoices.reduce((s, r) => s + (r.total_amount ?? 0), 0);
 
-  const sorted = [...contact.invoices].sort((a, b) =>
+  const isBoth = contact.type === "both";
+  const isSupplier = contact.type === "supplier";
+
+  const allInvoices = [...contact.expenseInvoices, ...contact.incomeInvoices];
+  const sortedAll = [...allInvoices].sort((a, b) =>
     (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
   );
+  const sortedExpenses = [...contact.expenseInvoices].sort((a, b) =>
+    (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
+  );
+  const sortedIncome = [...contact.incomeInvoices].sort((a, b) =>
+    (b.invoice_date ?? "").localeCompare(a.invoice_date ?? "")
+  );
+
+  const netTotal = allInvoices.reduce((s, r) => s + (r.net_amount ?? 0), 0);
+  const vatTotal = allInvoices.reduce((s, r) => s + (r.vat_amount ?? 0), 0);
 
   return (
     <motion.div
@@ -202,36 +328,81 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={onClose}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 text-sm font-bold text-white ${isSupplier ? "bg-hero-gradient" : "bg-gradient-cool"}`}>
+        <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 text-sm font-bold text-white ${avatarGradient(contact.type)}`}>
           {contact.name.slice(0, 2).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="font-bold text-foreground truncate">{contact.name}</h2>
-          <Badge variant="secondary" className={`text-[10px] py-0 mt-0.5 ${isSupplier ? "bg-primary/10 text-primary border-primary/20" : "bg-teal/10 text-teal border-teal/20"}`}>
-            {isSupplier ? "Supplier" : "Customer"}
-          </Badge>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <TypeBadge type={contact.type} isManual={contact.isManual} />
+            {contact.email && <span className="text-[10px] text-muted-foreground">{contact.email}</span>}
+            {contact.phone && <span className="text-[10px] text-muted-foreground">{contact.phone}</span>}
+          </div>
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        {[
-          { label: isSupplier ? "Total Spent" : "Total Received", value: fmt(totalSpend, primaryCurrency), icon: Banknote, color: isSupplier ? "text-rose" : "text-success" },
-          { label: "Invoices",      value: String(contact.invoiceCount), icon: Receipt, color: "text-primary" },
-          { label: "Net Amount",    value: fmt(netTotal, primaryCurrency), icon: Banknote, color: "text-foreground" },
-          { label: "VAT Total",     value: fmt(vatTotal, primaryCurrency), icon: Hash, color: "text-amber" },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label}>
+      {/* Summary cards — "both" shows expense vs income split */}
+      {isBoth ? (
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <Card>
             <CardContent className="p-3.5">
               <div className="flex items-center gap-2 mb-1">
-                <Icon className={`h-3.5 w-3.5 ${color}`} />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span>
+                <ArrowDownLeft className="h-3.5 w-3.5 text-rose-500" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Expenses</span>
               </div>
-              <p className="font-bold text-sm text-foreground tabular-nums">{value}</p>
+              <p className="font-bold text-sm tabular-nums">{fmt(contact.expenseTotal, primaryCurrency)}</p>
+              <p className="text-[10px] text-muted-foreground">{contact.expenseInvoices.length} invoice{contact.expenseInvoices.length !== 1 ? "s" : ""}</p>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          <Card>
+            <CardContent className="p-3.5">
+              <div className="flex items-center gap-2 mb-1">
+                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Income</span>
+              </div>
+              <p className="font-bold text-sm tabular-nums">{fmt(contact.incomeTotal, primaryCurrency)}</p>
+              <p className="text-[10px] text-muted-foreground">{contact.incomeInvoices.length} invoice{contact.incomeInvoices.length !== 1 ? "s" : ""}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-3.5">
+              <div className="flex items-center gap-2 mb-1">
+                <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Net Amount</span>
+              </div>
+              <p className="font-bold text-sm tabular-nums">{fmt(netTotal, primaryCurrency)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-3.5">
+              <div className="flex items-center gap-2 mb-1">
+                <Hash className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">VAT Total</span>
+              </div>
+              <p className="font-bold text-sm tabular-nums">{fmt(vatTotal, primaryCurrency)}</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          {[
+            { label: isSupplier ? "Total Spent" : "Total Received", value: fmt(contact.totalAmount, primaryCurrency), icon: Banknote, color: isSupplier ? "text-rose-500" : "text-emerald-500" },
+            { label: "Invoices",   value: String(contact.invoiceCount), icon: Receipt,  color: "text-primary" },
+            { label: "Net Amount", value: fmt(netTotal, primaryCurrency), icon: Banknote, color: "text-foreground" },
+            { label: "VAT Total",  value: fmt(vatTotal, primaryCurrency), icon: Hash,    color: "text-amber-500" },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <Card key={label}>
+              <CardContent className="p-3.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon className={`h-3.5 w-3.5 ${color}`} />
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span>
+                </div>
+                <p className="font-bold text-sm text-foreground tabular-nums">{value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Meta info */}
       <div className="space-y-1.5 mb-5">
@@ -265,34 +436,55 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
         )}
       </div>
 
-      {/* Invoice list */}
+      {/* Invoice list — tabbed for "both" contacts */}
       <div className="flex-1 min-h-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/60 mb-3">
-          All {isSupplier ? "Expense" : "Income"} Records
-        </p>
-        <div className="space-y-2 overflow-auto max-h-[340px] pr-1 scrollbar-thin">
-          {sorted.map((r) => (
-            <div key={r.id} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground truncate">
-                  {r.invoice_number ?? "No number"}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {r.invoice_date ? format(parseISO(r.invoice_date), "dd MMM yyyy") : "—"}
-                  {r.category ? ` · ${r.category}` : ""}
-                </p>
+        {isBoth ? (
+          <Tabs defaultValue="all">
+            <TabsList className="h-8 mb-3">
+              <TabsTrigger value="all" className="text-xs">All ({allInvoices.length})</TabsTrigger>
+              <TabsTrigger value="expenses" className="text-xs">Expenses ({contact.expenseInvoices.length})</TabsTrigger>
+              <TabsTrigger value="income" className="text-xs">Income ({contact.incomeInvoices.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="mt-0">
+              <div className="space-y-2 overflow-auto max-h-[280px] pr-1">
+                {sortedAll.map((r) => <InvoiceRow key={r.id} r={r} />)}
               </div>
-              <div className="text-right shrink-0">
-                <p className="text-xs font-bold text-foreground tabular-nums">
-                  {fmt(r.total_amount ?? 0, r.currency)}
-                </p>
-                {r.due_date && (
-                  <p className="text-[10px] text-muted-foreground">Due {format(parseISO(r.due_date), "dd MMM")}</p>
-                )}
+            </TabsContent>
+            <TabsContent value="expenses" className="mt-0">
+              <div className="space-y-2 overflow-auto max-h-[280px] pr-1">
+                {sortedExpenses.length === 0
+                  ? <p className="text-xs text-muted-foreground text-center py-4">No expenses</p>
+                  : sortedExpenses.map((r) => <InvoiceRow key={r.id} r={r} />)
+                }
               </div>
-            </div>
-          ))}
-        </div>
+            </TabsContent>
+            <TabsContent value="income" className="mt-0">
+              <div className="space-y-2 overflow-auto max-h-[280px] pr-1">
+                {sortedIncome.length === 0
+                  ? <p className="text-xs text-muted-foreground text-center py-4">No income records</p>
+                  : sortedIncome.map((r) => <InvoiceRow key={r.id} r={r} />)
+                }
+              </div>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/60 mb-3">
+              {contact.invoiceCount === 0
+                ? "No records yet"
+                : `All ${isSupplier ? "Expense" : "Income"} Records`}
+            </p>
+            {contact.invoiceCount === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No invoices linked to this contact yet.
+              </p>
+            ) : (
+              <div className="space-y-2 overflow-auto max-h-[340px] pr-1 scrollbar-thin">
+                {sortedAll.map((r) => <InvoiceRow key={r.id} r={r} />)}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </motion.div>
   );
@@ -305,12 +497,17 @@ export default function Contacts() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<ContactType>("all");
   const [selected, setSelected] = useState<DerivedContact | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   const { data: rawExpenses = [], isLoading: expLoading } = useExpenseRecords();
   const { data: rawIncome   = [], isLoading: incLoading } = useIncomeRecords();
-  const isLoading = expLoading || incLoading;
+  const { data: manualContacts = [], isLoading: contactsLoading } = useContacts();
+  const isLoading = expLoading || incLoading || contactsLoading;
 
-  const contacts = useMemo(() => deriveContacts(rawExpenses, rawIncome), [rawExpenses, rawIncome]);
+  const contacts = useMemo(
+    () => deriveContacts(rawExpenses, rawIncome, manualContacts),
+    [rawExpenses, rawIncome, manualContacts]
+  );
 
   const filtered = useMemo(() => {
     let list = contacts;
@@ -320,6 +517,7 @@ export default function Contacts() {
       list = list.filter((c) =>
         c.name.toLowerCase().includes(q) ||
         (c.vatNumber ?? "").toLowerCase().includes(q) ||
+        (c.email ?? "").toLowerCase().includes(q) ||
         c.categories.some((cat) => cat.toLowerCase().includes(q))
       );
     }
@@ -328,170 +526,198 @@ export default function Contacts() {
 
   const supplierCount = contacts.filter((c) => c.type === "supplier").length;
   const customerCount = contacts.filter((c) => c.type === "customer").length;
+  const bothCount     = contacts.filter((c) => c.type === "both").length;
 
   const FILTERS: { key: ContactType; label: string; icon: typeof Building2; count: number }[] = [
-    { key: "all",      label: "All",       icon: Users,     count: contacts.length },
+    { key: "all",      label: "All",       icon: Users,        count: contacts.length },
     { key: "supplier", label: "Suppliers", icon: ArrowDownLeft, count: supplierCount },
     { key: "customer", label: "Customers", icon: ArrowUpRight,  count: customerCount },
+    { key: "both",     label: "Both",      icon: TrendingUp,    count: bothCount },
   ];
 
   return (
-    <div className="max-w-5xl mx-auto pb-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="flex flex-col gap-1 mb-6"
-      >
-        <h1 className="text-2xl font-bold">Contacts</h1>
-        <p className="text-sm text-muted-foreground">
-          Suppliers and customers auto-built from your invoice data
-        </p>
-      </motion.div>
+    <>
+      <AddContactDialog open={addOpen} onOpenChange={setAddOpen} />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left column — list */}
-        <div className="flex-1 min-w-0 space-y-4">
-          {/* Search + filters */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.05 }}
-            className="flex flex-col sm:flex-row gap-3"
+      <div className="max-w-5xl mx-auto pb-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="flex items-start justify-between gap-3 mb-6"
+        >
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-bold">Contacts</h1>
+            <p className="text-sm text-muted-foreground">
+              Suppliers and customers auto-built from your invoice data
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="shrink-0 gap-2"
+            onClick={() => setAddOpen(true)}
           >
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input
-                placeholder="Search contacts or VAT number…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-              {search && (
-                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
+            <UserPlus className="h-4 w-4" />
+            Add Contact
+          </Button>
+        </motion.div>
 
-            {/* Filter pills */}
-            <div className="flex items-center gap-1 bg-muted/60 rounded-full p-1 shrink-0">
-              {FILTERS.map(({ key, label, icon: Icon, count }) => (
-                <button
-                  key={key}
-                  onClick={() => setFilter(key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full transition-all ${
-                    filter === key
-                      ? "bg-card shadow text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-3 w-3" />
-                  {label}
-                  <span className={`text-[10px] ${filter === key ? "text-primary font-bold" : "text-muted-foreground"}`}>
-                    {count}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Stat bar */}
-          {!isLoading && contacts.length > 0 && (
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left column — list */}
+          <div className="flex-1 min-w-0 space-y-4">
+            {/* Search + filters */}
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-              className="grid grid-cols-3 gap-3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
+              className="flex flex-col sm:flex-row gap-3"
             >
-              {[
-                { label: "Total Contacts", value: contacts.length, icon: Users, color: "text-primary" },
-                { label: "Suppliers",      value: supplierCount,   icon: ArrowDownLeft, color: "text-rose" },
-                { label: "Customers",      value: customerCount,   icon: ArrowUpRight,  color: "text-success" },
-              ].map(({ label, value, icon: Icon, color }) => (
-                <Card key={label}>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                      <Icon className={`h-4 w-4 ${color}`} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-                      <p className="text-lg font-bold text-foreground">{value}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </motion.div>
-          )}
-
-          {/* Contact list */}
-          {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
-            </div>
-          ) : filtered.length === 0 ? (
-            <Card>
-              <CardContent className="py-16 text-center">
-                <Building2 className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="font-semibold text-foreground mb-1">
-                  {contacts.length === 0 ? "No contacts yet" : "No results"}
-                </p>
-                <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                  {contacts.length === 0
-                    ? "Upload invoices or receipts and your suppliers and customers will appear here automatically."
-                    : "Try a different search or filter."}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-3">
-              {filtered.map((contact, i) => (
-                <ContactCard
-                  key={contact.id}
-                  contact={contact}
-                  i={i}
-                  onClick={() => setSelected(contact)}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Search contacts, VAT, email…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
                 />
-              ))}
-            </div>
-          )}
+                {search && (
+                  <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Filter pills */}
+              <div className="flex items-center gap-1 bg-muted/60 rounded-full p-1 shrink-0">
+                {FILTERS.map(({ key, label, icon: Icon, count }) => (
+                  <button
+                    key={key}
+                    onClick={() => setFilter(key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full transition-all ${
+                      filter === key
+                        ? "bg-card shadow text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-3 w-3" />
+                    {label}
+                    <span className={`text-[10px] ${filter === key ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                      {count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Stat bar */}
+            {!isLoading && contacts.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+                className="grid grid-cols-3 gap-3"
+              >
+                {[
+                  { label: "Total Contacts", value: contacts.length, icon: Users,        color: "text-primary" },
+                  { label: "Suppliers",      value: supplierCount + bothCount, icon: ArrowDownLeft, color: "text-rose-500" },
+                  { label: "Customers",      value: customerCount + bothCount, icon: ArrowUpRight,  color: "text-emerald-500" },
+                ].map(({ label, value, icon: Icon, color }) => (
+                  <Card key={label}>
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                        <Icon className={`h-4 w-4 ${color}`} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                        <p className="text-lg font-bold text-foreground">{value}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </motion.div>
+            )}
+
+            {/* Contact list */}
+            {isLoading ? (
+              <div className="space-y-3">
+                {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+              </div>
+            ) : filtered.length === 0 ? (
+              <Card>
+                <CardContent className="py-16 text-center">
+                  <Building2 className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="font-semibold text-foreground mb-1">
+                    {contacts.length === 0 ? "No contacts yet" : "No results"}
+                  </p>
+                  <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                    {contacts.length === 0
+                      ? "Upload invoices or add a contact manually using the button above."
+                      : "Try a different search or filter."}
+                  </p>
+                  {contacts.length === 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-4 gap-2"
+                      onClick={() => setAddOpen(true)}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Add Contact
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {filtered.map((contact, i) => (
+                  <ContactCard
+                    key={contact.id}
+                    contact={contact}
+                    i={i}
+                    onClick={() => setSelected(contact)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Right column — detail panel (desktop) */}
+          <AnimatePresence>
+            {selected && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 360 }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="hidden lg:block shrink-0 overflow-hidden"
+              >
+                <div style={{ width: 360 }}>
+                  <Card className="h-full">
+                    <CardContent className="p-5 h-full">
+                      <ContactDetail contact={selected} onClose={() => setSelected(null)} />
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Right column — detail panel (desktop) */}
+        {/* Mobile detail — full-screen overlay */}
         <AnimatePresence>
           {selected && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 360 }}
-              exit={{ opacity: 0, width: 0 }}
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="hidden lg:block shrink-0 overflow-hidden"
+              className="lg:hidden fixed inset-0 z-50 bg-background p-4 pt-6 overflow-auto"
             >
-              <div style={{ width: 360 }}>
-                <Card className="h-full">
-                  <CardContent className="p-5 h-full">
-                    <ContactDetail contact={selected} onClose={() => setSelected(null)} />
-                  </CardContent>
-                </Card>
-              </div>
+              <ContactDetail contact={selected} onClose={() => setSelected(null)} />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      {/* Mobile detail — full-screen overlay */}
-      <AnimatePresence>
-        {selected && (
-          <motion.div
-            initial={{ opacity: 0, y: "100%" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: "100%" }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:hidden fixed inset-0 z-50 bg-background p-4 pt-6 overflow-auto"
-          >
-            <ContactDetail contact={selected} onClose={() => setSelected(null)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    </>
   );
 }

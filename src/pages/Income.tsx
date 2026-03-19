@@ -12,11 +12,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Download, FileText, ExternalLink, Trash2, Archive,
+  Search, TrendingUp, Loader2, Upload, CheckCircle2, X, AlertCircle, CalendarIcon, Pencil, Download, FileText, ExternalLink, Trash2, Archive, Plus,
 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect, Fragment } from "react";
 import { toast } from "sonner";
 import { useIncomeRecords, useUploadIncomeDocument, useUpdateIncome, useDeleteIncome } from "@/hooks/useDocuments";
+import { ContactCombobox } from "@/components/ContactCombobox";
+import { ManualIncomeDialog } from "@/components/ManualIncomeDialog";
 import { CategorySelect } from "@/components/CategorySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -63,6 +65,7 @@ export default function IncomePage() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [manualIncomeOpen, setManualIncomeOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editData, setEditData] = useState<IncomeEdit | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
@@ -447,6 +450,9 @@ export default function IncomePage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search income..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <Button size="sm" onClick={() => setManualIncomeOpen(true)} className="shrink-0 h-9">
+          <Plus className="h-4 w-4 mr-1" /> Income
+        </Button>
         <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
           <SelectTrigger className="w-40">
             <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -750,9 +756,13 @@ export default function IncomePage() {
 
               {/* Edit Fields */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="col-span-2">
                   <Label className="text-xs text-muted-foreground">Customer</Label>
-                  <Input className="h-8 text-sm" value={editData.customer_name} onChange={(e) => setEditData({ ...editData, customer_name: e.target.value })} />
+                  <ContactCombobox
+                    value={editData.customer_name}
+                    onChange={(name, vat) => setEditData({ ...editData, customer_name: name, vat_number: vat ?? editData.vat_number })}
+                    placeholder="Search or type customer…"
+                  />
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Invoice #</Label>
@@ -843,6 +853,8 @@ export default function IncomePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ManualIncomeDialog open={manualIncomeOpen} onOpenChange={setManualIncomeOpen} />
     </div>
   );
 }
