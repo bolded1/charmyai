@@ -623,7 +623,7 @@ function FirmUpgradeCard() {
         {/* Billing summary */}
         <div className="rounded-xl border border-border/50 bg-muted/30 p-3 mb-5">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Firm Plan (one-time)</span>
+            <span className="text-muted-foreground">Firm Plan Upgrade (difference)</span>
             <span className="font-medium">€{basePrice.toFixed(2)}</span>
           </div>
           {discountLine && (
