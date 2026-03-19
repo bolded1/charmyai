@@ -139,14 +139,16 @@ export default function AdminFirmAccounts() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      if (!data?.success && !data?.firms && !data?.workspaces) throw new Error("Action returned no success confirmation");
       logAuditEvent({ action: "admin_firm_action", entityType: "organization", entityId: params.org_id || "", details: `Firm action: ${actionType}` });
       toast.success("Action completed successfully");
-      if (actionType === "delete_firm") {
+      if (actionType === "delete_firm" || actionType === "revoke_firm_access") {
         setSelectedFirm(null);
       }
       fetchFirms();
-      if (selectedFirm && actionType !== "delete_firm") fetchWorkspaces(selectedFirm.id);
+      if (selectedFirm && actionType !== "delete_firm" && actionType !== "revoke_firm_access") fetchWorkspaces(selectedFirm.id);
     } catch (err: any) {
+      console.error("Firm action error:", err);
       toast.error(err.message || "Action failed");
     } finally {
       setActionLoading(false);
