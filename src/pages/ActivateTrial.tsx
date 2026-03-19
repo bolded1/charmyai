@@ -133,6 +133,7 @@ export default function ActivateTrialPage() {
         card.mount("#stripe-card-element");
         setCardElement(card);
       } catch (err: any) {
+        proInitRef.current = false;
         setSetupError(err.message || "Failed to initialize payment form");
       }
     };
