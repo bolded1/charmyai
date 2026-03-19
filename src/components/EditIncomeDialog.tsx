@@ -211,7 +211,7 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
                         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                       </div>
                     ) : fileUrl && isImage ? (
-                      <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain" />
+                      <img src={fileUrl} alt="Document preview" className="w-full max-h-[300px] object-contain cursor-zoom-in hover:opacity-90 transition-opacity" onClick={() => setLightboxOpen(true)} />
                     ) : fileUrl && isPdf ? (
                       <object data={fileUrl} type="application/pdf" className="w-full h-[360px]">
                         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
