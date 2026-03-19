@@ -147,7 +147,7 @@ export default function DashboardLayout() {
           {/* Subtle background gradient */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
             <div className="absolute top-[-15%] left-[-5%] w-[600px] h-[600px] rounded-full opacity-[0.07] blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(152 63% 32%), transparent 70%)' }} />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-[0.05] blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(17 69% 60%), transparent 70%)' }} />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-[0.05] blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(265 55% 55%), transparent 70%)' }} />
           </div>
 
           <div className="relative z-10 flex flex-col min-h-0 flex-1">
