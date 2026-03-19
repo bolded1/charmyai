@@ -53,8 +53,8 @@ serve(async (req) => {
       customer: customerId,
       line_items: [{ price: STORAGE_PRICE_ID, quantity: qty }],
       mode: "payment",
-      success_url: `${origin}/app/settings?tab=storage&purchased=${qty}`,
-      cancel_url: `${origin}/app/settings?tab=storage`,
+      ui_mode: "embedded",
+      return_url: `${origin}/app/settings?tab=storage&purchased=${qty}&session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         user_id: user.id,
         organization_id: organizationId,
@@ -62,11 +62,7 @@ serve(async (req) => {
       },
     });
 
-    // After successful payment, add storage immediately
-    // We'll use the checkout.session.completed approach via a simple poll on the frontend
-    // But we also add it optimistically via metadata for the verify endpoint
-
-    return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
+    return new Response(JSON.stringify({ clientSecret: session.client_secret }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
