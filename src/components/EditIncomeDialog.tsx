@@ -100,6 +100,7 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
       if (cancelled) return;
 
       if (fileError || !fileBlob) {
+        console.error("Document download failed:", fileError?.message, "path:", doc.file_path);
         setFileUrl(null);
         setFileType(doc.file_type || null);
         setLoadingFile(false);
