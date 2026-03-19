@@ -9,6 +9,7 @@ import {
   UserPlus, Activity, Sparkles, Tag, Building2,
   ArrowLeftRight, UserCheck, Layers, FileOutput,
   Send, Link2, ClipboardList, ExternalLink,
+  BookUser, PieChart, TrendingUp, FileBarChart,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import quickbooksLogo from "@/assets/quickbooks-logo.png";
