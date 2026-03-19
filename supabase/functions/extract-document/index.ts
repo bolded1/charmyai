@@ -104,12 +104,29 @@ serve(async (req) => {
       });
     }
 
-    // For normal calls verify ownership; internal calls skip this
-    if (!isInternalCall && doc.user_id !== userId) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // For normal calls verify access; workspace members with valid access may also process org documents
+    if (!isInternalCall) {
+      let hasDocumentAccess = doc.user_id === userId;
+
+      if (!hasDocumentAccess && doc.organization_id) {
+        const { data: workspaceAccess, error: workspaceAccessError } = await supabase.rpc("has_workspace_access", {
+          _user_id: userId,
+          _org_id: doc.organization_id,
+        });
+
+        if (workspaceAccessError) {
+          console.error("Workspace access check error:", workspaceAccessError);
+        } else if (workspaceAccess === true) {
+          hasDocumentAccess = true;
+        }
+      }
+
+      if (!hasDocumentAccess) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Download file from storage

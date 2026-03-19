@@ -13,6 +13,7 @@ export async function checkBillingEntitlement(
   const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
   const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+  let billingFailureReason = "no_subscription";
 
   if (customers.data.length > 0) {
     const customerId = customers.data[0].id;
@@ -26,7 +27,7 @@ export async function checkBillingEntitlement(
       if (sub.status === "active" || sub.status === "trialing") {
         return { valid: true };
       }
-      return { valid: false, reason: sub.status };
+      billingFailureReason = sub.status;
     }
   }
 
@@ -54,5 +55,5 @@ export async function checkBillingEntitlement(
     }
   }
 
-  return { valid: false, reason: "no_subscription" };
+  return { valid: false, reason: billingFailureReason };
 }
