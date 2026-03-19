@@ -31,7 +31,7 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
   DropdownMenuGroup, DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
-import { User, Building2, Palette, Keyboard, HelpCircle as HelpIcon } from "lucide-react";
+import { User, Palette, Keyboard, HelpCircle as HelpIcon } from "lucide-react";
 
 export function DashboardSidebar() {
   const { state } = useSidebar();
