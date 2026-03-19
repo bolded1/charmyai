@@ -100,10 +100,12 @@ export default function OnboardingPage() {
       if (profile?.billing_setup_at) {
         navigate("/app", { replace: true });
       } else {
-        navigate("/payment", { replace: true });
+        // Preserve plan type based on org workspace_type
+        const isFirmOrg = org?.workspace_type === "accounting_firm";
+        navigate(isFirmOrg ? "/payment?plan=firm" : "/payment", { replace: true });
       }
     }
-  }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, profile?.billing_setup_at, hasStartedOnboardingFlow, navigate]);
+  }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, profile?.billing_setup_at, hasStartedOnboardingFlow, navigate, org?.workspace_type]);
 
   // Pre-populate from saved profile data
   const metaFirst = user?.user_metadata?.first_name || "";
