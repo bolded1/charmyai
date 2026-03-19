@@ -73,7 +73,7 @@ export default function SignupPage() {
   const handleOAuth = async (provider: "google" | "apple") => {
     setSocialLoading(provider);
     const { error } = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin,
+      redirect_uri: window.location.origin + "/app",
     });
     setSocialLoading(null);
     if (error) toast.error(error.message || `${provider} sign-in failed`);
