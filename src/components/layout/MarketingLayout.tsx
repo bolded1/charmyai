@@ -160,32 +160,41 @@ export default function MarketingLayout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.25, delay: 0.05 }}
-              className="relative pt-20 px-6 pb-8 flex flex-col h-full"
+              className="relative pt-6 px-6 pb-8 flex flex-col h-full"
             >
-              <nav className="space-y-1 flex-1">
+              {/* Close button */}
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="h-10 w-10 rounded-xl bg-accent/60 flex items-center justify-center hover:bg-accent transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5 text-foreground" />
+                </button>
+              </div>
+
+              <nav className="space-y-1 flex-1 flex flex-col items-center justify-center">
                 {navLinks.map((l, i) => {
                   const isActive = location.pathname === l.to;
                   return (
                     <motion.div
                       key={l.to}
-                      initial={{ opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: 0.08 + i * 0.05 }}
+                      className="w-full max-w-xs"
                     >
                       <Link
                         to={l.to}
-                        className={`group flex items-center justify-between rounded-2xl px-4 py-4 transition-all ${
+                        className={`group flex items-center justify-center rounded-2xl px-4 py-4 transition-all text-center ${
                           isActive
                             ? "bg-primary/8 border border-primary/15"
                             : "hover:bg-accent/60"
                         }`}
                       >
-                        <div>
-                          <span className={`block text-base font-semibold ${isActive ? "text-primary" : "text-foreground"}`}>
-                            {l.label}
-                          </span>
-                        </div>
-                        <ChevronRight className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? "text-primary" : "text-muted-foreground/50"}`} />
+                        <span className={`text-base font-semibold ${isActive ? "text-primary" : "text-foreground"}`}>
+                          {l.label}
+                        </span>
                       </Link>
                     </motion.div>
                   );
@@ -196,7 +205,7 @@ export default function MarketingLayout() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
-                className="space-y-3 pt-6 border-t border-border/50"
+                className="space-y-3 pt-6 border-t border-border/50 max-w-xs mx-auto w-full"
               >
                 <Button variant="outline" size="lg" asChild className="w-full h-12 rounded-xl text-sm font-medium">
                   <Link to={user ? "/app" : "/login"}>{user ? t("marketing.dashboard") : t("marketing.login")}</Link>
