@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, UserCheck, KeyRound, ShieldAlert, ShieldCheck, FileText, DollarSign, TrendingUp, Download } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Loader2, UserCheck, KeyRound, ShieldAlert, ShieldCheck, FileText, DollarSign, TrendingUp, Download, Ban, Building2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserRow {
@@ -29,13 +30,6 @@ interface ActivityData {
   income: { id: string; customer_name: string; total_amount: number; currency: string; created_at: string }[];
   exports: { id: string; export_name: string; format: string; row_count: number; created_at: string }[];
 }
-
-const roleColors: Record<string, string> = {
-  platform_admin: "bg-primary/10 text-primary",
-  admin: "bg-accent text-accent-foreground",
-  moderator: "bg-secondary text-secondary-foreground",
-  user: "bg-muted text-muted-foreground",
-};
 
 function displayName(u: UserRow) {
   return u.full_name || `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email || "Unknown";
@@ -60,8 +54,9 @@ export function UserDetailsDialog({
   const [togglingStatus, setTogglingStatus] = useState(false);
   const [activity, setActivity] = useState<ActivityData | null>(null);
   const [loadingActivity, setLoadingActivity] = useState(false);
+  const [revokingFirm, setRevokingFirm] = useState(false);
+  const [deletingUser, setDeletingUser] = useState(false);
 
-  // Reset state when user changes
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       onClose();
@@ -123,6 +118,41 @@ export function UserDetailsDialog({
     }
   };
 
+  const handleRevokeFirm = async () => {
+    if (!user) return;
+    setRevokingFirm(true);
+    try {
+      const res = await supabase.functions.invoke("admin-manage-user", {
+        body: { action: "revoke_firm", user_id: user.user_id },
+      });
+      if (res.error || res.data?.error) throw new Error(res.data?.error || res.error?.message);
+      toast.success("Firm access revoked, downgraded to standard");
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to revoke firm access");
+    } finally {
+      setRevokingFirm(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!user) return;
+    setDeletingUser(true);
+    try {
+      const res = await supabase.functions.invoke("admin-manage-user", {
+        body: { action: "delete_user", user_id: user.user_id },
+      });
+      if (res.error || res.data?.error) throw new Error(res.data?.error || res.error?.message);
+      toast.success("User account permanently deleted");
+      onClose();
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete user");
+    } finally {
+      setDeletingUser(false);
+    }
+  };
+
   const loadActivity = async () => {
     if (!user || activity) return;
     setLoadingActivity(true);
@@ -174,7 +204,7 @@ export function UserDetailsDialog({
             </Button>
           </TabsContent>
 
-          <TabsContent value="manage" className="space-y-5 mt-4">
+          <TabsContent value="manage" className="space-y-5 mt-4 max-h-[60vh] overflow-y-auto pr-1">
             {/* Change Role */}
             <div className="space-y-2">
               <Label className="text-xs font-medium flex items-center gap-1.5">
@@ -221,12 +251,12 @@ export function UserDetailsDialog({
             {/* Suspend / Activate */}
             <div className="space-y-2">
               <Label className="text-xs font-medium flex items-center gap-1.5">
-                <ShieldAlert className="h-3.5 w-3.5" /> Account Status
+                <Ban className="h-3.5 w-3.5" /> Suspend Access
               </Label>
               <p className="text-xs text-muted-foreground">
                 {user.status === "inactive"
                   ? "This account is currently suspended. The user cannot log in."
-                  : "This account is active. Suspending will prevent the user from logging in."}
+                  : "Block the user from logging in. Their data is preserved."}
               </p>
               <Button
                 variant={user.status === "inactive" ? "default" : "destructive"}
@@ -240,10 +270,78 @@ export function UserDetailsDialog({
                 ) : user.status === "inactive" ? (
                   <ShieldCheck className="h-4 w-4 mr-2" />
                 ) : (
-                  <ShieldAlert className="h-4 w-4 mr-2" />
+                  <Ban className="h-4 w-4 mr-2" />
                 )}
-                {user.status === "inactive" ? "Activate Account" : "Suspend Account"}
+                {user.status === "inactive" ? "Activate Account" : "Suspend"}
               </Button>
+            </div>
+
+            <Separator />
+
+            {/* Revoke Firm Access */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5" /> Revoke Firm Access
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Downgrade to standard account (removes multi-workspace access)
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="w-full" disabled={revokingFirm}>
+                    {revokingFirm ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Building2 className="h-4 w-4 mr-2" />}
+                    Revoke
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Revoke Firm Access?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will downgrade all firm organizations owned by this user to standard accounts, remove all team members, and detach client workspaces.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleRevokeFirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Revoke
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+
+            <Separator />
+
+            {/* Delete User */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium flex items-center gap-1.5 text-destructive">
+                <Trash2 className="h-3.5 w-3.5" /> Delete Account
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Permanently delete this user, all workspaces, and related data. This cannot be undone.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="w-full" disabled={deletingUser}>
+                    {deletingUser ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete User Account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete the user "{displayName(user)}" ({user.email}), all their organizations, workspaces, documents, expenses, income records, and authentication. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete Permanently
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </TabsContent>
 
@@ -256,37 +354,20 @@ export function UserDetailsDialog({
               <p className="text-sm text-muted-foreground text-center py-8">No activity data</p>
             ) : (
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                {/* Merge all activity into a timeline */}
                 {(() => {
                   const items: { type: string; icon: typeof FileText; label: string; detail: string; date: string }[] = [];
 
                   activity.documents.forEach((d) => items.push({
-                    type: "document",
-                    icon: FileText,
-                    label: d.file_name,
-                    detail: d.status,
-                    date: d.created_at,
+                    type: "document", icon: FileText, label: d.file_name, detail: d.status, date: d.created_at,
                   }));
                   activity.expenses.forEach((e) => items.push({
-                    type: "expense",
-                    icon: DollarSign,
-                    label: e.supplier_name,
-                    detail: `${e.currency} ${Number(e.total_amount).toFixed(2)}`,
-                    date: e.created_at,
+                    type: "expense", icon: DollarSign, label: e.supplier_name, detail: `${e.currency} ${Number(e.total_amount).toFixed(2)}`, date: e.created_at,
                   }));
                   activity.income.forEach((i) => items.push({
-                    type: "income",
-                    icon: TrendingUp,
-                    label: i.customer_name,
-                    detail: `${i.currency} ${Number(i.total_amount).toFixed(2)}`,
-                    date: i.created_at,
+                    type: "income", icon: TrendingUp, label: i.customer_name, detail: `${i.currency} ${Number(i.total_amount).toFixed(2)}`, date: i.created_at,
                   }));
                   activity.exports.forEach((x) => items.push({
-                    type: "export",
-                    icon: Download,
-                    label: x.export_name,
-                    detail: `${x.format.toUpperCase()} · ${x.row_count} rows`,
-                    date: x.created_at,
+                    type: "export", icon: Download, label: x.export_name, detail: `${x.format.toUpperCase()} · ${x.row_count} rows`, date: x.created_at,
                   }));
 
                   items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

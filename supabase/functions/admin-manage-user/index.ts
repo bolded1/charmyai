@@ -186,6 +186,133 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "revoke_firm": {
+        // Downgrade all firm orgs owned by this user to standard
+        const { data: firmOrgs } = await adminClient
+          .from("organizations")
+          .select("id")
+          .eq("owner_user_id", user_id)
+          .eq("workspace_type", "accounting_firm");
+
+        if (firmOrgs && firmOrgs.length > 0) {
+          const firmIds = firmOrgs.map((o: any) => o.id);
+
+          // Remove child workspace links
+          await adminClient
+            .from("organizations")
+            .update({ parent_org_id: null, workspace_type: "standard" })
+            .in("parent_org_id", firmIds);
+
+          // Remove team members
+          await adminClient
+            .from("team_members")
+            .delete()
+            .in("firm_org_id", firmIds);
+
+          // Downgrade firm orgs to standard
+          await adminClient
+            .from("organizations")
+            .update({ workspace_type: "standard", max_client_workspaces: 1 })
+            .in("id", firmIds);
+        }
+
+        // Audit
+        await adminClient.from("audit_logs").insert({
+          user_id: caller.id,
+          action: "admin_revoke_firm",
+          entity_type: "user",
+          entity_id: user_id,
+          details: `Revoked firm access for user, downgraded ${firmOrgs?.length || 0} firm(s) to standard`,
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "delete_user": {
+        // Delete all organizations owned by this user (cascades via RLS/FK)
+        const { data: userOrgs } = await adminClient
+          .from("organizations")
+          .select("id, workspace_type, parent_org_id")
+          .eq("owner_user_id", user_id);
+
+        if (userOrgs) {
+          // First delete child workspaces of any firm orgs
+          const firmIds = userOrgs.filter((o: any) => o.workspace_type === "accounting_firm").map((o: any) => o.id);
+          if (firmIds.length > 0) {
+            // Get child workspace ids
+            const { data: childOrgs } = await adminClient
+              .from("organizations")
+              .select("id")
+              .in("parent_org_id", firmIds);
+            const childIds = (childOrgs || []).map((o: any) => o.id);
+
+            // Delete data in child workspaces
+            for (const cid of childIds) {
+              await Promise.all([
+                adminClient.from("documents").delete().eq("organization_id", cid),
+                adminClient.from("expense_records").delete().eq("organization_id", cid),
+                adminClient.from("income_records").delete().eq("organization_id", cid),
+                adminClient.from("export_history").delete().eq("organization_id", cid),
+              ]);
+            }
+
+            // Delete team members and workspace access
+            await adminClient.from("team_members").delete().in("firm_org_id", firmIds);
+
+            // Delete child orgs
+            if (childIds.length > 0) {
+              await adminClient.from("organizations").delete().in("id", childIds);
+            }
+          }
+
+          // Delete all user's own org data
+          const allOrgIds = userOrgs.map((o: any) => o.id);
+          for (const oid of allOrgIds) {
+            await Promise.all([
+              adminClient.from("documents").delete().eq("organization_id", oid),
+              adminClient.from("expense_records").delete().eq("organization_id", oid),
+              adminClient.from("income_records").delete().eq("organization_id", oid),
+              adminClient.from("export_history").delete().eq("organization_id", oid),
+            ]);
+          }
+
+          // Delete organizations
+          await adminClient.from("organizations").delete().in("id", allOrgIds);
+        }
+
+        // Delete user data without org
+        await Promise.all([
+          adminClient.from("documents").delete().eq("user_id", user_id),
+          adminClient.from("expense_records").delete().eq("user_id", user_id),
+          adminClient.from("income_records").delete().eq("user_id", user_id),
+          adminClient.from("export_history").delete().eq("user_id", user_id),
+          adminClient.from("user_roles").delete().eq("user_id", user_id),
+          adminClient.from("profiles").delete().eq("user_id", user_id),
+          adminClient.from("notifications").delete().eq("user_id", user_id),
+          adminClient.from("support_tickets").delete().eq("user_id", user_id),
+          adminClient.from("user_feedback").delete().eq("user_id", user_id),
+        ]);
+
+        // Delete auth user
+        const { error: deleteErr } = await adminClient.auth.admin.deleteUser(user_id);
+        if (deleteErr) throw deleteErr;
+
+        // Audit
+        await adminClient.from("audit_logs").insert({
+          user_id: caller.id,
+          action: "admin_delete_user",
+          entity_type: "user",
+          entity_id: user_id,
+          details: `Permanently deleted user account and all associated data`,
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,
