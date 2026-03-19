@@ -25,6 +25,7 @@ import { usePlatformLimits } from "@/hooks/usePlatformLimits";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { groupByCurrency, fmtCurrencyValue } from "@/lib/currency-utils";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
@@ -149,9 +150,9 @@ export default function IncomePage() {
   };
 
   const groupedByMonth = useMemo(() => {
-    const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
+    const groups: { key: string; label: string; records: typeof filtered; currencyTotals: ReturnType<typeof groupByCurrency> }[] = [];
     const map = new Map<string, typeof filtered>();
-    
+
     const sorted = [...filtered].sort((a, b) => {
       const da = a.invoice_date ? new Date(a.invoice_date).getTime() : 0;
       const db = b.invoice_date ? new Date(b.invoice_date).getTime() : 0;
@@ -168,12 +169,11 @@ export default function IncomePage() {
 
     map.forEach((records, key) => {
       const label = key === "no-date" ? "No Date" : format(parseISO(key + "-01"), "MMMM yyyy");
-      const total = records.reduce((s, e) => s + Number(e.total_amount || 0), 0);
-      groups.push({ key, label, records, total });
+      groups.push({ key, label, records, currencyTotals: groupByCurrency(records, defaultCurrency) });
     });
 
     return groups;
-  }, [filtered]);
+  }, [filtered, defaultCurrency]);
 
   const currencySymbols: Record<string, string> = {
     EUR: "€", USD: "$", GBP: "£", CHF: "CHF ", JPY: "¥", CAD: "CA$", AUD: "A$",
@@ -428,7 +428,7 @@ export default function IncomePage() {
                   <div className="flex items-center justify-between px-3 py-2.5 bg-accent/40 rounded-lg mb-1 mt-1 first:mt-0">
                     <span className="text-xs font-bold text-foreground">{group.label}</span>
                     <span className="text-xs font-semibold tabular-nums text-muted-foreground">
-                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
                   </div>
                   {group.records.map((doc) => (
@@ -485,7 +485,7 @@ export default function IncomePage() {
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">{group.label}</span>
                             <span className="text-xs font-semibold tabular-nums text-muted-foreground">
-                              {group.records.length} records · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {group.records.length} records · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                             </span>
                           </div>
                         </td>

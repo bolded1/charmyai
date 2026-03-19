@@ -102,65 +102,100 @@ serve(async (req) => {
     const documents = docRes.data || [];
     const categories = (catRes.data || []).map((c) => c.name);
 
-    // Compute summaries
-    const totalExpenses = expenses.reduce((s, e) => s + (e.total_amount || 0), 0);
-    const totalIncome = income.reduce((s, e) => s + (e.total_amount || 0), 0);
-    const totalVatExpenses = expenses.reduce((s, e) => s + (e.vat_amount || 0), 0);
-    const totalVatIncome = income.reduce((s, e) => s + (e.vat_amount || 0), 0);
+    // ── Group totals by currency ───────────────────────────────────────────
+    function groupByCur(records: { currency: string; total_amount: number; vat_amount?: number }[]) {
+      const map: Record<string, { total: number; vat: number; count: number }> = {};
+      for (const r of records) {
+        const c = r.currency || "EUR";
+        if (!map[c]) map[c] = { total: 0, vat: 0, count: 0 };
+        map[c].total += r.total_amount || 0;
+        map[c].vat += (r as any).vat_amount || 0;
+        map[c].count += 1;
+      }
+      return Object.entries(map).sort((a, b) => b[1].total - a[1].total);
+    }
 
-    // Expense by category
-    const expByCat: Record<string, number> = {};
+    function fmtCur(amount: number, currency: string) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2 }).format(amount);
+    }
+
+    const expenseByCurrency = groupByCur(expenses);
+    const incomeByCurrency = groupByCur(income);
+
+    // Expense by category (per currency)
+    const expByCat: Record<string, Record<string, number>> = {};
     expenses.forEach((e) => {
       const cat = e.category || "Uncategorized";
-      expByCat[cat] = (expByCat[cat] || 0) + (e.total_amount || 0);
+      const cur = e.currency || "EUR";
+      if (!expByCat[cat]) expByCat[cat] = {};
+      expByCat[cat][cur] = (expByCat[cat][cur] || 0) + (e.total_amount || 0);
     });
 
-    // Top suppliers/customers
-    const supplierTotals: Record<string, number> = {};
+    // Top suppliers/customers (per currency)
+    const supplierTotals: Record<string, Record<string, number>> = {};
     expenses.forEach((e) => {
-      supplierTotals[e.supplier_name] = (supplierTotals[e.supplier_name] || 0) + (e.total_amount || 0);
+      const cur = e.currency || "EUR";
+      if (!supplierTotals[e.supplier_name]) supplierTotals[e.supplier_name] = {};
+      supplierTotals[e.supplier_name][cur] = (supplierTotals[e.supplier_name][cur] || 0) + (e.total_amount || 0);
     });
     const topSuppliers = Object.entries(supplierTotals)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => {
+        const totalA = Object.values(a[1]).reduce((s, v) => s + v, 0);
+        const totalB = Object.values(b[1]).reduce((s, v) => s + v, 0);
+        return totalB - totalA;
+      })
       .slice(0, 10);
 
-    const customerTotals: Record<string, number> = {};
+    const customerTotals: Record<string, Record<string, number>> = {};
     income.forEach((i) => {
-      customerTotals[i.customer_name] = (customerTotals[i.customer_name] || 0) + (i.total_amount || 0);
+      const cur = i.currency || "EUR";
+      if (!customerTotals[i.customer_name]) customerTotals[i.customer_name] = {};
+      customerTotals[i.customer_name][cur] = (customerTotals[i.customer_name][cur] || 0) + (i.total_amount || 0);
     });
     const topCustomers = Object.entries(customerTotals)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => {
+        const totalA = Object.values(a[1]).reduce((s, v) => s + v, 0);
+        const totalB = Object.values(b[1]).reduce((s, v) => s + v, 0);
+        return totalB - totalA;
+      })
       .slice(0, 10);
+
+    function fmtMulti(byCur: Record<string, number>) {
+      return Object.entries(byCur).map(([cur, amt]) => fmtCur(amt, cur)).join(" + ");
+    }
 
     const systemPrompt = `You are Charmy AI, a helpful financial assistant for the Charmy accounting platform. You help users understand their financial data, generate reports, and answer questions about the app.
 
 ## User's Financial Data Summary
-- **Total Expenses**: €${totalExpenses.toFixed(2)} (VAT: €${totalVatExpenses.toFixed(2)}) across ${expenses.length} records
-- **Total Income**: €${totalIncome.toFixed(2)} (VAT: €${totalVatIncome.toFixed(2)}) across ${income.length} records
-- **Net Profit/Loss**: €${(totalIncome - totalExpenses).toFixed(2)}
+### Total Expenses (${expenses.length} records)
+${expenseByCurrency.map(([cur, d]) => `- **${cur}**: ${fmtCur(d.total, cur)} (VAT: ${fmtCur(d.vat, cur)}) — ${d.count} records`).join("\n") || "No expenses"}
+
+### Total Income (${income.length} records)
+${incomeByCurrency.map(([cur, d]) => `- **${cur}**: ${fmtCur(d.total, cur)} (VAT: ${fmtCur(d.vat, cur)}) — ${d.count} records`).join("\n") || "No income"}
+
 - **Documents**: ${documents.length} total (${documents.filter((d) => d.status === "processed").length} processed, ${documents.filter((d) => d.status === "needs_review").length} needs review)
 - **Categories**: ${categories.join(", ") || "None defined"}
 
 ## Expenses by Category
-${Object.entries(expByCat).map(([cat, total]) => `- ${cat}: €${total.toFixed(2)}`).join("\n") || "No categorized expenses"}
+${Object.entries(expByCat).map(([cat, byCur]) => `- ${cat}: ${fmtMulti(byCur)}`).join("\n") || "No categorized expenses"}
 
 ## Top Suppliers (by spend)
-${topSuppliers.map(([name, total]) => `- ${name}: €${(total as number).toFixed(2)}`).join("\n") || "No suppliers"}
+${topSuppliers.map(([name, byCur]) => `- ${name}: ${fmtMulti(byCur)}`).join("\n") || "No suppliers"}
 
 ## Top Customers (by revenue)
-${topCustomers.map(([name, total]) => `- ${name}: €${(total as number).toFixed(2)}`).join("\n") || "No customers"}
+${topCustomers.map(([name, byCur]) => `- ${name}: ${fmtMulti(byCur)}`).join("\n") || "No customers"}
 
 ## Recent Expenses (last 20)
-${expenses.slice(0, 20).map((e) => `- ${e.invoice_date} | ${e.supplier_name} | €${e.total_amount} | ${e.category || "N/A"}`).join("\n") || "None"}
+${expenses.slice(0, 20).map((e) => `- ${e.invoice_date} | ${e.supplier_name} | ${fmtCur(e.total_amount, e.currency || "EUR")} | ${e.category || "N/A"}`).join("\n") || "None"}
 
 ## Recent Income (last 20)
-${income.slice(0, 20).map((i) => `- ${i.invoice_date} | ${i.customer_name} | €${i.total_amount} | ${i.category || "N/A"}`).join("\n") || "None"}
+${income.slice(0, 20).map((i) => `- ${i.invoice_date} | ${i.customer_name} | ${fmtCur(i.total_amount, i.currency || "EUR")} | ${i.category || "N/A"}`).join("\n") || "None"}
 
 ## Guidelines
 - Use markdown formatting (headers, tables, bold, lists) to make responses clear and scannable.
 - When generating reports, use markdown tables.
 - When users ask about data you don't have (e.g. specific date ranges not in context), let them know what data you can see.
-- Be concise but thorough. Use € as the default currency unless the user's data shows otherwise.
+- Be concise but thorough. IMPORTANT: This user may have records in multiple currencies — never mix currency totals. Always show amounts with their correct currency symbol.
 - For app help questions, explain Charmy features: document upload/OCR, expense tracking, income tracking, categories, exports, team management, and settings.
 - Never fabricate financial data. Only reference what's in the context above.`;
 

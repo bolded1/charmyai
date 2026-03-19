@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ManualExpenseDialog } from "@/components/ManualExpenseDialog";
 import { useNavigate } from "react-router-dom";
+import { groupByCurrency, fmtCurrencyValue } from "@/lib/currency-utils";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
 
@@ -146,7 +147,7 @@ export default function ExpensesPage() {
   const paginatedFiltered = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
   const groupedByMonth = useMemo(() => {
-    const groups: { key: string; label: string; records: typeof filtered; total: number }[] = [];
+    const groups: { key: string; label: string; records: typeof filtered; currencyTotals: ReturnType<typeof groupByCurrency> }[] = [];
     const map = new Map<string, typeof filtered>();
 
     // Sort by date descending
@@ -166,12 +167,11 @@ export default function ExpensesPage() {
 
     map.forEach((records, key) => {
       const label = key === "no-date" ? "No Date" : format(parseISO(key + "-01"), "MMMM yyyy");
-      const total = records.reduce((s, e) => s + Number(e.total_amount || 0), 0);
-      groups.push({ key, label, records, total });
+      groups.push({ key, label, records, currencyTotals: groupByCurrency(records, defaultCurrency) });
     });
 
     return groups;
-  }, [filtered]);
+  }, [filtered, defaultCurrency]);
 
   const currencySymbols: Record<string, string> = {
     EUR: "€", USD: "$", GBP: "£", CHF: "CHF ", JPY: "¥", CAD: "CA$", AUD: "A$",
@@ -353,7 +353,7 @@ export default function ExpensesPage() {
                   <div className="flex items-center justify-between px-3 py-2 bg-muted/50 sticky top-0 z-10">
                     <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">{group.label}</span>
                     <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
-                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
                   </div>
                   <div className="divide-y divide-border/50">
@@ -434,7 +434,7 @@ export default function ExpensesPage() {
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">{group.label}</span>
                             <span className="text-xs font-semibold tabular-nums text-muted-foreground">
-                              {group.records.length} records · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {group.records.length} records · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                             </span>
                           </div>
                         </td>
