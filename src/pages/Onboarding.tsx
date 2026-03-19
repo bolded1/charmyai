@@ -100,7 +100,7 @@ export default function OnboardingPage() {
       if (profile?.billing_setup_at) {
         navigate("/app", { replace: true });
       } else {
-        navigate("/activate-trial", { replace: true });
+        navigate("/payment", { replace: true });
       }
     }
   }, [authLoading, profileLoading, user, profile?.onboarding_completed_at, profile?.billing_setup_at, hasStartedOnboardingFlow, navigate]);
@@ -232,7 +232,7 @@ export default function OnboardingPage() {
         navigate("/activate-firm");
       } else {
         toast.success(t("onboarding.successBusiness"));
-        navigate("/activate-trial");
+        navigate("/payment");
       }
     }
   };

@@ -128,7 +128,7 @@ export default function BillingRequiredPage() {
                 Update Payment Method
               </Button>
             ) : (
-              <Button className="w-full" size="lg" onClick={() => navigate("/activate-trial")}>
+              <Button className="w-full" size="lg" onClick={() => navigate("/payment")}>
                 <CreditCard className="h-4 w-4 mr-2" />
                 Continue to Payment
               </Button>

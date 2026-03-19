@@ -511,7 +511,7 @@ export default function FeaturesPage() {
                   ))}
                 </ul>
                 <Button size="lg" asChild className="text-base px-8">
-                  <Link to="/activate-trial?plan=firm">{t("features.getFirmPlan")} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  <Link to="/payment?plan=firm">{t("features.getFirmPlan")} <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </div>
               <div className="shrink-0">
