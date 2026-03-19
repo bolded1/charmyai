@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useOrganization } from "@/hooks/useOrganization";
 import { STRIPE_PLANS } from "@/hooks/useSubscription";
 import { useBrandLogo } from "@/hooks/useBrandLogo";
 import { usePromoCode } from "@/hooks/usePromoCode";
@@ -18,14 +20,19 @@ type PlanChoice = "pro" | "firm";
 
 export default function ActivateTrialPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { profile } = useProfile();
+  const { data: organization } = useOrganization();
   const brandLogo = useBrandLogo();
   const { validateCode, clearPromo, validating, promoResult } = usePromoCode();
 
   const initialPlan = searchParams.get("plan") === "firm" ? "firm" : "pro";
   const [planChoice, setPlanChoice] = useState<PlanChoice>(initialPlan);
+  const isFirmFlow = planChoice === "firm" || organization?.workspace_type === "accounting_firm";
+  const postActivationPath = isFirmFlow ? "/app/workspaces" : "/app";
+
   const [stripe, setStripe] = useState<any>(null);
   const [elements, setElements] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
@@ -38,7 +45,6 @@ export default function ActivateTrialPage() {
   const [setupError, setSetupError] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [promoExpanded, setPromoExpanded] = useState(false);
-  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
 
   // Pre-fill billing name when profile loads
   useEffect(() => {
@@ -46,10 +52,11 @@ export default function ActivateTrialPage() {
       const name = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
       if (name) setBillingName(name);
     }
-  }, [profile]);
+  }, [profile, billingName]);
 
   useEffect(() => {
     if (!user) return;
+
     const checkExisting = async () => {
       try {
         const { data: profileData } = await supabase
@@ -58,19 +65,19 @@ export default function ActivateTrialPage() {
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (profileData?.billing_setup_at) {
-          const { data, error } = await supabase.functions.invoke("check-subscription");
-          if (!error && data?.subscribed) {
-            setAlreadySubscribed(true);
-            navigate("/app", { replace: true });
-          }
+        if (!profileData?.billing_setup_at) return;
+
+        const { data, error } = await supabase.functions.invoke("check-subscription");
+        if (!error && data?.subscribed) {
+          navigate(data?.has_firm_plan || isFirmFlow ? "/app/workspaces" : "/app", { replace: true });
         }
       } catch {
         // fail-closed
       }
     };
+
     checkExisting();
-  }, [user, navigate]);
+  }, [user, navigate, isFirmFlow]);
 
   // Load Stripe.js
   useEffect(() => {
@@ -102,6 +109,61 @@ export default function ActivateTrialPage() {
   const [firmElements, setFirmElements] = useState<any>(null);
   const proInitRef = useRef(false);
   const firmInitRef = useRef(false);
+
+  const syncPostActivationState = async () => {
+    if (!user) return;
+
+    const billingSetupAt = new Date().toISOString();
+
+    queryClient.setQueryData(["profile", user.id], (current: any) => ({
+      ...(current ?? {}),
+      user_id: current?.user_id ?? user.id,
+      email: current?.email ?? user.email ?? null,
+      billing_setup_at: billingSetupAt,
+      updated_at: billingSetupAt,
+    }));
+
+    if (isFirmFlow) {
+      queryClient.setQueryData(["organization"], (current: any) =>
+        current
+          ? {
+              ...current,
+              workspace_type: "accounting_firm",
+              max_client_workspaces: Math.max(current.max_client_workspaces ?? 0, 10),
+            }
+          : current,
+      );
+
+      queryClient.setQueriesData({ queryKey: ["workspaces"] }, (current: any) =>
+        Array.isArray(current)
+          ? current.map((workspace: any) =>
+              workspace.owner_user_id === user.id && workspace.workspace_type !== "client"
+                ? {
+                    ...workspace,
+                    workspace_type: "accounting_firm",
+                    max_client_workspaces: Math.max(workspace.max_client_workspaces ?? 0, 10),
+                  }
+                : workspace,
+            )
+          : current,
+      );
+    }
+
+    try {
+      await supabase
+        .from("profiles")
+        .update({ billing_setup_at: billingSetupAt })
+        .eq("user_id", user.id);
+    } catch {
+      // best effort, cache is already synced locally
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["profile", user.id] }),
+      queryClient.invalidateQueries({ queryKey: ["organization"] }),
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
+    ]);
+  };
 
   // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
@@ -150,16 +212,16 @@ export default function ActivateTrialPage() {
 
     const initFirmPayment = async () => {
       try {
-        // Wait for DOM element to exist
-        const waitForEl = () => new Promise<void>((resolve, reject) => {
-          let attempts = 0;
-          const check = () => {
-            if (document.getElementById("stripe-firm-element")) return resolve();
-            if (++attempts > 20) return reject(new Error("Payment element not found"));
-            setTimeout(check, 100);
-          };
-          check();
-        });
+        const waitForEl = () =>
+          new Promise<void>((resolve, reject) => {
+            let attempts = 0;
+            const check = () => {
+              if (document.getElementById("stripe-firm-element")) return resolve();
+              if (++attempts > 20) return reject(new Error("Payment element not found"));
+              setTimeout(check, 100);
+            };
+            check();
+          });
         await waitForEl();
 
         const { data, error } = await supabase.functions.invoke("firm-payment-intent");
@@ -200,15 +262,14 @@ export default function ActivateTrialPage() {
     setPromoCode("");
   };
 
-
-  // Handle Firm Plan inline payment
   const handleFirmCheckout = async () => {
     setSubmitting(true);
     setSetupError(null);
+
     try {
       if (cardRequired) {
-        // Card payment flow
         if (!stripe || !firmElements || !firmClientSecret) return;
+
         const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
           elements: firmElements,
           confirmParams: {
@@ -233,7 +294,6 @@ export default function ActivateTrialPage() {
           return;
         }
       } else {
-        // Free access via promo code — call activate-trial with skipCard
         const { data, error } = await supabase.functions.invoke("activate-trial", {
           body: {
             priceId: STRIPE_PLANS.firm.price_id,
@@ -242,20 +302,12 @@ export default function ActivateTrialPage() {
             stripeCouponId: promoResult?.valid ? promoResult.stripe_coupon_id : undefined,
           },
         });
+
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
       }
 
-      // Set billing_setup_at
-      if (user) {
-        try {
-          await supabase
-            .from("profiles")
-            .update({ billing_setup_at: new Date().toISOString() })
-            .eq("user_id", user.id);
-        } catch {}
-      }
-
+      await syncPostActivationState();
       toast.success("Payment successful! Your firm plan is now active.");
       navigate("/app/workspaces");
     } catch (err: any) {
@@ -334,15 +386,9 @@ export default function ActivateTrialPage() {
         if (data?.error) throw new Error(data.error);
       }
 
-      try {
-        await supabase
-          .from("profiles")
-          .update({ billing_setup_at: new Date().toISOString() })
-          .eq("user_id", user!.id);
-      } catch {}
-
+      await syncPostActivationState();
       toast.success("Your Pro plan has been activated!");
-      navigate("/app");
+      navigate(postActivationPath);
     } catch (err: any) {
       setSetupError(err.message || "Failed to activate plan");
     } finally {

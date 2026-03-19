@@ -11,12 +11,15 @@ const corsHeaders = {
 const FIRM_PLAN_PRODUCT_ID = "prod_U7OoSyNLV7qab3";
 const FIRM_UPGRADE_PRODUCT_ID = "prod_UB5OgAq3lOdScN";
 const PRO_PLAN_PRODUCT_ID = "prod_U7PZ8dbaVYJKAv";
+const FIRM_PLAN_PRICE_ID = "price_1T9A0dBmkvUKJ0fuiFeIMzov";
+const FIRM_UPGRADE_PRICE_ID = "price_1TCjDtBmkvUKJ0fuIjMPIqlN";
 // Legacy subscription product IDs (monthly/annual)
 const PRO_MONTHLY_PRODUCT_ID = "prod_U6lFbZZFmHhG8T";
 const PRO_ANNUAL_PRODUCT_ID = "prod_U6lFBZgYR4YdhA";
 
 const isFirmProduct = (id: string) => [FIRM_PLAN_PRODUCT_ID, FIRM_UPGRADE_PRODUCT_ID].includes(id);
 const isProProduct = (id: string) => [PRO_PLAN_PRODUCT_ID, PRO_MONTHLY_PRODUCT_ID, PRO_ANNUAL_PRODUCT_ID].includes(id);
+const isFirmPrice = (id: string) => [FIRM_PLAN_PRICE_ID, FIRM_UPGRADE_PRICE_ID].includes(id);
 
 const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
@@ -63,6 +66,15 @@ serve(async (req) => {
       return promoAccess && promoAccess.length > 0 ? promoAccess[0] : null;
     };
 
+    const promoHasFirmAccess = (promo: Awaited<ReturnType<typeof checkPromo>>) => {
+      if (!promo?.discount_snapshot || typeof promo.discount_snapshot !== "object" || Array.isArray(promo.discount_snapshot)) {
+        return false;
+      }
+
+      const snapshot = promo.discount_snapshot as Record<string, unknown>;
+      return typeof snapshot.priceId === "string" && isFirmPrice(snapshot.priceId);
+    };
+
     // Helper: provision firm entitlement on the user's organization
     const provisionFirmOrg = async () => {
       try {
@@ -91,12 +103,20 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No Stripe customer found, checking promo entitlements");
       const promo = await checkPromo();
+      const promoFirmAccess = promoHasFirmAccess(promo);
       if (promo) {
-        logStep("Active promo entitlement found", { redemptionId: promo.id });
+        if (promoFirmAccess) {
+          await provisionFirmOrg();
+        }
+        logStep("Active promo entitlement found", { redemptionId: promo.id, promoFirmAccess });
         return new Response(JSON.stringify({
-          subscribed: true, plan: "pro", status: "promo_active",
-          trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: false,
+          subscribed: true,
+          plan: promoFirmAccess ? "firm" : "pro",
+          status: "promo_active",
+          trial_end: null,
+          current_period_end: null,
+          cancel_at_period_end: false,
+          has_firm_plan: promoFirmAccess,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
       return new Response(JSON.stringify({
@@ -161,11 +181,15 @@ serve(async (req) => {
     if (subscriptions.data.length === 0) {
       logStep("No subscriptions found, checking promo and one-time purchases");
       const promo = await checkPromo();
+      const promoFirmAccess = promoHasFirmAccess(promo);
       if (promo) {
+        if (promoFirmAccess) {
+          await provisionFirmOrg();
+        }
         return new Response(JSON.stringify({
-          subscribed: true, plan: hasFirmPlan ? "firm" : "pro", status: "promo_active",
+          subscribed: true, plan: promoFirmAccess || hasFirmPlan ? "firm" : "pro", status: "promo_active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: hasFirmPlan, amount_paid: amountPaid, paid_currency: paidCurrency,
+          has_firm_plan: promoFirmAccess || hasFirmPlan, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -233,12 +257,16 @@ serve(async (req) => {
     // If subscription is not active, check if user has an active promo or one-time purchase that overrides
     if (!isActive && !hasFirmPlan) {
       const promo = await checkPromo();
+      const promoFirmAccess = promoHasFirmAccess(promo);
       if (promo) {
-        logStep("Subscription inactive but active promo found, granting access", { redemptionId: promo.id });
+        if (promoFirmAccess) {
+          await provisionFirmOrg();
+        }
+        logStep("Subscription inactive but active promo found, granting access", { redemptionId: promo.id, promoFirmAccess });
         return new Response(JSON.stringify({
-          subscribed: true, plan: "pro", status: "promo_active",
+          subscribed: true, plan: promoFirmAccess ? "firm" : "pro", status: "promo_active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: false, amount_paid: amountPaid, paid_currency: paidCurrency,
+          has_firm_plan: promoFirmAccess, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
       if (hasProPlan) {
