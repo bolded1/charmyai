@@ -10,7 +10,7 @@ const CATEGORY_COLORS = [
   "#a855f7", "#d946ef", "#0ea5e9", "#10b981", "#f59e0b",
 ];
 
-/** Ensure a category exists in expense_categories; create with a random color if missing. */
+/** Ensure a category exists in expense_categories; create with a unique color if missing. */
 async function ensureCategoryExists(
   categoryName: string | null | undefined,
   userId: string,
@@ -21,7 +21,7 @@ async function ensureCategoryExists(
 
   let query = supabase
     .from("expense_categories")
-    .select("id")
+    .select("id, color")
     .eq("user_id", userId)
     .ilike("name", trimmed);
 
@@ -34,7 +34,22 @@ async function ensureCategoryExists(
   const { data: existing } = await query.maybeSingle();
   if (existing) return;
 
-  const color = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)];
+  // Fetch all existing colors so we can pick an unused one
+  let colorsQuery = supabase
+    .from("expense_categories")
+    .select("color")
+    .eq("user_id", userId);
+  if (organizationId) {
+    colorsQuery = colorsQuery.eq("organization_id", organizationId);
+  }
+  const { data: usedRows } = await colorsQuery;
+  const usedColors = new Set((usedRows || []).map((r) => r.color));
+
+  // Pick the first unused color, or fall back to a random one if all are taken
+  let color = CATEGORY_COLORS.find((c) => !usedColors.has(c));
+  if (!color) {
+    color = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)];
+  }
 
   await supabase.from("expense_categories").insert({
     user_id: userId,
