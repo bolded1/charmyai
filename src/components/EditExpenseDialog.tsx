@@ -350,6 +350,7 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {fileUrl && isImage && <ImageLightbox open={lightboxOpen} onOpenChange={setLightboxOpen} src={fileUrl} />}
     </>
   );
 }

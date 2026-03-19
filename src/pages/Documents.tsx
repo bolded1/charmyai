@@ -880,6 +880,7 @@ export default function DocumentsPage() {
           )}
         </DialogContent>
       </Dialog>
+      {fileUrl && isImage && <ImageLightbox open={lightboxOpen} onOpenChange={setLightboxOpen} src={fileUrl} />}
     </div>
   );
 }

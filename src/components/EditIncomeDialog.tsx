@@ -350,6 +350,7 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {fileUrl && isImage && <ImageLightbox open={lightboxOpen} onOpenChange={setLightboxOpen} src={fileUrl} />}
     </>
   );
 }
