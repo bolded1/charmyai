@@ -167,6 +167,9 @@ export function useUploadDocument() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // Check storage quota
+      await checkStorageQuota(profile?.active_organization_id || null, file.size);
+
       // Duplicate detection: same file_name + file_size for this user
       const { data: existing } = await supabase
         .from("documents")
