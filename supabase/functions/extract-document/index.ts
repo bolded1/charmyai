@@ -36,6 +36,7 @@ serve(async (req) => {
       }
       userId = body.userId;
       var documentId = body.documentId;
+      var skipRecordCreation = false;
     } else {
       // Normal authenticated call
       if (!authHeader?.startsWith("Bearer ")) {
@@ -80,6 +81,7 @@ serve(async (req) => {
         });
       }
       var documentId = body.documentId;
+      var skipRecordCreation = body.skipRecordCreation === true;
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -451,8 +453,9 @@ serve(async (req) => {
       });
     }
 
-    // Auto-create expense/income record when auto-approved
-    if (newStatus === "approved") {
+    // Auto-create expense/income record when auto-approved.
+    // Skip if the caller (e.g. useUploadIncomeDocument) handles record creation itself.
+    if (newStatus === "approved" && !skipRecordCreation) {
       const docType = extracted.document_type || "expense_invoice";
       if (docType === "sales_invoice") {
         await supabase.from("income_records").insert({
