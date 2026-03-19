@@ -9,11 +9,13 @@ const corsHeaders = {
 
 // Product IDs for one-time purchases
 const FIRM_PLAN_PRODUCT_ID = "prod_U7OoSyNLV7qab3";
+const FIRM_UPGRADE_PRODUCT_ID = "prod_UB5OgAq3lOdScN";
 const PRO_PLAN_PRODUCT_ID = "prod_U7PZ8dbaVYJKAv";
 // Legacy subscription product IDs (monthly/annual)
 const PRO_MONTHLY_PRODUCT_ID = "prod_U6lFbZZFmHhG8T";
 const PRO_ANNUAL_PRODUCT_ID = "prod_U6lFBZgYR4YdhA";
 
+const isFirmProduct = (id: string) => [FIRM_PLAN_PRODUCT_ID, FIRM_UPGRADE_PRODUCT_ID].includes(id);
 const isProProduct = (id: string) => [PRO_PLAN_PRODUCT_ID, PRO_MONTHLY_PRODUCT_ID, PRO_ANNUAL_PRODUCT_ID].includes(id);
 
 const logStep = (step: string, details?: any) => {
@@ -122,7 +124,7 @@ serve(async (req) => {
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
           for (const item of lineItems.data) {
             const productId = typeof item.price?.product === "string" ? item.price.product : (item.price?.product as any)?.id;
-            if (productId === FIRM_PLAN_PRODUCT_ID) {
+            if (isFirmProduct(productId)) {
               hasFirmPlan = true;
               // Capture actual amount paid (in cents -> convert to main unit)
               amountPaid = (session.amount_total ?? 0) / 100;
@@ -200,7 +202,7 @@ serve(async (req) => {
       ? sub.items.data[0].price.product
       : (sub.items.data[0]?.price?.product as any)?.id;
     
-    if (subProductId === FIRM_PLAN_PRODUCT_ID) {
+    if (isFirmProduct(subProductId)) {
       hasFirmPlan = true;
       await provisionFirmOrg();
     }

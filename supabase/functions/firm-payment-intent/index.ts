@@ -54,15 +54,50 @@ serve(async (req) => {
     }
     logStep("Customer resolved", { customerId });
 
-    // Create PaymentIntent for €99 one-time firm plan
+    // Check if user already has a Pro plan — charge upgrade price (€69.01) instead of full (€99)
+    let isUpgrade = false;
+    try {
+      const subs = await stripe.subscriptions.list({ customer: customerId, limit: 10 });
+      for (const sub of subs.data) {
+        const prodId = typeof sub.items.data[0]?.price?.product === "string"
+          ? sub.items.data[0].price.product
+          : (sub.items.data[0]?.price?.product as any)?.id;
+        if (["prod_U7PZ8dbaVYJKAv", "prod_U6lFbZZFmHhG8T", "prod_U6lFBZgYR4YdhA"].includes(prodId)) {
+          isUpgrade = true;
+          break;
+        }
+      }
+      if (!isUpgrade) {
+        // Check one-time pro purchases
+        const sessions = await stripe.checkout.sessions.list({ customer: customerId, limit: 50 });
+        for (const session of sessions.data) {
+          if (session.payment_status === "paid" && session.mode === "payment") {
+            const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
+            for (const item of lineItems.data) {
+              const pid = typeof item.price?.product === "string" ? item.price.product : (item.price?.product as any)?.id;
+              if (pid === "prod_U7PZ8dbaVYJKAv") { isUpgrade = true; break; }
+            }
+            if (isUpgrade) break;
+          }
+        }
+      }
+    } catch (err) {
+      logStep("Error checking pro status for upgrade pricing", { error: String(err) });
+    }
+
+    const amount = isUpgrade ? 6901 : 9900;
+    const priceId = isUpgrade ? "price_1TCjDtBmkvUKJ0fuIjMPIqlN" : "price_1T9A0dBmkvUKJ0fuiFeIMzov";
+    logStep("Payment amount determined", { isUpgrade, amount });
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 9900, // €99.00 in cents
+      amount,
       currency: "eur",
       customer: customerId,
       metadata: {
         supabase_user_id: user.id,
         plan_type: "firm",
-        price_id: "price_1T9A0dBmkvUKJ0fuiFeIMzov",
+        price_id: priceId,
+        is_upgrade: isUpgrade ? "true" : "false",
       },
       payment_method_types: ["card"],
     });

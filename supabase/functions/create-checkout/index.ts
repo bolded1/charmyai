@@ -15,6 +15,7 @@ const logStep = (step: string, details?: any) => {
 const ONE_TIME_PRICE_IDS = new Set([
   "price_1T9A0dBmkvUKJ0fuiFeIMzov", // Accounting Firm Plan €99
   "price_1T9AklBmkvUKJ0fuE3YD85rg", // Pro Plan €29.99
+  "price_1TCjDtBmkvUKJ0fuIjMPIqlN", // Firm Upgrade (from Pro) €69.01
 ]);
 
 serve(async (req) => {

@@ -35,6 +35,12 @@ export const STRIPE_PLANS = {
       "One-time payment — no recurring fees",
     ],
   },
+  firm_upgrade: {
+    name: "Firm Plan Upgrade (from Pro)",
+    price_onetime: 69.01,
+    price_id: "price_1TCjDtBmkvUKJ0fuIjMPIqlN",
+    product_id: "prod_UB5OgAq3lOdScN",
+  },
 } as const;
 
 export interface SubscriptionState {

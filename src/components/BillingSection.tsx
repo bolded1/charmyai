@@ -535,8 +535,8 @@ function FirmUpgradeCard() {
     }
   };
 
-  // Price calculation
-  const basePrice: number = STRIPE_PLANS.firm.price_onetime || 99;
+  // Pro users upgrading pay the difference (€69.01), not full price
+  const basePrice: number = STRIPE_PLANS.firm_upgrade.price_onetime;
   let finalPrice: number = basePrice;
   let discountLine: string | null = null;
   if (promoResult?.valid) {
@@ -560,8 +560,8 @@ function FirmUpgradeCard() {
             <Building2 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold">Accounting Firm Plan</h3>
-            <p className="text-xs text-muted-foreground">One-time payment · Lifetime access</p>
+            <h3 className="font-semibold">Upgrade to Accounting Firm Plan</h3>
+            <p className="text-xs text-muted-foreground">Pay the difference · Lifetime access</p>
           </div>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
@@ -623,7 +623,7 @@ function FirmUpgradeCard() {
         {/* Billing summary */}
         <div className="rounded-xl border border-border/50 bg-muted/30 p-3 mb-5">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Firm Plan (one-time)</span>
+            <span className="text-muted-foreground">Firm Plan Upgrade (difference)</span>
             <span className="font-medium">€{basePrice.toFixed(2)}</span>
           </div>
           {discountLine && (
