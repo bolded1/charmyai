@@ -413,9 +413,10 @@ JSON schema (all fields optional except document_type, currency, total_amount, c
         .select("*")
         .eq("user_id", doc.user_id);
       if (doc.organization_id) {
-        rulesQuery = rulesQuery.eq("organization_id", doc.organization_id);
+        rulesQuery = rulesQuery.or(`organization_id.eq.${doc.organization_id},organization_id.is.null`);
       }
       const { data: rules } = await rulesQuery;
+      console.log(`[extract-document] Auto-category rules found: ${rules?.length || 0}`);
 
       if (rules && rules.length > 0) {
         for (const rule of rules) {
