@@ -67,15 +67,19 @@ export function useBulkDownload() {
       const a = document.createElement("a");
       a.href = url;
       a.download = `${zipName}.zip`;
+      a.style.display = "none";
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Delay cleanup so the browser has time to initiate the download
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 3000);
 
       if (failed > 0) {
-        toast.warning(`Downloaded ${added} file(s), ${failed} could not be retrieved`);
+        toast.warning(`Downloaded ${added} files, ${failed} could not be retrieved`);
       } else {
-        toast.success(`Downloaded ${added} file(s) as ZIP`);
+        toast.success("Documents downloaded as ZIP");
       }
     } catch (err: any) {
       toast.error(err.message || "Download failed");

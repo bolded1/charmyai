@@ -160,9 +160,10 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
     a.download = record?.customer_name
       ? `${record.customer_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
       : "document";
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    setTimeout(() => document.body.removeChild(a), 3000);
   };
 
   const handleOpenFile = () => {

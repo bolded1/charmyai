@@ -158,9 +158,10 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
     a.download = record?.supplier_name
       ? `${record.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
       : "document";
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    setTimeout(() => document.body.removeChild(a), 3000);
   };
 
   const handleOpenFile = () => {
