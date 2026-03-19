@@ -56,7 +56,8 @@ export default function ExpensesPage() {
   const { data: org } = useOrganization();
   const defaultCurrency = org?.default_currency || "EUR";
   const isOnline = useOnlineStatus();
-  const [visibleCount, setVisibleCount] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(30);
 
   const selectedExpense = expenses.find((e) => e.id === selectedId);
 
