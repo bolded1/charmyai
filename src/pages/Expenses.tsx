@@ -373,7 +373,7 @@ export default function ExpensesPage() {
                   Upload an invoice to extract data automatically, or add a manual expense like mileage or a cash purchase.
                 </p>
                 <div className="flex gap-2 flex-wrap justify-center">
-                  <Button size="sm" variant="outline" onClick={() => navigate("/app/documents")}>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/app")}>
                     <FileText className="h-4 w-4 mr-1" /> Upload Invoice
                   </Button>
                   <Button size="sm" onClick={() => setManualEntryOpen(true)}>
