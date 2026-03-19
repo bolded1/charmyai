@@ -453,8 +453,7 @@ export default function ExpensesPage() {
                  <tr className="border-b border-border">
                     <th className="pl-4 pr-1 w-10">
                       <Checkbox
-                        checked={selectableCount > 0 && selectedIds.size === selectableCount}
-                        indeterminate={selectedIds.size > 0 && selectedIds.size < selectableCount}
+                        checked={selectedIds.size > 0 && selectedIds.size < selectableCount ? "indeterminate" : selectableCount > 0 && selectedIds.size === selectableCount}
                         onCheckedChange={toggleSelectAll}
                       />
                     </th>
