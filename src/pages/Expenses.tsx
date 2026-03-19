@@ -568,12 +568,38 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Load more */}
-      {filtered.length > visibleCount && (
-        <div className="flex justify-center">
-          <Button variant="outline" size="sm" onClick={() => setVisibleCount((c) => c + 50)}>
-            Show more ({filtered.length - visibleCount} remaining)
-          </Button>
+      {/* Pagination */}
+      {filtered.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Showing {Math.min((safePage - 1) * pageSize + 1, filtered.length)}–{Math.min(safePage * pageSize, filtered.length)} of {filtered.length}</span>
+            <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(1); }}>
+              <SelectTrigger className="h-8 w-[70px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 20, 30, 50, 100].map((s) => (
+                  <SelectItem key={s} value={String(s)}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span className="text-xs">per page</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage <= 1} onClick={() => setCurrentPage(1)}>
+              «
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage <= 1} onClick={() => setCurrentPage((p) => p - 1)}>
+              ‹
+            </Button>
+            <span className="text-sm px-2 tabular-nums">{safePage} / {totalPages}</span>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}>
+              ›
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage >= totalPages} onClick={() => setCurrentPage(totalPages)}>
+              »
+            </Button>
+          </div>
         </div>
       )}
 
