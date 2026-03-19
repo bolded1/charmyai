@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Inter:wght@300;400;450;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,14 +10,14 @@
        WARM TERRACOTTA LIGHT THEME
     ═══════════════════════════════════════════ */
 
-    --background:      28 76% 97%;
-    --background-page: 28 76% 97%;
+    --background:      0 0% 97%;
+    --background-page: 0 0% 97%;
     --card:            0 0% 100%;
     --popover:         0 0% 100%;
 
-    --surface-sunken:   28 40% 94.5%;
+    --surface-sunken:   0 0% 94%;
     --surface-elevated: 0 0% 100%;
-    --surface-hover:    28 30% 96%;
+    --surface-hover:    0 0% 96%;
     --overlay:          0 10% 8%;
 
     --foreground:         0 0% 11%;
@@ -38,8 +38,10 @@
     /* Colorful accent palette */
     --violet:         17 69% 60%;
     --violet-soft:    17 60% 94%;
-    --teal:           172 66% 40%;
-    --teal-soft:      172 50% 94%;
+    --teal:           188 100% 28%;
+    --teal-soft:      188 60% 94%;
+    --deep-teal:      188 100% 28%;
+    --deep-teal-soft: 188 60% 94%;
     --amber:          38 92% 50%;
     --amber-soft:     38 80% 94%;
     --rose:           350 75% 55%;
@@ -47,11 +49,14 @@
     --emerald:        152 60% 38%;
     --emerald-soft:   152 50% 94%;
 
-    --secondary:            28 40% 96%;
+    --secondary:            0 0% 96%;
     --secondary-foreground: 0 0% 11%;
-    --muted:                28 30% 95%;
-    --accent:               17 30% 93%;
+    --muted:                0 0% 95%;
+    --accent:               0 0% 93%;
     --accent-foreground:    0 0% 11%;
+
+    --primary-button:       350 69% 32%;
+    --primary-button-hover: 350 69% 26%;
 
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -72,13 +77,13 @@
 
     --input-bg:         0 0% 100%;
     --input-focus:      351 63% 37%;
-    --table-row-hover:  28 40% 97%;
+    --table-row-hover:  0 0% 97%;
     --link-color:       351 63% 37%;
 
     --chart-1:          351 63% 37%;
     --chart-2:          262 83% 58%;
     --chart-3:          350 75% 55%;
-    --chart-4:          172 66% 40%;
+    --chart-4:          188 100% 28%;
     --chart-5:          38 92% 50%;
 
     --sidebar-background:         0 0% 100%;
@@ -93,21 +98,21 @@
     --sidebar-active-text:        351 63% 29%;
     --sidebar-muted:              0 5% 52%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
     --hero-gradient: linear-gradient(135deg, hsl(351, 63%, 37%), hsl(6, 63%, 46%));
     --gradient-warm: linear-gradient(135deg, hsl(351, 63%, 37%), hsl(17, 69%, 60%));
     --gradient-cool: linear-gradient(135deg, hsl(172, 66%, 40%), hsl(351, 63%, 37%));
     --gradient-sunset: linear-gradient(135deg, hsl(6, 63%, 46%), hsl(17, 69%, 60%));
 
-    /* Rich shadows — Stripe-style depth */
-    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.03);
-    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
-    --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 0.1), 0 4px 10px -4px rgb(0 0 0 / 0.04);
-    --shadow-overlay: 0 20px 50px -12px rgb(0 0 0 / 0.15), 0 8px 20px -8px rgb(0 0 0 / 0.06);
+    /* Rich shadows — layered depth system */
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+    --shadow-md: 0 1px 2px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.12);
+    --shadow-overlay: 0 1px 2px rgba(0,0,0,0.05), 0 20px 50px rgba(0,0,0,0.15);
     --shadow-glow: 0 0 24px -6px hsl(351 63% 37% / 0.2);
-    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 0 0 1px rgb(0 0 0 / 0.02);
-    --shadow-card-hover: 0 6px 16px -4px rgb(0 0 0 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.02);
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-card-hover: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.12);
   }
 
 
@@ -146,15 +151,19 @@
   }
 
   h1 {
-    @apply text-xl font-semibold tracking-tight;
-    letter-spacing: -0.025em;
+    font-family: 'Bricolage Grotesque', serif;
+    @apply text-xl font-bold tracking-tight;
+    letter-spacing: -0.02em;
   }
   h2 {
-    @apply text-base font-semibold;
-    letter-spacing: -0.015em;
+    font-family: 'Bricolage Grotesque', serif;
+    @apply text-base font-bold;
+    letter-spacing: -0.02em;
   }
   h3 {
-    @apply text-sm font-medium;
+    font-family: 'Bricolage Grotesque', serif;
+    @apply text-sm font-semibold;
+    letter-spacing: -0.02em;
   }
   h4 {
     @apply text-[11px] font-medium uppercase tracking-widest;
@@ -301,6 +310,11 @@
     background: linear-gradient(135deg, hsl(38 92% 50% / 0.06), hsl(350 75% 55% / 0.03));
     border: 1px solid hsl(38 92% 50% / 0.1);
   }
+
+  /* Deep teal accent utilities */
+  .text-deep-teal { color: hsl(var(--deep-teal)); }
+  .bg-deep-teal-soft { background-color: hsl(var(--deep-teal-soft)); }
+  .icon-bg-teal { background: linear-gradient(135deg, hsl(var(--teal) / 0.12), hsl(var(--teal) / 0.04)); }
 }
 
 /* Hide scrollbar but keep scroll functionality */
@@ -329,4 +343,16 @@
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--border-strong));
+}
+
+/* Skeleton loader gradient pulse */
+@keyframes skeleton-pulse {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.animate-skeleton {
+  background: linear-gradient(90deg, #F8F8F8 25%, #E0E0E0 50%, #F8F8F8 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
 }

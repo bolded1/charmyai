@@ -23,10 +23,15 @@ export default function IndexPage() {
   const brandLogo = useBrandLogo();
 
   const fadeUp = {
-    hidden: { opacity: 0, y: 24 },
+    hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
-      opacity: 1, y: 0,
-      transition: { delay: i * 0.1, duration: 0.5 },
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
     }),
   };
 
@@ -206,7 +211,7 @@ export default function IndexPage() {
             <p className="text-muted-foreground max-w-lg mx-auto">{t("marketing.howItWorksDesc")}</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] gap-8">
             {[
               { icon: Upload, title: t("marketing.step1Title"), desc: t("marketing.step1Desc"), gradient: "bg-hero-gradient", shadow: "shadow-primary/20" },
               { icon: Search, title: t("marketing.step2Title"), desc: t("marketing.step2Desc"), gradient: "bg-gradient-cool", shadow: "shadow-teal/20" },
@@ -517,7 +522,7 @@ export default function IndexPage() {
             </h2>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))] gap-8">
             {[
               { icon: Clock, text: t("marketing.benefit1"), color: "icon-bg-blue", textColor: "text-primary" },
               { icon: Receipt, text: t("marketing.benefit2"), color: "icon-bg-violet", textColor: "text-violet" },
@@ -555,7 +560,7 @@ export default function IndexPage() {
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))] gap-8 mb-12">
             {[
               { icon: Lock, title: t("marketing.securityEncTitle"), desc: t("marketing.securityEncDesc"), gradient: "bg-hero-gradient", shadow: "shadow-primary/20" },
               { icon: Globe, title: t("marketing.securityGdprTitle"), desc: t("marketing.securityGdprDesc"), gradient: "bg-gradient-cool", shadow: "shadow-teal/20" },

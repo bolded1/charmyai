@@ -11,6 +11,7 @@ import {
   Hash, Shield, Sparkles, Zap, Lock, BarChart3,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExtractedData {
   document_type?: string;
@@ -206,6 +207,17 @@ export function DemoResultsModal({
 
               <div className="mt-8">
                 <Progress value={(activeStep + 1) / processingSteps.length * 100} className="h-1" />
+              </div>
+
+              {/* Skeleton preview of extracted data */}
+              <div className="mt-6 space-y-3 opacity-60">
+                <Skeleton className="h-6 w-3/4 mx-auto" />
+                <Skeleton className="h-4 w-1/2 mx-auto" />
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
               </div>
             </motion.div>
           ) : showResults && extractedData ? (
