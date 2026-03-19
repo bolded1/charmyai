@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        heading: ["Bricolage Grotesque", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -112,6 +113,10 @@ export default {
         emerald: {
           DEFAULT: "hsl(var(--emerald))",
           soft: "hsl(var(--emerald-soft))",
+        },
+        deepTeal: {
+          DEFAULT: "hsl(var(--deep-teal))",
+          soft: "hsl(var(--deep-teal-soft))",
         },
       },
       borderRadius: {
