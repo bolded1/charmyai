@@ -37,6 +37,7 @@ import Income from "./pages/Income";
 
 import Categories from "./pages/Categories";
 import Exports from "./pages/Exports";
+import Reports from "./pages/Reports";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
 import ApiDocs from "./pages/ApiDocs";
@@ -135,6 +136,7 @@ const App = () => (
             
             <Route path="categories" element={<Categories />} />
             <Route path="exports" element={<Exports />} />
+            <Route path="reports" element={<Reports />} />
             <Route path="team" element={<Team />} />
             <Route path="settings" element={<Settings />} />
             <Route path="api-docs" element={<ApiDocs />} />
