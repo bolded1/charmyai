@@ -36,7 +36,7 @@ const navGroups: NavGroup[] = [
     { title: "User Feedback", url: "/admin/feedback", icon: MessageSquareHeart },
   ]},
   { label: "Content & Comms", items: [
-    
+    { title: "Page Editor", url: "/admin/cms", icon: PenLine },
     { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
     { title: "Broadcast", url: "/admin/broadcast", icon: Megaphone },
     { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },

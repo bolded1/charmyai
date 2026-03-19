@@ -58,6 +58,7 @@ export function AdminSidebar() {
     {
       label: t("admin.contentComms"),
       items: [
+        { title: "Page Editor", url: "/admin/cms", icon: PenLine },
         { title: t("admin.emailTemplates"), url: "/admin/email-templates", icon: Mail },
         { title: t("admin.broadcast"), url: "/admin/broadcast", icon: Megaphone },
         { title: t("admin.demoSettings"), url: "/admin/demo-settings", icon: Sparkles },

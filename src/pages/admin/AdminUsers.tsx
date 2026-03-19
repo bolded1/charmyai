@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Loader2, RefreshCw, UserCheck, Plus, Pencil, ShieldCheck, Bell, Ban, X, Download } from "lucide-react";
+import { Search, Loader2, RefreshCw, UserCheck, Plus, Pencil, ShieldCheck, Bell, Ban, X, Download, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileRecordCard } from "@/components/ui/responsive-table";
 import { toast } from "sonner";
+import { logAuditEvent } from "@/lib/audit-log-client";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { useNavigate } from "react-router-dom";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
@@ -52,6 +53,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [sortField, setSortField] = useState<"email" | "role" | "created_at" | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<UserRow | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -110,6 +113,27 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole;
   });
 
+  const toggleUserSort = (field: typeof sortField) => {
+    if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortField(field); setSortDir("asc"); }
+  };
+
+  const UserSortIcon = ({ field }: { field: typeof sortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-30" />;
+    return sortDir === "asc" ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />;
+  };
+
+  const sortedFiltered = useMemo(() => {
+    if (!sortField) return filtered;
+    return [...filtered].sort((a, b) => {
+      let cmp = 0;
+      if (sortField === "email") cmp = (a.email || "").localeCompare(b.email || "");
+      else if (sortField === "role") cmp = (a.role || "").localeCompare(b.role || "");
+      else if (sortField === "created_at") cmp = (a.created_at || "").localeCompare(b.created_at || "");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, sortField, sortDir]);
+
   const toggleSelect = (userId: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -138,6 +162,7 @@ export default function AdminUsersPage() {
         });
         if (!res.error && !res.data?.error) success++;
       }
+      logAuditEvent({ action: "admin_bulk_role_change", entityType: "user", entityId: Array.from(selectedIds).join(","), details: `Changed role to ${bulkRole} for ${success} user(s)` });
       toast.success(`Role updated for ${success} user(s)`);
       setSelectedIds(new Set());
       setBulkAction(null);
@@ -191,6 +216,7 @@ export default function AdminUsersPage() {
         });
         if (!res.error && !res.data?.error) success++;
       }
+      logAuditEvent({ action: "admin_bulk_deactivate", entityType: "user", entityId: Array.from(selectedIds).join(","), details: `Suspended ${success} account(s)` });
       toast.success(`${success} account(s) suspended`);
       setSelectedIds(new Set());
       setBulkAction(null);
@@ -256,7 +282,7 @@ export default function AdminUsersPage() {
         </Card>
       ) : isMobile ? (
         <div className="space-y-2">
-          {filtered.map((user) => (
+          {sortedFiltered.map((user) => (
             <div key={user.id} className="flex items-start gap-2">
               <Checkbox
                 className="mt-3"
@@ -292,15 +318,21 @@ export default function AdminUsersPage() {
                       />
                     </th>
                     <th className="p-3 text-xs font-medium text-muted-foreground">Name</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Email</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Role</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground" onClick={() => toggleUserSort("email")} aria-sort={sortField === "email" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                      <span className="flex items-center">Email<UserSortIcon field="email" /></span>
+                    </th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground" onClick={() => toggleUserSort("role")} aria-sort={sortField === "role" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                      <span className="flex items-center">Role<UserSortIcon field="role" /></span>
+                    </th>
                     <th className="p-3 text-xs font-medium text-muted-foreground">Status</th>
-                    <th className="p-3 text-xs font-medium text-muted-foreground">Created</th>
+                    <th className="p-3 text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground" onClick={() => toggleUserSort("created_at")} aria-sort={sortField === "created_at" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                      <span className="flex items-center">Created<UserSortIcon field="created_at" /></span>
+                    </th>
                     <th className="p-3 text-xs font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((user) => (
+                  {sortedFiltered.map((user) => (
                     <tr key={user.id} className={`border-b last:border-0 transition-colors ${selectedIds.has(user.user_id) ? "bg-primary/5" : "hover:bg-muted/30"}`}>
                       <td className="p-3">
                         <Checkbox checked={selectedIds.has(user.user_id)} onCheckedChange={() => toggleSelect(user.user_id)} />

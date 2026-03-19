@@ -69,6 +69,7 @@ import AdminAISettings from "./pages/admin/AdminAISettings";
 import AdminMarketingEmail from "./pages/admin/AdminMarketingEmail";
 import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import AdminFirmAccounts from "./pages/admin/AdminFirmAccounts";
+import AdminCMS from "./pages/admin/AdminCMS";
 import Assistant from "./pages/Assistant";
 import Workspaces from "./pages/Workspaces";
 import DocumentRequests from "./pages/DocumentRequests";
@@ -176,6 +177,7 @@ const App = () => (
             <Route path="marketing-email" element={<AdminMarketingEmail />} />
             <Route path="promo-codes" element={<AdminPromoCodes />} />
             <Route path="support" element={<AdminSupport />} />
+            <Route path="cms" element={<AdminCMS />} />
           </Route>
 
           <Route path="/request/:token" element={<DocumentRequestUpload />} />
