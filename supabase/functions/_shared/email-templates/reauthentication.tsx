@@ -55,5 +55,5 @@ const logoImg = { borderRadius: '12px' }
 const divider = { borderColor: '#e5e7eb', margin: '16px 0 24px' }
 const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#0a0f1a', margin: '0 0 16px' }
 const text = { fontSize: '14px', color: '#6b7280', lineHeight: '1.6', margin: '0 0 20px' }
-const codeStyle = { fontFamily: 'Courier, monospace', fontSize: '28px', fontWeight: 'bold' as const, color: '#1E3A8A', letterSpacing: '4px', margin: '0 0 30px', textAlign: 'center' as const }
+const codeStyle = { fontFamily: 'Courier, monospace', fontSize: '28px', fontWeight: 'bold' as const, color: '#1E8A4A', letterSpacing: '4px', margin: '0 0 30px', textAlign: 'center' as const }
 const footer = { fontSize: '12px', color: '#9ca3af', margin: '32px 0 0' }

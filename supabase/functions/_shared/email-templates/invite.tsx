@@ -68,5 +68,5 @@ const logoImg = { borderRadius: '12px' }
 const divider = { borderColor: '#e5e7eb', margin: '16px 0 24px' }
 const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#0a0f1a', margin: '0 0 16px' }
 const text = { fontSize: '14px', color: '#6b7280', lineHeight: '1.6', margin: '0 0 20px' }
-const button = { backgroundColor: '#1E3A8A', color: '#ffffff', fontSize: '14px', fontWeight: '600' as const, borderRadius: '8px', padding: '12px 24px', textDecoration: 'none' }
+const button = { backgroundColor: '#1E8A4A', color: '#ffffff', fontSize: '14px', fontWeight: '600' as const, borderRadius: '8px', padding: '12px 24px', textDecoration: 'none' }
 const footer = { fontSize: '12px', color: '#9ca3af', margin: '32px 0 0' }
