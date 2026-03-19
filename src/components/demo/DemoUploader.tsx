@@ -59,6 +59,12 @@ export function DemoUploader() {
     setShowResults(true);
   };
 
+  const sanitizeName = (name: string) =>
+    name
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/_+/g, "_");
+
   const processFile = async (file: File) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       toast.error(t("demoUploader.unsupportedType"));
@@ -76,7 +82,7 @@ export function DemoUploader() {
 
     try {
       const sessionId = crypto.randomUUID();
-      const filePath = `demo/${sessionId}/${file.name}`;
+      const filePath = `demo/${sessionId}/${sanitizeName(file.name)}`;
 
       setProcessingStep(t("demoUploader.uploading"));
       const { error: uploadErr } = await supabase.storage
