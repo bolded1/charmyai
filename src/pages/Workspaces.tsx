@@ -120,7 +120,7 @@ const COUNTRIES = [
 
 const emptyForm: CreateWorkspaceData = {
   name: "", trading_name: "", vat_number: "", tax_id: "",
-  address: "", country: "NL", default_currency: "EUR",
+  address: "", country: "NL", default_currency: "",
   contact_email: "", contact_phone: "",
 };
 
