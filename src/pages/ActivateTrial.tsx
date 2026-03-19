@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -100,10 +100,14 @@ export default function ActivateTrialPage() {
   // Firm plan: PaymentIntent client secret
   const [firmClientSecret, setFirmClientSecret] = useState<string | null>(null);
   const [firmElements, setFirmElements] = useState<any>(null);
+  const proInitRef = useRef(false);
+  const firmInitRef = useRef(false);
 
   // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
     if (!stripe || !user || planChoice !== "pro" || !cardRequired) return;
+    if (proInitRef.current) return;
+    proInitRef.current = true;
 
     const initSetup = async () => {
       try {
@@ -129,6 +133,7 @@ export default function ActivateTrialPage() {
         card.mount("#stripe-card-element");
         setCardElement(card);
       } catch (err: any) {
+        proInitRef.current = false;
         setSetupError(err.message || "Failed to initialize payment form");
       }
     };
@@ -140,6 +145,8 @@ export default function ActivateTrialPage() {
   // Create PaymentIntent and mount Elements for Firm plan
   useEffect(() => {
     if (!stripe || !user || planChoice !== "firm" || !cardRequired) return;
+    if (firmInitRef.current) return;
+    firmInitRef.current = true;
 
     const initFirmPayment = async () => {
       try {
@@ -176,12 +183,12 @@ export default function ActivateTrialPage() {
         const pe = els.create("payment");
         pe.mount("#stripe-firm-element");
       } catch (err: any) {
+        firmInitRef.current = false;
         setSetupError(err.message || "Failed to initialize payment form");
       }
     };
 
     initFirmPayment();
-    return () => {};
   }, [stripe, user, planChoice, cardRequired]);
 
   const handleApplyPromo = async () => {
