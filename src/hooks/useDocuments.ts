@@ -4,6 +4,46 @@ import { toast } from "sonner";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { useActiveOrgId } from "@/hooks/useOrganization";
 
+const CATEGORY_COLORS = [
+  "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316",
+  "#eab308", "#22c55e", "#14b8a6", "#06b6d4", "#3b82f6",
+  "#a855f7", "#d946ef", "#0ea5e9", "#10b981", "#f59e0b",
+];
+
+/** Ensure a category exists in expense_categories; create with a random color if missing. */
+async function ensureCategoryExists(
+  categoryName: string | null | undefined,
+  userId: string,
+  organizationId: string | null
+) {
+  if (!categoryName || !categoryName.trim()) return;
+  const trimmed = categoryName.trim();
+
+  let query = supabase
+    .from("expense_categories")
+    .select("id")
+    .eq("user_id", userId)
+    .ilike("name", trimmed);
+
+  if (organizationId) {
+    query = query.eq("organization_id", organizationId);
+  } else {
+    query = query.is("organization_id", null);
+  }
+
+  const { data: existing } = await query.maybeSingle();
+  if (existing) return;
+
+  const color = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)];
+
+  await supabase.from("expense_categories").insert({
+    user_id: userId,
+    name: trimmed,
+    color,
+    organization_id: organizationId,
+  });
+}
+
 const WEBHOOK_FN = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
 
 /** Fire-and-forget: dispatch a webhook event without blocking the caller. */
@@ -243,6 +283,13 @@ export function useApproveDocument() {
         if (orgData?.default_currency) orgDefaultCurrency = orgData.default_currency;
       }
 
+      // Auto-create category if AI assigned one
+      await ensureCategoryExists(
+        doc.category,
+        user.id,
+        approverProfile?.active_organization_id || null
+      );
+
       // Create expense or income record based on document type
       // notes column added in migration 20260317120000 – omit if column absent
       const docNotes = (doc.user_corrections as any)?._notes || null;
@@ -320,6 +367,7 @@ export function useApproveDocument() {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["income"] });
+      queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
       toast.success("Document approved and record created");
     },
     onError: (err: Error) => {
@@ -557,6 +605,9 @@ export function useCreateManualExpense() {
         }
       }
 
+      // Auto-create category if provided
+      await ensureCategoryExists(input.category, user.id, profile?.active_organization_id || null);
+
       const { data, error } = await supabase.from("expense_records").insert({
         user_id: user.id,
         organization_id: profile?.active_organization_id || null,
@@ -577,6 +628,7 @@ export function useCreateManualExpense() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
       toast.success("Manual expense added");
     },
     onError: (err: Error) => {
@@ -771,6 +823,9 @@ export function useBulkApproveDocuments() {
 
       for (const doc of docs) {
         if (doc.status === "approved" || doc.status === "exported") continue;
+
+        // Auto-create category if AI assigned one
+        await ensureCategoryExists(doc.category, user.id, profile?.active_organization_id || null);
 
         await supabase
           .from("documents")
