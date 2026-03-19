@@ -154,17 +154,18 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!fileUrl) return;
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = record?.customer_name
-      ? `${record.customer_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
-      : "document";
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => document.body.removeChild(a), 3000);
+    try {
+      const resp = await fetch(fileUrl);
+      const blob = await resp.blob();
+      const filename = record?.customer_name
+        ? `${record.customer_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
+        : "document";
+      triggerBlobDownload(blob, filename);
+    } catch {
+      window.open(fileUrl, "_blank");
+    }
   };
 
   const handleOpenFile = () => {
