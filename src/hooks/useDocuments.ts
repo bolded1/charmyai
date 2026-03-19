@@ -417,27 +417,28 @@ export function useUploadIncomeDocument() {
         .single();
       if (insertError) throw insertError;
 
-      // Trigger AI extraction
-      const { data: extractResult, error: fnError } = await supabase.functions.invoke("extract-document", {
-        body: { documentId: doc.id },
+      // Trigger AI extraction — pass skipRecordCreation so the edge function doesn't
+      // create its own income_record (we do it below, unconditionally).
+      const { error: fnError } = await supabase.functions.invoke("extract-document", {
+        body: { documentId: doc.id, skipRecordCreation: true },
       });
 
       if (fnError) {
         console.error("Extraction error:", fnError);
-        toast.error(`Extraction failed for ${file.name}.`);
-        return doc;
+        // Don't bail out — still approve + create income record with whatever data we have.
       }
 
-      // Fetch updated document after extraction
-      const { data: updatedDoc, error: fetchErr } = await supabase
+      // Fetch the updated document (has extracted fields if extraction succeeded).
+      // Fall back to the original doc object so we never skip record creation.
+      let finalDoc: typeof doc = doc;
+      const { data: updatedDoc } = await supabase
         .from("documents")
         .select("*")
         .eq("id", doc.id)
         .single();
+      if (updatedDoc) finalDoc = updatedDoc;
 
-      if (fetchErr || !updatedDoc) return doc;
-
-      // Auto-approve and create income record
+      // Auto-approve
       await supabase
         .from("documents")
         .update({ status: "approved", updated_at: new Date().toISOString() })
@@ -457,24 +458,24 @@ export function useUploadIncomeDocument() {
         user_id: user.id,
         organization_id: profile?.active_organization_id || null,
         document_id: doc.id,
-        customer_name: updatedDoc.customer_name || updatedDoc.supplier_name || "Unknown",
-        invoice_number: updatedDoc.invoice_number,
-        invoice_date: updatedDoc.invoice_date || new Date().toISOString().split("T")[0],
-        due_date: updatedDoc.due_date,
-        currency: updatedDoc.currency || orgDefaultCurrencyIncome,
-        net_amount: updatedDoc.net_amount || 0,
-        vat_amount: updatedDoc.vat_amount || 0,
-        total_amount: updatedDoc.total_amount || 0,
-        vat_number: updatedDoc.vat_number,
-        category: updatedDoc.category,
+        customer_name: finalDoc.customer_name || finalDoc.supplier_name || "Unknown",
+        invoice_number: finalDoc.invoice_number,
+        invoice_date: finalDoc.invoice_date || new Date().toISOString().split("T")[0],
+        due_date: finalDoc.due_date,
+        currency: finalDoc.currency || orgDefaultCurrencyIncome,
+        net_amount: finalDoc.net_amount || 0,
+        vat_amount: finalDoc.vat_amount || 0,
+        total_amount: finalDoc.total_amount || 0,
+        vat_number: finalDoc.vat_number,
+        category: finalDoc.category,
       });
 
       if (incomeErr) {
         console.error("Income record error:", incomeErr);
-        toast.error("Failed to create income record");
+        throw new Error("Failed to save income record. Please try again.");
       }
 
-      return updatedDoc;
+      return finalDoc;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
