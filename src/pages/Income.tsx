@@ -243,7 +243,7 @@ export default function IncomePage() {
     });
 
     return groups;
-  }, [paginatedDisplay, defaultCurrency, sortField, visibleCount]);
+  }, [paginatedDisplay, defaultCurrency, sortField]);
 
   const currencySummary = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
