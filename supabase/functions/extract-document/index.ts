@@ -174,13 +174,40 @@ serve(async (req) => {
     } catch {}
 
     const categoryHint = existingCategoryNames.length > 0
-      ? `\nExisting categories (prefer one of these if it fits): ${existingCategoryNames.join(", ")}. Only suggest a new category name if none of the existing ones are a good fit.`
+      ? `\nExisting categories (you MUST use one of these if it fits — do NOT invent a new name): ${existingCategoryNames.join(", ")}. Only create a new category if NONE of the above are appropriate.`
       : "";
 
     // Hint from the document's existing type (set by the upload route, e.g. income page → sales_invoice)
     const typeHint = doc.document_type
       ? `\nThe system has pre-classified this document as "${doc.document_type}" based on upload context. Use this as a strong hint when classifying.`
       : "";
+
+    // Standard accounting category taxonomy for the AI
+    const categoryTaxonomy = `
+CATEGORY ASSIGNMENT RULES — follow strictly:
+1. Choose the category based on what the supplier SELLS / what the expense IS FOR, not the supplier's name.
+2. Standard accounting categories (use these exact names when no existing categories match):
+   - "Software & Subscriptions" — SaaS, cloud services, apps, digital tools (e.g. Dropbox, Slack, Discord Nitro, Adobe, Microsoft 365, AWS, Google Workspace, Zoom, GitHub)
+   - "Hosting & Infrastructure" — web hosting, servers, domains, CDN, DNS (e.g. Hetzner, DigitalOcean, Cloudflare, GoDaddy, Namecheap)
+   - "Advertising & Marketing" — ads, SEO, social media marketing, Google Ads, Facebook Ads, influencer payments
+   - "Office Supplies" — physical supplies: paper, pens, printer ink, desk accessories
+   - "Office Equipment" — furniture, monitors, keyboards, computers, printers
+   - "Telecommunications" — phone bills, internet, mobile plans
+   - "Utilities" — electricity, gas, water, heating
+   - "Rent & Facilities" — office rent, coworking spaces, storage units
+   - "Professional Services" — legal, accounting, consulting, advisory fees from human professionals
+   - "Travel & Transportation" — flights, trains, taxis, ride-sharing, fuel, tolls, parking
+   - "Meals & Entertainment" — business meals, restaurants, catering, event tickets
+   - "Insurance" — business insurance, liability, health, property
+   - "Banking & Fees" — bank charges, payment processing fees, Stripe/PayPal fees, currency conversion
+   - "Education & Training" — courses, books, conferences, workshops, certifications
+   - "Shipping & Postage" — courier, postal services, packaging
+   - "Repairs & Maintenance" — equipment repairs, building maintenance
+   - "Wages & Salaries" — employee salaries, freelancer payments for labor
+   - "Taxes & Licenses" — government fees, permits, licenses, tax payments
+   - "Other Expenses" — ONLY if nothing else fits
+3. NEVER assign "Consulting" or "Professional Services" to software/SaaS subscriptions.
+4. If the supplier is clearly a tech/SaaS company (Dropbox, Discord, Slack, AWS, etc.), always use "Software & Subscriptions".`;
 
     // Call AI to extract data.
     // We use JSON mode (no tool_choice) for maximum compatibility with Gemini via this gateway.
@@ -196,7 +223,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a financial document extraction AI. Analyse the document image and return ONLY a single valid JSON object — no markdown, no explanation, no code fences.
+            content: `You are a financial document extraction AI for professional accountants. Analyse the document image and return ONLY a single valid JSON object — no markdown, no explanation, no code fences.
 
 JSON schema (all fields optional except document_type, currency, total_amount, confidence):
 {
@@ -211,10 +238,11 @@ JSON schema (all fields optional except document_type, currency, total_amount, c
   "vat_amount": 0.00,           // tax/VAT amount
   "total_amount": 0.00,         // gross total including tax
   "vat_number": string,         // VAT/tax reg number (VAT No, TVA, MwSt-Nr, CIF, NIF, SIRET…)
-  "category": string,           // e.g. "Office Supplies", "Consulting", "Utilities"
+  "category": string,           // accounting category — see rules below
   "confidence": 85,             // 0-100 overall extraction confidence
   "ocr_text": string            // full raw text visible on the document
-}${typeHint}${categoryHint}`,
+}
+${categoryTaxonomy}${typeHint}${categoryHint}`,
           },
           {
             role: "user",
