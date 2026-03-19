@@ -376,6 +376,120 @@ export default function FeaturesPage() {
         </VisualCard>
       ),
     },
+    {
+      title: t("features.contactsTitle", "Contact Management"),
+      description: t("features.contactsDesc", "Automatically build a supplier and customer directory from your invoices. View per-contact financial breakdowns, manage details, and export everything in one click."),
+      capabilities: [
+        { icon: BookUser, text: t("features.contactsCap1", "Auto-populated from extracted invoices") },
+        { icon: Search, text: t("features.contactsCap2", "Search and filter your contact list") },
+        { icon: BarChart3, text: t("features.contactsCap3", "Per-currency financial breakdowns") },
+        { icon: Download, text: t("features.contactsCap4", "Export contacts as ZIP archive") },
+      ],
+      reversed: true,
+      visual: (
+        <VisualCard>
+          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Contact Directory</div>
+          <div className="space-y-2.5">
+            {[
+              { name: "CloudTech GmbH", type: "Supplier", total: "€12,450.00", invoices: 8, color: "hsl(var(--primary))" },
+              { name: "Riverside Bakery", type: "Customer", total: "€8,320.00", invoices: 5, color: "hsl(172 66% 40%)" },
+              { name: "Nordic Design Co", type: "Supplier", total: "€3,680.50", invoices: 3, color: "hsl(265 55% 55%)" },
+            ].map((contact, i) => (
+              <motion.div key={contact.name} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 border border-border/40">
+                <div className="h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ backgroundColor: contact.color }}>
+                  {contact.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{contact.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{contact.invoices} invoices · {contact.type}</p>
+                </div>
+                <span className="text-xs font-semibold tabular-nums">{contact.total}</span>
+              </motion.div>
+            ))}
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {[
+              { label: "Total Contacts", value: "42" },
+              { label: "Suppliers", value: "28" },
+              { label: "Customers", value: "14" },
+            ].map((stat) => (
+              <div key={stat.label} className="p-2 rounded-lg bg-brand-soft/50 border border-border/30 text-center">
+                <div className="text-sm font-bold text-primary tabular-nums">{stat.value}</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </VisualCard>
+      ),
+    },
+    {
+      title: t("features.reportsTitle", "Reports & Analytics"),
+      description: t("features.reportsDesc", "Visualise your income, expenses, and net profit with interactive charts. Filter by time period and currency, then export professional PDF reports with one click."),
+      capabilities: [
+        { icon: PieChart, text: t("features.reportsCap1", "Expense breakdown by category") },
+        { icon: TrendingUp, text: t("features.reportsCap2", "Revenue vs expenses trend charts") },
+        { icon: Filter, text: t("features.reportsCap3", "Filter by period and currency") },
+        { icon: FileBarChart, text: t("features.reportsCap4", "One-click professional PDF export") },
+      ],
+      visual: (
+        <VisualCard>
+          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Financial Overview</div>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {[
+              { label: "Income", value: "€24,580", trend: "+12%", positive: true },
+              { label: "Expenses", value: "€18,240", trend: "+5%", positive: false },
+              { label: "Net Profit", value: "€6,340", trend: "+28%", positive: true },
+            ].map((metric) => (
+              <div key={metric.label} className="p-2.5 rounded-lg bg-accent/50 border border-border/40 text-center">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{metric.label}</div>
+                <div className="text-sm font-bold mt-0.5 tabular-nums">{metric.value}</div>
+                <div className={`text-[10px] font-semibold mt-0.5 ${metric.positive ? "text-primary" : "text-destructive"}`}>{metric.trend}</div>
+              </div>
+            ))}
+          </div>
+          <div className="p-3 rounded-lg bg-accent/30 border border-border/40">
+            <div className="flex items-end gap-1.5 h-20 justify-between px-1">
+              {[
+                { income: 60, expense: 45 },
+                { income: 75, expense: 50 },
+                { income: 55, expense: 60 },
+                { income: 80, expense: 55 },
+                { income: 70, expense: 48 },
+                { income: 90, expense: 65 },
+              ].map((bar, i) => (
+                <div key={i} className="flex-1 flex items-end gap-0.5">
+                  <motion.div
+                    initial={{ height: 0 }}
+                    whileInView={{ height: `${bar.income}%` }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.08, duration: 0.5 }}
+                    className="flex-1 rounded-t-sm bg-primary/70"
+                  />
+                  <motion.div
+                    initial={{ height: 0 }}
+                    whileInView={{ height: `${bar.expense}%` }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.35 + i * 0.08, duration: 0.5 }}
+                    className="flex-1 rounded-t-sm bg-muted-foreground/25"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-center gap-4 mt-2">
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-sm bg-primary/70" />
+                <span className="text-[9px] text-muted-foreground">Income</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-sm bg-muted-foreground/25" />
+                <span className="text-[9px] text-muted-foreground">Expenses</span>
+              </div>
+            </div>
+          </div>
+        </VisualCard>
+      ),
+    },
   ];
 
   return (
