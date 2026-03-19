@@ -7,6 +7,7 @@ import {
   Zap, ClipboardCheck,
   Send, Link2, ExternalLink, ClipboardList,
   Lock, ShieldCheck, Globe, Server, Eye,
+  BookUser, BarChart3, TrendingUp, PieChart,
 } from "lucide-react";
 import quickbooksLogo from "@/assets/quickbooks-logo.png";
 import xeroLogo from "@/assets/xero-logo.png";
