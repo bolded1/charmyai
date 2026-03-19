@@ -57,6 +57,11 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
+    // Separate admin auth client for user management operations
+    const adminAuthClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
     const body = await req.json();
     const { action } = body;
     logStep("Action received", { action });
