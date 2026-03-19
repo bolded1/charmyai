@@ -48,7 +48,8 @@ export default function IncomePage() {
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [manualIncomeOpen, setManualIncomeOpen] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(30);
   const [sortField, setSortField] = useState<"customer_name" | "invoice_date" | "total_amount" | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedId, setSelectedId] = useState<string | null>(null);
