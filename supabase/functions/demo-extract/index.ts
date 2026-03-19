@@ -144,7 +144,7 @@ serve(async (req) => {
     const base64 = btoa(binary);
     const mimeType = demo.file_type === "application/pdf" ? "application/pdf" : demo.file_type;
     const isPdf = demo.file_type === "application/pdf";
-    const model = isPdf ? "google/gemini-2.5-flash" : "openai/gpt-5";
+    const model = "google/gemini-2.5-flash";
 
     // Call AI to extract data
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

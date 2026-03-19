@@ -137,10 +137,9 @@ serve(async (req) => {
     }
     const base64 = btoa(binary);
     const mimeType = doc.file_type === "application/pdf" ? "application/pdf" : (doc.file_type || "image/jpeg");
-    const isPdf = doc.file_type === "application/pdf";
-    // Use gpt-4o for all document types — it reliably handles both PDFs and images
-    // via the OpenAI-compatible gateway with vision support.
-    const model = "openai/gpt-4o";
+    // google/gemini-2.5-flash is the confirmed working vision model on this gateway —
+    // it handles both PDFs and images via the image_url / base64 format.
+    const model = "google/gemini-2.5-flash";
 
     // Fetch existing category names to guide the AI
     let existingCategoryNames: string[] = [];
