@@ -106,6 +106,8 @@ export default function ActivateTrialPage() {
   // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
     if (!stripe || !user || planChoice !== "pro" || !cardRequired) return;
+    if (proInitRef.current) return;
+    proInitRef.current = true;
 
     const initSetup = async () => {
       try {
