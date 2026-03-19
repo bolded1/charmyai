@@ -489,7 +489,7 @@ export default function IncomePage() {
                       <Checkbox
                         checked={group.records.every((r) => selectedIds.has(r.id))}
                         onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
-                        className="shrink-0 border-white/50 data-[state=checked]:bg-white data-[state=checked]:text-primary"
+                        className="shrink-0 border-white data-[state=checked]:bg-white data-[state=checked]:text-primary"
                       />
                       <span className="text-xs font-bold text-primary-foreground">{group.label}</span>
                     </div>
