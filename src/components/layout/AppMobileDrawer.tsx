@@ -6,7 +6,7 @@ import { useClientRole } from "@/hooks/useClientRole";
 import {
   Upload, FileText, Receipt, TrendingUp, Tag,
   Download, UsersRound, Settings, Sparkles, LifeBuoy,
-  HelpCircle, BarChart3, Link2,
+  HelpCircle, BarChart3, Link2, Building2,
 } from "lucide-react";
 
 export function AppMobileDrawer() {
@@ -28,6 +28,7 @@ export function AppMobileDrawer() {
     { title: t("navigation.categories"), url: "/app/categories", icon: Tag },
     { title: t("navigation.exports"), url: "/app/exports", icon: Download },
     { title: t("navigation.reports"), url: "/app/reports", icon: BarChart3 },
+    { title: t("navigation.contacts"), url: "/app/contacts", icon: Building2 },
   ];
 
   const firmItems = [
