@@ -136,6 +136,22 @@ function sanitizeFileName(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
+/** Check if workspace has enough storage for a file. Throws if full. */
+async function checkStorageQuota(orgId: string | null, fileSize: number) {
+  if (!orgId) return; // personal uploads — no quota for now
+  const { data: hasSpace, error } = await supabase.rpc("check_storage_available", {
+    _org_id: orgId,
+    _file_size: fileSize,
+  });
+  if (error) {
+    console.error("Storage check error:", error);
+    return; // fail open if RPC unavailable
+  }
+  if (hasSpace === false) {
+    throw new Error("Storage limit reached. Please purchase more storage in Settings → Storage to continue uploading.");
+  }
+}
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
