@@ -15,6 +15,7 @@ import { syncToAccounting } from "@/components/AccountingSyncSettings";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { groupByCurrency } from "@/lib/currency-utils";
 
 // ─── Field definitions ────────────────────────────────────────────────────────
 
@@ -365,18 +366,22 @@ export default function ExportsPage() {
       const fileName = buildFileName("expenses", expYear, expMonths, currency, format);
 
       if (format === "pdf") {
-        const cur = currency !== "all" ? currency : "EUR";
+        const currencyGroups = groupByCurrency(records);
+        const summaryRows = currencyGroups.flatMap((ct) => {
+          const label = currencyGroups.length > 1 ? ` (${ct.currency})` : "";
+          return [
+            { label: `NET TOTAL${label}`,   value: fmtCurrency(ct.net, ct.currency) },
+            { label: `VAT TOTAL${label}`,   value: fmtCurrency(ct.vat, ct.currency) },
+            { label: `GRAND TOTAL${label}`, value: fmtCurrency(ct.total, ct.currency) },
+          ];
+        });
         exportToPdf({
           title: "Expense Report",
           subtitle: buildSubtitle(expYear, expMonths, currency),
           headers,
           rows,
           fileName,
-          summaryRows: [
-            { label: "NET TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.net_amount   || 0), 0), cur) },
-            { label: "VAT TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.vat_amount   || 0), 0), cur) },
-            { label: "GRAND TOTAL", value: fmtCurrency(records.reduce((s, r) => s + Number(r.total_amount || 0), 0), cur) },
-          ],
+          summaryRows,
         });
       } else {
         downloadCsvOrExcel(headers, rows, fileName, format as "csv" | "excel");
@@ -419,18 +424,22 @@ export default function ExportsPage() {
       const fileName = buildFileName("income", incomeYear, incomeMonths, incomeCurrency, incomeFormat);
 
       if (incomeFormat === "pdf") {
-        const cur = incomeCurrency !== "all" ? incomeCurrency : "EUR";
+        const currencyGroups = groupByCurrency(records);
+        const summaryRows = currencyGroups.flatMap((ct) => {
+          const label = currencyGroups.length > 1 ? ` (${ct.currency})` : "";
+          return [
+            { label: `NET TOTAL${label}`,   value: fmtCurrency(ct.net, ct.currency) },
+            { label: `VAT TOTAL${label}`,   value: fmtCurrency(ct.vat, ct.currency) },
+            { label: `GRAND TOTAL${label}`, value: fmtCurrency(ct.total, ct.currency) },
+          ];
+        });
         exportToPdf({
           title: "Income Report",
           subtitle: buildSubtitle(incomeYear, incomeMonths, incomeCurrency),
           headers,
           rows,
           fileName,
-          summaryRows: [
-            { label: "NET TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.net_amount   || 0), 0), cur) },
-            { label: "VAT TOTAL",   value: fmtCurrency(records.reduce((s, r) => s + Number(r.vat_amount   || 0), 0), cur) },
-            { label: "GRAND TOTAL", value: fmtCurrency(records.reduce((s, r) => s + Number(r.total_amount || 0), 0), cur) },
-          ],
+          summaryRows,
         });
       } else {
         downloadCsvOrExcel(headers, rows, fileName, incomeFormat as "csv" | "excel");

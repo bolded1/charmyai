@@ -18,6 +18,7 @@ import { EditExpenseDialog } from "@/components/EditExpenseDialog";
 import { EditIncomeDialog } from "@/components/EditIncomeDialog";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
+import { groupByCurrency, fmtCurrencyValue, type CurrencyTotal } from "@/lib/currency-utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,8 +33,8 @@ interface DerivedContact {
   email: string | null;
   phone: string | null;
   totalAmount: number;
-  expenseTotal: number;
-  incomeTotal: number;
+  expenseTotals: Map<string, number>;
+  incomeTotals: Map<string, number>;
   invoiceCount: number;
   currencies: string[];
   lastDate: string | null;
@@ -74,8 +75,8 @@ function deriveContacts(
       email: c.email,
       phone: c.phone,
       totalAmount: 0,
-      expenseTotal: 0,
-      incomeTotal: 0,
+      expenseTotals: new Map(),
+      incomeTotals: new Map(),
       invoiceCount: 0,
       currencies: [],
       lastDate: null,
@@ -92,10 +93,11 @@ function deriveContacts(
     const existing = map.get(key);
     if (existing) {
       existing.isManual = false;
-      existing.expenseTotal += r.total_amount ?? 0;
+      const cur = r.currency || "EUR";
+      existing.expenseTotals.set(cur, (existing.expenseTotals.get(cur) || 0) + (r.total_amount ?? 0));
       existing.totalAmount += r.total_amount ?? 0;
       existing.invoiceCount += 1;
-      if (!existing.currencies.includes(r.currency)) existing.currencies.push(r.currency);
+      if (!existing.currencies.includes(cur)) existing.currencies.push(cur);
       if (r.invoice_date && (!existing.lastDate || r.invoice_date > existing.lastDate)) existing.lastDate = r.invoice_date;
       if (r.category && !existing.categories.includes(r.category)) existing.categories.push(r.category);
       if (!existing.vatNumber && r.vat_number) existing.vatNumber = r.vat_number;
@@ -103,6 +105,9 @@ function deriveContacts(
       if (existing.type === "customer") existing.type = "both";
       else if (existing.type !== "both") existing.type = "supplier";
     } else {
+      const cur = r.currency || "EUR";
+      const expTotals = new Map<string, number>();
+      expTotals.set(cur, r.total_amount ?? 0);
       map.set(key, {
         id: `sup-${slug(name)}`,
         name,
@@ -112,10 +117,10 @@ function deriveContacts(
         email: null,
         phone: null,
         totalAmount: r.total_amount ?? 0,
-        expenseTotal: r.total_amount ?? 0,
-        incomeTotal: 0,
+        expenseTotals: expTotals,
+        incomeTotals: new Map(),
         invoiceCount: 1,
-        currencies: r.currency ? [r.currency] : [],
+        currencies: cur ? [cur] : [],
         lastDate: r.invoice_date ?? null,
         categories: r.category ? [r.category] : [],
         expenseInvoices: [r],
@@ -131,10 +136,11 @@ function deriveContacts(
     const existing = map.get(key);
     if (existing) {
       existing.isManual = false;
-      existing.incomeTotal += r.total_amount ?? 0;
+      const cur = r.currency || "EUR";
+      existing.incomeTotals.set(cur, (existing.incomeTotals.get(cur) || 0) + (r.total_amount ?? 0));
       existing.totalAmount += r.total_amount ?? 0;
       existing.invoiceCount += 1;
-      if (!existing.currencies.includes(r.currency)) existing.currencies.push(r.currency);
+      if (!existing.currencies.includes(cur)) existing.currencies.push(cur);
       if (r.invoice_date && (!existing.lastDate || r.invoice_date > existing.lastDate)) existing.lastDate = r.invoice_date;
       if (r.category && !existing.categories.includes(r.category)) existing.categories.push(r.category);
       if (!existing.vatNumber && r.vat_number) existing.vatNumber = r.vat_number;
@@ -142,6 +148,9 @@ function deriveContacts(
       if (existing.type === "supplier") existing.type = "both";
       else if (existing.type !== "both") existing.type = "customer";
     } else {
+      const cur = r.currency || "EUR";
+      const incTotals = new Map<string, number>();
+      incTotals.set(cur, r.total_amount ?? 0);
       map.set(key, {
         id: `cus-${slug(name)}`,
         name,
@@ -151,10 +160,10 @@ function deriveContacts(
         email: null,
         phone: null,
         totalAmount: r.total_amount ?? 0,
-        expenseTotal: 0,
-        incomeTotal: r.total_amount ?? 0,
+        expenseTotals: new Map(),
+        incomeTotals: incTotals,
         invoiceCount: 1,
-        currencies: r.currency ? [r.currency] : [],
+        currencies: cur ? [cur] : [],
         lastDate: r.invoice_date ?? null,
         categories: r.category ? [r.category] : [],
         expenseInvoices: [],
@@ -206,8 +215,6 @@ function avatarGradient(type: DerivedContact["type"]) {
 // ─── Contact Row (thin horizontal list item) ──────────────────────────────────
 
 function ContactRow({ contact, onClick, i }: { contact: DerivedContact; onClick: () => void; i: number }) {
-  const primaryCurrency = contact.currencies[0] ?? "EUR";
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -238,7 +245,7 @@ function ContactRow({ contact, onClick, i }: { contact: DerivedContact; onClick:
           <>
             <div className="flex items-center gap-1">
               <ArrowDownLeft className="h-3 w-3 text-rose-500" />
-              <span className="text-xs font-semibold tabular-nums text-rose-600">{fmt(contact.expenseTotal, primaryCurrency)}</span>
+              <span className="text-xs font-semibold tabular-nums text-rose-600">{fmtTotalsInline(contact.expenseTotals)}</span>
             </div>
             <span className="text-[10px] text-muted-foreground">{contact.expenseInvoices.length} exp inv</span>
           </>
@@ -253,7 +260,7 @@ function ContactRow({ contact, onClick, i }: { contact: DerivedContact; onClick:
           <>
             <div className="flex items-center gap-1">
               <ArrowUpRight className="h-3 w-3 text-emerald-500" />
-              <span className="text-xs font-semibold tabular-nums text-emerald-600">{fmt(contact.incomeTotal, primaryCurrency)}</span>
+              <span className="text-xs font-semibold tabular-nums text-emerald-600">{fmtTotalsInline(contact.incomeTotals)}</span>
             </div>
             <span className="text-[10px] text-muted-foreground">{contact.incomeInvoices.length} inc inv</span>
           </>
@@ -292,8 +299,15 @@ function groupByMonth(records: any[]) {
     key,
     label: key === "no-date" ? "No Date" : format(parseISO(key + "-01"), "MMMM yyyy"),
     records: recs,
-    total: recs.reduce((s, r) => s + Number(r.total_amount || 0), 0),
+    currencyTotals: groupByCurrency(recs),
   }));
+}
+
+function fmtTotalsInline(totals: Map<string, number>): string {
+  return Array.from(totals.entries())
+    .filter(([, v]) => v > 0)
+    .map(([cur, v]) => fmtCurrencyValue(v, cur))
+    .join(" · ") || "—";
 }
 
 // ─── Invoice Row ──────────────────────────────────────────────────────────────
@@ -335,14 +349,20 @@ function InvoiceRow({ r, onEdit }: { r: any; onEdit: (r: any) => void }) {
 // ─── Detail Panel ─────────────────────────────────────────────────────────────
 
 function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose: () => void }) {
-  const primaryCurrency = contact.currencies[0] ?? "EUR";
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
   const [editingIncome, setEditingIncome] = useState<any | null>(null);
 
   const expenseGroups = groupByMonth(contact.expenseInvoices);
   const incomeGroups  = groupByMonth(contact.incomeInvoices);
 
-  const netBalance = contact.incomeTotal - contact.expenseTotal;
+  // Compute per-currency net balance (only for currencies that appear in both)
+  const allCurrencies = new Set([...contact.expenseTotals.keys(), ...contact.incomeTotals.keys()]);
+  const netBalances = new Map<string, number>();
+  allCurrencies.forEach((cur) => {
+    const inc = contact.incomeTotals.get(cur) || 0;
+    const exp = contact.expenseTotals.get(cur) || 0;
+    netBalances.set(cur, inc - exp);
+  });
 
   return (
     <div className="flex flex-col">
@@ -373,7 +393,7 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Expenses</span>
             </div>
             <p className="font-bold text-sm tabular-nums text-rose-600">
-              {contact.expenseInvoices.length === 0 ? "—" : fmt(contact.expenseTotal, primaryCurrency)}
+              {contact.expenseInvoices.length === 0 ? "—" : fmtTotalsInline(contact.expenseTotals)}
             </p>
             <p className="text-[10px] text-muted-foreground">
               {contact.expenseInvoices.length} invoice{contact.expenseInvoices.length !== 1 ? "s" : ""}
@@ -387,7 +407,7 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Income</span>
             </div>
             <p className="font-bold text-sm tabular-nums text-emerald-600">
-              {contact.incomeInvoices.length === 0 ? "—" : fmt(contact.incomeTotal, primaryCurrency)}
+              {contact.incomeInvoices.length === 0 ? "—" : fmtTotalsInline(contact.incomeTotals)}
             </p>
             <p className="text-[10px] text-muted-foreground">
               {contact.incomeInvoices.length} invoice{contact.incomeInvoices.length !== 1 ? "s" : ""}
@@ -403,12 +423,16 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
                 <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Net Balance</span>
               </div>
-              <p className={`font-bold text-sm tabular-nums ${netBalance >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                {fmt(Math.abs(netBalance), primaryCurrency)}
-                <span className="text-[10px] font-normal text-muted-foreground ml-1.5">
-                  {netBalance >= 0 ? "net income" : "net expense"}
-                </span>
-              </p>
+              <div className="space-y-0.5">
+                {Array.from(netBalances.entries()).map(([cur, bal]) => (
+                  <p key={cur} className={`font-bold text-sm tabular-nums ${bal >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                    {fmtCurrencyValue(Math.abs(bal), cur)}
+                    <span className="text-[10px] font-normal text-muted-foreground ml-1.5">
+                      {bal >= 0 ? "net income" : "net expense"}
+                    </span>
+                  </p>
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}
@@ -475,7 +499,7 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
                   <div className="flex items-center justify-between px-3 py-1.5 bg-accent/30 rounded-lg mb-1.5">
                     <span className="text-[11px] font-bold uppercase tracking-wide text-foreground">{group.label}</span>
                     <span className="text-[11px] tabular-nums text-muted-foreground">
-                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
                   </div>
                   <div className="space-y-1.5">
@@ -497,7 +521,7 @@ function ContactDetail({ contact, onClose }: { contact: DerivedContact; onClose:
                   <div className="flex items-center justify-between px-3 py-1.5 bg-accent/30 rounded-lg mb-1.5">
                     <span className="text-[11px] font-bold uppercase tracking-wide text-foreground">{group.label}</span>
                     <span className="text-[11px] tabular-nums text-muted-foreground">
-                      {group.records.length} · {group.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
                   </div>
                   <div className="space-y-1.5">
