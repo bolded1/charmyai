@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
       }
 
       // Store file in documents bucket
-      const filePath = `requests/${request.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
+      const filePath = `${request.created_by}/${Date.now()}-${sanitizeFileName(file.name)}`;
       const fileBuffer = await file.arrayBuffer();
 
       const { error: uploadErr } = await adminClient.storage
