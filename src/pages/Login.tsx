@@ -84,7 +84,7 @@ export default function LoginPage() {
     <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       {/* Background orbs */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.6), transparent 70%)' }} />
-      <div className="absolute bottom-[-15%] right-[-5%] w-[400px] h-[400px] rounded-full opacity-15 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.5), transparent 70%)' }} />
+      <div className="absolute bottom-[-15%] right-[-5%] w-[400px] h-[400px] rounded-full opacity-15 blur-[100px]" style={{ background: 'radial-gradient(circle, hsl(265 55% 55% / 0.5), transparent 70%)' }} />
       <div className="absolute top-[30%] right-[15%] w-[250px] h-[250px] rounded-full opacity-10 blur-[80px]" style={{ background: 'radial-gradient(circle, hsl(172 66% 40% / 0.5), transparent 70%)' }} />
 
       <motion.div

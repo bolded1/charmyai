@@ -81,7 +81,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="marketing min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       <div className="absolute top-[-30%] left-[-15%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(152 63% 32% / 0.5), transparent 70%)' }} />
-      <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(17 69% 60% / 0.4), transparent 70%)' }} />
+      <div className="absolute bottom-[-25%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-25 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(265 55% 55% / 0.4), transparent 70%)' }} />
 
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">

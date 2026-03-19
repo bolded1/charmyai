@@ -55,7 +55,7 @@ export default function SelfEmployedPage() {
     <div>
       <section className="relative pt-24 md:pt-32 pb-20 overflow-hidden">
         <div className="absolute top-[-25%] left-[-10%] w-[560px] h-[560px] rounded-full opacity-25 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, hsl(152 63% 32% / 0.5), transparent 70%)" }} />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[480px] h-[480px] rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, hsl(17 69% 60% / 0.35), transparent 70%)" }} />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[480px] h-[480px] rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, hsl(265 55% 55% / 0.35), transparent 70%)" }} />
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.14, 0.08] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}

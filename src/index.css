@@ -36,8 +36,8 @@
     --ring:               152 63% 32%;
 
     /* Colorful accent palette */
-    --violet:         17 69% 60%;
-    --violet-soft:    17 60% 94%;
+    --violet:         265 55% 55%;
+    --violet-soft:    265 45% 94%;
     --teal:           188 100% 28%;
     --teal-soft:      188 60% 94%;
     --deep-teal:      188 100% 28%;
@@ -303,8 +303,8 @@
     border: 1px solid hsl(152 60% 38% / 0.1);
   }
   .stat-card-violet {
-    background: linear-gradient(135deg, hsl(17 69% 60% / 0.06), hsl(152 63% 32% / 0.03));
-    border: 1px solid hsl(17 69% 60% / 0.1);
+    background: linear-gradient(135deg, hsl(265 55% 55% / 0.06), hsl(152 63% 32% / 0.03));
+    border: 1px solid hsl(265 55% 55% / 0.1);
   }
   .stat-card-amber {
     background: linear-gradient(135deg, hsl(38 92% 50% / 0.06), hsl(350 75% 55% / 0.03));
