@@ -484,16 +484,16 @@ export default function IncomePage() {
             <div className="p-2 space-y-1">
               {groupedByMonth.map((group) => (
                 <div key={group.key}>
-                  <div className="flex items-center justify-between px-3 py-2.5 bg-accent/40 rounded-lg mb-1 mt-1 first:mt-0">
+                   <div className="flex items-center justify-between px-3 py-2.5 bg-primary rounded-md mb-1 mt-1 first:mt-0">
                     <div className="flex items-center gap-2">
                       <Checkbox
                         checked={group.records.every((r) => selectedIds.has(r.id))}
                         onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
-                        className="shrink-0"
+                        className="shrink-0 border-white/50 data-[state=checked]:bg-white data-[state=checked]:text-primary"
                       />
-                      <span className="text-xs font-bold text-foreground">{group.label}</span>
+                      <span className="text-xs font-bold text-primary-foreground">{group.label}</span>
                     </div>
-                    <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                    <span className="text-xs font-semibold tabular-nums text-primary-foreground/80">
                       {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
                   </div>
@@ -552,17 +552,18 @@ export default function IncomePage() {
                 <tbody>
                   {groupedByMonth.map((group) => (
                     <Fragment key={group.key}>
-                      <tr className="bg-accent/30">
+                      <tr className="bg-primary">
                         <td colSpan={9} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Checkbox
                                 checked={group.records.every((r) => selectedIds.has(r.id))}
                                 onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
+                                className="border-white/50 data-[state=checked]:bg-white data-[state=checked]:text-primary"
                               />
-                              <span className="text-xs font-bold text-foreground">{group.label}</span>
+                              <span className="text-xs font-bold text-primary-foreground">{group.label}</span>
                             </div>
-                            <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                            <span className="text-xs font-semibold tabular-nums text-primary-foreground/80">
                               {group.records.length} records · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                             </span>
                           </div>
