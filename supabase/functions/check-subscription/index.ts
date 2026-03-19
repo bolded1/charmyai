@@ -202,7 +202,7 @@ serve(async (req) => {
       ? sub.items.data[0].price.product
       : (sub.items.data[0]?.price?.product as any)?.id;
     
-    if (subProductId === FIRM_PLAN_PRODUCT_ID) {
+    if (isFirmProduct(subProductId)) {
       hasFirmPlan = true;
       await provisionFirmOrg();
     }
