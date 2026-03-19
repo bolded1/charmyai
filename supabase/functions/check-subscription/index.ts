@@ -257,12 +257,16 @@ serve(async (req) => {
     // If subscription is not active, check if user has an active promo or one-time purchase that overrides
     if (!isActive && !hasFirmPlan) {
       const promo = await checkPromo();
+      const promoFirmAccess = promoHasFirmAccess(promo);
       if (promo) {
-        logStep("Subscription inactive but active promo found, granting access", { redemptionId: promo.id });
+        if (promoFirmAccess) {
+          await provisionFirmOrg();
+        }
+        logStep("Subscription inactive but active promo found, granting access", { redemptionId: promo.id, promoFirmAccess });
         return new Response(JSON.stringify({
-          subscribed: true, plan: "pro", status: "promo_active",
+          subscribed: true, plan: promoFirmAccess ? "firm" : "pro", status: "promo_active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: false, amount_paid: amountPaid, paid_currency: paidCurrency,
+          has_firm_plan: promoFirmAccess, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
       if (hasProPlan) {
