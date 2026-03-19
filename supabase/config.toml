@@ -55,3 +55,7 @@ project_id = "vhaursnvaadhxxwefxez"
     verify_jwt = false
   [functions.api-v1]
     verify_jwt = false
+  [functions.purchase-storage]
+    verify_jwt = false
+  [functions.verify-storage-purchase]
+    verify_jwt = false

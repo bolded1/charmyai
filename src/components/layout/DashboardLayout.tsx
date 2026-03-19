@@ -24,6 +24,7 @@ import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { PwaInstallBanner } from "@/components/PwaInstallBanner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { StorageFullBanner } from "@/components/StorageFullBanner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useClientRole } from "@/hooks/useClientRole";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -150,6 +151,7 @@ export default function DashboardLayout() {
           <div className="flex flex-col min-h-0 flex-1">
             <PwaInstallBanner />
             <OfflineIndicator />
+            <StorageFullBanner />
 
             {/* Workspace context bar for client workspaces */}
             <WorkspaceContextBar />

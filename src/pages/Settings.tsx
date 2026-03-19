@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import StorageSettings from "@/components/StorageSettings";
 import BillingSection from "@/components/BillingSection";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -314,6 +315,7 @@ export default function SettingsPage() {
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
             <TabsTrigger value="api">API</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="storage">Storage</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
         </div>
@@ -719,6 +721,11 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* ════════════════ STORAGE ════════════════ */}
+        <TabsContent value="storage">
+          <StorageSettings />
         </TabsContent>
 
         {/* ════════════════ AUDIT LOG ════════════════ */}

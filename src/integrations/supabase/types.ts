@@ -1208,6 +1208,8 @@ export type Database = {
           owner_user_id: string
           parent_org_id: string | null
           primary_color: string | null
+          storage_limit_bytes: number
+          storage_purchased_bytes: number
           tax_id: string | null
           trading_name: string | null
           updated_at: string
@@ -1235,6 +1237,8 @@ export type Database = {
           owner_user_id: string
           parent_org_id?: string | null
           primary_color?: string | null
+          storage_limit_bytes?: number
+          storage_purchased_bytes?: number
           tax_id?: string | null
           trading_name?: string | null
           updated_at?: string
@@ -1262,6 +1266,8 @@ export type Database = {
           owner_user_id?: string
           parent_org_id?: string | null
           primary_color?: string | null
+          storage_limit_bytes?: number
+          storage_purchased_bytes?: number
           tax_id?: string | null
           trading_name?: string | null
           updated_at?: string
@@ -1859,6 +1865,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_storage_available: {
+        Args: { _file_size?: number; _org_id: string }
+        Returns: boolean
+      }
       find_duplicate_document: {
         Args: {
           _document_id: string
@@ -1871,6 +1881,7 @@ export type Database = {
         Returns: string
       }
       generate_short_token: { Args: { length?: number }; Returns: string }
+      get_org_storage_usage: { Args: { _org_id: string }; Returns: number }
       has_client_workspace_access: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean

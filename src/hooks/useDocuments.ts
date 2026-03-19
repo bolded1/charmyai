@@ -136,6 +136,22 @@ function sanitizeFileName(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
+/** Check if workspace has enough storage for a file. Throws if full. */
+async function checkStorageQuota(orgId: string | null, fileSize: number) {
+  if (!orgId) return; // personal uploads — no quota for now
+  const { data: hasSpace, error } = await supabase.rpc("check_storage_available", {
+    _org_id: orgId,
+    _file_size: fileSize,
+  });
+  if (error) {
+    console.error("Storage check error:", error);
+    return; // fail open if RPC unavailable
+  }
+  if (hasSpace === false) {
+    throw new Error("Storage limit reached. Please purchase more storage in Settings → Storage to continue uploading.");
+  }
+}
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
@@ -150,6 +166,9 @@ export function useUploadDocument() {
         .select("active_organization_id")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      // Check storage quota
+      await checkStorageQuota(profile?.active_organization_id || null, file.size);
 
       // Duplicate detection: same file_name + file_size for this user
       const { data: existing } = await supabase
@@ -442,6 +461,9 @@ export function useUploadIncomeDocument() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // Check storage quota
+      await checkStorageQuota(profile?.active_organization_id || null, file.size);
+
       const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
       // Upload to storage
@@ -579,9 +601,10 @@ export function useCreateManualExpense() {
         reference = reference || `${input.days} days @ ${input.daily_rate}/day`;
       }
 
-      // Optional receipt file upload
+      // Optional receipt file upload (with storage check)
       let documentId: string | null = null;
       if (input.receipt_file) {
+        await checkStorageQuota(profile?.active_organization_id || null, input.receipt_file.size);
         const file = input.receipt_file;
         const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
         const { error: uploadError } = await supabase.storage
@@ -1053,9 +1076,10 @@ export function useCreateManualIncome() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // Optional receipt file upload
+      // Optional receipt file upload (with storage check)
       let documentId: string | null = null;
       if (input.receipt_file) {
+        await checkStorageQuota(profile?.active_organization_id || null, input.receipt_file.size);
         const file = input.receipt_file;
         const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
         const { error: uploadError } = await supabase.storage
