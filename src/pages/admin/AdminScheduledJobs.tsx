@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Loader2, Plus, Clock, RefreshCw, Play, Trash2, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +49,7 @@ export default function AdminScheduledJobs() {
   const [newJob, setNewJob] = useState({ name: "", description: "", function_name: "", cron_expression: "0 * * * *" });
   const [saving, setSaving] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [deleteConfirmJob, setDeleteConfirmJob] = useState<Job | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -69,8 +71,14 @@ export default function AdminScheduledJobs() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const isValidCron = (expr: string) => /^(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)$/.test(expr.trim());
+
   const handleCreate = async () => {
     if (!newJob.name || !newJob.function_name) return;
+    if (!isValidCron(newJob.cron_expression)) {
+      toast.error("Invalid cron expression. Use format: * * * * * (min hour day month weekday)");
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase.from("scheduled_jobs").insert({
@@ -251,7 +259,7 @@ export default function AdminScheduledJobs() {
                       <Play className="h-3.5 w-3.5" />
                     </Button>
                     <Switch checked={job.enabled} onCheckedChange={() => toggleJob(job)} />
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => deleteJob(job)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteConfirmJob(job)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -301,6 +309,23 @@ export default function AdminScheduledJobs() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteConfirmJob} onOpenChange={() => setDeleteConfirmJob(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete scheduled job?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{deleteConfirmJob?.name}" and all its run history. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => { if (deleteConfirmJob) { deleteJob(deleteConfirmJob); setDeleteConfirmJob(null); } }}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

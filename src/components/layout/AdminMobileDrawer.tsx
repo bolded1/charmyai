@@ -5,53 +5,59 @@ import { ChevronDown, Shield, ArrowLeft } from "lucide-react";
 import {
   LayoutDashboard, Building2, Users, FileText, BarChart3, TrendingUp, Activity, HardDrive,
   CreditCard, ScrollText, Cog, LifeBuoy, Sparkles, PenLine, Mail, Megaphone,
-  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Tag,
+  KeyRound, UserX, MessageSquareHeart, ToggleLeft, HeartPulse, Clock, Tag, Brain, MailPlus, Briefcase,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface NavGroup {
   label: string;
   items: { title: string; url: string; icon: React.ElementType }[];
 }
 
-const navGroups: NavGroup[] = [
-  { label: "Overview", items: [{ title: "Dashboard", url: "/admin", icon: LayoutDashboard }] },
-  { label: "Users & Access", items: [
-    { title: "Organizations", url: "/admin/organizations", icon: Building2 },
-    { title: "Users", url: "/admin/users", icon: Users },
-    { title: "Login Activity", url: "/admin/login-activity", icon: KeyRound },
-    { title: "GDPR / Data", url: "/admin/gdpr", icon: UserX },
-  ]},
-  { label: "Documents & Data", items: [
-    { title: "Documents", url: "/admin/documents", icon: FileText },
-    { title: "Doc Processing", url: "/admin/document-stats", icon: Activity },
-    { title: "Storage", url: "/admin/storage", icon: HardDrive },
-  ]},
-  { label: "Analytics & Revenue", items: [
-    { title: "Usage & Activity", url: "/admin/usage", icon: BarChart3 },
-    { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
-    { title: "Promo Codes", url: "/admin/promo-codes", icon: Tag },
-    { title: "Revenue", url: "/admin/revenue", icon: TrendingUp },
-    { title: "User Feedback", url: "/admin/feedback", icon: MessageSquareHeart },
-  ]},
-  { label: "Content & Comms", items: [
-    { title: "Page Editor", url: "/admin/cms", icon: PenLine },
-    { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
-    { title: "Broadcast", url: "/admin/broadcast", icon: Megaphone },
-    { title: "Demo Upload", url: "/admin/demo-settings", icon: Sparkles },
-  ]},
-  { label: "System & Ops", items: [
-    { title: "System Health", url: "/admin/system-health", icon: HeartPulse },
-    { title: "Feature Flags", url: "/admin/feature-flags", icon: ToggleLeft },
-    { title: "Scheduled Jobs", url: "/admin/scheduled-jobs", icon: Clock },
-    { title: "Audit Logs", url: "/admin/audit", icon: ScrollText },
-    { title: "System Settings", url: "/admin/settings", icon: Cog },
-  ]},
-  { label: "Help", items: [{ title: "Support", url: "/admin/support", icon: LifeBuoy }] },
-];
-
 export function AdminMobileDrawer() {
+  const { t } = useTranslation();
+
+  const navGroups: NavGroup[] = [
+    { label: t("admin.overview"), items: [{ title: t("admin.dashboard"), url: "/admin", icon: LayoutDashboard }] },
+    { label: t("admin.usersAccess"), items: [
+      { title: t("admin.organizations"), url: "/admin/organizations", icon: Building2 },
+      { title: t("admin.firmAccounts"), url: "/admin/firm-accounts", icon: Briefcase },
+      { title: t("admin.users"), url: "/admin/users", icon: Users },
+      { title: t("admin.loginActivity"), url: "/admin/login-activity", icon: KeyRound },
+      { title: t("admin.gdprData"), url: "/admin/gdpr", icon: UserX },
+    ]},
+    { label: t("admin.documentsData"), items: [
+      { title: t("admin.documents"), url: "/admin/documents", icon: FileText },
+      { title: t("admin.docProcessing"), url: "/admin/document-stats", icon: Activity },
+      { title: t("admin.storage"), url: "/admin/storage", icon: HardDrive },
+    ]},
+    { label: t("admin.analyticsRevenue"), items: [
+      { title: t("admin.usageActivity"), url: "/admin/usage", icon: BarChart3 },
+      { title: t("admin.subscriptions"), url: "/admin/subscriptions", icon: CreditCard },
+      { title: t("admin.promoCodes"), url: "/admin/promo-codes", icon: Tag },
+      { title: t("admin.revenue"), url: "/admin/revenue", icon: TrendingUp },
+      { title: t("admin.userFeedback"), url: "/admin/feedback", icon: MessageSquareHeart },
+    ]},
+    { label: t("admin.contentComms"), items: [
+      { title: "Page Editor", url: "/admin/cms", icon: PenLine },
+      { title: t("admin.emailTemplates"), url: "/admin/email-templates", icon: Mail },
+      { title: t("admin.broadcast"), url: "/admin/broadcast", icon: Megaphone },
+      { title: t("admin.demoSettings"), url: "/admin/demo-settings", icon: Sparkles },
+      { title: t("admin.marketingEmail"), url: "/admin/marketing-email", icon: MailPlus },
+    ]},
+    { label: t("admin.systemOps"), items: [
+      { title: t("admin.systemHealth"), url: "/admin/system-health", icon: HeartPulse },
+      { title: t("admin.aiSettings"), url: "/admin/ai-settings", icon: Brain },
+      { title: t("admin.featureFlags"), url: "/admin/feature-flags", icon: ToggleLeft },
+      { title: t("admin.scheduledJobs"), url: "/admin/scheduled-jobs", icon: Clock },
+      { title: t("admin.auditLogs"), url: "/admin/audit", icon: ScrollText },
+      { title: t("admin.systemSettings"), url: "/admin/settings", icon: Cog },
+    ]},
+    { label: t("admin.help"), items: [{ title: t("admin.support"), url: "/admin/support", icon: LifeBuoy }] },
+  ];
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-border/40">
@@ -60,8 +66,8 @@ export function AdminMobileDrawer() {
             <Shield className="h-3.5 w-3.5 text-primary-foreground" />
           </div>
           <div>
-            <span className="font-bold text-sm text-foreground">Admin</span>
-            <p className="text-[10px] text-muted-foreground -mt-0.5">Control Panel</p>
+            <span className="font-bold text-sm text-foreground">{t("admin.title")}</span>
+            <p className="text-[10px] text-muted-foreground -mt-0.5">{t("admin.controlPanel")}</p>
           </div>
         </div>
       </div>
@@ -78,7 +84,7 @@ export function AdminMobileDrawer() {
           className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors min-h-[44px]"
         >
           <ArrowLeft className="h-4 w-4" style={{ strokeWidth: 2.2 }} />
-          <span>Back to App</span>
+          <span>{t("navigation.backToApp")}</span>
         </Link>
       </div>
     </div>

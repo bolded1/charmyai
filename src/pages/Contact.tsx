@@ -37,7 +37,7 @@ export default function ContactPage() {
       const message = (form.querySelector("#message") as HTMLTextAreaElement).value;
 
       const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: { name, email, subject, message, to: "ct@ctoumbas.net" },
+        body: { name, email, subject, message, to: import.meta.env.VITE_CONTACT_EMAIL || "hello@charmy.net" },
       });
       if (error) throw error;
       toast.success(t("contact.success"));

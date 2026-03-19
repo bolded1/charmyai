@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useExpenseCategories, useCreateExpenseCategory } from "@/hooks/useExpenseCategories";
+import { toast } from "sonner";
 
 interface CategorySelectProps {
   value: string;
@@ -24,7 +25,9 @@ export function CategorySelect({ value, onValueChange, className }: CategorySele
       onValueChange(created.name);
       setNewName("");
       setShowCreate(false);
-    } catch {}
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create category");
+    }
   };
 
   return (

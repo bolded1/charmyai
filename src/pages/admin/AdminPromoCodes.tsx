@@ -112,6 +112,16 @@ export default function AdminPromoCodes() {
 
   const saveMutation = useMutation({
     mutationFn: async (values: typeof form & { id?: string }) => {
+      // Validate discount value
+      if (values.discount_type === "percentage" && (values.discount_value < 0 || values.discount_value > 100)) {
+        throw new Error("Percentage discount must be between 0 and 100");
+      }
+      if (values.discount_value < 0) {
+        throw new Error("Discount value cannot be negative");
+      }
+      if (values.start_date && values.end_date && values.end_date <= values.start_date) {
+        throw new Error("End date must be after start date");
+      }
       const payload: any = {
         code: values.code.toUpperCase().trim(),
         internal_name: values.internal_name || null,
