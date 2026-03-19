@@ -7,6 +7,7 @@ import {
   Zap, ClipboardCheck,
   Send, Link2, ExternalLink, ClipboardList,
   Lock, ShieldCheck, Globe, Server, Eye,
+  BookUser, BarChart3, TrendingUp, PieChart,
 } from "lucide-react";
 import quickbooksLogo from "@/assets/quickbooks-logo.png";
 import xeroLogo from "@/assets/xero-logo.png";
@@ -539,6 +540,124 @@ export default function IndexPage() {
                 <span className="text-sm font-semibold">{b.text}</span>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Contacts & Reports ═══ */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
+        <div className="container max-w-5xl relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="text-xs font-semibold tracking-wider uppercase text-primary mb-3 block">
+              {t("marketing.contactsReportsLabel", "Manage & Analyse")}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              {t("marketing.contactsReportsTitle", "Your contacts and finances, ")}
+              <span className="text-gradient">{t("marketing.contactsReportsHighlight", "at a glance")}</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              {t("marketing.contactsReportsDesc", "Build your contact directory automatically and track financial performance with interactive reports.")}
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Contacts Card */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
+              className="glass-card rounded-2xl p-6 md:p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-11 w-11 rounded-xl bg-hero-gradient flex items-center justify-center shadow-lg shadow-primary/20">
+                  <BookUser className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">{t("marketing.contactsCardTitle", "Contact Directory")}</h3>
+                  <p className="text-xs text-muted-foreground">{t("marketing.contactsCardSub", "Auto-built from your invoices")}</p>
+                </div>
+              </div>
+              <div className="space-y-2.5 mb-4">
+                {[
+                  { name: "CloudTech GmbH", type: "Supplier", total: "€12,450", color: "hsl(var(--primary))" },
+                  { name: "Riverside Bakery", type: "Customer", total: "€8,320", color: "hsl(172 66% 40%)" },
+                  { name: "Nordic Design Co", type: "Supplier", total: "€3,680", color: "hsl(265 55% 55%)" },
+                ].map((c, i) => (
+                  <motion.div key={c.name} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 + i * 0.1 }}
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-accent/40 border border-border/40">
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0" style={{ backgroundColor: c.color }}>
+                      {c.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{c.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{c.type}</p>
+                    </div>
+                    <span className="text-xs font-semibold tabular-nums">{c.total}</span>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3">
+                {[
+                  { icon: Search, text: t("marketing.contactsFeature1", "Search & filter") },
+                  { icon: Download, text: t("marketing.contactsFeature2", "Export ZIP") },
+                ].map((f) => (
+                  <div key={f.text} className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                    <f.icon className="h-3 w-3 text-primary" />
+                    {f.text}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Reports Card */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}
+              className="glass-card rounded-2xl p-6 md:p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-11 w-11 rounded-xl bg-gradient-cool flex items-center justify-center shadow-lg shadow-teal/20">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">{t("marketing.reportsCardTitle", "Reports & Analytics")}</h3>
+                  <p className="text-xs text-muted-foreground">{t("marketing.reportsCardSub", "Interactive charts & PDF export")}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {[
+                  { label: "Income", value: "€24.5k", trend: "+12%", positive: true },
+                  { label: "Expenses", value: "€18.2k", trend: "+5%", positive: false },
+                  { label: "Profit", value: "€6.3k", trend: "+28%", positive: true },
+                ].map((m) => (
+                  <div key={m.label} className="p-2 rounded-lg bg-accent/50 border border-border/40 text-center">
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider">{m.label}</div>
+                    <div className="text-sm font-bold tabular-nums">{m.value}</div>
+                    <div className={`text-[9px] font-semibold ${m.positive ? "text-primary" : "text-destructive"}`}>{m.trend}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Mini chart */}
+              <div className="p-3 rounded-lg bg-accent/30 border border-border/40 mb-4">
+                <div className="flex items-end gap-1.5 h-16 justify-between px-1">
+                  {[60, 75, 55, 80, 70, 90].map((h, i) => (
+                    <div key={i} className="flex-1 flex items-end gap-0.5">
+                      <motion.div initial={{ height: 0 }} whileInView={{ height: `${h}%` }} viewport={{ once: true }}
+                        transition={{ delay: 0.3 + i * 0.08, duration: 0.5 }}
+                        className="flex-1 rounded-t-sm bg-primary/70" />
+                      <motion.div initial={{ height: 0 }} whileInView={{ height: `${h * 0.7}%` }} viewport={{ once: true }}
+                        transition={{ delay: 0.35 + i * 0.08, duration: 0.5 }}
+                        className="flex-1 rounded-t-sm bg-muted-foreground/25" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {[
+                  { icon: PieChart, text: t("marketing.reportsFeature1", "Category breakdown") },
+                  { icon: TrendingUp, text: t("marketing.reportsFeature2", "Trend analysis") },
+                ].map((f) => (
+                  <div key={f.text} className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                    <f.icon className="h-3 w-3 text-primary" />
+                    {f.text}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
