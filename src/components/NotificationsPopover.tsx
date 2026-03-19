@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, FileText, AlertTriangle, Check, Download, Users2, MessageSquare, X } from "lucide-react";
+import { Bell, FileText, AlertTriangle, Check, Download, Users2, MessageSquare, X, Upload } from "lucide-react";
 import { useNotifications, type Notification } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -17,6 +17,7 @@ const ICON_MAP: Record<string, { icon: typeof FileText; className: string }> = {
   export_ready: { icon: Download, className: "text-info bg-info/10" },
   team_joined: { icon: Users2, className: "text-primary bg-primary/10" },
   ticket_reply: { icon: MessageSquare, className: "text-primary bg-primary/10" },
+  document_request_upload: { icon: Upload, className: "text-primary bg-primary/10" },
 };
 
 function NotificationIcon({ type }: { type: string }) {

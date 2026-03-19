@@ -188,6 +188,16 @@ Deno.serve(async (req) => {
         .update({ upload_count: request.upload_count + 1, updated_at: new Date().toISOString() })
         .eq("id", request.id);
 
+      // Notify the firm member who created the request
+      const uploaderLabel = uploaderName || uploaderEmail || "A client";
+      await adminClient.from("notifications").insert({
+        user_id: request.created_by,
+        type: "document_request_upload",
+        title: "New document uploaded",
+        body: `${uploaderLabel} uploaded "${file.name}" via your document request "${request.title}".`,
+        link: "/app/documents",
+      });
+
       // Trigger AI extraction (fire-and-forget style, don't block response)
       try {
         const extractUrl = `${supabaseUrl}/functions/v1/extract-document`;
