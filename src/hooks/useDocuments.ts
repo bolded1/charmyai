@@ -4,6 +4,46 @@ import { toast } from "sonner";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { useActiveOrgId } from "@/hooks/useOrganization";
 
+const CATEGORY_COLORS = [
+  "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316",
+  "#eab308", "#22c55e", "#14b8a6", "#06b6d4", "#3b82f6",
+  "#a855f7", "#d946ef", "#0ea5e9", "#10b981", "#f59e0b",
+];
+
+/** Ensure a category exists in expense_categories; create with a random color if missing. */
+async function ensureCategoryExists(
+  categoryName: string | null | undefined,
+  userId: string,
+  organizationId: string | null
+) {
+  if (!categoryName || !categoryName.trim()) return;
+  const trimmed = categoryName.trim();
+
+  let query = supabase
+    .from("expense_categories")
+    .select("id")
+    .eq("user_id", userId)
+    .ilike("name", trimmed);
+
+  if (organizationId) {
+    query = query.eq("organization_id", organizationId);
+  } else {
+    query = query.is("organization_id", null);
+  }
+
+  const { data: existing } = await query.maybeSingle();
+  if (existing) return;
+
+  const color = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)];
+
+  await supabase.from("expense_categories").insert({
+    user_id: userId,
+    name: trimmed,
+    color,
+    organization_id: organizationId,
+  });
+}
+
 const WEBHOOK_FN = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
 
 /** Fire-and-forget: dispatch a webhook event without blocking the caller. */
