@@ -367,6 +367,7 @@ export function useApproveDocument() {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["income"] });
+      queryClient.invalidateQueries({ queryKey: ["expense_categories"] });
       toast.success("Document approved and record created");
     },
     onError: (err: Error) => {
