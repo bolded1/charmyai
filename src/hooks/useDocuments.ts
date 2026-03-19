@@ -601,9 +601,10 @@ export function useCreateManualExpense() {
         reference = reference || `${input.days} days @ ${input.daily_rate}/day`;
       }
 
-      // Optional receipt file upload
+      // Optional receipt file upload (with storage check)
       let documentId: string | null = null;
       if (input.receipt_file) {
+        await checkStorageQuota(profile?.active_organization_id || null, input.receipt_file.size);
         const file = input.receipt_file;
         const filePath = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
         const { error: uploadError } = await supabase.storage
