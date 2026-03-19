@@ -100,6 +100,8 @@ export default function ActivateTrialPage() {
   // Firm plan: PaymentIntent client secret
   const [firmClientSecret, setFirmClientSecret] = useState<string | null>(null);
   const [firmElements, setFirmElements] = useState<any>(null);
+  const proInitRef = useRef(false);
+  const firmInitRef = useRef(false);
 
   // Create SetupIntent and mount Elements (only for Pro plan)
   useEffect(() => {
