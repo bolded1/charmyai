@@ -27,6 +27,7 @@ import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfQuarte
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ManualExpenseDialog } from "@/components/ManualExpenseDialog";
+import { ContactCombobox } from "@/components/ContactCombobox";
 import { useNavigate } from "react-router-dom";
 
 type DatePreset = "all" | "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
@@ -733,9 +734,13 @@ export default function ExpensesPage() {
 
               {/* Edit Fields */}
               <fieldset disabled={updateExpense.isPending} className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="col-span-2">
                   <Label className="text-xs text-muted-foreground">Supplier</Label>
-                  <Input className="h-8 text-sm" value={editData.supplier_name} onChange={(e) => setEditData({ ...editData, supplier_name: e.target.value })} />
+                  <ContactCombobox
+                    value={editData.supplier_name}
+                    onChange={(name, vat) => setEditData({ ...editData, supplier_name: name, vat_number: vat ?? editData.vat_number })}
+                    placeholder="Search or type supplier…"
+                  />
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Invoice #</Label>
