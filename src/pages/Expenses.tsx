@@ -496,17 +496,18 @@ export default function ExpensesPage() {
                 <tbody>
                   {groupedByMonth.map((group) => (
                     <Fragment key={group.key}>
-                      <tr className="bg-accent/30">
+                      <tr className="bg-primary">
                         <td colSpan={10} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Checkbox
                                 checked={group.records.every((r) => selectedIds.has(r.id))}
                                 onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
+                                className="border-white/50 data-[state=checked]:bg-white data-[state=checked]:text-primary"
                               />
-                              <span className="text-xs font-bold text-foreground">{group.label}</span>
+                              <span className="text-xs font-bold text-primary-foreground">{group.label}</span>
                             </div>
-                            <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                            <span className="text-xs font-semibold tabular-nums text-primary-foreground/80">
                               {group.records.length} records · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                             </span>
                           </div>
