@@ -9,6 +9,7 @@ const corsHeaders = {
 
 // Product IDs for one-time purchases
 const FIRM_PLAN_PRODUCT_ID = "prod_U7OoSyNLV7qab3";
+const FIRM_UPGRADE_PRODUCT_ID = "prod_UB5OgAq3lOdScN";
 const PRO_PLAN_PRODUCT_ID = "prod_U7PZ8dbaVYJKAv";
 // Legacy subscription product IDs (monthly/annual)
 const PRO_MONTHLY_PRODUCT_ID = "prod_U6lFbZZFmHhG8T";
