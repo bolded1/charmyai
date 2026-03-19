@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Download, ExternalLink, FileText, Trash2 } from "lucide-react";
+import { triggerBlobDownload } from "@/lib/download-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useUpdateIncome, useDeleteIncome } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
