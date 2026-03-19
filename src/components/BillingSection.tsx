@@ -535,8 +535,8 @@ function FirmUpgradeCard() {
     }
   };
 
-  // Price calculation
-  const basePrice: number = STRIPE_PLANS.firm.price_onetime || 99;
+  // Pro users upgrading pay the difference (€69.01), not full price
+  const basePrice: number = STRIPE_PLANS.firm_upgrade.price_onetime;
   let finalPrice: number = basePrice;
   let discountLine: string | null = null;
   if (promoResult?.valid) {
