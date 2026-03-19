@@ -40,6 +40,9 @@ export default function DocumentsPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(50);
   const [datePreset, setDatePreset] = useState<"all" | "this_month" | "last_month" | "this_quarter" | "this_year">("all");
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<string | null>(null);
+  const [loadingFile, setLoadingFile] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -49,6 +52,74 @@ export default function DocumentsPage() {
   const bulkApprove = useBulkApproveDocuments();
   const bulkDelete = useBulkDeleteDocuments();
   const retryExtraction = useRetryExtraction();
+
+  // Load file preview when a document is selected
+  useEffect(() => {
+    if (!selected) {
+      setFileUrl((prev) => {
+        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setFileType(null);
+      return;
+    }
+
+    let cancelled = false;
+    let localBlobUrl: string | null = null;
+    setLoadingFile(true);
+    setFileType(selected.file_type || null);
+
+    (async () => {
+      const { data: fileBlob, error: fileError } = await supabase.storage
+        .from("documents")
+        .download(selected.file_path);
+
+      if (cancelled) return;
+
+      if (fileError || !fileBlob) {
+        console.error("Document download failed:", fileError?.message, "path:", selected.file_path);
+        setFileUrl(null);
+        setLoadingFile(false);
+        return;
+      }
+
+      const typedBlob = new Blob([fileBlob], {
+        type: selected.file_type || fileBlob.type || "application/octet-stream",
+      });
+      localBlobUrl = URL.createObjectURL(typedBlob);
+      setFileUrl((prev) => {
+        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return localBlobUrl;
+      });
+      setFileType(selected.file_type || typedBlob.type || null);
+      setLoadingFile(false);
+    })();
+
+    return () => {
+      cancelled = true;
+      if (localBlobUrl) URL.revokeObjectURL(localBlobUrl);
+    };
+  }, [selected?.id]);
+
+  const handleDocDownload = async () => {
+    if (!fileUrl) return;
+    try {
+      const resp = await fetch(fileUrl);
+      const blob = await resp.blob();
+      const filename = selected?.file_name || "document";
+      triggerBlobDownload(blob, filename);
+    } catch {
+      window.open(fileUrl, "_blank");
+    }
+  };
+
+  const handleDocOpen = () => {
+    if (!fileUrl) return;
+    window.open(fileUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const isImage = fileType?.startsWith("image/");
+  const isPdf = fileType === "application/pdf";
 
   const dateRange = useMemo(() => {
     const now = new Date();
