@@ -732,6 +732,20 @@ export default function DocumentsPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
+                {(!selected.extracted_data || selected.status === "needs_review") && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      await retryExtraction.mutateAsync(selected.id);
+                      setSelected(null);
+                    }}
+                    disabled={retryExtraction.isPending}
+                  >
+                    {retryExtraction.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                    Re-extract
+                  </Button>
+                )}
                 <Button size="sm" variant="outline" className="flex-1" onClick={handleSave} disabled={updateDoc.isPending}>
                   {updateDoc.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
                   Save Changes
