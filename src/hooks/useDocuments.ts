@@ -283,6 +283,13 @@ export function useApproveDocument() {
         if (orgData?.default_currency) orgDefaultCurrency = orgData.default_currency;
       }
 
+      // Auto-create category if AI assigned one
+      await ensureCategoryExists(
+        doc.category,
+        user.id,
+        approverProfile?.active_organization_id || null
+      );
+
       // Create expense or income record based on document type
       // notes column added in migration 20260317120000 – omit if column absent
       const docNotes = (doc.user_corrections as any)?._notes || null;
