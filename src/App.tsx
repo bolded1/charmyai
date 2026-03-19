@@ -78,7 +78,9 @@ import NotFound from "./pages/NotFound";
 import { useDynamicPwaManifest } from "./hooks/useDynamicPwaManifest";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 2 * 60 * 1000 } },
+});
 
 // Ensure dark mode class is never applied
 document.documentElement.classList.remove("dark");

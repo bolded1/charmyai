@@ -1,6 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { toast } from "sonner";
+
+/**
+ * Lightweight hook that resolves the current user ID and active organization ID.
+ * Cached via React Query so multiple hooks can share a single fetch.
+ */
+export function useActiveOrgId() {
+  const { effectiveUserId } = useImpersonation();
+  return useQuery({
+    queryKey: ["active-org-id", effectiveUserId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = effectiveUserId || user?.id;
+      if (!uid) return { userId: null as string | null, orgId: null as string | null };
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("user_id", uid)
+        .maybeSingle();
+      return { userId: uid, orgId: (profile?.active_organization_id as string | null) ?? null };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export interface Organization {
   id: string;

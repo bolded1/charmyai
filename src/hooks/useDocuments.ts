@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
+import { useActiveOrgId } from "@/hooks/useOrganization";
 
 const WEBHOOK_FN = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
 
@@ -328,66 +329,46 @@ export function useApproveDocument() {
 }
 
 export function useExpenseRecords() {
-  const { effectiveUserId } = useImpersonation();
+  const { data: identity } = useActiveOrgId();
   return useQuery({
-    queryKey: ["expenses", effectiveUserId],
+    queryKey: ["expenses", identity?.userId, identity?.orgId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      const uid = effectiveUserId || user?.id;
-      if (!uid) return [];
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("active_organization_id")
-        .eq("user_id", uid)
-        .maybeSingle();
-
+      if (!identity?.userId) return [];
       let query = supabase
         .from("expense_records")
         .select("*")
+        .eq("user_id", identity.userId)
         .order("invoice_date", { ascending: false });
-      if (effectiveUserId) {
-        query = query.eq("user_id", effectiveUserId);
-      }
-      if (profile?.active_organization_id) {
-        query = query.eq("organization_id", profile.active_organization_id);
+      if (identity.orgId) {
+        query = query.eq("organization_id", identity.orgId);
       }
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    enabled: !!identity?.userId,
   });
 }
 
 export function useIncomeRecords() {
-  const { effectiveUserId } = useImpersonation();
+  const { data: identity } = useActiveOrgId();
   return useQuery({
-    queryKey: ["income", effectiveUserId],
+    queryKey: ["income", identity?.userId, identity?.orgId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      const uid = effectiveUserId || user?.id;
-      if (!uid) return [];
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("active_organization_id")
-        .eq("user_id", uid)
-        .maybeSingle();
-
+      if (!identity?.userId) return [];
       let query = supabase
         .from("income_records")
         .select("*")
+        .eq("user_id", identity.userId)
         .order("invoice_date", { ascending: false });
-      if (effectiveUserId) {
-        query = query.eq("user_id", effectiveUserId);
-      }
-      if (profile?.active_organization_id) {
-        query = query.eq("organization_id", profile.active_organization_id);
+      if (identity.orgId) {
+        query = query.eq("organization_id", identity.orgId);
       }
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    enabled: !!identity?.userId,
   });
 }
 
@@ -897,39 +878,21 @@ export interface CreateContactInput {
 }
 
 export function useContacts() {
-  const { impersonatedUserId } = useImpersonation();
+  const { data: identity } = useActiveOrgId();
 
   return useQuery<ContactRecord[]>({
-    queryKey: ["contacts"],
+    queryKey: ["contacts", identity?.userId, identity?.orgId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      const effectiveUserId = impersonatedUserId || user?.id;
-      if (!effectiveUserId) return [];
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("active_organization_id")
-        .eq("user_id", effectiveUserId)
-        .maybeSingle();
-
-      let query = supabase
-        .from("contacts")
-        .select("*")
-        .eq("user_id", effectiveUserId)
-        .order("name", { ascending: true });
-
-      if (profile?.active_organization_id) {
-        query = supabase
-          .from("contacts")
-          .select("*")
-          .or(`user_id.eq.${effectiveUserId},organization_id.eq.${profile.active_organization_id}`)
-          .order("name", { ascending: true });
-      }
-
-      const { data, error } = await query;
+      if (!identity?.userId) return [];
+      const query = identity.orgId
+        ? supabase.from("contacts").select("*")
+            .or(`user_id.eq.${identity.userId},organization_id.eq.${identity.orgId}`)
+        : supabase.from("contacts").select("*").eq("user_id", identity.userId);
+      const { data, error } = await query.order("name", { ascending: true });
       if (error) throw error;
       return (data || []) as ContactRecord[];
     },
+    enabled: !!identity?.userId,
   });
 }
 
