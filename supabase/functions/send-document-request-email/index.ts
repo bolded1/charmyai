@@ -124,19 +124,19 @@ Deno.serve(async (req) => {
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif;">
   <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-    <div style="background:#1E3A8A;padding:24px 32px;">
+    <div style="background:#1E8A4A;padding:24px 32px;">
       <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:600;">Document Request</h1>
     </div>
     <div style="padding:32px;">
       <p style="margin:0 0 16px;color:#333;font-size:15px;">Hi ${clientName},</p>
       <p style="margin:0 0 16px;color:#555;font-size:14px;"><strong>${firm.name}</strong> is requesting documents from you:</p>
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:0 0 16px;">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:0 0 16px;">
         <p style="margin:0 0 4px;color:#333;font-size:15px;font-weight:600;">${docRequest.title}</p>
         ${descriptionText}
         ${deadlineText}
       </div>
       <div style="text-align:center;margin:24px 0;">
-        <a href="${uploadUrl}" style="display:inline-block;background:#1E3A8A;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:600;">Upload Documents</a>
+        <a href="${uploadUrl}" style="display:inline-block;background:#1E8A4A;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:600;">Upload Documents</a>
       </div>
       <p style="margin:0;color:#999;font-size:12px;text-align:center;">Or copy this link: ${uploadUrl}</p>
     </div>
