@@ -181,11 +181,15 @@ serve(async (req) => {
     if (subscriptions.data.length === 0) {
       logStep("No subscriptions found, checking promo and one-time purchases");
       const promo = await checkPromo();
+      const promoFirmAccess = promoHasFirmAccess(promo);
       if (promo) {
+        if (promoFirmAccess) {
+          await provisionFirmOrg();
+        }
         return new Response(JSON.stringify({
-          subscribed: true, plan: hasFirmPlan ? "firm" : "pro", status: "promo_active",
+          subscribed: true, plan: promoFirmAccess || hasFirmPlan ? "firm" : "pro", status: "promo_active",
           trial_end: null, current_period_end: null, cancel_at_period_end: false,
-          has_firm_plan: hasFirmPlan, amount_paid: amountPaid, paid_currency: paidCurrency,
+          has_firm_plan: promoFirmAccess || hasFirmPlan, amount_paid: amountPaid, paid_currency: paidCurrency,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
