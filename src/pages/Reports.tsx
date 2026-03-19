@@ -155,22 +155,24 @@ export default function Reports() {
   const expenses = useMemo(() =>
     rawExpenses.filter((r) =>
       r.currency === activeCurrency &&
+      r.invoice_date &&
       isWithinInterval(parseISO(r.invoice_date), interval)
     ), [rawExpenses, activeCurrency, preset]);
 
   const income = useMemo(() =>
     rawIncome.filter((r) =>
       r.currency === activeCurrency &&
+      r.invoice_date &&
       isWithinInterval(parseISO(r.invoice_date), interval)
     ), [rawIncome, activeCurrency, preset]);
 
   // Summary totals
-  const totalRevenue  = useMemo(() => income.reduce((s, r)   => s + (r.total_amount ?? 0), 0), [income]);
-  const totalExpenses = useMemo(() => expenses.reduce((s, r) => s + (r.total_amount ?? 0), 0), [expenses]);
+  const totalRevenue  = useMemo(() => income.reduce((s, r)   => s + (Number(r.total_amount) || 0), 0), [income]);
+  const totalExpenses = useMemo(() => expenses.reduce((s, r) => s + (Number(r.total_amount) || 0), 0), [expenses]);
   const grossProfit   = totalRevenue - totalExpenses;
   const vatBalance    = useMemo(() =>
-    income.reduce((s, r) => s + (r.vat_amount ?? 0), 0) -
-    expenses.reduce((s, r) => s + (r.vat_amount ?? 0), 0),
+    income.reduce((s, r) => s + (Number(r.vat_amount) || 0), 0) -
+    expenses.reduce((s, r) => s + (Number(r.vat_amount) || 0), 0),
   [income, expenses]);
 
   // Monthly chart data
@@ -180,10 +182,10 @@ export default function Reports() {
     const mEnd   = endOfMonth(m);
     const mInter = { start: mStart, end: mEnd };
 
-    const rev = income.filter((r) => isWithinInterval(parseISO(r.invoice_date), mInter))
-      .reduce((s, r) => s + (r.total_amount ?? 0), 0);
-    const exp = expenses.filter((r) => isWithinInterval(parseISO(r.invoice_date), mInter))
-      .reduce((s, r) => s + (r.total_amount ?? 0), 0);
+    const rev = income.filter((r) => r.invoice_date && isWithinInterval(parseISO(r.invoice_date), mInter))
+      .reduce((s, r) => s + (Number(r.total_amount) || 0), 0);
+    const exp = expenses.filter((r) => r.invoice_date && isWithinInterval(parseISO(r.invoice_date), mInter))
+      .reduce((s, r) => s + (Number(r.total_amount) || 0), 0);
 
     return { month: format(m, months.length > 6 ? "MMM" : "MMM yyyy"), Revenue: rev, Expenses: exp, Profit: rev - exp };
   }), [income, expenses, preset]);

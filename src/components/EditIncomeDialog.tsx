@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,8 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
   const [fileType, setFileType] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const initialDataRef = useRef<string>("");
 
   const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();
@@ -45,7 +47,7 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
   // Populate editData when record/open changes
   useEffect(() => {
     if (record && open) {
-      setEditData({
+      const data = {
         customer_name: record.customer_name || "",
         invoice_number: record.invoice_number || "",
         invoice_date: record.invoice_date || "",
@@ -57,9 +59,12 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
         total_amount: Number(record.total_amount || 0),
         vat_number: record.vat_number || "",
         notes: (record as any).notes || "",
-      });
+      };
+      setEditData(data);
+      initialDataRef.current = JSON.stringify(data);
     } else {
       setEditData(null);
+      initialDataRef.current = "";
     }
   }, [record?.id, open]);
 
@@ -119,17 +124,32 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
     };
   }, [record?.document_id, open]);
 
+  const isDirty = editData ? JSON.stringify(editData) !== initialDataRef.current : false;
+
   const handleClose = () => {
+    if (isDirty) {
+      setShowDiscardConfirm(true);
+      return;
+    }
+    doClose();
+  };
+
+  const doClose = () => {
     if (fileUrl?.startsWith("blob:")) URL.revokeObjectURL(fileUrl);
     setFileUrl(null);
     setFileType(null);
+    setShowDiscardConfirm(false);
     onOpenChange(false);
   };
 
   const handleSave = async () => {
     if (!record?.id || !editData) return;
-    await updateIncome.mutateAsync({ id: record.id, updates: editData, documentId: record?.document_id });
-    handleClose();
+    try {
+      await updateIncome.mutateAsync({ id: record.id, updates: editData, documentId: record?.document_id });
+      doClose();
+    } catch {
+      // error toast handled by mutation onError
+    }
   };
 
   const handleDownload = () => {
@@ -301,12 +321,25 @@ export function EditIncomeDialog({ record, open, onOpenChange }: EditIncomeDialo
                 if (deleteConfirmId) {
                   await deleteIncome.mutateAsync(deleteConfirmId);
                   setDeleteConfirmId(null);
-                  handleClose();
+                  doClose();
                 }
               }}
             >
               Delete
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDiscardConfirm} onOpenChange={setShowDiscardConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>You have unsaved changes. Closing will discard them.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction onClick={doClose} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Discard</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
