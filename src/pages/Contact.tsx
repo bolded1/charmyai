@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { MarketingCTA } from "@/components/MarketingCTA";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -25,14 +26,28 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const form = formRef.current!;
+      const name = (form.querySelector("#name") as HTMLInputElement).value;
+      const email = (form.querySelector("#email") as HTMLInputElement).value;
+      const subject = (form.querySelector("#subject") as HTMLInputElement).value;
+      const message = (form.querySelector("#message") as HTMLTextAreaElement).value;
+
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: { name, email, subject, message, to: "ct@ctoumbas.net" },
+      });
+      if (error) throw error;
       toast.success(t("contact.success"));
-      formRef.current?.reset();
-    }, 1000);
+      form.reset();
+    } catch (err: any) {
+      console.error("Contact form error:", err);
+      toast.error(t("contact.error", "Failed to send message. Please try again."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const contactCards = [

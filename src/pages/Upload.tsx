@@ -181,11 +181,11 @@ export default function UploadPage() {
 
       {/* Email Import Address */}
       {importEmailAddress && (
-        <Card className="border-0 stat-card-violet overflow-hidden">
+        <Card className="border-0 stat-card-emerald overflow-hidden">
           <CardContent className="p-5">
             <div className="flex items-start gap-3.5">
-              <div className="h-10 w-10 rounded-xl icon-bg-violet flex items-center justify-center shrink-0 mt-0.5">
-                <Mail className="h-5 w-5 text-violet" />
+              <div className="h-10 w-10 rounded-xl icon-bg-emerald flex items-center justify-center shrink-0 mt-0.5">
+                <Mail className="h-5 w-5 text-emerald" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-bold mb-0.5">{t("upload.importViaEmail")}</h3>
