@@ -405,7 +405,14 @@ export default function ExpensesPage() {
               {groupedByMonth.map((group) => (
                 <div key={group.key}>
                   <div className="flex items-center justify-between px-3 py-2 bg-muted/50 sticky top-0 z-10">
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">{group.label}</span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={group.records.every((r) => selectedIds.has(r.id))}
+                        onCheckedChange={() => toggleMonthSelect(group.records.map((r) => r.id))}
+                        className="shrink-0"
+                      />
+                      <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">{group.label}</span>
+                    </div>
                     <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
                       {group.records.length} · {group.currencyTotals.map((ct) => fmtCurrencyValue(ct.total, ct.currency)).join(" · ")}
                     </span>
