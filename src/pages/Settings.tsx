@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import StorageSettings from "@/components/StorageSettings";
 import BillingSection from "@/components/BillingSection";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
