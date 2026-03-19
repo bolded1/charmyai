@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Download, ExternalLink, FileText, Trash2 } from "lucide-react";
+import { triggerBlobDownload } from "@/lib/download-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useUpdateExpense, useDeleteExpense } from "@/hooks/useDocuments";
 import { CategorySelect } from "@/components/CategorySelect";
@@ -151,17 +152,19 @@ export function EditExpenseDialog({ record, open, onOpenChange }: EditExpenseDia
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!fileUrl) return;
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = record?.supplier_name
-      ? `${record.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
-      : "document";
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => document.body.removeChild(a), 3000);
+    // Fetch the blob from the object URL and trigger a proper download
+    try {
+      const resp = await fetch(fileUrl);
+      const blob = await resp.blob();
+      const filename = record?.supplier_name
+        ? `${record.supplier_name}-invoice${fileType === "application/pdf" ? ".pdf" : fileType?.startsWith("image/") ? ".png" : ""}`
+        : "document";
+      triggerBlobDownload(blob, filename);
+    } catch {
+      window.open(fileUrl, "_blank");
+    }
   };
 
   const handleOpenFile = () => {
