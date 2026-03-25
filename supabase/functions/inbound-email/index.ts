@@ -592,7 +592,6 @@ serve(async (req) => {
 
     // Process each supported attachment
     let processedCount = 0;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     for (const att of supportedAttachments) {
       try {
@@ -611,9 +610,10 @@ serve(async (req) => {
           fileType = mimeMap[ext || ""] || "application/octet-stream";
         }
 
+        const fileBuffer = await att.file.arrayBuffer();
         const { error: uploadErr } = await supabase.storage
           .from("documents")
-          .upload(filePath, att.file, { contentType: fileType });
+          .upload(filePath, fileBuffer, { contentType: fileType });
 
         if (uploadErr) {
           console.error("Upload error for", att.name, uploadErr);
@@ -643,25 +643,22 @@ serve(async (req) => {
 
         processedCount++;
 
-        if (LOVABLE_API_KEY) {
-          const extractUrl = `${supabaseUrl}/functions/v1/extract-document`;
-          try {
-            const extractRes = await fetch(extractUrl, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${serviceKey}`,
-                "x-internal-key": serviceKey,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ documentId: doc.id, userId: org.owner_user_id }),
-            });
-            if (!extractRes.ok) {
-              const errBody = await extractRes.text().catch(() => "");
-              console.error("Extract-document returned", extractRes.status, "for", doc.id, errBody);
-            }
-          } catch (e) {
-            console.error("Extract trigger failed for", doc.id, e);
+        const extractUrl = `${supabaseUrl}/functions/v1/extract-document`;
+        try {
+          const extractRes = await fetch(extractUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-internal-key": serviceKey,
+            },
+            body: JSON.stringify({ documentId: doc.id, userId: org.owner_user_id }),
+          });
+          if (!extractRes.ok) {
+            const errBody = await extractRes.text().catch(() => "");
+            console.error("Extract-document returned", extractRes.status, "for", doc.id, errBody);
           }
+        } catch (e) {
+          console.error("Extract trigger failed for", doc.id, e);
         }
       } catch (e) {
         console.error("Error processing attachment", att.name, e);
