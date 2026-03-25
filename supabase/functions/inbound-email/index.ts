@@ -598,15 +598,7 @@ serve(async (req) => {
       try {
         const filePath = `${org.owner_user_id}/${Date.now()}-${att.name}`;
 
-        const { error: uploadErr } = await supabase.storage
-          .from("documents")
-          .upload(filePath, att.file);
-
-        if (uploadErr) {
-          console.error("Upload error for", att.name, uploadErr);
-          continue;
-        }
-
+        // Normalize MIME type before upload (Mailgun may send generic types)
         let fileType = att.file.type;
         if (!fileType || fileType === "application/octet-stream") {
           const ext = att.name.toLowerCase().split(".").pop();
@@ -617,6 +609,15 @@ serve(async (req) => {
             jpeg: "image/jpeg",
           };
           fileType = mimeMap[ext || ""] || "application/octet-stream";
+        }
+
+        const { error: uploadErr } = await supabase.storage
+          .from("documents")
+          .upload(filePath, att.file, { contentType: fileType });
+
+        if (uploadErr) {
+          console.error("Upload error for", att.name, uploadErr);
+          continue;
         }
 
         const { data: doc, error: docErr } = await supabase
