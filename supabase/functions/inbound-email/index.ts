@@ -644,15 +644,23 @@ serve(async (req) => {
 
         if (LOVABLE_API_KEY) {
           const extractUrl = `${supabaseUrl}/functions/v1/extract-document`;
-          fetch(extractUrl, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${serviceKey}`,
-              "x-internal-key": serviceKey,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ documentId: doc.id, userId: org.owner_user_id }),
-          }).catch((e) => console.error("Extract trigger failed for", doc.id, e));
+          try {
+            const extractRes = await fetch(extractUrl, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${serviceKey}`,
+                "x-internal-key": serviceKey,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ documentId: doc.id, userId: org.owner_user_id }),
+            });
+            if (!extractRes.ok) {
+              const errBody = await extractRes.text().catch(() => "");
+              console.error("Extract-document returned", extractRes.status, "for", doc.id, errBody);
+            }
+          } catch (e) {
+            console.error("Extract trigger failed for", doc.id, e);
+          }
         }
       } catch (e) {
         console.error("Error processing attachment", att.name, e);
