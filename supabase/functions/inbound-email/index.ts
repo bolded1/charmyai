@@ -647,9 +647,10 @@ serve(async (req) => {
             method: "POST",
             headers: {
               Authorization: `Bearer ${serviceKey}`,
+              "x-internal-key": serviceKey,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ documentId: doc.id }),
+            body: JSON.stringify({ documentId: doc.id, userId: org.owner_user_id }),
           }).catch((e) => console.error("Extract trigger failed for", doc.id, e));
         }
       } catch (e) {
