@@ -331,7 +331,7 @@ serve(async (req) => {
     const senderEmail = fromMatch?.[2] || from;
 
     // Extract import token from recipient address
-    const toMatch = recipient.match(/(?:\+)?([a-z0-9]{6})@/i);
+    const toMatch = recipient.match(/(?:\+)?([a-z0-9]{6,32})@/i);
     const importToken = toMatch?.[1];
 
     if (!importToken) {
@@ -623,6 +623,7 @@ serve(async (req) => {
           .from("documents")
           .insert({
             user_id: org.owner_user_id,
+            organization_id: org.id,
             file_name: att.name,
             file_path: filePath,
             file_type: fileType,
