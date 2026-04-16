@@ -334,7 +334,7 @@ export default function IncomePage() {
                 <p className="text-xs text-muted-foreground">Drop invoices here or click to browse · PDF, PNG, JPG</p>
               </div>
             </div>
-            <input id="income-file-input" type="file" className="hidden" multiple accept=".pdf,.png,.jpg,.jpeg" onChange={handleFileSelect} />
+            <input id="income-file-input" type="file" className="hidden" multiple accept=".pdf,.png,.jpg,.jpeg,.csv,.xlsx,.xls" onChange={handleFileSelect} />
           </div>
         </CardContent>
       </Card>
