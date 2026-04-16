@@ -195,12 +195,33 @@ serve(async (req) => {
     // Convert file to base64 for AI processing
     const arrayBuffer = await fileData.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
+
+    // Detect spreadsheets — these go to the AI as parsed text instead of an image.
+    const spreadsheetKind = isSpreadsheetFile(doc.file_type, doc.file_name);
+    let spreadsheetText = "";
+    if (spreadsheetKind) {
+      spreadsheetText = spreadsheetToText(bytes, spreadsheetKind, doc.file_name);
+      if (!spreadsheetText) {
+        await supabase
+          .from("documents")
+          .update({
+            status: "needs_review",
+            validation_errors: [{ field: "file", message: "Could not parse spreadsheet contents" }],
+          })
+          .eq("id", documentId);
+        return new Response(JSON.stringify({ error: "Could not parse spreadsheet" }), {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     let binary = "";
     const chunkSize = 8192;
     for (let i = 0; i < bytes.length; i += chunkSize) {
       binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
     }
-    const base64 = btoa(binary);
+    const base64 = spreadsheetKind ? "" : btoa(binary);
     const mimeType = doc.file_type === "application/pdf" ? "application/pdf" : (doc.file_type || "image/jpeg");
     // google/gemini-2.5-flash is the confirmed working vision model on this gateway —
     // it handles both PDFs and images via the image_url / base64 format.
