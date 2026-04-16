@@ -1,6 +1,53 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 import { checkBillingEntitlement } from "../_shared/check-billing.ts";
+
+/** Detect spreadsheet (CSV / Excel) files by mime type or filename extension. */
+function isSpreadsheetFile(fileType: string | null | undefined, fileName: string | null | undefined): "csv" | "xlsx" | null {
+  const t = (fileType || "").toLowerCase();
+  const n = (fileName || "").toLowerCase();
+  if (t.includes("csv") || n.endsWith(".csv")) return "csv";
+  if (
+    t.includes("spreadsheet") ||
+    t.includes("excel") ||
+    t === "application/vnd.ms-excel" ||
+    t === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    n.endsWith(".xlsx") || n.endsWith(".xls")
+  ) return "xlsx";
+  return null;
+}
+
+/** Convert a spreadsheet/CSV file's bytes into a compact text representation for the AI. */
+function spreadsheetToText(bytes: Uint8Array, kind: "csv" | "xlsx", fileName: string): string {
+  try {
+    if (kind === "csv") {
+      // Decode UTF-8 (with BOM stripping). Most CSVs are UTF-8; falls back to latin1 on error.
+      let text: string;
+      try {
+        text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+      } catch {
+        text = new TextDecoder("latin1").decode(bytes);
+      }
+      if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+      return text.slice(0, 50000); // cap to ~50k chars to stay within token limits
+    }
+    // XLSX / XLS — parse with SheetJS and convert each sheet to CSV
+    const workbook = XLSX.read(bytes, { type: "array" });
+    const parts: string[] = [];
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      const csv = XLSX.utils.sheet_to_csv(sheet, { blankrows: false });
+      if (csv.trim()) {
+        parts.push(`--- Sheet: ${sheetName} ---\n${csv}`);
+      }
+    }
+    return parts.join("\n\n").slice(0, 50000);
+  } catch (e) {
+    console.error(`[extract-document] Failed to parse spreadsheet ${fileName}:`, e);
+    return "";
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
