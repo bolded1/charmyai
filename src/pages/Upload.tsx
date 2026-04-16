@@ -276,6 +276,8 @@ export default function UploadPage() {
               <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">PDF</Badge>
               <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">PNG</Badge>
               <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">JPG</Badge>
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">CSV</Badge>
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg font-medium">XLSX</Badge>
               <span className="text-[10px] text-muted-foreground/70">Up to {maxFileSizeMB}MB</span>
             </div>
             <input
@@ -283,7 +285,7 @@ export default function UploadPage() {
               type="file"
               className="hidden"
               multiple
-              accept=".pdf,.png,.jpg,.jpeg"
+              accept=".pdf,.png,.jpg,.jpeg,.csv,.xlsx,.xls"
               onChange={handleFileSelect}
             />
           </div>

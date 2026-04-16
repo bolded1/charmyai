@@ -1,6 +1,53 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 import { checkBillingEntitlement } from "../_shared/check-billing.ts";
+
+/** Detect spreadsheet (CSV / Excel) files by mime type or filename extension. */
+function isSpreadsheetFile(fileType: string | null | undefined, fileName: string | null | undefined): "csv" | "xlsx" | null {
+  const t = (fileType || "").toLowerCase();
+  const n = (fileName || "").toLowerCase();
+  if (t.includes("csv") || n.endsWith(".csv")) return "csv";
+  if (
+    t.includes("spreadsheet") ||
+    t.includes("excel") ||
+    t === "application/vnd.ms-excel" ||
+    t === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    n.endsWith(".xlsx") || n.endsWith(".xls")
+  ) return "xlsx";
+  return null;
+}
+
+/** Convert a spreadsheet/CSV file's bytes into a compact text representation for the AI. */
+function spreadsheetToText(bytes: Uint8Array, kind: "csv" | "xlsx", fileName: string): string {
+  try {
+    if (kind === "csv") {
+      // Decode UTF-8 (with BOM stripping). Most CSVs are UTF-8; falls back to latin1 on error.
+      let text: string;
+      try {
+        text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+      } catch {
+        text = new TextDecoder("latin1").decode(bytes);
+      }
+      if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+      return text.slice(0, 50000); // cap to ~50k chars to stay within token limits
+    }
+    // XLSX / XLS — parse with SheetJS and convert each sheet to CSV
+    const workbook = XLSX.read(bytes, { type: "array" });
+    const parts: string[] = [];
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      const csv = XLSX.utils.sheet_to_csv(sheet, { blankrows: false });
+      if (csv.trim()) {
+        parts.push(`--- Sheet: ${sheetName} ---\n${csv}`);
+      }
+    }
+    return parts.join("\n\n").slice(0, 50000);
+  } catch (e) {
+    console.error(`[extract-document] Failed to parse spreadsheet ${fileName}:`, e);
+    return "";
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -148,12 +195,33 @@ serve(async (req) => {
     // Convert file to base64 for AI processing
     const arrayBuffer = await fileData.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
+
+    // Detect spreadsheets — these go to the AI as parsed text instead of an image.
+    const spreadsheetKind = isSpreadsheetFile(doc.file_type, doc.file_name);
+    let spreadsheetText = "";
+    if (spreadsheetKind) {
+      spreadsheetText = spreadsheetToText(bytes, spreadsheetKind, doc.file_name);
+      if (!spreadsheetText) {
+        await supabase
+          .from("documents")
+          .update({
+            status: "needs_review",
+            validation_errors: [{ field: "file", message: "Could not parse spreadsheet contents" }],
+          })
+          .eq("id", documentId);
+        return new Response(JSON.stringify({ error: "Could not parse spreadsheet" }), {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     let binary = "";
     const chunkSize = 8192;
     for (let i = 0; i < bytes.length; i += chunkSize) {
       binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
     }
-    const base64 = btoa(binary);
+    const base64 = spreadsheetKind ? "" : btoa(binary);
     const mimeType = doc.file_type === "application/pdf" ? "application/pdf" : (doc.file_type || "image/jpeg");
     // google/gemini-2.5-flash is the confirmed working vision model on this gateway —
     // it handles both PDFs and images via the image_url / base64 format.
@@ -244,19 +312,24 @@ JSON schema (all fields optional except document_type, currency, total_amount, c
 }
 ${categoryTaxonomy}${typeHint}${categoryHint}`,
           },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Extract all accounting fields from this financial document and return them as JSON.",
+          spreadsheetKind
+            ? {
+                role: "user",
+                content: `Extract all accounting fields from the following ${spreadsheetKind === "csv" ? "CSV" : "Excel spreadsheet"} file (filename: ${doc.file_name}) and return them as JSON. If the spreadsheet contains a single invoice, extract its fields. If it lists many transactions, summarize total figures and pick the most relevant supplier/customer.\n\n=== FILE CONTENTS ===\n${spreadsheetText}`,
+              }
+            : {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Extract all accounting fields from this financial document and return them as JSON.",
+                  },
+                  {
+                    type: "image_url",
+                    image_url: { url: `data:${mimeType};base64,${base64}` },
+                  },
+                ],
               },
-              {
-                type: "image_url",
-                image_url: { url: `data:${mimeType};base64,${base64}` },
-              },
-            ],
-          },
         ],
       }),
     });
