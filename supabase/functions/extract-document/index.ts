@@ -312,19 +312,24 @@ JSON schema (all fields optional except document_type, currency, total_amount, c
 }
 ${categoryTaxonomy}${typeHint}${categoryHint}`,
           },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Extract all accounting fields from this financial document and return them as JSON.",
+          spreadsheetKind
+            ? {
+                role: "user",
+                content: `Extract all accounting fields from the following ${spreadsheetKind === "csv" ? "CSV" : "Excel spreadsheet"} file (filename: ${doc.file_name}) and return them as JSON. If the spreadsheet contains a single invoice, extract its fields. If it lists many transactions, summarize total figures and pick the most relevant supplier/customer.\n\n=== FILE CONTENTS ===\n${spreadsheetText}`,
+              }
+            : {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Extract all accounting fields from this financial document and return them as JSON.",
+                  },
+                  {
+                    type: "image_url",
+                    image_url: { url: `data:${mimeType};base64,${base64}` },
+                  },
+                ],
               },
-              {
-                type: "image_url",
-                image_url: { url: `data:${mimeType};base64,${base64}` },
-              },
-            ],
-          },
         ],
       }),
     });
