@@ -434,9 +434,33 @@ ${categoryTaxonomy}${typeHint}${categoryHint}`,
       }
     }
 
-    if (extracted.invoice_date && isNaN(Date.parse(extracted.invoice_date))) {
+    // Normalize dates to strict YYYY-MM-DD; anything unparseable becomes null
+    // (e.g. the model sometimes returns "2023-06" or "15/06/2023").
+    const normalizeDate = (value: unknown): string | null => {
+      if (typeof value !== "string") return null;
+      const v = value.trim();
+      if (!v) return null;
+      let m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+      m = v.match(/^(\d{4})[-/](\d{1,2})$/); // YYYY-MM → first of month
+      if (m) return `${m[1]}-${String(m[2]).padStart(2, "0")}-01`;
+      m = v.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/); // DD/MM/YYYY
+      if (m) return `${m[3]}-${String(m[2]).padStart(2, "0")}-${String(m[1]).padStart(2, "0")}`;
+      m = v.match(/^(\d{4})[./](\d{1,2})[./](\d{1,2})$/); // YYYY/MM/DD
+      if (m) return `${m[1]}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
+      const parsed = Date.parse(v);
+      if (!isNaN(parsed)) return new Date(parsed).toISOString().split("T")[0];
+      return null;
+    };
+
+    const rawInvoiceDate = extracted.invoice_date;
+    extracted.invoice_date = normalizeDate(extracted.invoice_date);
+    extracted.due_date = normalizeDate(extracted.due_date);
+
+    if (rawInvoiceDate && !extracted.invoice_date) {
       validationErrors.push({ field: "invoice_date", message: "Invalid date format" });
     }
+
 
     // Broad list — flag truly unknown codes only, don't block common world currencies
     const validCurrencies = [
