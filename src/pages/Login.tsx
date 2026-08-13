@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,11 +41,14 @@ export default function LoginPage() {
   const [forgotSent, setForgotSent] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get("next");
+  const nextPath = rawNext && /^\/(?!\/)/.test(rawNext) ? rawNext : null;
 
   const handleOAuth = async (provider: "google" | "apple") => {
     setSocialLoading(provider);
     const { error } = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin + "/app",
+      redirect_uri: window.location.origin + (nextPath ?? "/app"),
     });
     setSocialLoading(null);
     if (error) toast.error(error.message || `${provider} sign-in failed`);
@@ -77,7 +80,7 @@ export default function LoginPage() {
     });
 
     toast.success(t("auth.welcomeBack"));
-    navigate("/app");
+    navigate(nextPath ?? "/app");
   };
 
   return (

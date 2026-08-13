@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.2",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://vhaursnvaadhxxwefxez.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "charmy-ai",
+      "version": "0.1.0",
+      "title": "Charmy AI"
+    },
+    "tools": [
+      {
+        "name": "list_expenses",
+        "title": "List expenses",
+        "description": "List the signed-in user's expense records (supplier, amounts, VAT, category, dates), newest first. Supports optional date range, category and supplier filters.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Only include invoices on/after this date (YYYY-MM-DD)."
+            },
+            "to": {
+              "type": "string",
+              "description": "Only include invoices on/before this date (YYYY-MM-DD)."
+            },
+            "category": {
+              "type": "string",
+              "description": "Filter by expense category name (exact match)."
+            },
+            "supplier": {
+              "type": "string",
+              "description": "Filter by supplier name (partial, case-insensitive)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Max records to return (default 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_income",
+        "title": "List income",
+        "description": "List the signed-in user's income records / sales invoices (customer, amounts, VAT, dates), newest first. Supports optional date range and customer filters.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Only include invoices on/after this date (YYYY-MM-DD)."
+            },
+            "to": {
+              "type": "string",
+              "description": "Only include invoices on/before this date (YYYY-MM-DD)."
+            },
+            "customer": {
+              "type": "string",
+              "description": "Filter by customer name (partial, case-insensitive)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Max records to return (default 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_documents",
+        "title": "List documents",
+        "description": "List the signed-in user's uploaded documents with their processing status, extracted fields and confidence score, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "description": "Filter by status, e.g. processing, processed, needs_review, failed."
+            },
+            "document_type": {
+              "type": "string",
+              "description": "Filter by document type, e.g. expense_invoice or sales_invoice."
+            },
+            "search": {
+              "type": "string",
+              "description": "Filter by file name (partial, case-insensitive)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Max records to return (default 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_expense_categories",
+        "title": "List expense categories",
+        "description": "List the expense categories available in the signed-in user's workspace, with colors and monthly budgets.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "financial_summary",
+        "title": "Financial summary",
+        "description": "Summarise the signed-in user's income and expenses for an optional date range: totals and VAT per currency, plus expense totals per category.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Start of the period (YYYY-MM-DD, inclusive)."
+            },
+            "to": {
+              "type": "string",
+              "description": "End of the period (YYYY-MM-DD, inclusive)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

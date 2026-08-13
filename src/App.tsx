@@ -29,6 +29,7 @@ import ActivateFirmPlan from "./pages/ActivateFirmPlan";
 import BillingRequired from "./pages/BillingRequired";
 import AcceptableUse from "./pages/AcceptableUse";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import OAuthConsent from "./pages/OAuthConsent";
 
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
@@ -130,6 +131,8 @@ const App = () => (
           <Route path="/activate-firm" element={<ActivateFirmPlan />} />
           <Route path="/billing-required" element={<BillingRequired />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
+          <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
 
           {/* Dashboard pages */}
           <Route path="/app" element={<DashboardLayout />}>
