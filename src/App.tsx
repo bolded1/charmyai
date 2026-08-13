@@ -29,6 +29,7 @@ import ActivateFirmPlan from "./pages/ActivateFirmPlan";
 import BillingRequired from "./pages/BillingRequired";
 import AcceptableUse from "./pages/AcceptableUse";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import OAuthConsent from "./pages/OAuthConsent";
 
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
